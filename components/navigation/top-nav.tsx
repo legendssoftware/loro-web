@@ -39,8 +39,10 @@ export function TopNav() {
         setCurrentLang,
     } = useAppStore()
 
+    console.log(profileData)
+
     // Get user initials for avatar fallback
-    const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : '??'
+    const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU'
 
     const handleSignOut = async () => {
         try {
@@ -90,7 +92,7 @@ export function TopNav() {
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="flex h-16 items-center px-4 justify-between">
+                <div className="flex h-16 items-center px-2 justify-between">
                     <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"

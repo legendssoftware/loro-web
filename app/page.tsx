@@ -12,6 +12,17 @@ import {
 import { CalendarClock, HandCoins, ShoppingBag, UserPlus, Zap, BookOpen, CheckSquare, Store } from "lucide-react"
 import { Sparkline } from "@/components/ui/sparkline"
 import { motion } from "framer-motion"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { DateRange } from "react-day-picker"
+import { Calendar } from "@/components/ui/calendar"
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import React from "react"
 
 // Animation variants
 const containerVariants = {
@@ -141,6 +152,11 @@ const quickReports = [
 ]
 
 export default function Dashboard() {
+	const [date, setDate] = React.useState<DateRange | undefined>({
+		from: new Date(),
+		to: new Date(),
+	})
+
 	return (
 		<motion.div
 			initial="hidden"
@@ -203,14 +219,41 @@ export default function Dashboard() {
 						<div className="flex flex-col md:flex-row gap-6">
 							<div className="flex-1">
 								<label className="text-xs mb-2 block font-body uppercase font-normal">Date Range</label>
-								<Select>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder="Select date range..." />
-									</SelectTrigger>
-									<SelectContent>
-										{/* TODO: Add date range picker */}
-									</SelectContent>
-								</Select>
+								<Popover>
+									<PopoverTrigger asChild>
+										<Button
+											variant="outline"
+											className={cn(
+												"w-full justify-start text-left font-normal",
+												!date && "text-muted-foreground"
+											)}
+										>
+											<CalendarIcon className="mr-2 h-4 w-4" />
+											{date?.from ? (
+												date.to ? (
+													<>
+														{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+													</>
+												) : (
+													format(date.from, "LLL dd, y")
+												)
+											) : (
+												<span className="text-[10px] font-body uppercase font-normal">Pick a date range</span>
+											)}
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-0" align="start">
+										<Calendar
+											initialFocus
+											mode="range"
+											defaultMonth={date?.from}
+											selected={date}
+											onSelect={setDate}
+											numberOfMonths={2}
+											className="rounded-md border"
+										/>
+									</PopoverContent>
+								</Popover>
 							</div>
 							<div className="flex-1">
 								<label className="text-xs mb-2 block font-body uppercase font-normal">Time Period</label>

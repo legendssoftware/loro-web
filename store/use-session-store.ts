@@ -81,6 +81,7 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                         // Update axios default headers with the new token
                         api.defaults.headers.common['Authorization'] = `Bearer ${response.accessToken}`;
 
+                        // Set session state
                         set({
                             isAuthenticated: true,
                             accessToken: response.accessToken,
@@ -88,6 +89,12 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                             profileData: response.profileData,
                             loading: false,
                         });
+
+                        // Wait for state to be persisted (give time for sessionStorage to update)
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                        // Redirect to home after ensuring session is set
+                        window.location.replace('/');
                     } else {
                         throw new Error('Invalid response from server');
                     }
@@ -149,8 +156,8 @@ interface SignInResponse {
 // Custom hook for sign-in mutation
 export const useSignInMutation = () => {
     return useMutation<SignInResponse, Error, { username: string; password: string }>({
-        mutationFn: async (credentials) => {
-            const response = await authAPI.signIn(credentials);
+        mutationFn: async ({ username, password }) => {
+            const response = await authAPI.signIn({ username, password });
             if (response.profileData && response.accessToken && response.refreshToken) {
                 // Update axios default headers with the new token
                 api.defaults.headers.common['Authorization'] = `Bearer ${response.accessToken}`;
@@ -162,6 +169,9 @@ export const useSignInMutation = () => {
                     refreshToken: response.refreshToken,
                     profileData: response.profileData,
                 });
+
+                // Always redirect to home after successful sign-in
+                window.location.href = '/';
             }
             return response;
         },

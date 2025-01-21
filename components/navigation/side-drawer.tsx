@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Building2, Settings, GraduationCap } from "lucide-react"
+import { LayoutDashboard, Building2, Settings } from "lucide-react"
 import {
     Sheet,
     SheetContent,
@@ -67,8 +67,6 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             </div >
         )
     }
-
-    console.log(profileData?.licenseInfo)
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>

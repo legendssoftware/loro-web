@@ -144,7 +144,7 @@ const SignInPage = () => {
 							type="text"
 							value={form.username}
 							onChange={(e) => setForm(prev => ({ ...prev, username: e.target.value }))}
-							placeholder="jdoe@gmail.com"
+							placeholder="theguy@loro.co.za"
 							disabled={isLoading}
 							className={cn(
 								"bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light",

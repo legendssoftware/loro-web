@@ -12,19 +12,22 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname, useRouter } from 'next/navigation'
 import { SideDrawer } from "./side-drawer"
 import { NotificationsModal } from "./notifications-modal"
 import { ChatDialog } from "@/components/chat/chat-dialog"
 import { useAppStore } from "@/store/use-app-store"
+import { useSessionStore } from "@/store/use-session-store"
 import { isAuthRoute } from "@/lib/utils"
 import { ThemeToggler } from "@/modules/navigation/theme.toggler"
 import { languages } from "@/lib/constants/languages"
+import toast from "react-hot-toast"
 
 export function TopNav() {
     const pathname = usePathname()
     const router = useRouter()
+    const { signOut, profileData } = useSessionStore()
     const {
         isDrawerOpen,
         isNotificationsOpen,
@@ -36,8 +39,48 @@ export function TopNav() {
         setCurrentLang,
     } = useAppStore()
 
-    const handleSignOut = () => {
-        router.push('/landing-page')
+    // Get user initials for avatar fallback
+    const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : '??'
+
+    const handleSignOut = async () => {
+        try {
+            await signOut()
+            const toastId = toast.success('Session Ended', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '👋',
+            })
+
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            toast.remove(toastId)
+            router.push('/landing-page')
+        } catch {
+            toast.error('Failed to sign out', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
+        }
     }
 
     if (isAuthRoute(pathname)) {
@@ -106,8 +149,14 @@ export function TopNav() {
                         </DropdownMenu>
                         <div className="relative">
                             <Avatar className="h-8 w-8 ring-2 ring-primary">
+                                {profileData?.photoURL && (
+                                    <AvatarImage
+                                        src={profileData.photoURL}
+                                        alt={`${profileData.name} ${profileData.surname}`}
+                                    />
+                                )}
                                 <AvatarFallback className="bg-black text-white text-[10px] font-body uppercase">
-                                    LG
+                                    {userInitials}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 ring-2 ring-white" />

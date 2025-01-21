@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const AnimatedSection = ({ children, index }: { children: React.ReactNode; index: number }) => {
     return (
@@ -31,6 +32,9 @@ export default function Index() {
                     className="text-6xl font-bold uppercase font-body">
                     Hero Section
                 </motion.h1>
+                <Link href="/sign-in" className=" font-body uppercase text-white px-4 py-2 rounded-md">
+                    Sign In
+                </Link>
             </AnimatedSection>
             <AnimatedSection index={1}>
                 <h2 className="text-5xl font-bold font-body uppercase">One</h2>

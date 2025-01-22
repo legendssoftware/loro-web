@@ -6,12 +6,6 @@ import {
     Power,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname, useRouter } from 'next/navigation'
 import { SideDrawer } from "./side-drawer"
@@ -21,7 +15,6 @@ import { useAppStore } from "@/store/use-app-store"
 import { useSessionStore } from "@/store/use-session-store"
 import { isAuthRoute } from "@/lib/utils"
 import { ThemeToggler } from "@/modules/navigation/theme.toggler"
-import { languages } from "@/lib/constants/languages"
 import toast from "react-hot-toast"
 
 export function TopNav() {
@@ -32,11 +25,9 @@ export function TopNav() {
         isDrawerOpen,
         isNotificationsOpen,
         isChatOpen,
-        currentLang,
         setDrawerOpen,
         setNotificationsOpen,
         setChatOpen,
-        setCurrentLang,
     } = useAppStore()
 
     // Get user initials for avatar fallback
@@ -126,27 +117,6 @@ export function TopNav() {
                                 1
                             </span>
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-[10px] font-body uppercase font-normal"
-                                >
-                                    {currentLang}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {languages?.map((lang) => (
-                                    <DropdownMenuItem
-                                        className="text-[10px] font-body uppercase font-normal"
-                                        key={lang.code}
-                                        onClick={() => setCurrentLang(lang.code)}>
-                                        {lang.label}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                         <div className="relative">
                             <Avatar className="h-8 w-8 ring-2 ring-primary">
                                 {profileData?.photoURL && (

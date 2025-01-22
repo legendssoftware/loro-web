@@ -2,11 +2,10 @@
 
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
-import { StaffModule } from "@/modules/my-office/tabs/staff"
 import { ClaimsModule } from "@/modules/my-office/tabs/claims"
 import { OrdersModule } from "@/modules/my-office/tabs/orders"
 import { TasksModule } from "@/modules/my-office/tabs/tasks"
-import { CheckSquare, Users, HandCoins, ShoppingBag } from "lucide-react"
+import { CheckSquare, HandCoins, ShoppingBag } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const containerVariants = {
@@ -54,12 +53,6 @@ export default function MyOfficePage() {
                         </TabsTrigger>
                         <TabsTrigger
                             className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="staff">
-                            <Users size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Staff</p>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
                             value="claims">
                             <HandCoins size={16} strokeWidth={1.5} className="text-=card-foreground" />
                             <p className="text-xs font-normal font-body uppercase">Claims</p>
@@ -71,22 +64,17 @@ export default function MyOfficePage() {
                             <p className="text-xs font-normal font-body uppercase">Orders</p>
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="tasks" className="mt-6">
-                        <Card className="p-6 flex flex-col gap-2 ">
+                    <TabsContent value="tasks" className="mt-4">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <TasksModule />
                         </Card>
                     </TabsContent>
-                    <TabsContent value="staff" className="mt-6">
-                        <Card className="p-6 flex flex-col gap-2">
-                            <StaffModule />
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="claims" className="mt-6">
+                    <TabsContent value="claims" className="mt-4">
                         <Card className="p-6 flex flex-col gap-2">
                             <ClaimsModule />
                         </Card>
                     </TabsContent>
-                    <TabsContent value="orders" className="mt-6">
+                    <TabsContent value="orders" className="mt-4">
                         <Card className="p-6 flex flex-col gap-2">
                             <OrdersModule />
                         </Card>

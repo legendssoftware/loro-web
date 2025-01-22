@@ -36,12 +36,31 @@ import { UserSelect } from "@/modules/my-office/components/UserSelect"
 import * as z from 'zod'
 import toast from 'react-hot-toast'
 import { taskFormSchema } from "@/lib/schemas/tasks"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
+type Task = {
+    uid: string
+    title: string
+    description: string
+    notes?: string
+    comments?: string
+    status: string
+    priority: string
+    deadline?: Date
+    assignees: string[]
+    taskType: string
+    repetitionType?: string
+    client?: string
+}
+
 export const TasksModule = () => {
     const [statusFilter, setStatusFilter] = useState<string>("all")
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
+    const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false)
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null)
     const [errors, setErrors] = useState<{ [K in keyof TaskForm]?: string }>({})
 
     const [formData, setFormData] = useState<TaskForm>({
@@ -132,7 +151,7 @@ export const TasksModule = () => {
                 position: 'bottom-center',
                 icon: '✅',
             })
-            setIsModalOpen(false)
+            setIsNewTaskModalOpen(false)
         } catch (error) {
             if (error instanceof Error) {
                 toast.error(error.message, {
@@ -168,8 +187,58 @@ export const TasksModule = () => {
         }))
     }
 
+    const handleTaskClick = (task: Task) => {
+        setSelectedTask(task)
+        setIsTaskDetailModalOpen(true)
+    }
+
+    const tasks: Task[] = [
+        {
+            uid: "1",
+            title: "Landing page Faktory",
+            description: "Redesign website faktory with elementor, focusing on modern UI principles and responsive design",
+            notes: "Client prefers a minimalist design approach. Use their brand colors: #FF4545, #2D2D2D",
+            comments: "Initial mockups approved. Starting development phase next week.",
+            status: "active",
+            priority: "medium",
+            deadline: new Date("2024-04-15"),
+            assignees: ["MarkyMay"],
+            taskType: "Website",
+            client: "Faktory Inc.",
+            repetitionType: "none"
+        },
+        {
+            uid: "2",
+            title: "Social Media Apps",
+            description: "Develop a cross-platform social media application focused on community engagement",
+            notes: "Using React Native for mobile and Next.js for web platform. API documentation in Notion.",
+            comments: "Backend team has completed user authentication system. Frontend development starting this sprint.",
+            status: "active",
+            priority: "high",
+            deadline: new Date("2024-05-01"),
+            assignees: ["MarkyMay", "JohnDoe"],
+            taskType: "Apps",
+            client: "SocialTech Solutions",
+            repetitionType: "weekly"
+        },
+        {
+            uid: "3",
+            title: "Research Project Timeline",
+            description: "Strategy for research is a crucial step in ensuring a successful and organized research project",
+            notes: "Key areas to focus: market analysis, user behavior patterns, competitor analysis",
+            comments: "First phase of research completed. Team meeting scheduled for findings review.",
+            status: "pending",
+            priority: "medium",
+            deadline: new Date("2024-03-30"),
+            assignees: ["LuckyMay", "AliceSmith"],
+            taskType: "Research",
+            client: "Research Labs Co.",
+            repetitionType: "monthly"
+        }
+    ]
+
     return (
-        <div className="w-full h-full flex flex-col gap-2">
+        <div className="w-full h-full flex flex-col gap-4">
             <div className="flex flex-row items-center justify-between gap-2">
                 <h2 className="text-md font-body font-normal uppercase">Tasks Overview</h2>
                 <div className="flex flex-row items-center justify-center gap-2">
@@ -186,7 +255,7 @@ export const TasksModule = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <Dialog open={isNewTaskModalOpen} onOpenChange={setIsNewTaskModalOpen}>
                         <DialogTrigger asChild>
                             <Button variant="default" size="sm">
                                 <Plus size={16} strokeWidth={1.5} className="text-white" />
@@ -404,8 +473,8 @@ export const TasksModule = () => {
                                         </div>
                                     </div>
                                 </ScrollArea>
-                                <DialogFooter className="mt-4">
-                                    <Button type="submit" size="sm" className="font-body text-xs font-normal uppercase text-card-foreground">
+                                <DialogFooter className="mt-4 w-full border">
+                                    <Button type="submit" size="sm" className="w-full font-body text-xs font-normal uppercase text-card-foreground">
                                         <p className="text-white">Create Task</p>
                                     </Button>
                                 </DialogFooter>
@@ -414,6 +483,234 @@ export const TasksModule = () => {
                     </Dialog>
                 </div>
             </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tasks
+                    .filter(task => statusFilter === "all" || task.status === statusFilter)
+                    .map(task => (
+                        <Card
+                            key={task?.uid}
+                            className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
+                            onClick={() => handleTaskClick(task)}>
+                            <CardContent className="p-2 flex flex-col h-full justify-between gap-2">
+                                <div className="space-y-4">
+                                    <div>
+                                        <Badge
+                                            variant="secondary"
+                                            className="bg-red-100 text-red-600 hover:bg-red-100 font-body text-[10px] uppercase">
+                                            {task?.taskType}
+                                        </Badge>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
+                                            {task?.title}
+                                        </h3>
+                                        <p className="text-[10px] font-body uppercase text-card-foreground">
+                                            {task?.description}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex gap-2">
+                                        <Badge
+                                            variant="outline"
+                                            className="bg-background border-border text-card-foreground font-body text-[10px] uppercase"
+                                        >
+                                            Docs
+                                        </Badge>
+                                        <Badge
+                                            variant="outline"
+                                            className="bg-background border-border text-card-foreground font-body text-[10px] uppercase"
+                                        >
+                                            Coding
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                                            <span className="text-[10px] font-body text-secondary-foreground">
+                                                {task?.assignees[0]?.charAt(0)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+            </div>
+            <Dialog open={isTaskDetailModalOpen} onOpenChange={setIsTaskDetailModalOpen}>
+                <DialogContent className="sm:max-w-[700px]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            <div className="flex items-center gap-4">
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "font-body text-xs uppercase",
+                                        selectedTask?.status === "active" && "bg-green-100 text-green-600 border-green-200",
+                                        selectedTask?.status === "pending" && "bg-yellow-100 text-yellow-600 border-yellow-200",
+                                        selectedTask?.status === "completed" && "bg-blue-100 text-blue-600 border-blue-200"
+                                    )}
+                                >
+                                    {selectedTask?.status}
+                                </Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        variant="secondary"
+                                        className="bg-red-100 text-red-600 hover:bg-red-100 font-body text-[10px] uppercase"
+                                    >
+                                        {selectedTask?.taskType}
+                                    </Badge>
+                                    <span className="text-xl font-body text-card-foreground uppercase">
+                                        {selectedTask?.title}
+                                    </span>
+                                </div>
+                            </div>
+                        </DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="h-[60vh] pr-4">
+                        <div className="grid gap-6 py-4">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Label className="text-xs font-body text-muted-foreground uppercase">
+                                        Description
+                                    </Label>
+                                    <div className="h-[1px] flex-1 bg-border" />
+                                </div>
+                                <p className="text-sm font-body text-card-foreground leading-relaxed">
+                                    {selectedTask?.description || "No description provided"}
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Label className="text-xs font-body text-muted-foreground uppercase">
+                                        Notes
+                                    </Label>
+                                    <div className="h-[1px] flex-1 bg-border" />
+                                </div>
+                                <p className="text-sm font-body text-card-foreground leading-relaxed">
+                                    {selectedTask?.notes || "No notes added"}
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Label className="text-xs font-body text-muted-foreground uppercase">
+                                        Comments
+                                    </Label>
+                                    <div className="h-[1px] flex-1 bg-border" />
+                                </div>
+                                <p className="text-sm font-body text-card-foreground leading-relaxed">
+                                    {selectedTask?.comments || "No comments added"}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Label className="text-xs font-body text-muted-foreground uppercase">
+                                                Task Details
+                                            </Label>
+                                            <div className="h-[1px] flex-1 bg-border" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-body text-muted-foreground uppercase">Priority:</span>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "font-body text-xs uppercase",
+                                                        selectedTask?.priority === "high" && "bg-red-100 text-red-600 border-red-200",
+                                                        selectedTask?.priority === "medium" && "bg-yellow-100 text-yellow-600 border-yellow-200",
+                                                        selectedTask?.priority === "low" && "bg-green-100 text-green-600 border-green-200"
+                                                    )}
+                                                >
+                                                    {selectedTask?.priority}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-body text-muted-foreground uppercase">Status:</span>
+                                                <Badge variant="outline" className="font-body text-xs uppercase">
+                                                    {selectedTask?.status}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-body text-muted-foreground uppercase">Client:</span>
+                                                <span className="text-sm font-body">
+                                                    {selectedTask?.client || "No client assigned"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Label className="text-xs font-body text-muted-foreground uppercase">
+                                                Time & Repetition
+                                            </Label>
+                                            <div className="h-[1px] flex-1 bg-border" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                                <span className="text-sm font-body">
+                                                    {selectedTask?.deadline ? format(selectedTask.deadline, "LLL dd, y") : "No deadline set"}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-body text-muted-foreground uppercase">Repetition:</span>
+                                                <Badge variant="outline" className="font-body text-xs uppercase">
+                                                    {selectedTask?.repetitionType || "None"}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Label className="text-xs font-body text-muted-foreground uppercase">
+                                                Assignees
+                                            </Label>
+                                            <div className="h-[1px] flex-1 bg-border" />
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedTask?.assignees.map((assignee, index) => (
+                                                <div key={index} className="flex items-center gap-2 bg-secondary/20 rounded-full px-3 py-1">
+                                                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                                                        <span className="text-[10px] font-body text-secondary-foreground">
+                                                            {assignee.charAt(0)}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-sm font-body">{assignee}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ScrollArea>
+
+                    <DialogFooter className="flex justify-between items-center border-t pt-4">
+                        <div className="flex items-center gap-2 w-full">
+                            <Button
+                                variant="default"
+                                size="sm"
+                                className="font-body text-xs uppercase w-full">
+                                <p className="text-white">Edit Task</p>
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="font-body text-xs uppercase w-full">
+                                <p className="text-white">Delete Task</p>
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div >
     )
 }

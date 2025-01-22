@@ -693,12 +693,12 @@ export const TasksModule = () => {
                                     <div className="flex flex-col gap-2">
                                         {selectedTask?.assignees.map((assignee, index) => (
                                             <div key={index} className="flex items-center gap-3">
-                                                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                                                <div className="w-9 h-9 border rounded-full bg-secondary flex items-center justify-center">
                                                     <span className="text-[10px] font-body text-secondary-foreground">
                                                         {assignee.charAt(0)}
                                                     </span>
                                                 </div>
-                                                <span className="text-base font-body">{assignee}</span>
+                                                <span className="text-xs font-body">{assignee}</span>
                                             </div>
                                         ))}
                                     </div>

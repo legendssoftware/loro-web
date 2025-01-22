@@ -5,8 +5,11 @@ import { Card } from "@/components/ui/card"
 import { ClaimsModule } from "@/modules/my-office/tabs/claims"
 import { OrdersModule } from "@/modules/my-office/tabs/orders"
 import { TasksModule } from "@/modules/my-office/tabs/tasks"
-import { CheckSquare, HandCoins, ShoppingBag } from "lucide-react"
+import { CheckSquare, FileText, HandCoins, ShoppingBag, UserPlus, Users } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { StaffModule } from "@/modules/my-office/tabs/staff"
+import { LeadsModule } from "@/modules/my-office/tabs/leads"
+import { JournalsModule } from "@/modules/my-office/tabs/journals"
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -53,15 +56,33 @@ export default function MyOfficePage() {
                         </TabsTrigger>
                         <TabsTrigger
                             className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
+                            value="orders">
+                            <ShoppingBag size={16} strokeWidth={1.5} className="text-=card-foreground" />
+                            <p className="text-xs font-normal font-body uppercase">Orders</p>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
                             value="claims">
                             <HandCoins size={16} strokeWidth={1.5} className="text-=card-foreground" />
                             <p className="text-xs font-normal font-body uppercase">Claims</p>
                         </TabsTrigger>
                         <TabsTrigger
                             className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="orders">
-                            <ShoppingBag size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Orders</p>
+                            value="leads">
+                            <UserPlus size={16} strokeWidth={1.5} className="text-=card-foreground" />
+                            <p className="text-xs font-normal font-body uppercase">Leads</p>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
+                            value="journals">
+                            <FileText size={16} strokeWidth={1.5} className="text-=card-foreground" />
+                            <p className="text-xs font-normal font-body uppercase">Journals</p>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
+                            value="staff">
+                            <Users size={16} strokeWidth={1.5} className="text-=card-foreground" />
+                            <p className="text-xs font-normal font-body uppercase">Staff</p>
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="tasks" className="mt-4">
@@ -77,6 +98,21 @@ export default function MyOfficePage() {
                     <TabsContent value="orders" className="mt-4">
                         <Card className="p-6 flex flex-col gap-2">
                             <OrdersModule />
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="staff" className="mt-4">
+                        <Card className="p-6 flex flex-col gap-2">
+                            <StaffModule />
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="leads" className="mt-4">
+                        <Card className="p-6 flex flex-col gap-2">
+                            <LeadsModule />
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="journals" className="mt-4">
+                        <Card className="p-6 flex flex-col gap-2">
+                            <JournalsModule />
                         </Card>
                     </TabsContent>
                 </Tabs>

@@ -26,13 +26,13 @@ export function ThemeToggler() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setTheme("light")}>
-                    Light
+                    <p className="text-[10px] font-body uppercase cursor-pointer">Light</p>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
-                    Dark
+                    <p className="text-[10px] font-body uppercase cursor-pointer">Dark</p>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
-                    System
+                    <p className="text-[10px] font-body uppercase cursor-pointer">System</p>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

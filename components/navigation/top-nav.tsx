@@ -39,8 +39,6 @@ export function TopNav() {
         setCurrentLang,
     } = useAppStore()
 
-    console.log(profileData)
-
     // Get user initials for avatar fallback
     const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU'
 

@@ -54,6 +54,11 @@ type Task = {
     taskType: string
     repetitionType?: string
     client?: string
+    subtasks?: Array<{
+        title: string
+        description: string
+        completed?: boolean
+    }>
 }
 
 export const TasksModule = () => {
@@ -205,7 +210,19 @@ export const TasksModule = () => {
             assignees: ["MarkyMay"],
             taskType: "Website",
             client: "Faktory Inc.",
-            repetitionType: "none"
+            repetitionType: "none",
+            subtasks: [
+                {
+                    title: "Design System Setup",
+                    description: "Create color palette and typography system",
+                    completed: true
+                },
+                {
+                    title: "Homepage Layout",
+                    description: "Implement responsive grid system",
+                    completed: false
+                }
+            ]
         },
         {
             uid: "2",
@@ -219,7 +236,19 @@ export const TasksModule = () => {
             assignees: ["MarkyMay", "JohnDoe"],
             taskType: "Apps",
             client: "SocialTech Solutions",
-            repetitionType: "weekly"
+            repetitionType: "weekly",
+            subtasks: [
+                {
+                    title: "Mobile App Development",
+                    description: "Develop the mobile application using React Native",
+                    completed: false
+                },
+                {
+                    title: "Web App Development",
+                    description: "Develop the web application using Next.js",
+                    completed: false
+                }
+            ]
         },
         {
             uid: "3",
@@ -233,7 +262,24 @@ export const TasksModule = () => {
             assignees: ["LuckyMay", "AliceSmith"],
             taskType: "Research",
             client: "Research Labs Co.",
-            repetitionType: "monthly"
+            repetitionType: "monthly",
+            subtasks: [
+                {
+                    title: "Market Analysis",
+                    description: "Conduct market analysis to identify target audience and competitors",
+                    completed: true
+                },
+                {
+                    title: "User Behavior Analysis",
+                    description: "Analyze user behavior patterns to understand their needs and preferences",
+                    completed: false
+                },
+                {
+                    title: "Competitor Analysis",
+                    description: "Analyze competitors' strategies and market position",
+                    completed: false
+                }
+            ]
         }
     ]
 
@@ -540,79 +586,54 @@ export const TasksModule = () => {
                 <DialogContent className="sm:max-w-[700px]">
                     <DialogHeader>
                         <DialogTitle>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
                                 <Badge
                                     variant="outline"
-                                    className={cn(
-                                        "font-body text-xs uppercase",
-                                        selectedTask?.status === "active" && "bg-green-100 text-green-600 border-green-200",
-                                        selectedTask?.status === "pending" && "bg-yellow-100 text-yellow-600 border-yellow-200",
-                                        selectedTask?.status === "completed" && "bg-blue-100 text-blue-600 border-blue-200"
-                                    )}
-                                >
+                                    className={cn("font-body text-xs uppercase", selectedTask?.status === "active" && "bg-green-100 text-green-600 border-green-200", selectedTask?.status === "pending" && "bg-yellow-100 text-yellow-600 border-yellow-200", selectedTask?.status === "completed" && "bg-blue-100 text-blue-600 border-blue-200")}>
                                     {selectedTask?.status}
                                 </Badge>
-                                <div className="flex items-center gap-2">
-                                    <Badge
-                                        variant="secondary"
-                                        className="bg-red-100 text-red-600 hover:bg-red-100 font-body text-[10px] uppercase"
-                                    >
-                                        {selectedTask?.taskType}
-                                    </Badge>
-                                    <span className="text-xl font-body text-card-foreground uppercase">
-                                        {selectedTask?.title}
-                                    </span>
-                                </div>
+                                <span className="text-xl font-body text-card-foreground uppercase font-normal">
+                                    {selectedTask?.title}
+                                </span>
                             </div>
                         </DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[60vh] pr-4">
-                        <div className="grid gap-6 py-4">
+                        <div className="grid gap-8 py-4">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Label className="text-xs font-body text-muted-foreground uppercase">
-                                        Description
-                                    </Label>
-                                    <div className="h-[1px] flex-1 bg-border" />
-                                </div>
-                                <p className="text-sm font-body text-card-foreground leading-relaxed">
-                                    {selectedTask?.description || "No description provided"}
+                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                    Description
+                                </h3>
+                                <div className="h-[1px] w-full bg-border" />
+                                <p className="text-xs font-body font-normal text-card-foreground">
+                                    {selectedTask?.description}
                                 </p>
                             </div>
-
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Label className="text-xs font-body text-muted-foreground uppercase">
-                                        Notes
-                                    </Label>
-                                    <div className="h-[1px] flex-1 bg-border" />
-                                </div>
-                                <p className="text-sm font-body text-card-foreground leading-relaxed">
+                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                    Notes
+                                </h3>
+                                <div className="h-[1px] w-full bg-border" />
+                                <p className="text-xs font-body font-normal text-card-foreground">
                                     {selectedTask?.notes || "No notes added"}
                                 </p>
                             </div>
-
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Label className="text-xs font-body text-muted-foreground uppercase">
-                                        Comments
-                                    </Label>
-                                    <div className="h-[1px] flex-1 bg-border" />
-                                </div>
-                                <p className="text-sm font-body text-card-foreground leading-relaxed">
+                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                    Comments
+                                </h3>
+                                <div className="h-[1px] w-full bg-border" />
+                                <p className="text-xs font-body font-normal text-card-foreground">
                                     {selectedTask?.comments || "No comments added"}
                                 </p>
                             </div>
-
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4">
+                                <div className="space-y-4 w-full">
                                     <div>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Label className="text-xs font-body text-muted-foreground uppercase">
-                                                Task Details
-                                            </Label>
-                                            <div className="h-[1px] flex-1 bg-border" />
-                                        </div>
+                                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2" >
+                                            Task Details
+                                        </h3>
+                                        <div className="h-[1px] w-full bg-border mb-4" />
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-body text-muted-foreground uppercase">Priority:</span>
@@ -625,18 +646,18 @@ export const TasksModule = () => {
                                                         selectedTask?.priority === "low" && "bg-green-100 text-green-600 border-green-200"
                                                     )}
                                                 >
-                                                    {selectedTask?.priority}
+                                                    <p className="text-xs font-body">{selectedTask?.priority}</p>
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-body text-muted-foreground uppercase">Status:</span>
-                                                <Badge variant="outline" className="font-body text-xs uppercase">
+                                                <span className="text-xs font-body uppercase">
                                                     {selectedTask?.status}
-                                                </Badge>
+                                                </span>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-body text-muted-foreground uppercase">Client:</span>
-                                                <span className="text-sm font-body">
+                                                <span className="text-xs font-body">
                                                     {selectedTask?.client || "No client assigned"}
                                                 </span>
                                             </div>
@@ -644,68 +665,89 @@ export const TasksModule = () => {
                                     </div>
 
                                     <div>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Label className="text-xs font-body text-muted-foreground uppercase">
-                                                Time & Repetition
-                                            </Label>
-                                            <div className="h-[1px] flex-1 bg-border" />
-                                        </div>
+                                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2">
+                                            Time & Repetition
+                                        </h3>
+                                        <div className="h-[1px] w-full bg-border mb-4" />
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                                <span className="text-sm font-body">
-                                                    {selectedTask?.deadline ? format(selectedTask.deadline, "LLL dd, y") : "No deadline set"}
+                                                <span className="text-xs font-body">
+                                                    {selectedTask?.deadline ? format(selectedTask.deadline, "MMMM dd, yyyy") : "No deadline set"}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-body text-muted-foreground uppercase">Repetition:</span>
-                                                <Badge variant="outline" className="font-body text-xs uppercase">
+                                                <span className="text-xs font-body font-normal text-muted-foreground uppercase">Repetition:</span>
+                                                <span className="text-xs font-body uppercase">
                                                     {selectedTask?.repetitionType || "None"}
-                                                </Badge>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Label className="text-xs font-body text-muted-foreground uppercase">
-                                                Assignees
-                                            </Label>
-                                            <div className="h-[1px] flex-1 bg-border" />
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {selectedTask?.assignees.map((assignee, index) => (
-                                                <div key={index} className="flex items-center gap-2 bg-secondary/20 rounded-full px-3 py-1">
-                                                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
-                                                        <span className="text-[10px] font-body text-secondary-foreground">
-                                                            {assignee.charAt(0)}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-sm font-body">{assignee}</span>
+                                <div>
+                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2">
+                                        Assignees
+                                    </h3>
+                                    <div className="h-[1px] w-full bg-border mb-4" />
+                                    <div className="flex flex-col gap-2">
+                                        {selectedTask?.assignees.map((assignee, index) => (
+                                            <div key={index} className="flex items-center gap-3">
+                                                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                                                    <span className="text-[10px] font-body text-secondary-foreground">
+                                                        {assignee.charAt(0)}
+                                                    </span>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <span className="text-base font-body">{assignee}</span>
+                                            </div>
+                                        ))}
                                     </div>
+                                </div>
+                                <div className="col-span-2 space-y-1 w-full">
+                                    {selectedTask?.subtasks && selectedTask.subtasks.length > 0 && (
+                                        <div className="space-y-1 w-full">
+                                            <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                                Subtasks
+                                            </h3>
+                                            <div className="h-[1px] w-full bg-border" />
+                                            <div className="space-y-3 mt-4">
+                                                {selectedTask?.subtasks?.map((subtask, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="w-full p-4 border rounded cursor-pointer hover:border-primary/40 flex flex-row justify-between items-center">
+                                                        <div className="flex flex-col justify-between w-3/4">
+                                                            <span className="text-xs font-body">
+                                                                {subtask?.title}
+                                                            </span>
+                                                            <p className="text-xs font-body text-muted-foreground max-w-1/2">
+                                                                {subtask?.description}
+                                                            </p>
+                                                        </div>
+                                                        <p className={cn("font-body text-[8px] uppercase", subtask?.completed ? "text-green-600 border-green-200" : " text-yellow-600 border-yellow-200")}>
+                                                            {subtask?.completed ? "Completed" : "In Progress"}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </ScrollArea>
-
                     <DialogFooter className="flex justify-between items-center border-t pt-4">
                         <div className="flex items-center gap-2 w-full">
                             <Button
-                                variant="default"
-                                size="sm"
-                                className="font-body text-xs uppercase w-full">
-                                <p className="text-white">Edit Task</p>
+                                variant="secondary"
+                                size="lg"
+                                className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white">
+                                <p className="text-white font-normal text-xs">Edit Task</p>
                             </Button>
                             <Button
                                 variant="destructive"
-                                size="sm"
-                                className="font-body text-xs uppercase w-full">
-                                <p className="text-white">Delete Task</p>
+                                size="lg"
+                                className="w-full font-body text-sm uppercase">
+                                <p className="text-white font-normal text-xs">Delete Task</p>
                             </Button>
                         </div>
                     </DialogFooter>

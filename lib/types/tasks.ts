@@ -63,35 +63,26 @@ export interface SubTask {
 }
 
 export interface Task {
-    uid: string;
-    title: string;
-    type: string;
-    deadline: string;
-    priority: TaskPriority;
-    status: TaskStatus;
-    repetitionType: TaskRepetition;
-    owner: {
-        uid: string;
-        name: string;
-        photoURL?: string;
-    };
-    client: {
-        uid: string;
-        name: string;
-        email: string;
-        phone: string;
-        address: string;
-        contactPerson: string;
-    };
-    description?: string;
-    notes?: string;
+    uid: number;
+    description: string;
     comment?: string;
-    subtasks?: SubTask[];
-    branchId: string;
+    notes?: string;
     createdAt: string;
     updatedAt: string;
+    status: string;
+    taskType: string;
+    deadline?: string;
     isDeleted: boolean;
+    priority: string;
     progress: number;
+    repetitionType: string;
+    repetitionEndDate?: string;
+    lastCompletedAt?: string;
+    attachments?: string;
+    owner?: User;
+    branch?: Branch;
+    client?: { uid: number; name?: string; email?: string; address?: string; phone?: string; contactPerson?: string };
+    subtasks?: SubTask[];
 }
 
 export type RequestConfig = {

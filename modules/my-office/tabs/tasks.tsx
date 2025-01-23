@@ -74,7 +74,7 @@ export const TasksModule = () => {
         attachments: null,
         subtasks: [],
         assignees: [],
-        client: undefined
+        client: null
     })
 
     const config: RequestConfig = {
@@ -254,27 +254,39 @@ export const TasksModule = () => {
 
         try {
             const payload = {
-                comment: formData.comment,
-                notes: formData.notes,
-                description: formData.description,
-                taskType: formData.taskType,
-                deadline: formData.deadline?.toISOString(),
-                priority: formData.priority,
+                comment: formData?.comment,
+                notes: formData?.notes,
+                description: formData?.description,
+                taskType: formData?.taskType,
+                deadline: formData?.deadline?.toISOString(),
+                priority: formData?.priority,
                 assignees: formData?.assignees?.map(uid => ({ uid })),
-                repetitionType: formData.repetitionType,
-                attachments: formData.attachments?.name || "",
-                subtasks: formData.subtasks.map(({ title, description }) => ({
+                repetitionType: formData?.repetitionType,
+                attachments: formData?.attachments?.name || "",
+                subtasks: formData?.subtasks?.map(({ title, description }) => ({
                     title,
                     description
                 })),
-                client: formData.client ? { uid: formData.client } : undefined
+                client: formData?.client ? { uid: formData?.client } : null
             }
-
-            console.log(payload, 'payload')
 
             await createTaskMutation.mutateAsync(payload as unknown as CreateTaskDTO)
         } catch (error) {
-            console.error('Error creating task:', error)
+            toast.error(`Failed to create task, please try again`, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
         }
     }
 
@@ -327,14 +339,14 @@ export const TasksModule = () => {
         return <PageLoader />
     }
 
-    console.log(tasksData?.tasks, 'tasks data')
-
     const filteredTasks = tasksData?.tasks?.filter((task: Task) => {
         const matchesStatus = statusFilter === "all" || task.status.toLowerCase() === statusFilter.toLowerCase()
         const matchesSearch = searchQuery === "" ||
             task.description?.toLowerCase().includes(searchQuery.toLowerCase())
         return matchesStatus && matchesSearch
     }) || []
+
+    console.log(filteredTasks, 'form data')
 
     return (
         <div className="w-full h-full flex flex-col gap-4">

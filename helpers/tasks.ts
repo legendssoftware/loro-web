@@ -9,7 +9,9 @@ export type RequestConfig = {
     };
 };
 
-export type CreateTaskDTO = Omit<Task, 'uid' | 'createdAt' | 'updatedAt' | 'isDeleted'>;
+export type CreateTaskDTO = Omit<Task, 'uid' | 'createdAt' | 'updatedAt' | 'isDeleted'> & {
+    client?: { uid: number };
+};
 export type UpdateTaskDTO = Partial<CreateTaskDTO>;
 
 // Fetch all tasks

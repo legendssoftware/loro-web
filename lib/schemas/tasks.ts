@@ -17,5 +17,5 @@ export const taskFormSchema = z.object({
         description: z.string()
     })),
     assignees: z.array(z.number()),
-    client: z.number().optional()
+    client: z.number().nullable()
 }) 

@@ -46,6 +46,7 @@ import { PageLoader } from "@/components/page-loader"
 import { SubTask, Task } from "@/lib/types/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
+import { ClientSelect } from "@/modules/my-office/components/ClientSelect"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
@@ -72,7 +73,8 @@ export const TasksModule = () => {
         repetitionEndDate: undefined,
         attachments: null,
         subtasks: [],
-        assignees: []
+        assignees: [],
+        client: undefined
     })
 
     const config: RequestConfig = {
@@ -88,7 +90,7 @@ export const TasksModule = () => {
     })
 
     const createTaskMutation = useMutation({
-        mutationFn: (data: CreateTaskDTO) => createTask(data),
+        mutationFn: (data: CreateTaskDTO) => createTask(data, config),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task created successfully', {
@@ -110,7 +112,7 @@ export const TasksModule = () => {
             resetForm()
         },
         onError: (error: Error) => {
-            toast.error(error.message, {
+            toast.error('Failed to create task: ' + error.message, {
                 style: {
                     borderRadius: '5px',
                     background: '#333',
@@ -153,7 +155,7 @@ export const TasksModule = () => {
     })
 
     const deleteTaskMutation = useMutation({
-        mutationFn: (ref: number) => deleteTask(ref),
+        mutationFn: (ref: number) => deleteTask(ref, config),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task deleted successfully', {
@@ -172,6 +174,23 @@ export const TasksModule = () => {
                 icon: '✅',
             })
             setIsTaskDetailModalOpen(false)
+        },
+        onError: (error: Error) => {
+            toast.error('Failed to delete task: ' + error.message, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
         }
     })
 
@@ -193,7 +212,8 @@ export const TasksModule = () => {
             repetitionEndDate: undefined,
             attachments: null,
             subtasks: [],
-            assignees: []
+            assignees: [],
+            client: undefined
         })
         setErrors({})
     }
@@ -246,8 +266,11 @@ export const TasksModule = () => {
                 subtasks: formData.subtasks.map(({ title, description }) => ({
                     title,
                     description
-                }))
+                })),
+                client: formData.client ? { uid: formData.client } : undefined
             }
+
+            console.log(payload, 'payload')
 
             await createTaskMutation.mutateAsync(payload as unknown as CreateTaskDTO)
         } catch (error) {
@@ -487,14 +510,17 @@ export const TasksModule = () => {
                                             </div>
                                             <UserSelect
                                                 value={formData.assignees}
-                                                onChange={(value) => setFormData(prev => ({
-                                                    ...prev,
-                                                    assignees: value
-                                                }))}
+                                                onChange={value => setFormData(prev => ({ ...prev, assignees: value }))}
                                             />
                                         </div>
                                         <div className="grid gap-1.5">
-                                            <Label className="text-xs font-body text-card-foreground uppercase font-normal">Subtasks</Label>
+                                            <ClientSelect
+                                                value={formData.client}
+                                                onChange={value => setFormData(prev => ({ ...prev, client: value }))}
+                                            />
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                            <Label htmlFor="subtasks" className="text-xs font-body text-card-foreground uppercase font-normal">Subtasks</Label>
                                             {formData.subtasks.map((subtask, index) => (
                                                 <div key={index} className="flex flex-col gap-2 border rounded-lg p-4">
                                                     <div className="flex justify-between items-center mb-2">

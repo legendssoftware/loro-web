@@ -22,7 +22,7 @@ export const fetchTasks = async (config: RequestConfig) => {
             }
         });
         return response.data;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
         return { tasks: [], message: 'Error fetching tasks' };
     }
@@ -49,12 +49,19 @@ export const fetchTasksByUser = async (ref: number) => {
 };
 
 // Create a new task
-export const createTask = async (task: CreateTaskDTO) => {
+export const createTask = async (task: CreateTaskDTO, config: RequestConfig) => {
     try {
-        const { data } = await axios.post<{ message: string }>(`${API_URL}/tasks`, task);
-        return data;
+        const response = await axios.post<{ message: string }>(`${API_URL}/tasks`, task, {
+            headers: {
+                'Authorization': `Bearer ${config?.headers?.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log(response.data, 'response')
+        return response.data;
     } catch (error) {
-        return error
+        console.error('Error creating task:', error);
+        throw error;
     }
 };
 
@@ -69,12 +76,18 @@ export const updateTask = async ({ ref, updatedTask }: { ref: number; updatedTas
 };
 
 // Delete a task
-export const deleteTask = async (ref: number) => {
+export const deleteTask = async (ref: number, config: RequestConfig) => {
     try {
-        const { data } = await axios.delete<{ message: string }>(`${API_URL}/tasks/${ref}`);
-        return data;
+        const response = await axios.delete<{ message: string }>(`${API_URL}/tasks/${ref}`, {
+            headers: {
+                'Authorization': `Bearer ${config?.headers?.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
     } catch (error) {
-        return error
+        console.error('Error deleting task:', error);
+        throw error;
     }
 };
 

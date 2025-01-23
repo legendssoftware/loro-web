@@ -26,8 +26,7 @@ export const UserSelect = ({ value, onChange }: UserSelectProps) => {
 
     // Temporary mock data until API integration
     const users: User[] = [
-        { uid: 1, name: "John Doe" },
-        { uid: 2, name: "Jane Smith" },
+        { uid: 5, name: "John Doe" },
     ]
 
     return (

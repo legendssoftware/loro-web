@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { X } from "lucide-react"
 import { CalendarIcon } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     Popover,
     PopoverContent,
@@ -38,35 +39,25 @@ import toast from 'react-hot-toast'
 import { taskFormSchema } from "@/lib/schemas/tasks"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { createTask, deleteTask, fetchTasks, updateTask } from "@/helpers/tasks"
+import type { CreateTaskDTO, UpdateTaskDTO } from "@/helpers/tasks"
+import { PageLoader } from "@/components/page-loader"
+import { SubTask, Task } from "@/lib/types/tasks"
+import { useSessionStore } from "@/store/use-session-store"
+import { RequestConfig } from "@/lib/types/tasks"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
-type Task = {
-    uid: string
-    title: string
-    description: string
-    notes?: string
-    comments?: string
-    status: string
-    priority: string
-    deadline?: Date
-    assignees: string[]
-    taskType: string
-    repetitionType?: string
-    client?: string
-    subtasks?: Array<{
-        title: string
-        description: string
-        completed?: boolean
-    }>
-}
-
 export const TasksModule = () => {
+    const { accessToken } = useSessionStore()
+    const queryClient = useQueryClient()
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
     const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false)
     const [selectedTask, setSelectedTask] = useState<Task | null>(null)
     const [errors, setErrors] = useState<{ [K in keyof TaskForm]?: string }>({})
+    const [searchQuery, setSearchQuery] = useState("")
 
     const [formData, setFormData] = useState<TaskForm>({
         description: "",
@@ -84,8 +75,127 @@ export const TasksModule = () => {
         assignees: []
     })
 
+    const config: RequestConfig = {
+        headers: {
+            token: `${accessToken}`,
+        },
+    }
+
+    const { data: tasksData, isLoading } = useQuery({
+        queryKey: ['tasks'],
+        queryFn: () => fetchTasks(config),
+        enabled: !!accessToken,
+    })
+
+    const createTaskMutation = useMutation({
+        mutationFn: (data: CreateTaskDTO) => createTask(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
+            toast.success('Task created successfully', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅',
+            })
+            setIsNewTaskModalOpen(false)
+            resetForm()
+        },
+        onError: (error: Error) => {
+            toast.error(error.message, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
+        }
+    })
+
+    const updateTaskMutation = useMutation({
+        mutationFn: ({ ref, updatedTask }: { ref: number; updatedTask: UpdateTaskDTO }) =>
+            updateTask({ ref, updatedTask }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
+            toast.success('Task updated successfully', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅',
+            })
+            setIsTaskDetailModalOpen(false)
+        }
+    })
+
+    const deleteTaskMutation = useMutation({
+        mutationFn: (ref: number) => deleteTask(ref),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] })
+            toast.success('Task deleted successfully', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅',
+            })
+            setIsTaskDetailModalOpen(false)
+        }
+    })
+
     const handleStatusChange = (value: string) => {
         setStatusFilter(value)
+    }
+
+    const resetForm = () => {
+        setFormData({
+            description: "",
+            comment: "",
+            notes: "",
+            status: "Active",
+            taskType: "other",
+            deadline: undefined,
+            priority: "medium",
+            progress: 0,
+            repetitionType: "none",
+            repetitionEndDate: undefined,
+            attachments: null,
+            subtasks: [],
+            assignees: []
+        })
+        setErrors({})
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -139,42 +249,9 @@ export const TasksModule = () => {
                 }))
             }
 
-            console.log(payload)
-
-            toast.success('Task created successfully', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
-                icon: '✅',
-            })
-            setIsNewTaskModalOpen(false)
+            await createTaskMutation.mutateAsync(payload as unknown as CreateTaskDTO)
         } catch (error) {
-            if (error instanceof Error) {
-                toast.error(error.message, {
-                    style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
-                    },
-                    duration: 5000,
-                    position: 'bottom-center',
-                    icon: '❌',
-                })
-            }
+            console.error('Error creating task:', error)
         }
     }
 
@@ -197,105 +274,63 @@ export const TasksModule = () => {
         setIsTaskDetailModalOpen(true)
     }
 
-    const tasks: Task[] = [
-        {
-            uid: "1",
-            title: "Landing page Faktory",
-            description: "Redesign website faktory with elementor, focusing on modern UI principles and responsive design",
-            notes: "Client prefers a minimalist design approach. Use their brand colors: #FF4545, #2D2D2D",
-            comments: "Initial mockups approved. Starting development phase next week.",
-            status: "active",
-            priority: "medium",
-            deadline: new Date("2024-04-15"),
-            assignees: ["MarkyMay"],
-            taskType: "Website",
-            client: "Faktory Inc.",
-            repetitionType: "none",
-            subtasks: [
-                {
-                    title: "Design System Setup",
-                    description: "Create color palette and typography system",
-                    completed: true
-                },
-                {
-                    title: "Homepage Layout",
-                    description: "Implement responsive grid system",
-                    completed: false
-                }
-            ]
-        },
-        {
-            uid: "2",
-            title: "Social Media Apps",
-            description: "Develop a cross-platform social media application focused on community engagement",
-            notes: "Using React Native for mobile and Next.js for web platform. API documentation in Notion.",
-            comments: "Backend team has completed user authentication system. Frontend development starting this sprint.",
-            status: "active",
-            priority: "high",
-            deadline: new Date("2024-05-01"),
-            assignees: ["MarkyMay", "JohnDoe"],
-            taskType: "Apps",
-            client: "SocialTech Solutions",
-            repetitionType: "weekly",
-            subtasks: [
-                {
-                    title: "Mobile App Development",
-                    description: "Develop the mobile application using React Native",
-                    completed: false
-                },
-                {
-                    title: "Web App Development",
-                    description: "Develop the web application using Next.js",
-                    completed: false
-                }
-            ]
-        },
-        {
-            uid: "3",
-            title: "Research Project Timeline",
-            description: "Strategy for research is a crucial step in ensuring a successful and organized research project",
-            notes: "Key areas to focus: market analysis, user behavior patterns, competitor analysis",
-            comments: "First phase of research completed. Team meeting scheduled for findings review.",
-            status: "pending",
-            priority: "medium",
-            deadline: new Date("2024-03-30"),
-            assignees: ["LuckyMay", "AliceSmith"],
-            taskType: "Research",
-            client: "Research Labs Co.",
-            repetitionType: "monthly",
-            subtasks: [
-                {
-                    title: "Market Analysis",
-                    description: "Conduct market analysis to identify target audience and competitors",
-                    completed: true
-                },
-                {
-                    title: "User Behavior Analysis",
-                    description: "Analyze user behavior patterns to understand their needs and preferences",
-                    completed: false
-                },
-                {
-                    title: "Competitor Analysis",
-                    description: "Analyze competitors' strategies and market position",
-                    completed: false
-                }
-            ]
+    const handleDeleteTask = async (uid: number) => {
+        try {
+            await deleteTaskMutation.mutateAsync(uid)
+        } catch (error) {
+            console.error('Error deleting task:', error)
         }
-    ]
+    }
+
+    const handleUpdateTask = async () => {
+        if (!selectedTask) return;
+
+        try {
+            await updateTaskMutation.mutateAsync({
+                ref: Number(selectedTask.uid),
+                updatedTask: {
+                    ...selectedTask,
+                    status: selectedTask.status,
+                    priority: selectedTask.priority,
+                    deadline: selectedTask.deadline,
+                }
+            });
+        } catch (error) {
+            console.error('Error updating task:', error);
+        }
+    };
+
+    if (isLoading) {
+        return <PageLoader />
+    }
+
+    console.log(tasksData?.tasks, 'tasks data')
+
+    const filteredTasks = tasksData?.tasks?.filter((task: Task) => {
+        const matchesStatus = statusFilter === "all" || task.status.toLowerCase() === statusFilter.toLowerCase()
+        const matchesSearch = searchQuery === "" ||
+            task.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesStatus && matchesSearch
+    }) || []
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
             <div className="flex flex-row items-center justify-between gap-2">
                 <h2 className="text-md font-body font-normal uppercase">Tasks Overview</h2>
                 <div className="flex flex-row items-center justify-center gap-2">
-                    <Input placeholder="search..." className="w-[300px]" />
+                    <Input
+                        placeholder="search..."
+                        className="w-[300px]"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                     <Select value={statusFilter} onValueChange={handleStatusChange}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
                             {generalStatuses?.map((status) => (
-                                <SelectItem key={status?.value} value={status?.value}>
+                                <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] font-normal uppercase">
                                     {status?.label}
                                 </SelectItem>
                             ))}
@@ -529,58 +564,65 @@ export const TasksModule = () => {
                     </Dialog>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tasks
-                    .filter(task => statusFilter === "all" || task.status === statusFilter)
-                    .map(task => (
-                        <Card
-                            key={task?.uid}
-                            className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
-                            onClick={() => handleTaskClick(task)}>
-                            <CardContent className="p-2 flex flex-col h-full justify-between gap-2">
-                                <div className="space-y-4">
-                                    <div>
-                                        <Badge
-                                            variant="secondary"
-                                            className="bg-red-100 text-red-600 hover:bg-red-100 font-body text-[10px] uppercase">
-                                            {task?.taskType}
-                                        </Badge>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {filteredTasks.map((task: Task) => (
+                    <Card
+                        key={task?.uid}
+                        className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
+                        onClick={() => handleTaskClick(task)}>
+                        <CardContent className="p-4 flex flex-col h-full justify-between gap-4">
+                            <div className="flex items-center justify-between">
+                                <Badge
+                                    variant="secondary"
+                                    className={cn(
+                                        "font-body text-[10px] uppercase",
+                                        task?.priority === "high" && "bg-red-100 text-red-600",
+                                        task?.priority === "medium" && "bg-yellow-100 text-yellow-600",
+                                        task?.priority === "low" && "bg-green-100 text-green-600"
+                                    )}>
+                                    {task?.priority}
+                                </Badge>
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "font-body text-[10px] uppercase",
+                                        task?.status === "PENDING" && "bg-yellow-100 text-yellow-600 border-yellow-200",
+                                        task?.status === "IN_PROGRESS" && "bg-blue-100 text-blue-600 border-blue-200",
+                                        task?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200"
+                                    )}>
+                                    {task?.status}
+                                </Badge>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
+                                    {task?.description}
+                                </h3>
+                                <p className="text-xs font-body font-normal uppercase text-muted-foreground">{task?.client?.name}</p>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between pt-2 border-t">
+                                    <div className="flex items-center gap-2">
+                                        <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                        <span className="text-[10px] font-body text-muted-foreground uppercase">
+                                            {task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}
+                                        </span>
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
-                                            {task?.title}
-                                        </h3>
-                                        <p className="text-[10px] font-body uppercase text-card-foreground">
-                                            {task?.description}
-                                        </p>
-                                    </div>
+                                    <Avatar className="h-8 w-8 ring-2 ring-primary">
+                                        {task?.owner?.photoURL && (
+                                            <AvatarImage
+                                                src={task?.owner?.photoURL}
+                                                alt={`${task?.owner?.name}`}
+                                            />
+                                        )}
+                                        <AvatarFallback className="bg-black text-white text-[10px] font-body uppercase">
+                                            {task?.owner?.name?.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex gap-2">
-                                        <Badge
-                                            variant="outline"
-                                            className="bg-background border-border text-card-foreground font-body text-[10px] uppercase"
-                                        >
-                                            Docs
-                                        </Badge>
-                                        <Badge
-                                            variant="outline"
-                                            className="bg-background border-border text-card-foreground font-body text-[10px] uppercase"
-                                        >
-                                            Coding
-                                        </Badge>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
-                                            <span className="text-[10px] font-body text-secondary-foreground">
-                                                {task?.assignees[0]?.charAt(0)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
             <Dialog open={isTaskDetailModalOpen} onOpenChange={setIsTaskDetailModalOpen}>
                 <DialogContent className="sm:max-w-[700px]">
@@ -589,149 +631,120 @@ export const TasksModule = () => {
                             <div className="flex items-center gap-2">
                                 <Badge
                                     variant="outline"
-                                    className={cn("font-body text-xs uppercase", selectedTask?.status === "active" && "bg-green-100 text-green-600 border-green-200", selectedTask?.status === "pending" && "bg-yellow-100 text-yellow-600 border-yellow-200", selectedTask?.status === "completed" && "bg-blue-100 text-blue-600 border-blue-200")}>
+                                    className={cn("font-body text-[10px] font-normal uppercase", selectedTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200", selectedTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200")}>
                                     {selectedTask?.status}
                                 </Badge>
                                 <span className="text-xl font-body text-card-foreground uppercase font-normal">
-                                    {selectedTask?.title}
+                                    {selectedTask?.description}
                                 </span>
                             </div>
                         </DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="h-[60vh] pr-4">
-                        <div className="grid gap-8 py-4">
+                        <div className="grid gap-6 py-4">
                             <div className="space-y-2">
                                 <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Description
+                                    Client Details
                                 </h3>
-                                <div className="h-[1px] w-full bg-border" />
-                                <p className="text-xs font-body font-normal text-card-foreground">
-                                    {selectedTask?.description}
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Name</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.name}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Email</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">address</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.address}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Phone</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.phone}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Contact Person</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.contactPerson}</p>
+                                    </div>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Notes
+                                    Task Details
                                 </h3>
-                                <div className="h-[1px] w-full bg-border" />
-                                <p className="text-xs font-body font-normal text-card-foreground">
-                                    {selectedTask?.notes || "No notes added"}
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Repetition</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.repetitionType}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">repeats until</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.deadline ? format(new Date(selectedTask?.deadline), "MMM dd, yyyy") : "No deadline"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Progress</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.progress} %</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Last Updated</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.updatedAt ? format(new Date(selectedTask?.updatedAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Created</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.createdAt ? format(new Date(selectedTask?.createdAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                    </div>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Comments
+                                    Task Milestones
                                 </h3>
-                                <div className="h-[1px] w-full bg-border" />
-                                <p className="text-xs font-body font-normal text-card-foreground">
-                                    {selectedTask?.comments || "No comments added"}
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Notes</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.notes}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Description</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.description}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-1 w-full">
+                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">comments</p>
+                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.comment}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4 w-full">
-                                    <div>
-                                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2" >
-                                            Task Details
-                                        </h3>
-                                        <div className="h-[1px] w-full bg-border mb-4" />
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-body text-muted-foreground uppercase">Priority:</span>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "font-body text-xs uppercase",
-                                                        selectedTask?.priority === "high" && "bg-red-100 text-red-600 border-red-200",
-                                                        selectedTask?.priority === "medium" && "bg-yellow-100 text-yellow-600 border-yellow-200",
-                                                        selectedTask?.priority === "low" && "bg-green-100 text-green-600 border-green-200"
-                                                    )}
-                                                >
-                                                    <p className="text-xs font-body">{selectedTask?.priority}</p>
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-body text-muted-foreground uppercase">Status:</span>
-                                                <span className="text-xs font-body uppercase">
-                                                    {selectedTask?.status}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-body text-muted-foreground uppercase">Client:</span>
-                                                <span className="text-xs font-body">
-                                                    {selectedTask?.client || "No client assigned"}
-                                                </span>
-                                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                    Related Sub Tasks
+                                </h3>
+                                {
+                                    selectedTask?.subtasks?.map((subTask: SubTask) => (
+                                        <div key={subTask?.uid} className="flex items-center justify-between border rounded px-3 py-4 cursor-pointer hover:bg-accent/40">
+                                            <p className="text-xs font-body font-normal text-card-foreground">{subTask?.title}</p>
+                                            <Badge variant="outline" className={cn(
+                                                "font-body text-[10px] uppercase",
+                                                subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200",
+                                                subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200"
+                                            )}>
+                                                {subTask?.status}
+                                            </Badge>
                                         </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2">
-                                            Time & Repetition
-                                        </h3>
-                                        <div className="h-[1px] w-full bg-border mb-4" />
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-2">
-                                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                                <span className="text-xs font-body">
-                                                    {selectedTask?.deadline ? format(selectedTask.deadline, "MMMM dd, yyyy") : "No deadline set"}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-body font-normal text-muted-foreground uppercase">Repetition:</span>
-                                                <span className="text-xs font-body uppercase">
-                                                    {selectedTask?.repetitionType || "None"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase mb-2">
-                                        Assignees
-                                    </h3>
-                                    <div className="h-[1px] w-full bg-border mb-4" />
-                                    <div className="flex flex-col gap-2">
-                                        {selectedTask?.assignees.map((assignee, index) => (
-                                            <div key={index} className="flex items-center gap-3">
-                                                <div className="w-9 h-9 border rounded-full bg-secondary flex items-center justify-center">
-                                                    <span className="text-[10px] font-body text-secondary-foreground">
-                                                        {assignee.charAt(0)}
-                                                    </span>
-                                                </div>
-                                                <span className="text-xs font-body">{assignee}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="col-span-2 space-y-1 w-full">
-                                    {selectedTask?.subtasks && selectedTask.subtasks.length > 0 && (
-                                        <div className="space-y-1 w-full">
-                                            <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                                Subtasks
-                                            </h3>
-                                            <div className="h-[1px] w-full bg-border" />
-                                            <div className="space-y-3 mt-4">
-                                                {selectedTask?.subtasks?.map((subtask, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="w-full p-4 border rounded cursor-pointer hover:border-primary/40 flex flex-row justify-between items-center">
-                                                        <div className="flex flex-col justify-between w-3/4">
-                                                            <span className="text-xs font-body">
-                                                                {subtask?.title}
-                                                            </span>
-                                                            <p className="text-xs font-body text-muted-foreground max-w-1/2">
-                                                                {subtask?.description}
-                                                            </p>
-                                                        </div>
-                                                        <p className={cn("font-body text-[8px] uppercase", subtask?.completed ? "text-green-600 border-green-200" : " text-yellow-600 border-yellow-200")}>
-                                                            {subtask?.completed ? "Completed" : "In Progress"}
-                                                        </p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                    ))
+                                }
                             </div>
                         </div>
                     </ScrollArea>
@@ -740,12 +753,14 @@ export const TasksModule = () => {
                             <Button
                                 variant="secondary"
                                 size="lg"
+                                onClick={handleUpdateTask}
                                 className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white">
-                                <p className="text-white font-normal text-xs">Edit Task</p>
+                                <p className="text-white font-normal text-xs">Update Task</p>
                             </Button>
                             <Button
                                 variant="destructive"
                                 size="lg"
+                                onClick={() => handleDeleteTask(Number(selectedTask?.uid))}
                                 className="w-full font-body text-sm uppercase">
                                 <p className="text-white font-normal text-xs">Delete Task</p>
                             </Button>

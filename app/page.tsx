@@ -162,20 +162,16 @@ export default function Dashboard() {
 			initial="hidden"
 			animate="show"
 			variants={containerVariants}
-			className="flex flex-col gap-3 sm:p-2 md:p-4 h-screen overflow-y-scroll"
-		>
+			className="flex flex-col gap-3 sm:p-2 md:p-4 h-screen overflow-y-scroll">
 			<motion.div
 				variants={containerVariants}
-				className="flex flex-wrap gap-2"
-			>
+				className="flex flex-wrap gap-2">
 				{STATS_DATA.map((stat, index) => (
 					<motion.div
 						key={`${stat.title}-${index}`}
 						variants={itemVariants}
-						className="flex-1 min-w-[240px]"
-					>
-						<Card className="shadow-sm bg-card border border-border/80 
-						:border-primary/40 transition-all duration-500 cursor-pointer">
+						className="flex-1 min-w-[240px]">
+						<Card className="shadow-sm bg-card border border-border/80  :border-primary/40 transition-all duration-500 cursor-pointer">
 							<CardContent className="p-6">
 								<div className="flex flex-col gap-4">
 									<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
@@ -206,10 +202,8 @@ export default function Dashboard() {
 					</motion.div>
 				))}
 			</motion.div>
-
 			<motion.div
-				variants={sectionVariants}
-			>
+				variants={sectionVariants}>
 				<Card className="shadow-sm bg-card border border-border/80 hover:border-primary/40 transition-all duration-500 cursor-pointer">
 					<CardHeader className="space-y-0">
 						<CardTitle className="text-md font-normal font-body uppercase">Generate Custom Report</CardTitle>
@@ -223,11 +217,7 @@ export default function Dashboard() {
 									<PopoverTrigger asChild>
 										<Button
 											variant="outline"
-											className={cn(
-												"w-full justify-start text-left font-normal",
-												!date && "text-muted-foreground"
-											)}
-										>
+											className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
 											<CalendarIcon className="mr-2 h-4 w-4" />
 											{date?.from ? (
 												date.to ? (
@@ -318,17 +308,14 @@ export default function Dashboard() {
 					</CardContent>
 				</Card>
 			</motion.div>
-
 			<motion.div
 				variants={containerVariants}
-				className="flex flex-wrap gap-4"
-			>
+				className="flex flex-wrap gap-4">
 				{quickReports.map((report, index) => (
 					<motion.div
 						key={index}
 						variants={itemVariants}
-						className="flex-1 min-w-[240px]"
-					>
+						className="flex-1 min-w-[240px]">
 						<Card className="shadow-sm transition-all duration-500 cursor-pointer border border-border/80 hover:border-primary/40">
 							<CardContent className="p-6">
 								<div className="flex items-center gap-3">

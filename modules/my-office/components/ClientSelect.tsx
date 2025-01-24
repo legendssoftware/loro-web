@@ -13,14 +13,14 @@ interface Client {
 }
 
 interface ClientSelectProps {
-    value: number | undefined
-    onChange: (value: number | undefined) => void
+    value: number | null
+    onChange: (value: number | null) => void
 }
 
 export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
     // Mock data for now - in real implementation would use React Query
     const clients: Client[] = [
-        { uid: 2, name: "Acme" },
+        { uid: 1, name: "Acme" },
     ]
 
     return (
@@ -30,7 +30,7 @@ export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
             </Label>
             <Select
                 value={value?.toString()}
-                onValueChange={value => onChange(value === 'none' ? undefined : Number(value))}>
+                onValueChange={value => onChange(value === 'none' ? null : Number(value))}>
                 <SelectTrigger className="font-body text-xs">
                     <SelectValue placeholder="Select client" />
                 </SelectTrigger>

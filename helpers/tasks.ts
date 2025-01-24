@@ -10,7 +10,7 @@ export type RequestConfig = {
 };
 
 export type CreateTaskDTO = Omit<Task, 'uid' | 'createdAt' | 'updatedAt' | 'isDeleted'> & {
-    client?: { uid: number };
+    client?: { uid: number }[];
 };
 export type UpdateTaskDTO = Partial<CreateTaskDTO>;
 

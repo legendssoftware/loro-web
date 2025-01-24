@@ -81,7 +81,7 @@ export interface Task {
     attachments?: string;
     owner?: User;
     branch?: Branch;
-    client?: { uid: number; name?: string; email?: string; address?: string; phone?: string; contactPerson?: string };
+    client?: { uid: number; name?: string; email?: string; address?: string; phone?: string; contactPerson?: string }[];
     subtasks?: SubTask[];
 }
 

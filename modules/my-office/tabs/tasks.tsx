@@ -47,8 +47,36 @@ import { SubTask, Task } from "@/lib/types/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
 import { ClientSelect } from "@/modules/my-office/components/ClientSelect"
+import { motion } from "framer-motion"
 
 type TaskForm = z.infer<typeof taskFormSchema>
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        },
+    },
+}
+
+const itemVariants = {
+    hidden: {
+        opacity: 0,
+        y: 20,
+    },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24,
+        }
+    },
+}
 
 export const TasksModule = () => {
     const { accessToken } = useSessionStore()
@@ -213,7 +241,7 @@ export const TasksModule = () => {
             attachments: null,
             subtasks: [],
             assignees: [],
-            client: undefined
+            client: null
         })
         setErrors({})
     }
@@ -267,10 +295,13 @@ export const TasksModule = () => {
                     title,
                     description
                 })),
-                client: formData?.client ? { uid: formData?.client } : null
+                client: { uid: 2 }
             }
 
+            console.log(payload, 'payload')
+
             await createTaskMutation.mutateAsync(payload as unknown as CreateTaskDTO)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             toast.error(`Failed to create task, please try again`, {
                 style: {
@@ -335,10 +366,6 @@ export const TasksModule = () => {
         }
     };
 
-    if (isLoading) {
-        return <PageLoader />
-    }
-
     const filteredTasks = tasksData?.tasks?.filter((task: Task) => {
         const matchesStatus = statusFilter === "all" || task.status.toLowerCase() === statusFilter.toLowerCase()
         const matchesSearch = searchQuery === "" ||
@@ -346,7 +373,235 @@ export const TasksModule = () => {
         return matchesStatus && matchesSearch
     }) || []
 
-    console.log(filteredTasks, 'form data')
+    const TaskCards = () => {
+        if (isLoading) {
+            return (
+                <div className="flex items-center justify-center h-screen w-full0">
+                    <PageLoader />
+                </div>
+            )
+        }
+
+        console.log(filteredTasks, 'filtered tasks')
+
+        return (
+            <>
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
+                    {filteredTasks?.map((task: Task) => (
+                        <motion.div
+                            key={task?.uid}
+                            variants={itemVariants}
+                            layout
+                        >
+                            <Card
+                                className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
+                                onClick={() => handleTaskClick(task)}>
+                                <CardContent className="p-4 flex flex-col h-full justify-between gap-4">
+                                    <div className="flex items-center justify-between">
+                                        <Badge
+                                            variant="secondary"
+                                            className={cn(
+                                                "font-body text-[10px] uppercase",
+                                                task?.priority === "high" && "bg-red-100 text-red-600",
+                                                task?.priority === "medium" && "bg-yellow-100 text-yellow-600",
+                                                task?.priority === "low" && "bg-green-100 text-green-600"
+                                            )}>
+                                            {task?.priority}
+                                        </Badge>
+                                        <Badge
+                                            variant="outline"
+                                            className={cn(
+                                                "font-body text-[10px] uppercase",
+                                                task?.status === "PENDING" && "bg-yellow-100 text-yellow-600 border-yellow-200",
+                                                task?.status === "IN_PROGRESS" && "bg-blue-100 text-blue-600 border-blue-200",
+                                                task?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200"
+                                            )}>
+                                            {task?.status}
+                                        </Badge>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
+                                            {task?.description?.length > 20 ? task?.description?.slice(0, 20) + "..." : task?.description}
+                                        </h3>
+                                        <p className="text-xs font-body font-normal uppercase text-muted-foreground">{task?.client?.[0]?.name}</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between pt-2 border-t">
+                                            <div className="flex items-center gap-2">
+                                                <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                                <span className="text-[10px] font-body text-muted-foreground uppercase">
+                                                    {task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}
+                                                </span>
+                                            </div>
+                                            <Avatar className="h-8 w-8 ring-2 ring-primary">
+                                                {task?.owner?.photoURL && (
+                                                    <AvatarImage
+                                                        src={task?.owner?.photoURL}
+                                                        alt={`${task?.owner?.name}`}
+                                                    />
+                                                )}
+                                                <AvatarFallback className="bg-black text-white text-[10px] font-body uppercase">
+                                                    {task?.owner?.name?.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </motion.div>
+                <Dialog open={isTaskDetailModalOpen} onOpenChange={setIsTaskDetailModalOpen}>
+                    <DialogContent className="sm:max-w-[700px]">
+                        <DialogHeader>
+                            <DialogTitle>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        variant="outline"
+                                        className={cn("font-body text-[10px] font-normal uppercase", selectedTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200", selectedTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200")}>
+                                        {selectedTask?.status}
+                                    </Badge>
+                                    <span className="text-xl font-body text-card-foreground uppercase font-normal">
+                                        {selectedTask?.description}
+                                    </span>
+                                </div>
+                            </DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="h-[60vh] pr-4">
+                            <div className="grid gap-6 py-4">
+                                <div className="space-y-2">
+                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                        Client Details
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Name</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.[0]?.name}</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Email</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.[0]?.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">address</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.[0]?.address}</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Phone</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.[0]?.phone}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Contact Person</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.[0]?.contactPerson}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                        Task Details
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Repetition</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.repetitionType}</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">repeats until</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.deadline ? format(new Date(selectedTask?.deadline), "MMM dd, yyyy") : "No deadline"}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Progress</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.progress} %</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Last Updated</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.updatedAt ? format(new Date(selectedTask?.updatedAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-1/2">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Created</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.createdAt ? format(new Date(selectedTask?.createdAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                        Task Milestones
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Notes</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.notes}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Description</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">comments</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.comment}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                                        Related Sub Tasks
+                                    </h3>
+                                    {
+                                        selectedTask?.subtasks?.map((subTask: SubTask) => (
+                                            <div key={subTask?.uid} className="flex items-center justify-between border rounded px-3 py-4 cursor-pointer hover:bg-accent/40">
+                                                <p className="text-xs font-body font-normal text-card-foreground">{subTask?.title}</p>
+                                                <Badge variant="outline" className={cn(
+                                                    "font-body text-[10px] uppercase",
+                                                    subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200",
+                                                    subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200"
+                                                )}>
+                                                    {subTask?.status}
+                                                </Badge>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        </ScrollArea>
+                        <DialogFooter className="flex justify-between items-center border-t pt-4">
+                            <div className="flex items-center gap-2 w-full">
+                                <Button
+                                    variant="secondary"
+                                    size="lg"
+                                    onClick={handleUpdateTask}
+                                    className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white">
+                                    <p className="text-white font-normal text-xs">Update Task</p>
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="lg"
+                                    onClick={() => handleDeleteTask(Number(selectedTask?.uid))}
+                                    className="w-full font-body text-sm uppercase">
+                                    <p className="text-white font-normal text-xs">Delete Task</p>
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </>
+        )
+    }
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
@@ -355,12 +610,12 @@ export const TasksModule = () => {
                 <div className="flex flex-row items-center justify-center gap-2">
                     <Input
                         placeholder="search..."
-                        className="w-[300px]"
+                        className="w-[300px] shadow-none bg-card"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <Select value={statusFilter} onValueChange={handleStatusChange}>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -602,210 +857,7 @@ export const TasksModule = () => {
                     </Dialog>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {filteredTasks.map((task: Task) => (
-                    <Card
-                        key={task?.uid}
-                        className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
-                        onClick={() => handleTaskClick(task)}>
-                        <CardContent className="p-4 flex flex-col h-full justify-between gap-4">
-                            <div className="flex items-center justify-between">
-                                <Badge
-                                    variant="secondary"
-                                    className={cn(
-                                        "font-body text-[10px] uppercase",
-                                        task?.priority === "high" && "bg-red-100 text-red-600",
-                                        task?.priority === "medium" && "bg-yellow-100 text-yellow-600",
-                                        task?.priority === "low" && "bg-green-100 text-green-600"
-                                    )}>
-                                    {task?.priority}
-                                </Badge>
-                                <Badge
-                                    variant="outline"
-                                    className={cn(
-                                        "font-body text-[10px] uppercase",
-                                        task?.status === "PENDING" && "bg-yellow-100 text-yellow-600 border-yellow-200",
-                                        task?.status === "IN_PROGRESS" && "bg-blue-100 text-blue-600 border-blue-200",
-                                        task?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200"
-                                    )}>
-                                    {task?.status}
-                                </Badge>
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
-                                    {task?.description}
-                                </h3>
-                                <p className="text-xs font-body font-normal uppercase text-muted-foreground">{task?.client?.name}</p>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between pt-2 border-t">
-                                    <div className="flex items-center gap-2">
-                                        <CalendarIcon className="h-3 w-3 text-muted-foreground" />
-                                        <span className="text-[10px] font-body text-muted-foreground uppercase">
-                                            {task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}
-                                        </span>
-                                    </div>
-                                    <Avatar className="h-8 w-8 ring-2 ring-primary">
-                                        {task?.owner?.photoURL && (
-                                            <AvatarImage
-                                                src={task?.owner?.photoURL}
-                                                alt={`${task?.owner?.name}`}
-                                            />
-                                        )}
-                                        <AvatarFallback className="bg-black text-white text-[10px] font-body uppercase">
-                                            {task?.owner?.name?.charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-            <Dialog open={isTaskDetailModalOpen} onOpenChange={setIsTaskDetailModalOpen}>
-                <DialogContent className="sm:max-w-[700px]">
-                    <DialogHeader>
-                        <DialogTitle>
-                            <div className="flex items-center gap-2">
-                                <Badge
-                                    variant="outline"
-                                    className={cn("font-body text-[10px] font-normal uppercase", selectedTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200", selectedTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200")}>
-                                    {selectedTask?.status}
-                                </Badge>
-                                <span className="text-xl font-body text-card-foreground uppercase font-normal">
-                                    {selectedTask?.description}
-                                </span>
-                            </div>
-                        </DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] pr-4">
-                        <div className="grid gap-6 py-4">
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Client Details
-                                </h3>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Name</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.name}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Email</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.email}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">address</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.address}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Phone</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.phone}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Contact Person</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.contactPerson}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Task Details
-                                </h3>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Repetition</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.repetitionType}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">repeats until</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.deadline ? format(new Date(selectedTask?.deadline), "MMM dd, yyyy") : "No deadline"}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Progress</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.progress} %</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Last Updated</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.updatedAt ? format(new Date(selectedTask?.updatedAt), "MMM dd, yyyy") : "No deadline"}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-1/2">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Created</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.createdAt ? format(new Date(selectedTask?.createdAt), "MMM dd, yyyy") : "No deadline"}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Task Milestones
-                                </h3>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-full">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Notes</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.notes}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-full">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Description</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.description}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col gap-1 w-full">
-                                        <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">comments</p>
-                                        <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.comment}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                    Related Sub Tasks
-                                </h3>
-                                {
-                                    selectedTask?.subtasks?.map((subTask: SubTask) => (
-                                        <div key={subTask?.uid} className="flex items-center justify-between border rounded px-3 py-4 cursor-pointer hover:bg-accent/40">
-                                            <p className="text-xs font-body font-normal text-card-foreground">{subTask?.title}</p>
-                                            <Badge variant="outline" className={cn(
-                                                "font-body text-[10px] uppercase",
-                                                subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200",
-                                                subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200"
-                                            )}>
-                                                {subTask?.status}
-                                            </Badge>
-                                        </div>
-                                    ))
-                                }
-                            </div>
-                        </div>
-                    </ScrollArea>
-                    <DialogFooter className="flex justify-between items-center border-t pt-4">
-                        <div className="flex items-center gap-2 w-full">
-                            <Button
-                                variant="secondary"
-                                size="lg"
-                                onClick={handleUpdateTask}
-                                className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white">
-                                <p className="text-white font-normal text-xs">Update Task</p>
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                size="lg"
-                                onClick={() => handleDeleteTask(Number(selectedTask?.uid))}
-                                className="w-full font-body text-sm uppercase">
-                                <p className="text-white font-normal text-xs">Delete Task</p>
-                            </Button>
-                        </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div >
+            <TaskCards />
+        </div>
     )
 }

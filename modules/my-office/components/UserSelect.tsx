@@ -6,10 +6,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { useSessionStore } from "@/store/use-session-store"
+import { RequestConfig } from "@/lib/types/tasks"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface User {
     uid: number
     name: string
+    surname: string
 }
 
 interface UserSelectProps {
@@ -18,16 +25,27 @@ interface UserSelectProps {
 }
 
 export const UserSelect = ({ value, onChange }: UserSelectProps) => {
-    // In a real implementation, we would use React Query here
-    // const { data: users, isLoading } = useQuery({
-    //     queryKey: ['users'],
-    //     queryFn: fetchUsers
-    // })
+    const { accessToken } = useSessionStore()
 
-    // Temporary mock data until API integration
-    const users: User[] = [
-        { uid: 5, name: "John Doe" },
-    ]
+    const config: RequestConfig = {
+        headers: {
+            token: `${accessToken}`,
+        },
+    }
+
+    const { data: usersData } = useQuery({
+        queryKey: ['users'],
+        queryFn: async () => {
+            const { data } = await axios.get<{ users: User[], message: string }>(`${API_URL}/user`, {
+                headers: {
+                    'Authorization': `Bearer ${config?.headers?.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            return data
+        },
+        enabled: !!accessToken,
+    })
 
     return (
         <div>
@@ -44,13 +62,13 @@ export const UserSelect = ({ value, onChange }: UserSelectProps) => {
                     <SelectItem value="none" className="font-body text-[10px] uppercase">
                         None
                     </SelectItem>
-                    {users?.map((user) => (
+                    {usersData?.users?.map((user) => (
                         <SelectItem
                             key={user?.uid}
                             value={String(user.uid)}
                             className="font-body text-[10px] uppercase"
                         >
-                            {user.name}
+                            {`${user.name} ${user.surname}`}
                         </SelectItem>
                     ))}
                 </SelectContent>

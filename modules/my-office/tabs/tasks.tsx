@@ -79,7 +79,7 @@ const itemVariants = {
 }
 
 export const TasksModule = () => {
-    const { accessToken } = useSessionStore()
+    const { accessToken, profileData } = useSessionStore()
     const queryClient = useQueryClient()
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
@@ -288,14 +288,14 @@ export const TasksModule = () => {
                 taskType: formData?.taskType,
                 deadline: formData?.deadline?.toISOString(),
                 priority: formData?.priority,
-                assignees: formData?.assignees?.map(uid => ({ uid })),
+                owner: profileData?.uid,
                 repetitionType: formData?.repetitionType,
                 attachments: formData?.attachments?.name || "",
                 subtasks: formData?.subtasks?.map(({ title, description }) => ({
                     title,
                     description
                 })),
-                client: { uid: 2 }
+                client: formData?.client
             }
 
             console.log(payload, 'payload')
@@ -382,8 +382,6 @@ export const TasksModule = () => {
             )
         }
 
-        console.log(filteredTasks, 'filtered tasks')
-
         return (
             <>
                 <motion.div
@@ -466,7 +464,7 @@ export const TasksModule = () => {
                                         {selectedTask?.status}
                                     </Badge>
                                     <span className="text-xl font-body text-card-foreground uppercase font-normal">
-                                        {selectedTask?.description}
+                                        {selectedTask?.description && selectedTask?.description?.slice(0, 20)}
                                     </span>
                                 </div>
                             </DialogTitle>
@@ -848,8 +846,20 @@ export const TasksModule = () => {
                                     </div>
                                 </ScrollArea>
                                 <DialogFooter className="mt-4 w-full border">
-                                    <Button type="submit" size="sm" className="w-full font-body text-xs font-normal uppercase text-card-foreground">
-                                        <p className="text-white">Create Task</p>
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        className="w-full font-body text-xs font-normal uppercase text-card-foreground"
+                                        disabled={createTaskMutation.isPending}
+                                    >
+                                        {createTaskMutation.isPending ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                                                <p className="text-white">Creating Task...</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-white">Create Task</p>
+                                        )}
                                     </Button>
                                 </DialogFooter>
                             </form>

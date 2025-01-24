@@ -59,11 +59,9 @@ export const createTask = async (task: CreateTaskDTO, config: RequestConfig) => 
                 'Content-Type': 'application/json'
             }
         });
-        console.log(response.data, 'response')
         return response.data;
     } catch (error) {
-        console.error('Error creating task:', error);
-        throw error;
+        return error;
     }
 };
 

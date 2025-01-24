@@ -6,6 +6,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { useSessionStore } from "@/store/use-session-store"
+import { RequestConfig } from "@/lib/types/tasks"
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface Client {
     uid: number
@@ -18,10 +23,27 @@ interface ClientSelectProps {
 }
 
 export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
-    // Mock data for now - in real implementation would use React Query
-    const clients: Client[] = [
-        { uid: 1, name: "Acme" },
-    ]
+    const { accessToken } = useSessionStore()
+
+    const config: RequestConfig = {
+        headers: {
+            token: `${accessToken}`,
+        },
+    }
+
+    const { data: clientsData } = useQuery({
+        queryKey: ['clients'],
+        queryFn: async () => {
+            const { data } = await axios.get<{ clients: Client[], message: string }>(`${API_URL}/clients`, {
+                headers: {
+                    'Authorization': `Bearer ${config?.headers?.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            return data
+        },
+        enabled: !!accessToken,
+    })
 
     return (
         <div>
@@ -38,7 +60,7 @@ export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
                     <SelectItem value="none" className="font-body text-[10px] uppercase">
                         None
                     </SelectItem>
-                    {clients?.map((client) => (
+                    {clientsData?.clients?.map((client) => (
                         <SelectItem
                             key={client?.uid}
                             value={String(client.uid)}

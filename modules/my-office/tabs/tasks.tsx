@@ -140,7 +140,11 @@ export const TasksModule = () => {
             resetForm()
         },
         onError: (error: Error) => {
-            toast.error('Failed to create task: ' + error.message, {
+            const errorMessage = error.message === "item(s) not found"
+                ? "Unable to create task. Please try again."
+                : `Failed to create task: ${error.message}`
+
+            toast.error(errorMessage, {
                 style: {
                     borderRadius: '5px',
                     background: '#333',

@@ -7,7 +7,7 @@ export const generalStatuses = [
 ] as const
 
 export const status = [
-    { value: "all", label: "All Statuses" },
+    { value: "all", label: "All" },
     { value: "Active", label: "Active" },
     { value: "Inactive", label: "Inactive" },
 ] as const

@@ -104,7 +104,7 @@ const LandingPage: React.FunctionComponent = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}>
-                            <div className="flex items-center justify-start">
+                            <div className="flex items-center justify-center">
                                 <Image src={phoneCover} height={400} width={400} alt='LORO CRM' className='rounded-xl' />
                             </div>
                         </motion.div>

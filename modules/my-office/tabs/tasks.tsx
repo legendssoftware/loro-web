@@ -408,15 +408,33 @@ export const TasksModule = () => {
                                     variant="secondary"
                                     size="lg"
                                     onClick={handleUpdateTask}
-                                    className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white">
-                                    <p className="text-white font-normal text-xs">Update Task</p>
+                                    disabled={updateTaskMutation.isPending}
+                                    className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white"
+                                >
+                                    {updateTaskMutation.isPending ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                                            <p className="text-white font-normal text-xs">Updating...</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-white font-normal text-xs">Update Task</p>
+                                    )}
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     size="lg"
                                     onClick={() => handleDeleteTask(Number(selectedTask?.uid))}
-                                    className="w-full font-body text-sm uppercase">
-                                    <p className="text-white font-normal text-xs">Delete Task</p>
+                                    disabled={deleteTaskMutation.isPending}
+                                    className="w-full font-body text-sm uppercase"
+                                >
+                                    {deleteTaskMutation.isPending ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                                            <p className="text-white font-normal text-xs">Deleting...</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-white font-normal text-xs">Delete Task</p>
+                                    )}
                                 </Button>
                             </div>
                         </DialogFooter>
@@ -424,7 +442,7 @@ export const TasksModule = () => {
                 </Dialog>
             </>
         )
-    }, [isLoading, filteredTasks, handleTaskClick, handleUpdateTask, handleDeleteTask, isTaskDetailModalOpen, selectedTask])
+    }, [isLoading, filteredTasks, handleTaskClick, handleUpdateTask, handleDeleteTask, isTaskDetailModalOpen, selectedTask, deleteTaskMutation.isPending, updateTaskMutation.isPending])
 
     const resetForm = () => {
         setFormData({

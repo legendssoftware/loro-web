@@ -91,27 +91,27 @@ export default function MyOfficePage() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="claims" className="mt-4">
-                        <Card className="p-6 flex flex-col gap-2">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <ClaimsModule />
                         </Card>
                     </TabsContent>
                     <TabsContent value="orders" className="mt-4">
-                        <Card className="p-6 flex flex-col gap-2">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <OrdersModule />
                         </Card>
                     </TabsContent>
                     <TabsContent value="staff" className="mt-4">
-                        <Card className="p-6 flex flex-col gap-2">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <StaffModule />
                         </Card>
                     </TabsContent>
                     <TabsContent value="leads" className="mt-4">
-                        <Card className="p-6 flex flex-col gap-2">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <LeadsModule />
                         </Card>
                     </TabsContent>
                     <TabsContent value="journals" className="mt-4">
-                        <Card className="p-6 flex flex-col gap-2">
+                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <JournalsModule />
                         </Card>
                     </TabsContent>

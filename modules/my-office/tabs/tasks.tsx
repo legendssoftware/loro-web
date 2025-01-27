@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { UserSelect } from "@/modules/my-office/components/UserSelect"
+import { UserSelect } from "@/modules/my-office/components/user-select"
 import * as z from 'zod'
 import toast from 'react-hot-toast'
 import { taskFormSchema } from "@/lib/schemas/tasks"
@@ -44,9 +44,9 @@ import { PageLoader } from "@/components/page-loader"
 import { SubTask, Task } from "@/lib/types/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
-import { ClientSelect } from "@/modules/my-office/components/ClientSelect"
+import { ClientSelect } from "@/modules/my-office/components/client-select"
 import { motion } from "framer-motion"
-import { TaskCard } from "@/modules/my-office/components/TaskCard"
+import { TaskCard } from "@/modules/my-office/components/task-card"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
@@ -235,13 +235,13 @@ export const TasksModule = () => {
 
         try {
             await updateTaskMutation.mutateAsync({
-                ref: Number(selectedTask.uid),
+                ref: Number(selectedTask?.uid),
                 updatedTask: {
                     ...selectedTask,
-                    status: selectedTask.status,
-                    priority: selectedTask.priority,
-                    deadline: selectedTask.deadline,
-                    client: Array.isArray(selectedTask.client) ? selectedTask.client : undefined
+                    status: selectedTask?.status,
+                    priority: selectedTask?.priority,
+                    deadline: selectedTask?.deadline,
+                    client: Array.isArray(selectedTask?.client) ? selectedTask?.client : undefined
                 }
             });
         } catch (error) {
@@ -251,7 +251,7 @@ export const TasksModule = () => {
 
     const filteredTasks = useMemo(() => {
         return tasksData?.tasks?.filter((task: Task) => {
-            const matchesStatus = statusFilter === "all" || task.status.toLowerCase() === statusFilter.toLowerCase()
+            const matchesStatus = statusFilter === "all" || task?.status.toLowerCase() === statusFilter.toLowerCase()
             const matchesSearch = searchQuery === "" ||
                 task.description?.toLowerCase().includes(searchQuery.toLowerCase())
             return matchesStatus && matchesSearch
@@ -393,11 +393,7 @@ export const TasksModule = () => {
                                         selectedTask?.subtasks?.map((subTask: SubTask) => (
                                             <div key={subTask?.uid} className="flex items-center justify-between border rounded px-3 py-4 cursor-pointer hover:bg-accent/40">
                                                 <p className="text-xs font-body font-normal text-card-foreground">{subTask?.title}</p>
-                                                <Badge variant="outline" className={cn(
-                                                    "font-body text-[10px] uppercase",
-                                                    subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200",
-                                                    subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200"
-                                                )}>
+                                                <Badge variant="outline" className={cn("font-body text-[10px] uppercase", subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200", subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200")}>
                                                     {subTask?.status}
                                                 </Badge>
                                             </div>
@@ -588,10 +584,7 @@ export const TasksModule = () => {
                                                 value={formData.notes}
                                                 onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                                                 placeholder="notes"
-                                                className={cn(
-                                                    "font-body text-xs",
-                                                    errors.notes && "border-red-500 focus-visible:ring-red-500"
-                                                )}
+                                                className={cn("font-body text-xs", errors.notes && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             {errors.notes && (
                                                 <p className="text-red-500 text-xs mt-1">{errors.notes}</p>
@@ -604,10 +597,7 @@ export const TasksModule = () => {
                                                 value={formData.comment}
                                                 onChange={e => setFormData(prev => ({ ...prev, comment: e.target.value }))}
                                                 placeholder="additional comments"
-                                                className={cn(
-                                                    "font-body text-xs",
-                                                    errors.comment && "border-red-500 focus-visible:ring-red-500"
-                                                )}
+                                                className={cn("font-body text-xs", errors.comment && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             {errors.comment && (
                                                 <p className="text-red-500 text-xs mt-1">{errors.comment}</p>
@@ -620,10 +610,7 @@ export const TasksModule = () => {
                                                 value={formData.description}
                                                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                                 placeholder="extra descriptions"
-                                                className={cn(
-                                                    "font-body text-xs",
-                                                    errors.description && "border-red-500 focus-visible:ring-red-500"
-                                                )}
+                                                className={cn("font-body text-xs", errors.description && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             {errors.description && (
                                                 <p className="text-red-500 text-xs mt-1">{errors.description}</p>
@@ -636,11 +623,7 @@ export const TasksModule = () => {
                                                     <PopoverTrigger asChild>
                                                         <Button
                                                             variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal text-xs font-body shadow-none",
-                                                                !formData?.deadline && "text-muted-foreground"
-                                                            )}
-                                                        >
+                                                            className={cn("w-full justify-start text-left font-normal text-xs font-body shadow-none", !formData?.deadline && "text-muted-foreground")}>
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                                             {formData.deadline ? (
                                                                 format(formData.deadline, "LLL dd, y")

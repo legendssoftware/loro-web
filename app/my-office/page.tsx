@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { ClaimsModule } from "@/modules/my-office/tabs/claims"
 import { OrdersModule } from "@/modules/my-office/tabs/orders"
 import { TasksModule } from "@/modules/my-office/tabs/tasks"
-import { CheckSquare, FileText, HandCoins, ShoppingBag, UserPlus, Users } from "lucide-react"
+import { CheckSquare, Users } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StaffModule } from "@/modules/my-office/tabs/staff"
 import { LeadsModule } from "@/modules/my-office/tabs/leads"
@@ -53,30 +53,6 @@ export default function MyOfficePage() {
                             value="tasks">
                             <CheckSquare size={16} strokeWidth={1.5} className="text-=card-foreground" />
                             <p className="text-xs font-normal font-body uppercase">Tasks</p>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="orders">
-                            <ShoppingBag size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Orders</p>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="claims">
-                            <HandCoins size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Claims</p>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="leads">
-                            <UserPlus size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Leads</p>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
-                            value="journals">
-                            <FileText size={16} strokeWidth={1.5} className="text-=card-foreground" />
-                            <p className="text-xs font-normal font-body uppercase">Journals</p>
                         </TabsTrigger>
                         <TabsTrigger
                             className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"

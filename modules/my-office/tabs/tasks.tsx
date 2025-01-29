@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog"
 import { useState, useCallback, useMemo } from "react"
 import { Label } from "@/components/ui/label"
-import { generalStatuses, taskTypes } from "@/data/app-data"
 import { Calendar } from "@/components/ui/calendar"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -47,6 +46,8 @@ import { RequestConfig } from "@/lib/types/tasks"
 import { ClientSelect } from "@/modules/my-office/components/client-select"
 import { motion } from "framer-motion"
 import { TaskCard } from "@/modules/my-office/components/task-card"
+import { TaskType, RepetitionType, Priority, TaskStatus, TargetCategory } from "@/lib/enums/task.enums"
+import type { ExistingTask, TaskFormData } from "@/lib/types/tasks"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
@@ -71,21 +72,30 @@ export const TasksModule = () => {
     const [errors, setErrors] = useState<{ [K in keyof TaskForm]?: string }>({})
     const [searchQuery, setSearchQuery] = useState("")
 
-    const [formData, setFormData] = useState<TaskForm>({
+    const [formData, setFormData] = useState<TaskFormData>({
+        title: "",
         description: "",
+        taskType: TaskType.OTHER,
+        priority: Priority.MEDIUM,
+        deadline: undefined,
+        repetitionType: RepetitionType.NONE,
+        repetitionEndDate: undefined,
+        attachments: [],
+        assignees: [],
+        client: {
+            uid: 0,
+            name: "",
+            email: "",
+            address: "",
+            phone: "",
+            contactPerson: ""
+        },
+        targetCategory: TargetCategory.STANDARD,
+        subtasks: [],
+        status: TaskStatus.PENDING,
         comment: "",
         notes: "",
-        status: "Active",
-        taskType: "other",
-        deadline: undefined,
-        priority: "medium",
-        progress: 0,
-        repetitionType: "none",
-        repetitionEndDate: undefined,
-        attachments: null,
-        subtasks: [],
-        assignees: [],
-        client: null
+        progress: 0
     })
 
     const config: RequestConfig = {
@@ -104,6 +114,7 @@ export const TasksModule = () => {
         mutationFn: (data: CreateTaskDTO) => createTask(data, config),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
+
             toast.success('Task created successfully', {
                 style: {
                     borderRadius: '5px',
@@ -209,16 +220,24 @@ export const TasksModule = () => {
         }
     })
 
-    const handleStatusChange = useCallback((value: string) => {
-        setStatusFilter(value)
+    const statusOptions = [
+        { value: "all", label: "All" },
+        { value: TaskStatus.PENDING, label: "Pending" },
+        { value: TaskStatus.IN_PROGRESS, label: "In Progress" },
+        { value: TaskStatus.COMPLETED, label: "Completed" },
+        { value: TaskStatus.CANCELLED, label: "Cancelled" }
+    ]
+
+    const handleStatusChange = useCallback((status: string) => {
+        setStatusFilter(status)
     }, [])
 
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value)
     }, [])
 
-    const handleTaskClick = useCallback((task: Task) => {
-        setSelectedTask(task)
+    const handleTaskClick = useCallback((task: ExistingTask) => {
+        setSelectedTask(task as Task)
         setIsTaskDetailModalOpen(true)
     }, [])
 
@@ -277,7 +296,7 @@ export const TasksModule = () => {
                     {filteredTasks?.map((task: Task) => (
                         <TaskCard
                             key={task?.uid}
-                            task={task}
+                            task={task as ExistingTask}
                             onClick={handleTaskClick}
                         />
                     ))}
@@ -302,32 +321,32 @@ export const TasksModule = () => {
                             <div className="grid gap-6 py-4">
                                 <div className="space-y-2">
                                     <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
-                                        Client Details
+                                        Clients: {selectedTask?.clients?.length} total
                                     </h3>
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-1 w-1/2">
                                             <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Name</p>
-                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.name}</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.clients?.[0]?.name}</p>
                                         </div>
                                         <div className="flex flex-col gap-1 w-1/2">
                                             <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Email</p>
-                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.email}</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.clients?.[0]?.email}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-1 w-1/2">
                                             <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">address</p>
-                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.address}</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.clients?.[0]?.address}</p>
                                         </div>
                                         <div className="flex flex-col gap-1 w-1/2">
                                             <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Phone</p>
-                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.phone}</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.clients?.[0]?.phone}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-1 w-1/2">
                                             <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Contact Person</p>
-                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.client?.contactPerson}</p>
+                                            <p className="text-xs font-body font-normal text-card-foreground">{selectedTask?.clients?.[0]?.contactPerson}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -446,22 +465,73 @@ export const TasksModule = () => {
 
     const resetForm = () => {
         setFormData({
+            title: "",
             description: "",
+            taskType: TaskType.OTHER,
+            priority: Priority.MEDIUM,
+            deadline: undefined,
+            repetitionType: RepetitionType.NONE,
+            repetitionEndDate: undefined,
+            attachments: [],
+            assignees: [],
+            client: {
+                uid: 0,
+                name: "",
+                email: "",
+                address: "",
+                phone: "",
+                contactPerson: ""
+            },
+            targetCategory: TargetCategory.STANDARD,
+            subtasks: [],
+            status: TaskStatus.PENDING,
             comment: "",
             notes: "",
-            status: "Active",
-            taskType: "other",
-            deadline: undefined,
-            priority: "medium",
-            progress: 0,
-            repetitionType: "none",
-            repetitionEndDate: undefined,
-            attachments: null,
-            subtasks: [],
-            assignees: [],
-            client: null
+            progress: 0
         })
         setErrors({})
+    }
+
+    const handleAddSubtask = () => {
+        setFormData(prev => ({
+            ...prev,
+            subtasks: [...prev.subtasks, {
+                title: "",
+                description: "",
+                status: TaskStatus.PENDING
+            }]
+        }))
+    }
+
+    const handleRemoveSubtask = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            subtasks: prev.subtasks.filter((_, i) => i !== index)
+        }))
+    }
+
+    const handleAssigneesChange = (value: { uid: number }[]) => {
+        setFormData(prev => ({ ...prev, assignees: value }))
+    }
+
+    const handleClientChange = (value: { uid: number } | null) => {
+        if (!value) return
+        setFormData(prev => ({
+            ...prev,
+            client: {
+                ...prev.client,
+                ...value
+            }
+        }))
+    }
+
+    const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (files && files.length > 0) {
+            // Convert File objects to URLs or handle them according to your needs
+            const fileUrls = Array.from(files).map(file => URL.createObjectURL(file))
+            setFormData(prev => ({ ...prev, attachments: fileUrls }))
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -471,28 +541,13 @@ export const TasksModule = () => {
 
         if (!result.success) {
             const formattedErrors = result.error.issues.reduce((acc, issue) => {
-                const path = issue.path[0] as keyof TaskForm
-                acc[path] = issue.message
+                if (typeof issue.path[0] === 'string') {
+                    acc[issue.path[0] as keyof TaskFormData] = issue.message
+                }
                 return acc
-            }, {} as { [K in keyof TaskForm]?: string })
+            }, {} as { [K in keyof TaskFormData]?: string })
 
             setErrors(formattedErrors)
-
-            toast.error('Please fix the form errors', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '❌',
-            })
             return
         }
 
@@ -500,57 +555,22 @@ export const TasksModule = () => {
 
         try {
             const payload = {
-                comment: formData?.comment,
-                notes: formData?.notes,
-                description: formData?.description,
-                taskType: formData?.taskType,
-                deadline: formData?.deadline?.toISOString(),
-                priority: formData?.priority,
+                ...formData,
+                deadline: formData.deadline?.toISOString(),
+                repetitionEndDate: formData.repetitionEndDate?.toISOString(),
                 owner: profileData?.uid,
-                repetitionType: formData?.repetitionType,
-                attachments: formData?.attachments?.name || "",
-                subtasks: formData?.subtasks?.map(({ title, description }) => ({
+                subtasks: formData.subtasks.map(({ title, description }) => ({
                     title,
-                    description
-                })),
-                client: formData?.client
+                    description,
+                    status: TaskStatus.PENDING
+                }))
             }
 
-            console.log(payload, 'payload')
-
             await createTaskMutation.mutateAsync(payload as unknown as CreateTaskDTO)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            toast.error(`Failed to create task, please try again`, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '❌',
-            })
+        } catch (err) {
+            console.error('Failed to create task:', err)
+            toast.error(`Failed to create task, please try again`)
         }
-    }
-
-    const handleAddSubtask = () => {
-        setFormData(prev => ({
-            ...prev,
-            subtasks: [...prev.subtasks, { title: "", description: "" }]
-        }))
-    }
-
-    const handleRemoveSubtask = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            subtasks: prev.subtasks.filter((_, i) => i !== index)
-        }))
     }
 
     return (
@@ -569,9 +589,9 @@ export const TasksModule = () => {
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
-                            {generalStatuses?.map((status) => (
-                                <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] font-normal uppercase">
-                                    {status?.label}
+                            {statusOptions.map((status) => (
+                                <SelectItem key={status.value} value={status.value} className="font-body text-[10px] font-normal uppercase">
+                                    {status.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -596,45 +616,76 @@ export const TasksModule = () => {
                                 <ScrollArea className="h-[60vh] pr-4">
                                     <div className="grid gap-4 py-2">
                                         <div className="grid gap-1.5">
-                                            <Label htmlFor="notes" className="text-xs font-body text-card-foreground uppercase font-normal">Notes</Label>
-                                            <Textarea
-                                                id="notes"
-                                                value={formData.notes}
-                                                onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                                                placeholder="notes"
-                                                className={cn("font-body text-xs", errors.notes && "border-red-500 focus-visible:ring-red-500")}
+                                            <Label htmlFor="title" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                Title
+                                            </Label>
+                                            <Input
+                                                id="title"
+                                                value={formData.title}
+                                                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                                placeholder="Task title"
+                                                className={cn("font-body text-xs", errors.title && "border-red-500 focus-visible:ring-red-500")}
                                             />
-                                            {errors.notes && (
-                                                <p className="text-red-500 text-xs mt-1">{errors.notes}</p>
+                                            {errors.title && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.title}</p>
                                             )}
                                         </div>
                                         <div className="grid gap-1.5">
-                                            <Label htmlFor="comment" className="text-xs font-body text-card-foreground uppercase font-normal">Comment</Label>
-                                            <Textarea
-                                                id="comment"
-                                                value={formData.comment}
-                                                onChange={e => setFormData(prev => ({ ...prev, comment: e.target.value }))}
-                                                placeholder="additional comments"
-                                                className={cn("font-body text-xs", errors.comment && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                            {errors.comment && (
-                                                <p className="text-red-500 text-xs mt-1">{errors.comment}</p>
-                                            )}
-                                        </div>
-                                        <div className="grid gap-1.5">
-                                            <Label htmlFor="description" className="text-xs font-body text-card-foreground uppercase font-normal">Description</Label>
+                                            <Label htmlFor="description" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                Description
+                                            </Label>
                                             <Textarea
                                                 id="description"
                                                 value={formData.description}
                                                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                                placeholder="extra descriptions"
+                                                placeholder="Task description"
                                                 className={cn("font-body text-xs", errors.description && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             {errors.description && (
                                                 <p className="text-red-500 text-xs mt-1">{errors.description}</p>
                                             )}
                                         </div>
-                                        <div className="grid grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-1.5">
+                                                <Label htmlFor="taskType" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                    Task Type
+                                                </Label>
+                                                <Select
+                                                    value={formData.taskType}
+                                                    onValueChange={value => setFormData(prev => ({ ...prev, taskType: value as TaskType }))}>
+                                                    <SelectTrigger className="font-body text-xs">
+                                                        <SelectValue placeholder="Select task type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {Object.values(TaskType).map((type) => (
+                                                            <SelectItem key={type} value={type} className="font-body text-[10px] uppercase">
+                                                                {type.replace('_', ' ')}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="grid gap-1.5">
+                                                <Label htmlFor="priority" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                    Priority
+                                                </Label>
+                                                <Select
+                                                    value={formData.priority}
+                                                    onValueChange={value => setFormData(prev => ({ ...prev, priority: value as Priority }))}>
+                                                    <SelectTrigger className="font-body text-xs">
+                                                        <SelectValue placeholder="Select priority" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {Object.values(Priority).map((priority) => (
+                                                            <SelectItem key={priority} value={priority} className="font-body text-[10px] uppercase">
+                                                                {priority}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-1.5">
                                                 <Label className="text-xs font-body text-card-foreground uppercase">Deadline</Label>
                                                 <Popover>
@@ -660,68 +711,88 @@ export const TasksModule = () => {
                                                     </PopoverContent>
                                                 </Popover>
                                             </div>
+
                                             <div className="grid gap-1.5">
-                                                <Label htmlFor="repetition" className="text-xs font-body text-card-foreground uppercase font-normal">Repetition</Label>
+                                                <Label className="text-xs font-body text-card-foreground uppercase">Repetition End Date</Label>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className={cn("w-full justify-start text-left font-normal text-xs font-body shadow-none", !formData?.repetitionEndDate && "text-muted-foreground")}>
+                                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                                            {formData.repetitionEndDate ? (
+                                                                format(formData.repetitionEndDate, "LLL dd, y")
+                                                            ) : (
+                                                                <span className="text-card-foreground text-xs uppercase">Pick a date</span>
+                                                            )}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={formData?.repetitionEndDate}
+                                                            onSelect={date => setFormData(prev => ({ ...prev, repetitionEndDate: date }))}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-1.5">
+                                                <Label htmlFor="repetition" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                    Repetition Type
+                                                </Label>
                                                 <Select
                                                     value={formData.repetitionType}
-                                                    onValueChange={value => setFormData(prev => ({ ...prev, repetitionType: value }))}>
+                                                    onValueChange={value => setFormData(prev => ({ ...prev, repetitionType: value as RepetitionType }))}>
                                                     <SelectTrigger className="font-body text-xs">
-                                                        <SelectValue placeholder="Select repetition" />
+                                                        <SelectValue placeholder="Select repetition type" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="none" className="font-body text-[10px] uppercase">None</SelectItem>
-                                                        <SelectItem value="daily" className="font-body text-[10px] uppercase">Daily</SelectItem>
-                                                        <SelectItem value="weekly" className="font-body text-[10px] uppercase">Weekly</SelectItem>
-                                                        <SelectItem value="monthly" className="font-body text-[10px] uppercase">Monthly</SelectItem>
+                                                        {Object.values(RepetitionType).map((type) => (
+                                                            <SelectItem key={type} value={type} className="font-body text-[10px] uppercase">
+                                                                {type}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+
                                             <div className="grid gap-1.5">
-                                                <Label htmlFor="priority" className="text-xs font-body text-card-foreground uppercase font-normal">Priority</Label>
+                                                <Label htmlFor="targetCategory" className="text-xs font-body text-card-foreground uppercase font-normal">
+                                                    Target Category
+                                                </Label>
                                                 <Select
-                                                    value={formData.priority}
-                                                    onValueChange={value => setFormData(prev => ({ ...prev, priority: value }))}>
+                                                    value={formData.targetCategory}
+                                                    onValueChange={value => setFormData(prev => ({ ...prev, targetCategory: value as TargetCategory }))}>
                                                     <SelectTrigger className="font-body text-xs">
-                                                        <SelectValue placeholder="Select priority" />
+                                                        <SelectValue placeholder="Select target category" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="low" className="font-body text-[10px] uppercase">Low</SelectItem>
-                                                        <SelectItem value="medium" className="font-body text-[10px] uppercase">Medium</SelectItem>
-                                                        <SelectItem value="high" className="font-body text-[10px] uppercase">High</SelectItem>
+                                                        {Object.values(TargetCategory).map((category) => (
+                                                            <SelectItem key={category} value={category} className="font-body text-[10px] uppercase">
+                                                                {category}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-1.5">
-                                                <Label htmlFor="taskType" className="text-xs font-body text-card-foreground uppercase font-normal">
-                                                    Task Type
-                                                </Label>
-                                                <Select
-                                                    value={formData.taskType}
-                                                    onValueChange={value => setFormData(prev => ({ ...prev, taskType: value }))}>
-                                                    <SelectTrigger className="font-body text-xs">
-                                                        <SelectValue placeholder="Select task type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {taskTypes?.map((type) => (
-                                                            <SelectItem key={type?.value} value={type?.value} className="font-body text-[10px] uppercase">
-                                                                {type?.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <UserSelect
+                                                    value={formData.assignees}
+                                                    onChange={handleAssigneesChange}
+                                                />
                                             </div>
-                                            <UserSelect
-                                                value={formData.assignees}
-                                                onChange={value => setFormData(prev => ({ ...prev, assignees: value }))}
-                                            />
-                                        </div>
-                                        <div className="grid gap-1.5">
-                                            <ClientSelect
-                                                value={formData.client}
-                                                onChange={value => setFormData(prev => ({ ...prev, client: value }))}
-                                            />
+
+                                            <div className="grid gap-1.5">
+                                                <ClientSelect
+                                                    value={formData.client}
+                                                    onChange={handleClientChange}
+                                                />
+                                            </div>
                                         </div>
                                         <div className="grid gap-1.5">
                                             <Label htmlFor="subtasks" className="text-xs font-body text-card-foreground uppercase font-normal">Subtasks</Label>
@@ -774,21 +845,25 @@ export const TasksModule = () => {
                                                 Add Subtask
                                             </Button>
                                         </div>
+
                                         <div className="grid gap-1.5">
                                             <Label htmlFor="attachments" className="text-xs font-body text-card-foreground uppercase font-normal">Attachments</Label>
                                             <Input
                                                 id="attachments"
                                                 type="file"
-                                                onChange={e => setFormData(prev => ({ ...prev, attachments: e.target.files?.[0] || null }))}
+                                                multiple
+                                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                                                onChange={handleAttachmentChange}
+                                                className="font-body text-xs"
                                             />
                                         </div>
                                     </div>
                                 </ScrollArea>
-                                <DialogFooter className="mt-4 w-full border">
+                                <DialogFooter className="mt-4 w-full border-t pt-4">
                                     <Button
                                         type="submit"
-                                        size="sm"
-                                        className="w-full font-body text-xs font-normal uppercase text-card-foreground"
+                                        size="lg"
+                                        className="w-full font-body text-xs font-normal uppercase bg-violet-500 hover:bg-violet-600 text-white"
                                         disabled={createTaskMutation.isPending}
                                     >
                                         {createTaskMutation.isPending ? (

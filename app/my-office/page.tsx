@@ -2,14 +2,10 @@
 
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
-import { ClaimsModule } from "@/modules/my-office/tabs/claims"
-import { OrdersModule } from "@/modules/my-office/tabs/orders"
 import { TasksModule } from "@/modules/my-office/tabs/tasks"
 import { CheckSquare, Users } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StaffModule } from "@/modules/my-office/tabs/staff"
-import { LeadsModule } from "@/modules/my-office/tabs/leads"
-import { JournalsModule } from "@/modules/my-office/tabs/journals"
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -66,29 +62,9 @@ export default function MyOfficePage() {
                             <TasksModule />
                         </Card>
                     </TabsContent>
-                    <TabsContent value="claims" className="mt-4">
-                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
-                            <ClaimsModule />
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="orders" className="mt-4">
-                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
-                            <OrdersModule />
-                        </Card>
-                    </TabsContent>
                     <TabsContent value="staff" className="mt-4">
                         <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
                             <StaffModule />
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="leads" className="mt-4">
-                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
-                            <LeadsModule />
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="journals" className="mt-4">
-                        <Card className="flex flex-col gap-2 bg-card/20 border-0 shadow-none">
-                            <JournalsModule />
                         </Card>
                     </TabsContent>
                 </Tabs>

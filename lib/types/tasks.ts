@@ -1,4 +1,5 @@
 import { Branch } from "./branch";
+import { TaskType, RepetitionType, Priority, TaskStatus, TargetCategory } from "../enums/task.enums";
 
 export type User = {
     uid: number;
@@ -39,13 +40,6 @@ export enum TaskPriority {
     LOW = 'low'
 }
 
-export enum TaskStatus {
-    PENDING = 'PENDING',
-    IN_PROGRESS = 'IN_PROGRESS',
-    COMPLETED = 'COMPLETED',
-    CANCELLED = 'CANCELLED'
-}
-
 export enum TaskRepetition {
     NONE = 'NONE',
     DAILY = 'DAILY',
@@ -54,35 +48,73 @@ export enum TaskRepetition {
 }
 
 export interface SubTask {
-    uid: string;
+    uid?: string;
     title: string;
     description?: string;
     status: TaskStatus;
-    createdAt: string;
-    updatedAt: string;
 }
 
-export interface Task {
-    uid: number;
+export interface TaskFormData {
+    title: string;
     description: string;
+    taskType: TaskType;
+    priority: Priority;
+    deadline?: Date;
+    repetitionType: RepetitionType;
+    repetitionEndDate?: Date;
+    attachments?: string[];
+    assignees: { uid: number }[];
+    client: {
+        uid: number;
+        name?: string;
+        email?: string;
+        address?: string;
+        phone?: string;
+        contactPerson?: string;
+    };
+    targetCategory: TargetCategory;
+    subtasks: SubTask[];
+    status: TaskStatus;
     comment?: string;
     notes?: string;
-    createdAt: string;
-    updatedAt: string;
-    status: string;
-    taskType: string;
-    deadline?: string;
-    isDeleted: boolean;
-    priority: string;
     progress: number;
-    repetitionType: string;
+}
+
+export interface Task extends Omit<TaskFormData, 'deadline' | 'repetitionEndDate'> {
+    uid?: number;
+    deadline?: string;
     repetitionEndDate?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    isDeleted?: boolean;
     lastCompletedAt?: string;
-    attachments?: string;
     owner?: User;
     branch?: Branch;
-    client?: { uid: number; name?: string; email?: string; address?: string; phone?: string; contactPerson?: string };
-    subtasks?: SubTask[];
+    clients?: Client[];
+}
+
+export interface ExistingTask extends Omit<TaskFormData, 'deadline' | 'repetitionEndDate'> {
+    uid: number;
+    deadline: string | null;
+    repetitionEndDate: string | null;
+    startDate: string | null;
+    lastCompletedAt: string | null;
+    isDeleted: boolean;
+    isOverdue: boolean;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: User | null;
+    assignees: User[];
+    clients: Client[];
+    subtasks: {
+        uid: string;
+        title: string;
+        description: string;
+        createdAt: string;
+        updatedAt: string;
+        status: TaskStatus;
+        isDeleted: boolean;
+    }[];
 }
 
 export type RequestConfig = {

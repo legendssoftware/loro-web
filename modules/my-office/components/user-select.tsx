@@ -20,8 +20,8 @@ interface User {
 }
 
 interface UserSelectProps {
-    value: number[]
-    onChange: (value: number[]) => void
+    value: { uid: number }[];
+    onChange: (value: { uid: number }[]) => void;
 }
 
 export const UserSelect = ({ value, onChange }: UserSelectProps) => {
@@ -53,8 +53,12 @@ export const UserSelect = ({ value, onChange }: UserSelectProps) => {
                 Assignees
             </Label>
             <Select
-                value={value?.map(String)?.join(',')}
-                onValueChange={value => onChange([Number(value)])}>
+                value={value.map(v => v.uid.toString()).join(",")}
+                onValueChange={(val) => {
+                    const uids = val.split(",").filter(Boolean).map(id => ({ uid: parseInt(id, 10) }))
+                    onChange(uids)
+                }}
+            >
                 <SelectTrigger className="font-body text-xs">
                     <SelectValue placeholder="Select assignees" />
                 </SelectTrigger>

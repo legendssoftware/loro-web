@@ -18,11 +18,23 @@ interface Client {
 }
 
 interface ClientSelectProps {
-    value: number | null
-    onChange: (value: number | null) => void
+    value: {
+        uid: number;
+        name?: string;
+        email?: string;
+        address?: string;
+        phone?: string;
+        contactPerson?: string;
+    };
+    onChange: (value: { uid: number } | null) => void;
+    disabled?: boolean;
 }
 
-export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
+export const ClientSelect = ({
+    value,
+    onChange,
+    disabled = false
+}: ClientSelectProps) => {
     const { accessToken } = useSessionStore()
 
     const config: RequestConfig = {
@@ -45,14 +57,23 @@ export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
         enabled: !!accessToken,
     })
 
+    const handleChange = (newValue: string) => {
+        if (newValue === 'none') {
+            onChange(null);
+        } else {
+            onChange({ uid: Number(newValue) });
+        }
+    }
+
     return (
-        <div>
+        <div className="grid gap-1.5">
             <Label htmlFor="client" className="text-xs font-body text-card-foreground uppercase font-normal">
                 Client
             </Label>
             <Select
-                value={value?.toString()}
-                onValueChange={value => onChange(value === 'none' ? null : Number(value))}>
+                value={value.uid.toString()}
+                onValueChange={(val) => onChange({ uid: parseInt(val, 10) })}
+                disabled={disabled}>
                 <SelectTrigger className="font-body text-xs">
                     <SelectValue placeholder="Select client" />
                 </SelectTrigger>
@@ -62,8 +83,8 @@ export const ClientSelect = ({ value, onChange }: ClientSelectProps) => {
                     </SelectItem>
                     {clientsData?.clients?.map((client) => (
                         <SelectItem
-                            key={client?.uid}
-                            value={String(client.uid)}
+                            key={client.uid}
+                            value={client.uid.toString()}
                             className="font-body text-[10px] uppercase"
                         >
                             {client.name}

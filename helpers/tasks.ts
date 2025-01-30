@@ -68,7 +68,6 @@ export const createTask = async (task: CreateTaskDTO, config: RequestConfig) => 
 // Update a task
 export const updateTask = async ({ ref, updatedTask, config }: { ref: number; updatedTask: UpdateTaskDTO; config: RequestConfig }) => {
     try {
-        console.log(ref, updatedTask)
         const { data } = await axios.patch<{ message: string }>(`${API_URL}/tasks/${ref}`, updatedTask, {
             headers: {
                 'Authorization': `Bearer ${config?.headers?.token}`,
@@ -92,7 +91,6 @@ export const deleteTask = async (ref: number, config: RequestConfig) => {
         });
         return response.data;
     } catch (error) {
-        console.error('Error deleting task:', error);
         throw error;
     }
 };

@@ -31,8 +31,6 @@ const itemVariants = {
 }
 
 export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
-    console.log(task, 'task')
-
     return (
         <motion.div
             variants={itemVariants}
@@ -70,7 +68,7 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                     </div>
                     <div className="space-y-2">
                         <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
-                            {task?.description?.length > 20 ? task?.description?.slice(0, 20) + "..." : task?.description}
+                            {task?.title?.length > 20 ? task?.title?.slice(0, 20) + "..." : task?.title}
                         </h3>
                         <p className="text-xs font-body font-normal uppercase text-muted-foreground">
                             {task?.clients?.length > 1

@@ -59,6 +59,6 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
             </AnimatePresence>
             <ReactQueryDevtools initialIsOpen={false} />
             <Toaster position="bottom-center" reverseOrder={false} />
-        </QueryClientProvider>
+        </QueryClientProvider >
     );
 }

@@ -31,17 +31,16 @@ import {
 import { format } from "date-fns"
 import { UserSelect } from "./user-select"
 import { ClientSelect } from "./client-select"
-import { TaskType, Priority, TaskStatus, RepetitionType } from "@/lib/enums/task.enums"
 import { updateTask } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
+import { TaskType, Priority, TaskStatus, RepetitionType } from "@/lib/enums/task.enums"
 
 interface TaskDetailModalProps {
     isOpen: boolean
     onOpenChange: (open: boolean) => void
     selectedTask: ExistingTask | null
-    onUpdate: () => Promise<void>
     onDelete: (uid: number) => Promise<void>
     isUpdating: boolean
     isDeleting: boolean
@@ -204,7 +203,7 @@ const TaskDetailModalComponent = ({
                                 {selectedTask?.status}
                             </Badge>
                             <span className="text-xl font-body text-card-foreground uppercase font-normal">
-                                {selectedTask?.description && selectedTask?.description?.slice(0, 20)}
+                                {selectedTask?.title && selectedTask?.title?.slice(0, 20)}
                             </span>
                         </div>
                     </DialogTitle>

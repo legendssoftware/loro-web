@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { deleteTask, fetchTasks, updateTask } from "@/helpers/tasks"
 import type { UpdateTaskDTO } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
-import { RequestConfig, TaskFormData } from "@/lib/types/tasks"
+import { RequestConfig } from "@/lib/types/tasks"
 import { ExistingTask } from "@/lib/types/tasks"
 import { TaskList } from "../components/task-list"
 import { TaskDetailModal } from "../components/task-detail-modal"
@@ -133,45 +133,6 @@ export const TasksModule = () => {
         }
     }, [deleteTaskMutation])
 
-    const handleUpdateTask = useCallback(async (formData: TaskFormData) => {
-        if (!selectedTask) return;
-
-        try {
-            const payload = {
-                ...selectedTask,
-                status: formData?.status || 'PENDING',
-                priority: formData?.priority,
-                deadline: formData?.deadline || undefined,
-                repetitionEndDate: formData?.repetitionEndDate || undefined,
-                client: [{ uid: 1 }]
-            }
-
-            console.log(payload, 'payload')
-
-            // await updateTaskMutation.mutateAsync({
-            //     ref: Number(selectedTask?.uid),
-            //     updatedTask: payload
-            // });
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            toast.error('Failed to update task', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '❌',
-            })
-        }
-    }, [selectedTask, updateTaskMutation]);
-
     return (
         <div className="w-full h-full flex flex-col gap-4">
             <TaskList
@@ -184,7 +145,6 @@ export const TasksModule = () => {
                 isOpen={isTaskDetailModalOpen}
                 onOpenChange={setIsTaskDetailModalOpen}
                 selectedTask={selectedTask}
-                onUpdate={handleUpdateTask}
                 onDelete={handleDeleteTask}
                 isUpdating={updateTaskMutation.isPending}
                 isDeleting={deleteTaskMutation.isPending}

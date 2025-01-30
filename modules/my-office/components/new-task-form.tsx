@@ -27,6 +27,7 @@ import { TaskType, RepetitionType, Priority, TaskStatus, TargetCategory } from "
 import { taskFormSchema } from "@/lib/schemas/tasks"
 import type { CreateTaskDTO } from "@/helpers/tasks"
 import type { z } from 'zod'
+import { useSessionStore } from "@/store/use-session-store"
 
 type TaskForm = z.infer<typeof taskFormSchema>
 
@@ -62,6 +63,7 @@ const initialFormData: TaskFormData = {
 }
 
 export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
+    const { profileData } = useSessionStore()
     const [formData, setFormData] = useState<TaskFormData>(initialFormData)
     const [errors, setErrors] = useState<{ [K in keyof TaskForm]?: string }>({})
 
@@ -134,7 +136,8 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                     title,
                     description,
                     status: TaskStatus.PENDING
-                }))
+                })),
+                createdBy: profileData?.uid
             }
 
             await onSubmit(payload as unknown as CreateTaskDTO)

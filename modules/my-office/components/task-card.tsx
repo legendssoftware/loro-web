@@ -65,7 +65,7 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                                 task?.status === "IN_PROGRESS" && "bg-blue-100 text-blue-600 border-blue-200",
                                 task?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200"
                             )}>
-                            {task?.status}
+                            {task?.status && task?.status?.replace("_", " ")}
                         </Badge>
                     </div>
                     <div className="space-y-2">

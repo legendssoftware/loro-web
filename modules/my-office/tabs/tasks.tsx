@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { deleteTask, fetchTasks, updateTask } from "@/helpers/tasks"
 import type { UpdateTaskDTO } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
-import { RequestConfig } from "@/lib/types/tasks"
+import { RequestConfig, TaskFormData } from "@/lib/types/tasks"
 import { ExistingTask } from "@/lib/types/tasks"
 import { TaskList } from "../components/task-list"
 import { TaskDetailModal } from "../components/task-detail-modal"
@@ -29,7 +29,7 @@ export const TasksModule = () => {
 
     const updateTaskMutation = useMutation({
         mutationFn: ({ ref, updatedTask }: { ref: number; updatedTask: UpdateTaskDTO }) =>
-            updateTask({ ref, updatedTask }),
+            updateTask({ ref, updatedTask, config }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task updated successfully', {
@@ -48,6 +48,20 @@ export const TasksModule = () => {
                 icon: '✅',
             })
             setIsTaskDetailModalOpen(false)
+        },
+        onError: (error: Error) => {
+            toast.error('Failed to update task: ' + error.message, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+            })
         }
     })
 
@@ -99,39 +113,62 @@ export const TasksModule = () => {
     const handleDeleteTask = useCallback(async (uid: number) => {
         try {
             await deleteTaskMutation.mutateAsync(uid)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error('Error deleting task:', error)
+            toast.error('Failed to delete task', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
         }
     }, [deleteTaskMutation])
 
-    const handleUpdateTask = useCallback(async () => {
+    const handleUpdateTask = useCallback(async (formData: TaskFormData) => {
         if (!selectedTask) return;
 
         try {
-            const clientData = selectedTask?.clients?.[0]
+            const payload = {
+                ...selectedTask,
+                status: formData?.status || 'PENDING',
+                priority: formData?.priority,
+                deadline: formData?.deadline || undefined,
+                repetitionEndDate: formData?.repetitionEndDate || undefined,
+                client: [{ uid: 1 }]
+            }
 
-            const clientArray = clientData ? [{
-                uid: clientData.uid,
-                name: clientData.name || undefined,
-                email: clientData.email || undefined,
-                address: clientData.address || undefined,
-                phone: clientData.phone || undefined,
-                contactPerson: clientData.contactPerson || undefined
-            }] : []
+            console.log(payload, 'payload')
 
-            await updateTaskMutation.mutateAsync({
-                ref: Number(selectedTask?.uid),
-                updatedTask: {
-                    ...selectedTask,
-                    status: selectedTask?.status || 'PENDING',
-                    priority: selectedTask?.priority,
-                    deadline: selectedTask?.deadline || undefined,
-                    repetitionEndDate: selectedTask?.repetitionEndDate || undefined,
-                    client: clientArray
-                }
-            });
+            // await updateTaskMutation.mutateAsync({
+            //     ref: Number(selectedTask?.uid),
+            //     updatedTask: payload
+            // });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error('Error updating task:', error);
+            toast.error('Failed to update task', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
         }
     }, [selectedTask, updateTaskMutation]);
 

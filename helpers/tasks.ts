@@ -66,9 +66,15 @@ export const createTask = async (task: CreateTaskDTO, config: RequestConfig) => 
 };
 
 // Update a task
-export const updateTask = async ({ ref, updatedTask }: { ref: number; updatedTask: UpdateTaskDTO }) => {
+export const updateTask = async ({ ref, updatedTask, config }: { ref: number; updatedTask: UpdateTaskDTO; config: RequestConfig }) => {
     try {
-        const { data } = await axios.patch<{ message: string }>(`${API_URL}/tasks/${ref}`, updatedTask);
+        console.log(ref, updatedTask)
+        const { data } = await axios.patch<{ message: string }>(`${API_URL}/tasks/${ref}`, updatedTask, {
+            headers: {
+                'Authorization': `Bearer ${config?.headers?.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
         return data;
     } catch (error) {
         return error

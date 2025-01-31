@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Building2, Settings } from "lucide-react"
+import { LayoutDashboard, Building2 } from "lucide-react"
 import {
     Sheet,
     SheetContent,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSessionStore } from "@/store/use-session-store"
 
 interface SideDrawerProps {
     isOpen: boolean
@@ -28,15 +29,39 @@ const navigationItems = [
         icon: <Building2 size={18} strokeWidth={1.5} />,
         href: "/my-office"
     },
-    {
-        title: "SETTINGS",
-        icon: <Settings size={18} strokeWidth={1.5} />,
-        href: "/settings"
-    },
 ]
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const pathname = usePathname()
+    const { profileData } = useSessionStore()
+
+    const LicenseInfo = () => {
+        if (!profileData?.licenseInfo) {
+            return null
+        }
+
+        const { plan, status } = profileData?.licenseInfo
+
+        return (
+            <div className="px-2 py-4 border-t border-border/10">
+                <div className="flex flex-col gap-2 p-3 rounded bg-accent/30">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 flex-row">
+                            <div className="flex flex-col gap-0.5">
+                                <p className="text-[10px] font-body text-muted-foreground uppercase">
+                                    My PLAN
+                                </p>
+                                <p className="text-[11px] font-body font-medium text-card-foreground uppercase">
+                                    {plan}
+                                </p>
+                            </div>
+                        </div>
+                        <div className={cn("w-3 h-3 rounded-full", status.toLowerCase() === "active" ? "bg-emerald-500" : "bg-red-500")} />
+                    </div>
+                </div>
+            </div >
+        )
+    }
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
@@ -81,6 +106,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                         })}
                     </div>
                 </div>
+                {profileData?.licenseInfo && <LicenseInfo />}
                 <div className="p-6 mt-auto border-t border-border/10">
                     <p className="text-[10px] font-body uppercase text-center text-card-foreground font-normal">
                         LORO CRM

@@ -11,6 +11,63 @@ import {
 } from "@/components/ui/select"
 import { CalendarClock, HandCoins, ShoppingBag, UserPlus, Zap, BookOpen, CheckSquare, Store } from "lucide-react"
 import { Sparkline } from "@/components/ui/sparkline"
+import { motion } from "framer-motion"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { DateRange } from "react-day-picker"
+import { Calendar } from "@/components/ui/calendar"
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import React from "react"
+
+// Animation variants
+const containerVariants = {
+	hidden: { opacity: 0 },
+	show: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.1,
+			delayChildren: 0.3,
+		},
+	},
+}
+
+const itemVariants = {
+	hidden: {
+		opacity: 0,
+		y: 20,
+	},
+	show: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			type: "spring",
+			stiffness: 300,
+			damping: 24,
+		}
+	},
+}
+
+const sectionVariants = {
+	hidden: {
+		opacity: 0,
+		y: 40,
+	},
+	show: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			type: "spring",
+			stiffness: 300,
+			damping: 24,
+			delay: 0.4,
+		}
+	},
+}
 
 // Move static data to constants
 const STATS_DATA = [
@@ -95,137 +152,181 @@ const quickReports = [
 ]
 
 export default function Dashboard() {
+	const [date, setDate] = React.useState<DateRange | undefined>({
+		from: new Date(),
+		to: new Date(),
+	})
+
 	return (
-		<div className="flex flex-col gap-3 sm:p-2 md:p-4 h-screen overflow-y-scroll">
-			<div className="flex flex-wrap gap-2">
+		<motion.div
+			initial="hidden"
+			animate="show"
+			variants={containerVariants}
+			className="flex flex-col gap-3 sm:p-2 md:p-4 h-screen overflow-y-scroll">
+			<motion.div
+				variants={containerVariants}
+				className="flex flex-wrap gap-2">
 				{STATS_DATA.map((stat, index) => (
-					<Card
+					<motion.div
 						key={`${stat.title}-${index}`}
-						className="flex-1 min-w-[240px] shadow-sm bg-card border border-border/80 hover:border-primary/40 transition-colors duration-500 cursor-pointer"
-					>
-						<CardContent className="p-6">
-							<div className="flex flex-col gap-4">
-								<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
-									{stat.title}
-								</p>
-								<div className="flex flex-col gap-2">
-									<h2 className="text-2xl font-semibold font-body">
-										{stat.value}
-									</h2>
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-2">
-											<span className={`text-xs font-body ${stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
-												{stat.change}
-											</span>
-											<span className="text-[8px] font-body text-muted-foreground font-normal uppercase">
-												vs previous month
-											</span>
+						variants={itemVariants}
+						className="flex-1 min-w-[240px]">
+						<Card className="shadow-sm bg-card border border-border/80  :border-primary/40 transition-all duration-500 cursor-pointer">
+							<CardContent className="p-6">
+								<div className="flex flex-col gap-4">
+									<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
+										{stat.title}
+									</p>
+									<div className="flex flex-col gap-2">
+										<h2 className="text-2xl font-semibold font-body">
+											{stat.value}
+										</h2>
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-2">
+												<span className={`text-xs font-body ${stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
+													{stat.change}
+												</span>
+												<span className="text-[8px] font-body text-muted-foreground font-normal uppercase">
+													vs previous month
+												</span>
+											</div>
+											<Sparkline
+												data={stat.sparkline}
+												color={stat.trend === 'up' ? '#10b981' : '#f43f5e'}
+											/>
 										</div>
-										<Sparkline
-											data={stat.sparkline}
-											color={stat.trend === 'up' ? '#10b981' : '#f43f5e'}
-										/>
 									</div>
 								</div>
-							</div>
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
+					</motion.div>
 				))}
-			</div>
-			<Card className="shadow-sm bg-card border border-border/80 hover:border-primary/40 ease-in-out duration-500 cursor-pointer">
-				<CardHeader className="space-y-0">
-					<CardTitle className="text-md font-normal font-body uppercase">Generate Custom Report</CardTitle>
-					<p className="text-muted-foreground font-body uppercase font-normal text-[10px]">Select date range, report type, and store to generate a custom report</p>
-				</CardHeader>
-				<CardContent>
-					<div className="flex flex-col md:flex-row gap-6">
-						<div className="flex-1">
-							<label className="text-xs mb-2 block font-body uppercase font-normal">Date Range</label>
-							<Select>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder="Select date range..." />
-								</SelectTrigger>
-								<SelectContent>
-									{/* TODO: Add date range picker */}
-								</SelectContent>
-							</Select>
+			</motion.div>
+			<motion.div
+				variants={sectionVariants}>
+				<Card className="shadow-sm bg-card border border-border/80 hover:border-primary/40 transition-all duration-500 cursor-pointer">
+					<CardHeader className="space-y-0">
+						<CardTitle className="text-md font-normal font-body uppercase">Generate Custom Report</CardTitle>
+						<p className="text-muted-foreground font-body uppercase font-normal text-[10px]">Select date range, report type, and store to generate a custom report</p>
+					</CardHeader>
+					<CardContent>
+						<div className="flex flex-col md:flex-row gap-6">
+							<div className="flex-1">
+								<label className="text-xs mb-2 block font-body uppercase font-normal">Date Range</label>
+								<Popover>
+									<PopoverTrigger asChild>
+										<Button
+											variant="outline"
+											className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
+											<CalendarIcon className="mr-2 h-4 w-4" />
+											{date?.from ? (
+												date.to ? (
+													<>
+														{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+													</>
+												) : (
+													format(date.from, "LLL dd, y")
+												)
+											) : (
+												<span className="text-[10px] font-body uppercase font-normal">Pick a date range</span>
+											)}
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-0" align="start">
+										<Calendar
+											initialFocus
+											mode="range"
+											defaultMonth={date?.from}
+											selected={date}
+											onSelect={setDate}
+											numberOfMonths={2}
+											className="rounded-md border"
+										/>
+									</PopoverContent>
+								</Popover>
+							</div>
+							<div className="flex-1">
+								<label className="text-xs mb-2 block font-body uppercase font-normal">Time Period</label>
+								<Select>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="Select time period..." />
+									</SelectTrigger>
+									<SelectContent>
+										{TIME_OPTIONS.map((option) => (
+											<SelectItem key={option?.value} value={option?.value}>
+												<div className="flex items-center gap-2">
+													{option?.icon}
+													<p className="text-[10px] font-body uppercase font-normal">{option?.label}</p>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="flex-1 space-x-0">
+								<label className="text-xs mb-2 block font-body uppercase font-normal">Report Type</label>
+								<Select>
+									<SelectTrigger>
+										<SelectValue placeholder="Select report type..." />
+									</SelectTrigger>
+									<SelectContent>
+										{Object.entries(REPORT_OPTIONS).map(([key, option]) => (
+											<SelectItem key={key} value={key}>
+												<div className="flex items-center gap-2">
+													{option.icon}
+													<p className="text-[10px] font-body uppercase font-normal">{option.label}</p>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="flex-1">
+								<label className="text-xs mb-2 block font-body uppercase font-normal">Store</label>
+								<Select>
+									<SelectTrigger>
+										<SelectValue placeholder="Select store..." />
+									</SelectTrigger>
+									<SelectContent>
+										{STORE_OPTIONS.map((option) => (
+											<SelectItem key={option?.value} value={option?.value}>
+												<div className="flex items-center gap-2">
+													{option?.icon}
+													<p className="text-[10px] font-body uppercase font-normal">{option?.label}</p>
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
-						<div className="flex-1">
-							<label className="text-xs mb-2 block font-body uppercase font-normal">Time Period</label>
-							<Select>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder="Select time period..." />
-								</SelectTrigger>
-								<SelectContent>
-									{TIME_OPTIONS.map((option) => (
-										<SelectItem key={option?.value} value={option?.value}>
-											<div className="flex items-center gap-2">
-												{option?.icon}
-												<p className="text-[10px] font-body uppercase font-normal">{option?.label}</p>
-											</div>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+						<div className="flex justify-center mt-6">
+							<Button className="w-full max-w-md bg-indigo-600 hover:bg-indigo-700 text-white font-body uppercase font-normal">
+								Generate Report
+							</Button>
 						</div>
-						<div className="flex-1 space-x-0">
-							<label className="text-xs mb-2 block font-body uppercase font-normal">Report Type</label>
-							<Select>
-								<SelectTrigger>
-									<SelectValue placeholder="Select report type..." />
-								</SelectTrigger>
-								<SelectContent>
-									{Object.entries(REPORT_OPTIONS).map(([key, option]) => (
-										<SelectItem key={key} value={key}>
-											<div className="flex items-center gap-2">
-												{option.icon}
-												<p className="text-[10px] font-body uppercase font-normal">{option.label}</p>
-											</div>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="flex-1">
-							<label className="text-xs mb-2 block font-body uppercase font-normal">Store</label>
-							<Select>
-								<SelectTrigger>
-									<SelectValue placeholder="Select store..." />
-								</SelectTrigger>
-								<SelectContent>
-									{STORE_OPTIONS.map((option) => (
-										<SelectItem key={option?.value} value={option?.value}>
-											<div className="flex items-center gap-2">
-												{option?.icon}
-												<p className="text-[10px] font-body uppercase font-normal">{option?.label}</p>
-											</div>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-					<div className="flex justify-center mt-6">
-						<Button className="w-full max-w-md bg-indigo-600 hover:bg-indigo-700 text-white font-body uppercase font-normal">
-							Generate Report
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-			<div className="flex flex-wrap gap-4">
+					</CardContent>
+				</Card>
+			</motion.div>
+			<motion.div
+				variants={containerVariants}
+				className="flex flex-wrap gap-4">
 				{quickReports.map((report, index) => (
-					<Card
+					<motion.div
 						key={index}
-						className="flex-1 min-w-[240px] shadow-sm transition-colors cursor-pointer border border-border/80 hover:border-primary/40 ease-in-out duration-500">
-						<CardContent className="p-6">
-							<div className="flex items-center gap-3">
-								<Zap size={23} strokeWidth={1.5} className="text-card-foreground" />
-								<span className="text-[10px] font-body uppercase font-normal text-card-foreground">{report?.title}</span>
-							</div>
-						</CardContent>
-					</Card>
+						variants={itemVariants}
+						className="flex-1 min-w-[240px]">
+						<Card className="shadow-sm transition-all duration-500 cursor-pointer border border-border/80 hover:border-primary/40">
+							<CardContent className="p-6">
+								<div className="flex items-center gap-3">
+									<Zap size={23} strokeWidth={1.5} className="text-card-foreground" />
+									<span className="text-[10px] font-body uppercase font-normal text-card-foreground">{report?.title}</span>
+								</div>
+							</CardContent>
+						</Card>
+					</motion.div>
 				))}
-			</div>
-		</div>
+			</motion.div>
+		</motion.div>
 	)
 }

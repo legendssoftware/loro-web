@@ -45,7 +45,7 @@ export default function MyOfficePage() {
                 <Tabs defaultValue="tasks" className="w-full">
                     <TabsList className="w-full justify-start h-12 bg-background">
                         <TabsTrigger
-                            className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
+                            className="data-[state=active]:bg-none data-[state=active]:shadow-none ease-in-out duration-300 data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[150px]"
                             value="tasks">
                             <CheckSquare size={16} strokeWidth={1.5} className="text-=card-foreground" />
                             <p className="text-xs font-normal font-body uppercase">Tasks</p>

@@ -36,6 +36,33 @@ import toast from "react-hot-toast"
 import { PageLoader } from "@/components/page-loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+        },
+    },
+}
+
+const itemVariants = {
+    hidden: {
+        opacity: 0,
+        y: 20,
+    },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24,
+        }
+    },
+}
+
 export const StaffModule = () => {
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -510,8 +537,7 @@ export const StaffModule = () => {
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
-            <div className="flex flex-row items-center justify-between gap-2">
-                <h2 className="text-[14px] font-body font-normal uppercase">Staff Overview</h2>
+            <div className="flex flex-row items-center justify-end gap-2">
                 <div className="flex flex-row items-center justify-center gap-2">
                     <Input
                         placeholder="search..."
@@ -532,7 +558,7 @@ export const StaffModule = () => {
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={handleRoleChange}>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
@@ -563,13 +589,18 @@ export const StaffModule = () => {
                     </Dialog>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
+            <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+            >
                 {filteredStaff?.map((user: User) => (
                     <motion.div
                         key={user.uid}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}>
+                        variants={itemVariants}
+                        layout
+                    >
                         <Card className="p-4">
                             <div className="flex flex-col gap-2">
                                 <div className="flex justify-between items-start">
@@ -621,7 +652,7 @@ export const StaffModule = () => {
                         </Card>
                     </motion.div>
                 ))}
-            </div>
+            </motion.div>
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>

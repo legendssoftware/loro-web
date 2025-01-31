@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Building2, Settings } from "lucide-react"
+import { LayoutDashboard, Building2 } from "lucide-react"
 import {
     Sheet,
     SheetContent,
@@ -28,11 +28,6 @@ const navigationItems = [
         title: "OFFICE",
         icon: <Building2 size={18} strokeWidth={1.5} />,
         href: "/my-office"
-    },
-    {
-        title: "SETTINGS",
-        icon: <Settings size={18} strokeWidth={1.5} />,
-        href: "/settings"
     },
 ]
 

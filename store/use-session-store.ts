@@ -61,8 +61,6 @@ const initialState: SessionState = {
 const authAPI = {
     signIn: async (credentials: { username: string; password: string }) => {
         const { data } = await api.post('/auth/sign-in', credentials);
-        console.log(credentials)
-        console.log(data)
         return data;
     },
 };
@@ -130,7 +128,7 @@ export const useSessionStore = create<SessionState & SessionActions>()(
         }),
         {
             name: 'session-storage',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => sessionStorage),
             partialize: (state) => ({
                 isAuthenticated: state.isAuthenticated,
                 accessToken: state.accessToken,

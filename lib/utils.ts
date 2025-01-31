@@ -11,7 +11,7 @@ export const authRoutes = [
   '/forgot-password',
   '/onboarding',
   '/new-password',
-  '/landing-page'
+  '/landing-page',
 ]
 
 export const isAuthRoute = (pathname: string) => {

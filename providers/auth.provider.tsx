@@ -8,7 +8,7 @@ import {
 	ReactNode,
 	useState,
 } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSessionStore, type ProfileData } from '@/store/use-session-store';
 import { tokenValidator } from '@/lib/tools/tokenValidator';
 import { PageLoader } from '@/components/page-loader';
@@ -26,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const router = useRouter();
+	const pathname = usePathname();
 	const {
 		isAuthenticated,
 		loading: isLoading,
@@ -40,15 +41,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const timer = setTimeout(async () => {
+			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/'];
 
 			if (accessToken) {
 				const isValid = tokenValidator(accessToken);
 
-				if (!isValid) {
+				if (!isValid && !publicPaths?.includes(pathname)) {
 					signOut();
 					router.push('/sign-in');
 				}
-			} else {
+			} else if (!publicPaths.includes(pathname)) {
 				signOut();
 				router.push('/sign-in');
 			}
@@ -57,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}, 1000);
 
 		return () => clearTimeout(timer);
-	}, [accessToken, signOut, router]);
+	}, [accessToken, signOut, router, pathname]);
 
 	const contextValue = useMemo(
 		() => ({

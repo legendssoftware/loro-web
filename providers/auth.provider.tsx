@@ -41,22 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const timer = setTimeout(async () => {
-			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/'];
+			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/landing-page'];
+			const isPublicPath = publicPaths.includes(pathname);
 
-			if (accessToken) {
-				const isValid = tokenValidator(accessToken);
-
-				if (!isValid && !publicPaths?.includes(pathname)) {
+			if (!isPublicPath) {
+				if (!accessToken || !tokenValidator(accessToken)) {
 					signOut();
 					router.push('/sign-in');
 				}
-			} else if (!publicPaths.includes(pathname)) {
-				signOut();
-				router.push('/sign-in');
 			}
 
 			setIsInitialLoading(false);
-		}, 1000);
+		}, 500);
 
 		return () => clearTimeout(timer);
 	}, [accessToken, signOut, router, pathname]);

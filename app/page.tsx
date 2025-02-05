@@ -109,44 +109,44 @@ const STATS_DATA = [
 ] as const
 
 const REPORT_OPTIONS = {
-	claims: { label: 'Claims Report', icon: <HandCoins className="h-4 w-4" /> },
-	orders: { label: 'Orders Report', icon: <ShoppingBag className="h-4 w-4" /> },
-	leads: { label: 'Leads Report', icon: <UserPlus className="h-4 w-4" /> },
-	journals: { label: 'Journals Report', icon: <BookOpen className="h-4 w-4" /> },
-	tasks: { label: 'Tasks Report', icon: <CheckSquare className="h-4 w-4" /> }
+	claims: { label: 'Claims Report', icon: <HandCoins className="w-4 h-4" /> },
+	orders: { label: 'Quotations Report', icon: <ShoppingBag className="w-4 h-4" /> },
+	leads: { label: 'Leads Report', icon: <UserPlus className="w-4 h-4" /> },
+	journals: { label: 'Merchandise Report', icon: <BookOpen className="w-4 h-4" /> },
+	tasks: { label: 'Tasks Report', icon: <CheckSquare className="w-4 h-4" /> }
 } as const
 
 const TIME_OPTIONS = ['Daily', 'Weekly', 'Monthly', 'Yearly'].map(label => ({
 	value: label.toLowerCase(),
 	label,
-	icon: <CalendarClock className="h-4 w-4" />
+	icon: <CalendarClock className="w-4 h-4" />
 }))
 
 const STORE_OPTIONS = ['All Stores', 'Store 1', 'Store 2'].map(label => ({
 	value: label.toLowerCase().replace(/\s+/g, ''),
 	label,
-	icon: <Store className="h-4 w-4" />
+	icon: <Store className="w-4 h-4" />
 }))
 
 const quickReports = [
 	{
 		title: "Monthly Claims Overview",
-		icon: <Zap className="h-4 w-4" />,
+		icon: <Zap className="w-4 h-4" />,
 		href: "/reports/monthly-claims"
 	},
 	{
 		title: "Weekly Journal Summary",
-		icon: <Zap className="h-4 w-4" />,
+		icon: <Zap className="w-4 h-4" />,
 		href: "/reports/weekly-journals"
 	},
 	{
 		title: "Daily Sales Report",
-		icon: <Zap className="h-4 w-4" />,
+		icon: <Zap className="w-4 h-4" />,
 		href: "/reports/daily-sales"
 	},
 	{
 		title: "Employee Attendance Tracker",
-		icon: <Zap className="h-4 w-4" />,
+		icon: <Zap className="w-4 h-4" />,
 		href: "/reports/attendance"
 	}
 ]
@@ -162,7 +162,7 @@ export default function Dashboard() {
 			initial="hidden"
 			animate="show"
 			variants={containerVariants}
-			className="flex flex-col gap-3 sm:p-2 md:p-4 h-screen overflow-y-scroll">
+			className="flex flex-col h-screen gap-3 overflow-y-scroll sm:p-2 md:p-4">
 			<motion.div
 				variants={containerVariants}
 				className="flex flex-wrap gap-2">
@@ -171,7 +171,7 @@ export default function Dashboard() {
 						key={`${stat.title}-${index}`}
 						variants={itemVariants}
 						className="flex-1 min-w-[240px]">
-						<Card className="shadow-sm bg-card border border-border/80  :border-primary/40 transition-all duration-500 cursor-pointer">
+						<Card className="transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 :border-primary/40">
 							<CardContent className="p-6">
 								<div className="flex flex-col gap-4">
 									<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
@@ -204,21 +204,21 @@ export default function Dashboard() {
 			</motion.div>
 			<motion.div
 				variants={sectionVariants}>
-				<Card className="shadow-sm bg-card border border-border/80 hover:border-primary/40 transition-all duration-500 cursor-pointer">
+				<Card className="transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 hover:border-primary/40">
 					<CardHeader className="space-y-0">
-						<CardTitle className="text-md font-normal font-body uppercase">Generate Custom Report</CardTitle>
+						<CardTitle className="font-normal uppercase text-md font-body">Generate Custom Report</CardTitle>
 						<p className="text-muted-foreground font-body uppercase font-normal text-[10px]">Select date range, report type, and store to generate a custom report</p>
 					</CardHeader>
 					<CardContent>
-						<div className="flex flex-col md:flex-row gap-6">
+						<div className="flex flex-col gap-6 md:flex-row">
 							<div className="flex-1">
-								<label className="text-xs mb-2 block font-body uppercase font-normal">Date Range</label>
+								<label className="block mb-2 text-xs font-normal uppercase font-body">Date Range</label>
 								<Popover>
 									<PopoverTrigger asChild>
 										<Button
 											variant="outline"
 											className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
-											<CalendarIcon className="mr-2 h-4 w-4" />
+											<CalendarIcon className="w-4 h-4 mr-2" />
 											{date?.from ? (
 												date.to ? (
 													<>
@@ -240,13 +240,13 @@ export default function Dashboard() {
 											selected={date}
 											onSelect={setDate}
 											numberOfMonths={2}
-											className="rounded-md border"
+											className="border rounded-md"
 										/>
 									</PopoverContent>
 								</Popover>
 							</div>
 							<div className="flex-1">
-								<label className="text-xs mb-2 block font-body uppercase font-normal">Time Period</label>
+								<label className="block mb-2 text-xs font-normal uppercase font-body">Time Period</label>
 								<Select>
 									<SelectTrigger className="w-full">
 										<SelectValue placeholder="Select time period..." />
@@ -264,7 +264,7 @@ export default function Dashboard() {
 								</Select>
 							</div>
 							<div className="flex-1 space-x-0">
-								<label className="text-xs mb-2 block font-body uppercase font-normal">Report Type</label>
+								<label className="block mb-2 text-xs font-normal uppercase font-body">Report Type</label>
 								<Select>
 									<SelectTrigger>
 										<SelectValue placeholder="Select report type..." />
@@ -282,7 +282,7 @@ export default function Dashboard() {
 								</Select>
 							</div>
 							<div className="flex-1">
-								<label className="text-xs mb-2 block font-body uppercase font-normal">Store</label>
+								<label className="block mb-2 text-xs font-normal uppercase font-body">Store</label>
 								<Select>
 									<SelectTrigger>
 										<SelectValue placeholder="Select store..." />
@@ -301,7 +301,7 @@ export default function Dashboard() {
 							</div>
 						</div>
 						<div className="flex justify-center mt-6">
-							<Button className="w-full max-w-md bg-indigo-600 hover:bg-indigo-700 text-white font-body uppercase font-normal">
+							<Button className="w-full max-w-md font-normal text-white uppercase bg-indigo-600 hover:bg-indigo-700 font-body">
 								Generate Report
 							</Button>
 						</div>
@@ -316,7 +316,7 @@ export default function Dashboard() {
 						key={index}
 						variants={itemVariants}
 						className="flex-1 min-w-[240px]">
-						<Card className="shadow-sm transition-all duration-500 cursor-pointer border border-border/80 hover:border-primary/40">
+						<Card className="transition-all duration-500 border shadow-sm cursor-pointer border-border/80 hover:border-primary/40">
 							<CardContent className="p-6">
 								<div className="flex items-center gap-3">
 									<Zap size={23} strokeWidth={1.5} className="text-card-foreground" />

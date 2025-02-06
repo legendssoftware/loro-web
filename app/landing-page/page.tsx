@@ -1,305 +1,267 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ThemeToggler } from "@/modules/navigation/theme.toggler";
-import {
-  Users,
-  BarChart3,
-  User,
-  FileText,
-  MapPin,
-  ClipboardCheck,
-  Download,
-  Bell,
-  Smartphone
-} from "lucide-react";
 import Image from "next/image";
-import phoneCover from "../../public/phone-cover.png";
-import { useRouter } from "next/navigation";
-
-const features = [
-  {
-    title: "Claims Management",
-    description: "Streamline claims processing with automated workflows, document management, and status tracking.",
-    icon: <FileText className="" strokeWidth={1.5} size={30} />,
-    index: "01",
-  },
-  {
-    title: "Quotation System",
-    description: "Create and manage professional quotations with customizable templates and automated follow-ups.",
-    icon: <ClipboardCheck className="" strokeWidth={1.5} size={30} />,
-    index: "02",
-  },
-  {
-    title: "Attendance Tracking",
-    description: "Monitor staff attendance with biometric integration, leave management, and real-time reporting.",
-    icon: <Users className="" strokeWidth={1.5} size={30} />,
-    index: "03",
-  },
-  {
-    title: "Location Tracking",
-    description: "Track field staff locations in real-time with offline support and route optimization.",
-    icon: <MapPin className="" strokeWidth={1.5} size={30} />,
-    index: "04",
-  },
-  {
-    title: "Staff Management",
-    description: "Comprehensive staff management with performance tracking, task assignment, and skill mapping.",
-    icon: <BarChart3 className="" strokeWidth={1.5} size={30} />,
-    index: "05",
-  },
-  {
-    title: "Automated Reporting",
-    description: "Generate detailed reports automatically with customizable templates and scheduled delivery.",
-    icon: <Bell className="" strokeWidth={1.5} size={30} />,
-    index: "06",
-  },
-];
-
-const stats = [
-  {
-    value: "50k+",
-    label: "Claims Processed",
-    description: "Efficiently managed claims",
-  },
-  {
-    value: "98%",
-    label: "Client Satisfaction",
-    description: "Based on user feedback",
-  },
-  {
-    value: "24/7",
-    label: "Offline Access",
-    description: "Always available",
-  },
-];
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 const LandingPage: React.FunctionComponent = () => {
-  const router = useRouter();
-  const handleSignIn = () => router.push("/sign-in");
-  const APK_DOWNLOAD_URL = "/awesome0loro.apk";
-
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-background/80 backdrop-blur-sm">
-        <div className="container flex items-center justify-between px-4 py-4 mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-xl tracking-tight uppercase font-body">
-              LORO CRM
-            </span>
-          </div>
-          <nav className="items-center hidden gap-6 md:flex">
-            <ThemeToggler />
-            <User
-              size={20}
-              className="cursor-pointer"
-              strokeWidth={1.5}
-              onClick={handleSignIn}
-            />
-          </nav>
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between p-6">
+        <div className="flex items-center space-x-2">
+          <Link href="/" className="text-xl tracking-tight uppercase font-body">LORO CRM</Link>
         </div>
-      </header>
+        <div className="flex items-center space-x-6">
+          <Link href="#features" className="text-xs uppercase hover:text-primary font-body">Features</Link>
+          <Link href="#solutions" className="text-xs uppercase hover:text-primary font-body">Solutions</Link>
+          <Link href="/auth/signin">
+            <Button className="text-xs text-white uppercase bg-primary font-body hover:bg-primary/90">Sign In</Button>
+          </Link>
+        </div>
+      </nav>
 
-      <section className="pt-32 pb-16">
-        <div className="container px-4 mx-auto">
-          <div className="grid items-center gap-12 md:grid-cols-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-6"
-            >
-              <span className="text-sm text-purple-600 uppercase dark:text-purple-400 font-body">
-                Enterprise-Grade CRM Solution
-              </span>
-              <h1 className="text-3xl font-bold leading-tight uppercase md:text-6xl font-body">
-                Complete Business Management Suite
-              </h1>
-              <p className="text-sm uppercase text-card-foreground font-body">
-                Manage claims, quotations, staff, and operations with our powerful mobile-first platform
-              </p>
-              <div className="flex gap-4">
-                <Button
-                  className="text-xs font-normal text-white uppercase font-body"
-                  size="lg"
-                  onClick={handleSignIn}
-                >
-                  Start Free Trial
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-xs font-normal uppercase font-body"
-                >
-                  Schedule Demo
-                </Button>
-              </div>
-            </motion.div>
-            <motion.div
-              className="relative"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="flex items-center justify-center">
-                <Image
-                  src={phoneCover}
-                  height={400}
-                  width={400}
-                  alt="LORO CRM Mobile App"
-                  className="rounded-xl"
-                />
-              </div>
-            </motion.div>
+      {/* Hero Section */}
+      <section className="flex flex-col items-center justify-center px-4 py-20 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="max-w-3xl text-4xl font-normal uppercase md:text-5xl lg:text-6xl font-body">
+            Enterprise-Grade Mobile CRM Solution
+          </h1>
+          <p className="max-w-2xl mt-6 text-xs uppercase text-muted-foreground font-body">
+            Streamline your business operations with our comprehensive mobile-first platform for claims, quotations, and staff management
+          </p>
+          <div className="flex justify-center gap-4 mt-8">
+            <Button className="h-12 text-xs text-white uppercase bg-primary font-body hover:bg-primary/90">
+              Start Free Trial
+            </Button>
+            <Button variant="outline" className="h-12 text-xs uppercase font-body">
+              Schedule Demo
+            </Button>
           </div>
-        </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="relative mt-16"
+        >
+          <Image
+            src="/app-preview.png"
+            alt="LORO CRM Mobile App Interface"
+            width={800}
+            height={400}
+            className="shadow-xl rounded-xl"
+          />
+        </motion.div>
       </section>
 
-      <section className="py-16">
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-muted/30">
         <div className="container px-4 mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
+            className="max-w-xl mx-auto mb-16 text-center"
           >
-            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-purple-100 rounded-full dark:bg-purple-900/20">
-              <Smartphone className="w-10 h-10 text-purple-600" />
-            </div>
-            <h2 className="mb-6 text-3xl font-bold uppercase font-body">
-              Try Our APK
+            <h2 className="mb-4 text-2xl font-normal uppercase font-body">
+              Powerful Features for Modern Businesses
             </h2>
-            <p className="mb-8 text-sm uppercase text-card-foreground font-body">
-              Download our Android app now and experience seamless offline access to all features.
-            </p>
-            <Button
-              variant="default"
-              size="lg"
-              className="gap-2 text-xs font-normal text-white uppercase font-body"
-              onClick={() => window.open(APK_DOWNLOAD_URL, '_blank')}
-            >
-              <Download size={16} />
-              GET APK
-            </Button>
-            <p className="mt-4 text-[9px] text-gray-500 uppercase font-body">
-              V1.0.3 | Android 15.0+
+            <p className="text-xs uppercase text-muted-foreground font-body">
+              Everything you need to manage your business operations efficiently
             </p>
           </motion.div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="p-6 bg-card rounded-xl"
+            >
+              <div className="w-12 h-12 mb-4 rounded-lg bg-primary/10" />
+              <h3 className="mb-2 text-lg font-normal uppercase font-body">Claims Management</h3>
+              <p className="text-xs uppercase text-muted-foreground font-body">
+                Streamline your claims processing with automated workflows and real-time tracking
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="p-6 bg-card rounded-xl"
+            >
+              <div className="w-12 h-12 mb-4 rounded-lg bg-primary/10" />
+              <h3 className="mb-2 text-lg font-normal uppercase font-body">Staff Management</h3>
+              <p className="text-xs uppercase text-muted-foreground font-body">
+                Complete control over staff attendance, tasks, and performance tracking
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="p-6 bg-card rounded-xl"
+            >
+              <div className="w-12 h-12 mb-4 rounded-lg bg-primary/10" />
+              <h3 className="mb-2 text-lg font-normal uppercase font-body">Quotation System</h3>
+              <p className="text-xs uppercase text-muted-foreground font-body">
+                Create and manage professional quotations with automated follow-ups
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      <section className="py-16 bg-purple-50 dark:bg-purple-900/5">
+      {/* Solutions Showcase */}
+      <section id="solutions" className="py-20">
         <div className="container px-4 mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-12 text-3xl font-bold text-center uppercase font-body"
+            className="mb-16 text-2xl font-normal text-center uppercase font-body"
           >
-            Comprehensive Business Solutions
+            Complete Business Management Suite
           </motion.h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-center justify-start gap-4">
-                      <div className="flex items-center justify-center w-12 h-12 mb-4 bg-purple-100 rounded-full dark:bg-purple-900/20">
-                        {feature.icon}
-                      </div>
-                    </div>
-                    <h3 className="mb-2 text-xl font-normal uppercase font-body">
-                      {feature.title}
-                    </h3>
-                    <p className="mb-4 text-xs uppercase text-card-foreground font-body">
-                      {feature.description}
-                    </p>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="overflow-hidden bg-black rounded-xl">
+              <Image
+                src="/loro-app-preview.png"
+                alt="LORO CRM Mobile App Interface"
+                width={400}
+                height={300}
+                className="object-cover w-full h-48"
+              />
+              <div className="p-6">
+                <h3 className="mb-2 text-sm font-normal text-white uppercase font-body">
+                  Efficient Claims Processing
+                </h3>
+                <p className="text-xs text-gray-400 uppercase font-body">
+                  Streamlined workflow management
+                </p>
+              </div>
+            </div>
+            <div className="overflow-hidden bg-black rounded-xl">
+              <Image
+                src="/feature-staff.png"
+                alt="Staff Management Dashboard"
+                width={400}
+                height={300}
+                className="object-cover w-full h-48"
+              />
+              <div className="p-6">
+                <h3 className="mb-2 text-sm font-normal text-white uppercase font-body">
+                  Complete Staff Overview
+                </h3>
+                <p className="text-xs text-gray-400 uppercase font-body">
+                  Real-time performance tracking
+                </p>
+              </div>
+            </div>
+            <div className="overflow-hidden bg-black rounded-xl">
+              <Image
+                src="/feature-quotes.png"
+                alt="Quotation System Interface"
+                width={400}
+                height={300}
+                className="object-cover w-full h-48"
+              />
+              <div className="p-6">
+                <h3 className="mb-2 text-sm font-normal text-white uppercase font-body">
+                  Professional Quotations
+                </h3>
+                <p className="text-xs text-gray-400 uppercase font-body">
+                  Automated quote generation
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="container px-4 mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
-          >
-            <h2 className="mb-8 text-4xl font-bold text-center uppercase font-body">
-              Trusted by Industry Leaders
-            </h2>
-            <div className="grid gap-8 md:grid-cols-3">
-              {stats.map((stat, index) => (
-                <Card key={index} className="p-6">
-                  <div>
-                    <p className="mb-2 text-4xl font-bold text-center uppercase font-body">
-                      {stat?.value}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-center uppercase text-md font-body">
-                      {stat?.label}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-xs font-normal text-center uppercase font-body">
-                      {stat?.description}
-                    </p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-16">
+      {/* CTA Section */}
+      <section className="py-20 text-white bg-primary">
         <div className="container px-4 mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto"
           >
-            <h2 className="mb-6 text-3xl font-bold uppercase font-body">
-              Ready to Transform Your Operations?
+            <h2 className="mb-8 text-2xl font-normal uppercase font-body">
+              Ready to Transform Your Business Operations?
             </h2>
-            <p className="mb-8 text-xs uppercase text-card-foreground font-body">
-              Join industry leaders who trust LORO CRM for complete business management.
-            </p>
             <div className="flex justify-center gap-4">
-              <Button
-                variant="default"
-                size="lg"
-                className="text-xs font-normal text-white uppercase font-body"
-                onClick={handleSignIn}
-              >
-                Start Free Trial
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-xs font-normal uppercase font-body"
-              >
-                Contact Sales
-              </Button>
+              <Link href="/downloads/loro-crm.apk" download>
+                <Button variant="secondary" className="h-12 text-xs uppercase font-body">
+                  Download APK
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="outline" className="h-12 text-xs text-white uppercase border-white font-body hover:bg-white hover:text-primary">
+                  Contact Sales
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-12">
+        <div className="container px-4 mx-auto">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div className="md:col-span-1">
+              <span className="text-xl tracking-tight uppercase font-body">LORO CRM</span>
+              <div className="mt-4 text-xs text-muted-foreground font-body">
+                Enterprise-grade mobile CRM solution for modern businesses
+              </div>
+            </div>
+            <div>
+              <h4 className="mb-4 text-xs font-normal uppercase font-body">Product</h4>
+              <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
+                <li><Link href="#features">Features</Link></li>
+                <li><Link href="#solutions">Solutions</Link></li>
+                <li><Link href="/pricing">Pricing</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 text-xs font-normal uppercase font-body">Support</h4>
+              <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
+                <li><Link href="/docs">Documentation</Link></li>
+                <li><Link href="/api">API Reference</Link></li>
+                <li><Link href="/contact">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 text-xs font-normal uppercase font-body">Company</h4>
+              <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
+                <li><Link href="/about">About</Link></li>
+                <li><Link href="/blog">Blog</Link></li>
+                <li><Link href="/careers">Careers</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-between pt-8 mt-8 border-t md:flex-row">
+            <div className="text-xs text-muted-foreground font-body">
+              © 2024 LORO CRM. All rights reserved.
+            </div>
+            <div className="flex gap-4 mt-4 md:mt-0">
+              <Link href="#" className="text-xs uppercase text-muted-foreground hover:text-primary font-body">
+                Privacy Policy
+              </Link>
+              <Link href="#" className="text-xs uppercase text-muted-foreground hover:text-primary font-body">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

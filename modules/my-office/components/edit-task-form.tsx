@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { ExistingTask, SubTask } from "@/lib/types/tasks"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface EditTaskFormProps {
     task: ExistingTask
@@ -124,6 +126,14 @@ const EditTaskFormComponent = ({
                                 </div>
                             ))
                         }
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input 
+                            type="password"
+                            id="password"
+                            placeholder="Enter new password"
+                        />
                     </div>
                 </div>
             </ScrollArea>

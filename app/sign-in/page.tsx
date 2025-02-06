@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from 'next/navigation'
-import { Loader2, Eye, EyeOff, X } from 'lucide-react'
+import { Loader2, Eye, EyeOff} from 'lucide-react'
 import Link from 'next/link'
 import * as z from 'zod'
 import { cn } from "@/lib/utils"
@@ -113,7 +113,7 @@ const SignInPage = () => {
 
 	return (
 		<div
-			className="min-h-screen flex items-center justify-center p-4 relative"
+			className="relative flex items-center justify-center min-h-screen p-4"
 			style={{
 				backgroundImage: 'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
 				backgroundSize: 'cover',
@@ -121,22 +121,13 @@ const SignInPage = () => {
 				backgroundRepeat: 'no-repeat'
 			}}>
 			<div className="absolute inset-0 bg-black/50" />
-			<div className="w-full max-w-md p-6 sm:p-8 space-y-4 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg relative">
-				<X
-					strokeWidth={1.5}
-					size={30}
-					className={cn(
-						"absolute top-2 right-2 cursor-pointer text-red-600",
-						isLoading && "opacity-50 pointer-events-none"
-					)}
-					onClick={() => router.push('/landing-page')}
-				/>
-				<h1 className="text-2xl sm:text-3xl font-normal text-center text-white font-heading">
+			<div className="relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl">
+				<h1 className="text-2xl font-normal text-center text-white sm:text-3xl font-heading">
 					LORO CRM
 				</h1>
-				<form onSubmit={handleSubmit} className="space-y-4 mt-4 sm:mt-6">
+				<form onSubmit={handleSubmit} className="mt-4 space-y-4 sm:mt-6">
 					<div className="space-y-1">
-						<label htmlFor="username" className="block text-xs font-light text-white font-body uppercase">
+						<label htmlFor="username" className="block text-xs font-light text-white uppercase font-body">
 							Username
 						</label>
 						<Input
@@ -154,12 +145,12 @@ const SignInPage = () => {
 							aria-label="Username"
 						/>
 						{errors.username && (
-							<p className="text-red-500 text-xs mt-1">{errors.username}</p>
+							<p className="mt-1 text-xs text-red-500">{errors.username}</p>
 						)}
 					</div>
 					<div className="space-y-1">
 						<div className="flex justify-between">
-							<label htmlFor="password" className="block text-xs font-light text-white font-body uppercase">
+							<label htmlFor="password" className="block text-xs font-light text-white uppercase font-body">
 								Password
 							</label>
 							<Link
@@ -200,13 +191,13 @@ const SignInPage = () => {
 								aria-label={showPassword ? "Hide password" : "Show password"}
 							>
 								{showPassword ? (
-									<EyeOff className="h-4 w-4" />
+									<EyeOff className="w-4 h-4" />
 								) : (
-									<Eye className="h-4 w-4" />
+									<Eye className="w-4 h-4" />
 								)}
 							</Button>
 							{errors.password && (
-								<p className="text-red-500 text-xs mt-1">{errors.password}</p>
+								<p className="mt-1 text-xs text-red-500">{errors.password}</p>
 							)}
 						</div>
 					</div>
@@ -221,15 +212,15 @@ const SignInPage = () => {
 						aria-label="Sign In">
 						{isLoading ? (
 							<div className="flex items-center justify-center space-x-1">
-								<p className="text-white font-normal uppercase">Signing In</p>
-								<Loader2 className="w-4 h-4 animate-spin mr-2 text-white" size={16} strokeWidth={1.5} />
+								<p className="font-normal text-white uppercase">Signing In</p>
+								<Loader2 className="w-4 h-4 mr-2 text-white animate-spin" size={16} strokeWidth={1.5} />
 							</div>
 						) : (
 							<span className="font-normal text-white">Sign In</span>
 						)}
 					</Button>
 				</form>
-				<div className="text-center space-y-2">
+				<div className="space-y-2 text-center">
 					<div className="text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center">
 						<p className="font-body uppercase text-[10px] text-white">Don&apos;t have an account?</p>
 						<Link

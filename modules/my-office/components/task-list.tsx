@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { TaskCard } from "./task-card"
-import { ExistingTask, User } from "@/lib/types/tasks"
+import { ExistingTask } from "@/lib/types/tasks"
 import { TaskStatus } from "@/lib/enums/task.enums"
 import { PageLoader } from "@/components/page-loader"
 import {
@@ -37,23 +37,25 @@ interface TaskListProps {
     isLoading: boolean
 }
 
-const statusOptions = [
-    { value: "all", label: "All" },
-    { value: TaskStatus.PENDING, label: "Pending" },
-    { value: TaskStatus.IN_PROGRESS, label: "In Progress" },
-    { value: TaskStatus.COMPLETED, label: "Completed" },
-    { value: TaskStatus.CANCELLED, label: "Cancelled" }
-]
-
 const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => {
     const { accessToken, profileData } = useSessionStore()
     const queryClient = useQueryClient()
     const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
     const [statusFilter, setStatusFilter] = useState<string>("all")
+    const [clientFilter, setClientFilter] = useState<string>("all")
+    const [assigneeFilter, setAssigneeFilter] = useState<string>("all")
     const [searchQuery, setSearchQuery] = useState("")
 
     const handleStatusChange = useCallback((status: string) => {
         setStatusFilter(status)
+    }, [])
+
+    const handleClientChange = useCallback((client: string) => {
+        setClientFilter(client)
+    }, [])
+
+    const handleAssigneeChange = useCallback((assignee: string) => {
+        setAssigneeFilter(assignee)
     }, [])
 
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,21 +113,22 @@ const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => 
     })
 
     const filteredTasks = useMemo(() => {
-        return tasks?.filter((task: ExistingTask) => {
-            const matchesStatus = statusFilter === "all" || task?.status.toLowerCase() === statusFilter.toLowerCase()
-            const matchesSearch = searchQuery === "" ||
-                task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-            return matchesStatus && matchesSearch
-        }) || []
-    }, [tasks, statusFilter, searchQuery])
+        return tasks.filter((task) => {
+            const matchesStatus = statusFilter === "all" || task.status === statusFilter
+            const matchesClient = clientFilter === "all" || task.client?.uid.toString() === clientFilter
+            const matchesAssignee = assigneeFilter === "all" || task.assignees?.some(a => a.uid.toString() === assigneeFilter)
+            const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase())
+            
+            return matchesStatus && matchesClient && matchesAssignee && matchesSearch
+        })
+    }, [tasks, statusFilter, clientFilter, assigneeFilter, searchQuery])
 
     const handleCreateTask = useCallback(async (data: CreateTaskDTO) => {
         try {
-
             const newTask = {
                 ...data,
                 owner: {
-                    uid: profileData?.uid || 0,
+                    uid: Number(profileData?.uid) || 0,
                     username: profileData?.username || '',
                     name: profileData?.name || '',
                     surname: profileData?.surname || '',
@@ -134,9 +137,9 @@ const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => 
                     photoURL: profileData?.photoURL || '',
                     accessLevel: profileData?.accessLevel || '',
                     userref: profileData?.userref || '',
-                    organisationRef: profileData?.organisationRef || 0,
+                    organisationRef: Number(profileData?.organisationRef) || 0,
                     status: 'active'
-                } as User
+                }
             }
 
             console.log(newTask, 'new task data')
@@ -149,14 +152,14 @@ const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => 
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-screen w-full">
+            <div className="flex items-center justify-center w-full h-screen">
                 <PageLoader />
             </div>
         )
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="flex flex-col w-full h-full gap-4">
             <div className="flex flex-row items-center justify-end gap-2">
                 <div className="flex flex-row items-center justify-center gap-2">
                     <Input
@@ -165,14 +168,59 @@ const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => 
                         value={searchQuery}
                         onChange={handleSearchChange}
                     />
+                    <Select value={clientFilter} onValueChange={handleClientChange}>
+                        <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+                            <SelectValue placeholder="Filter by client" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Clients</SelectItem>
+                            {tasks
+                                .filter((task) => task.client)
+                                .filter((task, index, self) => 
+                                    index === self.findIndex(t => t.client?.uid === task.client?.uid)
+                                )
+                                .map((task) => (
+                                    <SelectItem 
+                                        key={task.client?.uid} 
+                                        value={task.client?.uid.toString() || ""}
+                                        className="text-xs font-body"
+                                    >
+                                        {task.client?.name || "Unknown"}
+                                    </SelectItem>
+                                ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={assigneeFilter} onValueChange={handleAssigneeChange}>
+                        <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+                            <SelectValue placeholder="Filter by assignee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Assignees</SelectItem>
+                            {tasks
+                                .flatMap(task => task.assignees || [])
+                                .filter((assignee, index, self) => 
+                                    index === self.findIndex(a => a.uid === assignee.uid)
+                                )
+                                .map((assignee) => (
+                                    <SelectItem 
+                                        key={assignee.uid} 
+                                        value={assignee.uid.toString()}
+                                        className="text-xs font-body"
+                                    >
+                                        {`${assignee.name} ${assignee.surname}`}
+                                    </SelectItem>
+                                ))}
+                        </SelectContent>
+                    </Select>
                     <Select value={statusFilter} onValueChange={handleStatusChange}>
                         <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
-                            {statusOptions.map((status) => (
-                                <SelectItem key={status.value} value={status.value} className="font-body text-[10px] font-normal uppercase">
-                                    {status.label}
+                            <SelectItem value="all">All Status</SelectItem>
+                            {Object.values(TaskStatus).map((status) => (
+                                <SelectItem key={status} value={status} className="text-xs font-body">
+                                    {status}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -189,7 +237,7 @@ const TaskListComponent = ({ tasks, onTaskClick, isLoading }: TaskListProps) => 
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
+                className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4">
                 {filteredTasks?.map((task: ExistingTask) => (
                     <TaskCard
                         key={task?.uid}

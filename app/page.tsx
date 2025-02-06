@@ -9,12 +9,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { CalendarClock, HandCoins, ShoppingBag, UserPlus, Zap, BookOpen, CheckSquare, Store } from "lucide-react"
+import { CalendarClock, HandCoins, ShoppingBag, UserPlus, Zap, CheckSquare } from "lucide-react"
 import { Sparkline } from "@/components/ui/sparkline"
 import { motion } from "framer-motion"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
 import { Calendar } from "@/components/ui/calendar"
 import {
 	Popover,
@@ -23,6 +22,8 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import React from "react"
+import { useReports, ReportType, ReportPeriod } from "@/hooks/use-reports"
+import { Loader2 } from "lucide-react"
 
 // Animation variants
 const containerVariants = {
@@ -109,24 +110,17 @@ const STATS_DATA = [
 ] as const
 
 const REPORT_OPTIONS = {
-	claims: { label: 'Claims Report', icon: <HandCoins className="w-4 h-4" /> },
-	orders: { label: 'Quotations Report', icon: <ShoppingBag className="w-4 h-4" /> },
-	leads: { label: 'Leads Report', icon: <UserPlus className="w-4 h-4" /> },
-	journals: { label: 'Merchandise Report', icon: <BookOpen className="w-4 h-4" /> },
-	tasks: { label: 'Tasks Report', icon: <CheckSquare className="w-4 h-4" /> }
+	[ReportType.CLAIM]: { label: 'Claims Report', icon: <HandCoins className="w-4 h-4" /> },
+	[ReportType.QUOTATION]: { label: 'Quotations Report', icon: <ShoppingBag className="w-4 h-4" /> },
+	[ReportType.LEAD]: { label: 'Leads Report', icon: <UserPlus className="w-4 h-4" /> },
+	[ReportType.TASK]: { label: 'Tasks Report', icon: <CheckSquare className="w-4 h-4" /> }
 } as const
 
-const TIME_OPTIONS = ['Daily', 'Weekly', 'Monthly', 'Yearly'].map(label => ({
-	value: label.toLowerCase(),
-	label,
-	icon: <CalendarClock className="w-4 h-4" />
-}))
-
-const STORE_OPTIONS = ['All Stores', 'Store 1', 'Store 2'].map(label => ({
-	value: label.toLowerCase().replace(/\s+/g, ''),
-	label,
-	icon: <Store className="w-4 h-4" />
-}))
+const TIME_OPTIONS = [
+	{ value: ReportPeriod.DAILY, label: 'Daily', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: ReportPeriod.WEEKLY, label: 'Weekly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: ReportPeriod.MONTHLY, label: 'Monthly', icon: <CalendarClock className="w-4 h-4" /> }
+];
 
 const quickReports = [
 	{
@@ -152,10 +146,53 @@ const quickReports = [
 ]
 
 export default function Dashboard() {
-	const [date, setDate] = React.useState<DateRange | undefined>({
-		from: new Date(),
-		to: new Date(),
-	})
+	const {
+		dateRange,
+		setDateRange,
+		period,
+		setPeriod,
+		reportType,
+		setReportType,
+		dailyReport,
+		isGenerating,
+		handleGenerateReport
+	} = useReports();
+
+	// Update STATS_DATA to use dailyReport data
+	const statsData = React.useMemo(() => {
+		if (!dailyReport) return STATS_DATA;
+
+		return [
+			{
+				title: "Claims Made",
+				value: dailyReport.claims?.totalValue || "R0",
+				change: dailyReport.claims?.metrics?.valueGrowth || "0%",
+				trend: dailyReport.claims?.metrics?.valueGrowth?.startsWith('+') ? "up" : "down",
+				sparkline: [89, 100, 85, 98, 92, 78, 89], // TODO: Add real data
+			},
+			{
+				title: "Orders Made",
+				value: dailyReport.orders?.metrics?.grossQuotationValue || "R0",
+				change: dailyReport.orders?.metrics?.quotationTrends?.growth || "0%",
+				trend: dailyReport.orders?.metrics?.quotationTrends?.growth?.startsWith('+') ? "up" : "down",
+				sparkline: [92, 75, 85, 78, 82, 88, 80],
+			},
+			{
+				title: "Total Leads",
+				value: dailyReport.leads?.total?.toString() || "0",
+				change: dailyReport.leads?.metrics?.leadTrends?.growth || "0%",
+				trend: dailyReport.leads?.metrics?.leadTrends?.growth?.startsWith('+') ? "up" : "down",
+				sparkline: [78, 88, 92, 75, 85, 78, 82],
+			},
+			{
+				title: "Tasks Completed",
+				value: dailyReport.tasks?.completed?.toString() || "0",
+				change: dailyReport.tasks?.metrics?.taskTrends?.growth || "0%",
+				trend: dailyReport.tasks?.metrics?.taskTrends?.growth?.startsWith('+') ? "up" : "down",
+				sparkline: [82, 88, 80, 92, 75, 85, 78],
+			}
+		];
+	}, [dailyReport]);
 
 	return (
 		<motion.div
@@ -166,7 +203,7 @@ export default function Dashboard() {
 			<motion.div
 				variants={containerVariants}
 				className="flex flex-wrap gap-2">
-				{STATS_DATA.map((stat, index) => (
+				{statsData.map((stat, index) => (
 					<motion.div
 						key={`${stat.title}-${index}`}
 						variants={itemVariants}
@@ -217,15 +254,15 @@ export default function Dashboard() {
 									<PopoverTrigger asChild>
 										<Button
 											variant="outline"
-											className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
+											className={cn("w-full justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
 											<CalendarIcon className="w-4 h-4 mr-2" />
-											{date?.from ? (
-												date.to ? (
+											{dateRange?.from ? (
+												dateRange.to ? (
 													<>
-														{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+														{format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
 													</>
 												) : (
-													format(date.from, "LLL dd, y")
+													format(dateRange.from, "LLL dd, y")
 												)
 											) : (
 												<span className="text-[10px] font-body uppercase font-normal">Pick a date range</span>
@@ -236,9 +273,9 @@ export default function Dashboard() {
 										<Calendar
 											initialFocus
 											mode="range"
-											defaultMonth={date?.from}
-											selected={date}
-											onSelect={setDate}
+											defaultMonth={dateRange?.from}
+											selected={dateRange}
+											onSelect={setDateRange}
 											numberOfMonths={2}
 											className="border rounded-md"
 										/>
@@ -247,7 +284,7 @@ export default function Dashboard() {
 							</div>
 							<div className="flex-1">
 								<label className="block mb-2 text-xs font-normal uppercase font-body">Time Period</label>
-								<Select>
+								<Select value={period} onValueChange={(value) => setPeriod(value as ReportPeriod)}>
 									<SelectTrigger className="w-full">
 										<SelectValue placeholder="Select time period..." />
 									</SelectTrigger>
@@ -263,15 +300,15 @@ export default function Dashboard() {
 									</SelectContent>
 								</Select>
 							</div>
-							<div className="flex-1 space-x-0">
+							<div className="flex-1">
 								<label className="block mb-2 text-xs font-normal uppercase font-body">Report Type</label>
-								<Select>
+								<Select value={reportType} onValueChange={(value) => setReportType(value as ReportType)}>
 									<SelectTrigger>
 										<SelectValue placeholder="Select report type..." />
 									</SelectTrigger>
 									<SelectContent>
 										{Object.entries(REPORT_OPTIONS).map(([key, option]) => (
-											<SelectItem key={key} value={key}>
+											<SelectItem key={key} value={key.toUpperCase() as ReportType}>
 												<div className="flex items-center gap-2">
 													{option.icon}
 													<p className="text-[10px] font-body uppercase font-normal">{option.label}</p>
@@ -281,28 +318,20 @@ export default function Dashboard() {
 									</SelectContent>
 								</Select>
 							</div>
-							<div className="flex-1">
-								<label className="block mb-2 text-xs font-normal uppercase font-body">Store</label>
-								<Select>
-									<SelectTrigger>
-										<SelectValue placeholder="Select store..." />
-									</SelectTrigger>
-									<SelectContent>
-										{STORE_OPTIONS.map((option) => (
-											<SelectItem key={option?.value} value={option?.value}>
-												<div className="flex items-center gap-2">
-													{option?.icon}
-													<p className="text-[10px] font-body uppercase font-normal">{option?.label}</p>
-												</div>
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
 						</div>
 						<div className="flex justify-center mt-6">
-							<Button className="w-full max-w-md font-normal text-white uppercase bg-indigo-600 hover:bg-indigo-700 font-body">
-								Generate Report
+							<Button 
+								onClick={handleGenerateReport}
+								disabled={isGenerating || !dateRange?.from || !dateRange?.to}
+								className="w-full max-w-md font-normal text-white uppercase bg-indigo-600 hover:bg-indigo-700 font-body">
+								{isGenerating ? (
+									<>
+										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+										Generating Report...
+									</>
+								) : (
+									'Generate Report'
+								)}
 							</Button>
 						</div>
 					</CardContent>

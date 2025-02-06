@@ -47,19 +47,27 @@ export const UserSelect = ({ value, onChange }: UserSelectProps) => {
         enabled: !!accessToken,
     })
 
+    // Ensure value is always an array
+    const selectedUsers = Array.isArray(value) ? value : [];
+    const selectedUserIds = selectedUsers.map(u => u.uid.toString()).join(",");
+
     return (
         <div>
-            <Label htmlFor="assignees" className="text-xs font-body text-card-foreground uppercase font-normal">
+            <Label htmlFor="assignees" className="text-xs font-normal uppercase font-body text-card-foreground">
                 Assignees
             </Label>
             <Select
-                value={value.map(v => v.uid.toString()).join(",")}
+                value={selectedUserIds || "none"}
                 onValueChange={(val) => {
-                    const uids = val.split(",").filter(Boolean).map(id => ({ uid: parseInt(id, 10) }))
-                    onChange(uids)
+                    if (val === "none") {
+                        onChange([]);
+                        return;
+                    }
+                    const uids = val.split(",").filter(Boolean).map(id => ({ uid: parseInt(id, 10) }));
+                    onChange(uids);
                 }}
             >
-                <SelectTrigger className="font-body text-xs">
+                <SelectTrigger className="text-xs font-body">
                     <SelectValue placeholder="Select assignees" />
                 </SelectTrigger>
                 <SelectContent>

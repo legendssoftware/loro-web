@@ -57,24 +57,16 @@ export const ClientSelect = ({
         enabled: !!accessToken,
     })
 
-    const handleChange = (newValue: string) => {
-        if (newValue === 'none') {
-            onChange(null);
-        } else {
-            onChange({ uid: Number(newValue) });
-        }
-    }
-
     return (
         <div className="grid gap-1.5">
-            <Label htmlFor="client" className="text-xs font-body text-card-foreground uppercase font-normal">
+            <Label htmlFor="client" className="text-xs font-normal uppercase font-body text-card-foreground">
                 Client
             </Label>
             <Select
-                value={value.uid.toString()}
+                value={value?.uid?.toString()}
                 onValueChange={(val) => onChange({ uid: parseInt(val, 10) })}
                 disabled={disabled}>
-                <SelectTrigger className="font-body text-xs">
+                <SelectTrigger className="text-xs font-body">
                     <SelectValue placeholder="Select client" />
                 </SelectTrigger>
                 <SelectContent>

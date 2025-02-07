@@ -60,7 +60,7 @@ const LandingPage: React.FunctionComponent = () => {
             Solutions
           </Link>
           <ThemeToggler />
-          <Link href="/signin">
+          <Link href="/sign-in">
             <Button className="text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80">
               My Account
             </Button>

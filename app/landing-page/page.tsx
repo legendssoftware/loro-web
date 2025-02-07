@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Download, Phone, ClipboardList, Users, Package, Store, CheckSquare, Cloud, Check, CreditCard, Building2, Building } from "lucide-react";
 import { ThemeToggler } from "@/modules/navigation/theme.toggler";
+import router from "next/router";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -83,12 +84,13 @@ const LandingPage: React.FunctionComponent = () => {
             mobile-first platform for claims, quotations, and staff management
           </p>
           <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
-            <Button className="h-12 text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80">
+            <Button className="h-12 text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80" onClick={() => router.push('/sign-up')}>
               Start Free Trial
             </Button>
             <Button
               variant="outline"
               className="h-12 text-xs uppercase transition-colors font-body hover:bg-primary hover:text-white"
+              onClick={() => router.push('/schedule-demo')}
             >
               Schedule Demo
             </Button>
@@ -645,24 +647,23 @@ const LandingPage: React.FunctionComponent = () => {
               Ready to Transform Your Business Operations?
             </h2>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/downloads/loro-crm.apk" download>
+              <Link href="/awesome0loro.apk" target="_blank" rel="noopener noreferrer" download>
                 <Button
                   variant="secondary"
                   className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  download APK
+                  Download App
                 </Button>
               </Link>
-              <Link href="/contact">
-                <Button
-                  variant="secondary"
-                  className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
-                >
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contact Sales
-                </Button>
-              </Link>
+              <Button
+                variant="secondary"
+                className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
+                onClick={() => router.push('/sign-up')}
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Start Free Trial
+              </Button>
             </div>
           </motion.div>
         </div>

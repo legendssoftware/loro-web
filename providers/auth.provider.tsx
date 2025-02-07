@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const timer = setTimeout(async () => {
-			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/landing-page'];
+			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/landing-page', 'download'];
 			const isPublicPath = publicPaths.includes(pathname);
 
 			if (!isPublicPath) {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	if (isInitialLoading) {
 		return (
-			<div className='flex h-screen w-full items-center justify-center'>
+			<div className='flex items-center justify-center w-full h-screen'>
 				<PageLoader />
 			</div>
 		);

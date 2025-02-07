@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Download, Phone, ClipboardList, Users, Package, Store, CheckSquare, Cloud, Check, CreditCard, Building2, Building } from "lucide-react";
+import { Download, Phone, ClipboardList, Users, Package, Store, CheckSquare, Cloud, Check, CreditCard, Building2, Building, Menu } from "lucide-react";
 import { ThemeToggler } from "@/modules/navigation/theme.toggler";
 import router from "next/router";
+import { useState } from "react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -37,16 +38,21 @@ const itemVariants = {
 }
 
 const LandingPage: React.FunctionComponent = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="flex flex-col items-center justify-between p-6 md:flex-row">
-        <div className="flex items-center mb-4 space-x-2 md:mb-0">
+      <nav className="relative flex items-center justify-between p-6">
+        {/* Logo */}
+        <div className="flex items-center">
           <Link href="/" className="text-xl tracking-tight uppercase font-body">
             LORO CRM
           </Link>
         </div>
-        <div className="flex items-center space-x-6">
+
+        {/* Desktop Navigation - Hidden on mobile */}
+        <div className="items-center hidden space-x-6 md:flex">
           <Link
             href="#features"
             className="text-xs uppercase transition-colors hover:text-primary font-body"
@@ -66,6 +72,61 @@ const LandingPage: React.FunctionComponent = () => {
             </Button>
           </Link>
         </div>
+
+        {/* Mobile Menu Button - Visible only on mobile */}
+        <div className="flex items-center space-x-4 md:hidden">
+          <ThemeToggler />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden"
+          >
+            <Menu className="w-6 h-6" />
+          </Button>
+        </div>
+
+        {/* Mobile Menu - Centered with overlay */}
+        {isMenuOpen && (
+          <>
+            {/* Overlay */}
+            <div 
+              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            
+            {/* Centered Menu */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="w-full max-w-sm p-6 mx-4 shadow-lg bg-card rounded-xl">
+                <div className="flex flex-col items-center space-y-6">
+                  <Link
+                    href="#features"
+                    className="text-xs font-normal uppercase transition-colors hover:text-primary font-body"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Features
+                  </Link>
+                  <Link
+                    href="#solutions"
+                    className="text-xs font-normal uppercase transition-colors hover:text-primary font-body"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Solutions
+                  </Link>
+                  <Link 
+                    href="/sign-in" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full"
+                  >
+                    <Button className="w-full text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80">
+                      My Account
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -83,13 +144,13 @@ const LandingPage: React.FunctionComponent = () => {
             Streamline your business operations with our comprehensive
             mobile-first platform for claims, quotations, and staff management
           </p>
-          <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
-            <Button className="h-12 text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80" onClick={() => router.push('/sign-up')}>
+          <div className="flex flex-row justify-center gap-4 mt-8">
+            <Button className="h-12 xs:text-[8px] text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80 font-normal" onClick={() => router.push('/sign-up')}>
               Start Free Trial
             </Button>
             <Button
               variant="outline"
-              className="h-12 text-xs uppercase transition-colors font-body hover:bg-primary hover:text-white"
+              className="h-12 text-xs font-normal uppercase transition-colors font-body hover:bg-primary hover:text-white"
               onClick={() => router.push('/schedule-demo')}
             >
               Schedule Demo
@@ -121,12 +182,12 @@ const LandingPage: React.FunctionComponent = () => {
               />
             </motion.div>
 
-            {/* Mobile View - Positioned on the right */}
+            {/* Mobile View - Hidden on mobile, visible on larger screens */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="absolute -right-4 -bottom-10 w-[300px] h-[600px] md:w-[320px] md:h-[650px] lg:-right-10 lg:-bottom-16 z-20"
+              className="absolute hidden md:block -right-4 -bottom-10 w-[200px] h-[400px] lg:w-[300px] lg:h-[600px] xl:w-[320px] xl:h-[650px] lg:-right-10 lg:-bottom-16 z-20"
             >
               <div className="relative w-full h-full drop-shadow-2xl">
                 <Image
@@ -144,6 +205,20 @@ const LandingPage: React.FunctionComponent = () => {
             <div className="absolute w-32 h-32 rounded-full bottom-1/4 right-1/4 bg-primary/10 blur-3xl" />
           </div>
         </motion.div>
+
+        {/* Responsive adjustments for dashboard image */}
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .aspect-[16/9] {
+              aspect-ratio: 4/3;
+            }
+          }
+          @media (min-width: 769px) and (max-width: 1024px) {
+            .aspect-[16/9] {
+              aspect-ratio: 16/10;
+            }
+          }
+        `}</style>
       </section>
 
       {/* Features Section */}
@@ -378,9 +453,9 @@ const LandingPage: React.FunctionComponent = () => {
             {/* Starter Plan */}
             <motion.div
               variants={itemVariants}
-              className="relative p-8 transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
+              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
             >
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center gap-6">
                 <div className="flex items-center justify-center w-10 h-10">
                   <Users className="w-6 h-6 text-primary" />
                 </div>
@@ -392,22 +467,22 @@ const LandingPage: React.FunctionComponent = () => {
                   <span className="text-4xl font-normal font-body">R99</span>
                   <span className="text-xs text-muted-foreground font-body">/month</span>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center gap-4">
                   <p className="text-xs uppercase font-body">Features</p>
                   <ul className="space-y-4">
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Up to 5 Users
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 1 Branch
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 5GB Storage
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 10K API Calls
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 2 Integrations
                     </li>
                   </ul>
@@ -421,14 +496,14 @@ const LandingPage: React.FunctionComponent = () => {
             {/* Professional Plan */}
             <motion.div
               variants={itemVariants}
-              className="relative p-8 transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
+              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
             >
               <div className="absolute top-4 right-4">
                 <span className="px-3 py-1 text-xs uppercase rounded-full bg-primary/10 text-primary font-body">
                   Popular
                 </span>
               </div>
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center gap-6">
                 <div className="flex items-center justify-center w-10 h-10">
                   <Store className="w-6 h-6 text-primary" />
                 </div>
@@ -440,22 +515,22 @@ const LandingPage: React.FunctionComponent = () => {
                   <span className="text-4xl font-normal font-body">R199</span>
                   <span className="text-xs text-muted-foreground font-body">/month</span>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center gap-4">
                   <p className="text-xs uppercase font-body">Features</p>
                   <ul className="space-y-4">
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Up to 20 Users
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 3 Branches
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 20GB Storage
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 500K API Calls
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 5 Integrations
                     </li>
                   </ul>
@@ -469,9 +544,9 @@ const LandingPage: React.FunctionComponent = () => {
             {/* Business Plan */}
             <motion.div
               variants={itemVariants}
-              className="relative p-8 transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
+              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
             >
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center gap-6">
                 <div className="flex items-center justify-center w-10 h-10">
                   <Building2 className="w-6 h-6 text-primary" />
                 </div>
@@ -483,22 +558,22 @@ const LandingPage: React.FunctionComponent = () => {
                   <span className="text-4xl font-normal font-body">R499</span>
                   <span className="text-xs text-muted-foreground font-body">/month</span>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center gap-4">
                   <p className="text-xs uppercase font-body">Features</p>
                   <ul className="space-y-4">
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Up to 50 Users
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 10 Branches
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 100GB Storage
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 2M API Calls
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 15 Integrations
                     </li>
                   </ul>
@@ -512,9 +587,9 @@ const LandingPage: React.FunctionComponent = () => {
             {/* Enterprise Plan */}
             <motion.div
               variants={itemVariants}
-              className="relative p-8 transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
+              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
             >
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center gap-6">
                 <div className="flex items-center justify-center w-10 h-10">
                   <Building className="w-6 h-6 text-primary" />
                 </div>
@@ -526,22 +601,22 @@ const LandingPage: React.FunctionComponent = () => {
                   <span className="text-4xl font-normal font-body">R999</span>
                   <span className="text-xs text-muted-foreground font-body">/month</span>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center gap-4">
                   <p className="text-xs uppercase font-body">Features</p>
                   <ul className="space-y-4">
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Users
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Branches
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 1TB Storage
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> 10M API Calls
                     </li>
-                    <li className="flex items-center text-xs uppercase font-body">
+                    <li className="flex items-center justify-center text-xs uppercase font-body">
                       <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Integrations
                     </li>
                   </ul>

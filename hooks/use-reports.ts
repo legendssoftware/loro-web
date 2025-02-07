@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { DateRange } from "react-day-picker";
 import { useSessionStore } from "@/store/use-session-store";
 import { DailyReport, GeneratedReport } from "@/lib/types/reports";
 import toast from "react-hot-toast";
+import { api } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,7 +20,10 @@ export enum ReportType {
 export enum ReportPeriod {
   DAILY = 'daily',
   WEEKLY = 'weekly',
-  MONTHLY = 'monthly'
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly',
+  CUSTOM = 'custom'
 }
 
 interface GenerateReportParams {
@@ -39,10 +43,13 @@ export const useReports = () => {
   const { accessToken } = useSessionStore();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [period, setPeriod] = useState<ReportPeriod>(ReportPeriod.DAILY);
-  const [reportType, setReportType] = useState<ReportType>(ReportType.QUOTATION);
+  const [reportType, setReportType] = useState<ReportType>(ReportType.LEAD);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [dailyReport, setDailyReport] = useState<DailyReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch daily report
-  const { data: dailyReport, isLoading: isDailyReportLoading } =
+  const { data: dailyReportData, isLoading: isDailyReportLoading } =
     useQuery<DailyReport>({
       queryKey: ["daily-report"],
       queryFn: async () => {
@@ -118,49 +125,40 @@ export const useReports = () => {
     },
   });
 
-  const handleGenerateReport = async () => {
-    // Validate date range
+  const handleGenerateReport = useCallback(async () => {
     if (!dateRange?.from || !dateRange?.to) {
-      toast.error("Please select a date range");
+      setError('Please select a date range');
       return;
     }
 
-    // Validate period
-    if (!period) {
-      toast.error("Please select a time period");
-      return;
-    }
-
-    // Validate report type
-    if (!reportType) {
-      toast.error("Please select a report type");
-      return;
-    }
-
-    // Validate date range makes sense
-    if (dateRange.to < dateRange.from) {
-      toast.error("End date must be after start date");
-      return;
-    }
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      // Create the start and end dates with proper time
-      const startDate = new Date(dateRange.from);
-      startDate.setHours(0, 0, 0, 0);
-
-      const endDate = new Date(dateRange.to);
-      endDate.setHours(23, 59, 59, 999);
-
-      await generateReportMutation.mutateAsync({
-        startDate,
-        endDate,
+      const response = await api.post('/reports/generate', {
+        startDate: dateRange.from.toISOString(),
+        endDate: dateRange.to.toISOString(),
         period,
-        type: reportType
+        type: reportType,
+        visualization: {
+          format: 'json',
+          charts: {},
+          tables: {}
+        },
+        filters: {}
       });
-    } catch (error) {
-      console.error('Failed to generate report:', error);
+
+      setDailyReport(response.data);
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setError('Your session has expired. Please sign in again.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to generate report');
+      }
+    } finally {
+      setIsGenerating(false);
     }
-  };
+  }, [dateRange, period, reportType]);
 
   return {
     // State
@@ -174,9 +172,10 @@ export const useReports = () => {
     setReportType,
 
     // Data and loading states
-    dailyReport,
+    dailyReport: dailyReport || dailyReportData,
     isDailyReportLoading,
-    isGenerating: generateReportMutation.isPending,
+    isGenerating,
+    error,
 
     // Actions
     handleGenerateReport,

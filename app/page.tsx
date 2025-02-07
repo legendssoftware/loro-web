@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import React from "react"
-import { useReports, ReportType, ReportPeriod } from "@/hooks/use-reports"
+import { useReports, ReportPeriod } from "@/hooks/use-reports"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import { ReportType } from "@/lib/types/reports"
 
 // Animation variants
 const containerVariants = {
@@ -70,45 +72,6 @@ const sectionVariants = {
 	},
 }
 
-// Move static data to constants
-const STATS_DATA = [
-	{
-		title: "Claims Made",
-		value: "R100,611",
-		change: "-2%",
-		trend: "down",
-		sparkline: [89, 100, 85, 98, 92, 78, 89],
-	},
-	{
-		title: "Orders Made",
-		value: "R89,021",
-		change: "-15%",
-		trend: "down",
-		sparkline: [92, 75, 85, 78, 82, 88, 80],
-	},
-	{
-		title: "Total Leads",
-		value: "18172",
-		change: "-15%",
-		trend: "down",
-		sparkline: [78, 88, 92, 75, 85, 78, 82],
-	},
-	{
-		title: "Journals Created",
-		value: "70138",
-		change: "+17%",
-		trend: "up",
-		sparkline: [85, 78, 82, 88, 92, 75, 85],
-	},
-	{
-		title: "Tasks Completed",
-		value: "32826",
-		change: "-7%",
-		trend: "down",
-		sparkline: [82, 88, 80, 92, 75, 85, 78],
-	}
-] as const
-
 const REPORT_OPTIONS = {
 	[ReportType.CLAIM]: { label: 'Claims Report', icon: <HandCoins className="w-4 h-4" /> },
 	[ReportType.QUOTATION]: { label: 'Quotations Report', icon: <ShoppingBag className="w-4 h-4" /> },
@@ -119,7 +82,9 @@ const REPORT_OPTIONS = {
 const TIME_OPTIONS = [
 	{ value: ReportPeriod.DAILY, label: 'Daily', icon: <CalendarClock className="w-4 h-4" /> },
 	{ value: ReportPeriod.WEEKLY, label: 'Weekly', icon: <CalendarClock className="w-4 h-4" /> },
-	{ value: ReportPeriod.MONTHLY, label: 'Monthly', icon: <CalendarClock className="w-4 h-4" /> }
+	{ value: ReportPeriod.MONTHLY, label: 'Monthly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: ReportPeriod.QUARTERLY, label: 'Quarterly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: ReportPeriod.YEARLY, label: 'Yearly', icon: <CalendarClock className="w-4 h-4" /> }
 ];
 
 const quickReports = [
@@ -155,40 +120,67 @@ export default function Dashboard() {
 		setReportType,
 		dailyReport,
 		isGenerating,
+		error,
 		handleGenerateReport
 	} = useReports();
 
+	React.useEffect(() => {
+		if (error) {
+			toast.error(error);
+		}
+	}, [error]);
+
 	// Update STATS_DATA to use dailyReport data
 	const statsData = React.useMemo(() => {
-		if (!dailyReport) return STATS_DATA;
+		if (!dailyReport) return [];
 
 		return [
 			{
-				title: "Claims Made",
-				value: dailyReport.claims?.totalValue || "R0",
+				title: "Claims Overview",
+				value: dailyReport.claims?.totalValue?.toString() || "R0",
+				subtitle: `${dailyReport.claims?.total || 0} total`,
 				change: dailyReport.claims?.metrics?.valueGrowth || "0%",
 				trend: dailyReport.claims?.metrics?.valueGrowth?.startsWith('+') ? "up" : "down",
-				sparkline: [89, 100, 85, 98, 92, 78, 89], // TODO: Add real data
+				breakdown: [
+					{ label: "Paid", value: dailyReport.claims?.paid || 0 },
+					{ label: "Pending", value: dailyReport.claims?.pending || 0 },
+					{ label: "Declined", value: dailyReport.claims?.declined || 0 }
+				],
+				sparkline: [89, 100, 85, 98, 92, 78, 89],
 			},
 			{
-				title: "Orders Made",
-				value: dailyReport.orders?.metrics?.grossQuotationValue || "R0",
+				title: "Quotations Overview",
+				value: dailyReport.orders?.metrics?.grossQuotationValue?.toString() || "R0",
+				subtitle: `${dailyReport.orders?.metrics?.totalQuotations || 0} total`,
 				change: dailyReport.orders?.metrics?.quotationTrends?.growth || "0%",
 				trend: dailyReport.orders?.metrics?.quotationTrends?.growth?.startsWith('+') ? "up" : "down",
+				breakdown: [
+					{ label: "Approved", value: dailyReport.orders?.approved || 0 },
+					{ label: "Processing", value: dailyReport.orders?.processing || 0 },
+					{ label: "Pending", value: dailyReport.orders?.pending || 0 }
+				],
 				sparkline: [92, 75, 85, 78, 82, 88, 80],
 			},
 			{
-				title: "Total Leads",
-				value: dailyReport.leads?.total?.toString() || "0",
-				change: dailyReport.leads?.metrics?.leadTrends?.growth || "0%",
-				trend: dailyReport.leads?.metrics?.leadTrends?.growth?.startsWith('+') ? "up" : "down",
-				sparkline: [78, 88, 92, 75, 85, 78, 82],
-			},
-			{
-				title: "Tasks Completed",
-				value: dailyReport.tasks?.completed?.toString() || "0",
+				title: "Tasks Status",
+				value: `${dailyReport.tasks?.completed || 0} / ${dailyReport.tasks?.total || 0}`,
+				subtitle: "Tasks completed vs total",
 				change: dailyReport.tasks?.metrics?.taskTrends?.growth || "0%",
 				trend: dailyReport.tasks?.metrics?.taskTrends?.growth?.startsWith('+') ? "up" : "down",
+				breakdown: [
+					{ label: "Completed", value: dailyReport.tasks?.completed || 0 },
+					{ label: "Pending", value: dailyReport.tasks?.pending || 0 },
+					{ label: "Missed", value: dailyReport.tasks?.missed || 0 },
+					{ label: "Postponed", value: dailyReport.tasks?.postponed || 0 }
+				],
+				sparkline: [82, 88, 80, 92, 75, 85, 78],
+			},
+			{
+				title: "Attendance Overview",
+				value: `${dailyReport.attendance?.present || 0} / ${dailyReport.attendance?.total || 0}`,
+				subtitle: "Staff present today",
+				change: `${dailyReport.attendance?.attendance || 0}%`,
+				trend: (dailyReport.attendance?.attendance || 0) >= 80 ? "up" : "down",
 				sparkline: [82, 88, 80, 92, 75, 85, 78],
 			}
 		];
@@ -203,12 +195,12 @@ export default function Dashboard() {
 			<motion.div
 				variants={containerVariants}
 				className="flex flex-wrap gap-2">
-				{statsData.map((stat, index) => (
+				{statsData?.map((stat, index) => (
 					<motion.div
 						key={`${stat.title}-${index}`}
 						variants={itemVariants}
 						className="flex-1 min-w-[240px]">
-						<Card className="transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 :border-primary/40">
+						<Card className="relative transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 hover:border-primary/40">
 							<CardContent className="p-6">
 								<div className="flex flex-col gap-4">
 									<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
@@ -308,7 +300,7 @@ export default function Dashboard() {
 									</SelectTrigger>
 									<SelectContent>
 										{Object.entries(REPORT_OPTIONS).map(([key, option]) => (
-											<SelectItem key={key} value={key.toUpperCase() as ReportType}>
+											<SelectItem key={key} value={key}>
 												<div className="flex items-center gap-2">
 													{option.icon}
 													<p className="text-[10px] font-body uppercase font-normal">{option.label}</p>

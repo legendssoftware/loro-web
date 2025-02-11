@@ -90,7 +90,7 @@ const QuotationListComponent = ({
                   <SelectItem
                     key={quotation.client.uid}
                     value={quotation.client.uid.toString()}
-                    className="text-xs font-body"
+                    className="text-[10px] font-normal uppercase font-body"
                   >
                     {quotation.client.name}
                   </SelectItem>
@@ -102,7 +102,7 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by user" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Users</SelectItem>
+              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Users</SelectItem>
               {quotations
                 .filter(
                   (quotation, index, self) =>
@@ -115,7 +115,7 @@ const QuotationListComponent = ({
                   <SelectItem
                     key={quotation.placedBy.uid}
                     value={quotation.placedBy.uid.toString()}
-                    className="text-xs font-body"
+                    className="text-[10px] font-normal uppercase font-body"
                   >
                     {`${quotation.placedBy.name} ${quotation.placedBy.surname}`}
                   </SelectItem>
@@ -127,12 +127,12 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Status</SelectItem>
               {Object.values(OrderStatus).map((status) => (
                 <SelectItem
                   key={status}
                   value={status}
-                  className="text-xs font-body"
+                  className="text-[10px] font-normal uppercase font-body"
                 >
                   {status}
                 </SelectItem>

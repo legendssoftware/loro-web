@@ -432,15 +432,15 @@ export const StaffModule = () => {
                                 className="w-full"
                                 onClick={() => document.getElementById('photo')?.click()}
                             >
-                                <Upload className="h-4 w-4 mr-2" />
+                                <Upload className="w-4 h-4 mr-2" />
                                 <p className="font-body font-normal uppercase text-[9px]">Upload Photo</p>
                             </Button>
                         </div>
                         {imagePreview && (
                             <div className="relative group">
-                                <Avatar className="h-16 w-16 ring-2 ring-primary">
+                                <Avatar className="w-16 h-16 ring-2 ring-primary">
                                     <AvatarImage src={imagePreview} alt="Preview" />
-                                    <AvatarFallback className="bg-black text-white text-sm font-body uppercase">
+                                    <AvatarFallback className="text-sm text-white uppercase bg-black font-body">
                                         {user ? `${user.name[0]}${user.surname[0]}` : 'Preview'}
                                     </AvatarFallback>
                                 </Avatar>
@@ -448,10 +448,10 @@ export const StaffModule = () => {
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute w-6 h-6 p-0 transition-opacity rounded-full opacity-0 -top-2 -right-2 group-hover:opacity-100"
                                     onClick={() => setImagePreview(null)}
                                 >
-                                    <X className="h-4 w-4" />
+                                    <X className="w-4 h-4" />
                                 </Button>
                             </div>
                         )}
@@ -460,7 +460,7 @@ export const StaffModule = () => {
                 <DialogFooter>
                     <Button
                         type="submit"
-                        className="text-xs text-white font-body font-normal uppercase"
+                        className="text-xs font-normal text-white uppercase font-body"
                         disabled={createUserMutation.isPending || updateUserMutation.isPending}>
                         {submitText}
                     </Button>
@@ -471,9 +471,8 @@ export const StaffModule = () => {
 
     if (isLoading) {
         return (
-            <div className="w-full h-full flex flex-col gap-4">
-                <div className="flex flex-row items-center justify-between gap-2">
-                    <h2 className="text-[14px] font-body font-normal uppercase">Staff Overview</h2>
+            <div className="flex flex-col w-full h-full gap-4">
+                <div className="flex flex-row items-center justify-end gap-2">
                     <div className="flex flex-row items-center justify-center gap-2">
                         <Input
                             placeholder="Search staff..."
@@ -486,34 +485,34 @@ export const StaffModule = () => {
                                 <SelectValue placeholder="Filter by status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" className="font-body text-[10px] uppercase">
+                                <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
                                     All Status
                                 </SelectItem>
                                 {status?.map((status) => (
-                                    <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] uppercase">
+                                    <SelectItem key={status?.value} value={status?.value} className="text-[10px] font-normal uppercase font-body">
                                         {status?.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         <Select value={roleFilter} onValueChange={handleRoleChange}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
                                 <SelectValue placeholder="Filter by role" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" className="font-body text-[10px] uppercase">
+                                <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
                                     All Roles
                                 </SelectItem>
-                                <SelectItem value="USER" className="font-body text-[10px] uppercase">User</SelectItem>
-                                <SelectItem value="ADMIN" className="font-body text-[10px] uppercase">Admin</SelectItem>
-                                <SelectItem value="MANAGER" className="font-body text-[10px] uppercase">Manager</SelectItem>
+                                <SelectItem value="USER" className="text-[10px] font-normal uppercase font-body">User</SelectItem>
+                                <SelectItem value="ADMIN" className="text-[10px] font-normal uppercase font-body">Admin</SelectItem>
+                                <SelectItem value="MANAGER" className="text-[10px] font-normal uppercase font-body">Manager</SelectItem>
                             </SelectContent>
                         </Select>
                         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="default" size="sm">
                                     <Plus size={16} strokeWidth={1.5} className="text-white" />
-                                    <p className="text-xs font-normal font-body uppercase text-white">Add</p>
+                                    <p className="text-xs font-normal text-white uppercase font-body">Add</p>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px]">
@@ -528,7 +527,7 @@ export const StaffModule = () => {
                         </Dialog>
                     </div>
                 </div>
-                <div className="h-screen w-full flex items-center justify-center">
+                <div className="flex items-center justify-center w-full h-screen">
                     <PageLoader />
                 </div>
             </div>
@@ -536,7 +535,7 @@ export const StaffModule = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="flex flex-col w-full h-full gap-4">
             <div className="flex flex-row items-center justify-end gap-2">
                 <div className="flex flex-row items-center justify-center gap-2">
                     <Input
@@ -550,8 +549,11 @@ export const StaffModule = () => {
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
+                                All Status
+                            </SelectItem>
                             {status?.map((status) => (
-                                <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] uppercase">
+                                <SelectItem key={status?.value} value={status?.value} className="text-[10px] font-normal uppercase font-body">
                                     {status?.label}
                                 </SelectItem>
                             ))}
@@ -562,19 +564,19 @@ export const StaffModule = () => {
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all" className="font-body text-[10px] uppercase">
+                            <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
                                 All Roles
                             </SelectItem>
-                            <SelectItem value="USER" className="font-body text-[10px] uppercase">User</SelectItem>
-                            <SelectItem value="ADMIN" className="font-body text-[10px] uppercase">Admin</SelectItem>
-                            <SelectItem value="MANAGER" className="font-body text-[10px] uppercase">Manager</SelectItem>
+                            <SelectItem value="USER" className="text-[10px] font-normal uppercase font-body">User</SelectItem>
+                            <SelectItem value="ADMIN" className="text-[10px] font-normal uppercase font-body">Admin</SelectItem>
+                            <SelectItem value="MANAGER" className="text-[10px] font-normal uppercase font-body">Manager</SelectItem>
                         </SelectContent>
                     </Select>
                     <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                         <DialogTrigger asChild>
                             <Button variant="default" size="sm">
                                 <Plus size={16} strokeWidth={1.5} className="text-white" />
-                                <p className="text-xs font-normal font-body uppercase text-white">Add</p>
+                                <p className="text-xs font-normal text-white uppercase font-body">Add</p>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
@@ -590,7 +592,7 @@ export const StaffModule = () => {
                 </div>
             </div>
             <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1"
+                className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
@@ -603,9 +605,9 @@ export const StaffModule = () => {
                     >
                         <Card className="p-4">
                             <div className="flex flex-col gap-2">
-                                <div className="flex justify-between items-start">
+                                <div className="flex items-start justify-between">
                                     <div className="flex items-start gap-3">
-                                        <Avatar className="h-8 w-8 ring-2 ring-primary">
+                                        <Avatar className="w-8 h-8 ring-2 ring-primary">
                                             {user?.photoURL && (
                                                 <AvatarImage
                                                     src={user.photoURL}
@@ -656,7 +658,7 @@ export const StaffModule = () => {
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-body font-medium">Edit Staff Member</DialogTitle>
+                        <DialogTitle className="text-lg font-medium font-body">Edit Staff Member</DialogTitle>
                         <DialogDescription className="text-sm text-muted-foreground">
                             Update the staff members information below.
                         </DialogDescription>
@@ -673,20 +675,20 @@ export const StaffModule = () => {
             <Dialog open={isDeactivateModalOpen} onOpenChange={setIsDeactivateModalOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-body font-medium uppercase">Deactivate Staff Member</DialogTitle>
-                        <DialogDescription className="text-sm text-card-foreground uppercase">
+                        <DialogTitle className="text-lg font-medium uppercase font-body">Deactivate Staff Member</DialogTitle>
+                        <DialogDescription className="text-sm uppercase text-card-foreground">
                             Are you sure you want to deactivate this staff member? This action can be reversed later.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex gap-2">
                         <Button
-                            className="font-body text-xs uppercase font-normal"
+                            className="text-xs font-normal uppercase font-body"
                             variant="outline"
                             onClick={() => setIsDeactivateModalOpen(false)}>
                             Cancel
                         </Button>
                         <Button
-                            className="font-body text-xs uppercase font-normal"
+                            className="text-xs font-normal uppercase font-body"
                             variant="destructive"
                             onClick={handleDeactivate}
                             disabled={deactivateUserMutation.isPending}>

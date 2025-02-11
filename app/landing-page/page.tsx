@@ -5,7 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Download, Phone, ClipboardList, Users, Package, Store, CheckSquare, Cloud, Check, CreditCard, Building2, Building, Menu } from "lucide-react";
+import {
+  Download,
+  ClipboardList,
+  Users,
+  Package,
+  Store,
+  CheckSquare,
+  Cloud,
+  Check,
+  CreditCard,
+  Building2,
+  Building,
+  Menu,
+} from "lucide-react";
 import { ThemeToggler } from "@/modules/navigation/theme.toggler";
 import router from "next/router";
 import { useState } from "react";
@@ -19,7 +32,7 @@ const containerVariants = {
       delayChildren: 0.2,
     },
   },
-}
+};
 
 const itemVariants = {
   hidden: {
@@ -33,9 +46,79 @@ const itemVariants = {
       type: "spring",
       stiffness: 300,
       damping: 24,
-    }
+    },
   },
+};
+
+interface PricingPlan {
+  icon: React.ReactNode;
+  name: string;
+  description: string;
+  price: string;
+  isPopular?: boolean;
+  features: string[];
+  buttonText: string;
 }
+
+const pricingPlans: PricingPlan[] = [
+  {
+    icon: <Users className="w-6 h-6 text-primary" />,
+    name: 'Starter',
+    description: 'For small teams',
+    price: 'R99',
+    features: [
+      'Up to 5 Users',
+      '1 Branch',
+      '5GB Storage',
+      '10K API Calls',
+      '2 Integrations'
+    ],
+    buttonText: 'Get Started'
+  },
+  {
+    icon: <Store className="w-6 h-6 text-primary" />,
+    name: 'Professional',
+    description: 'For growing teams',
+    price: 'R199',
+    isPopular: true,
+    features: [
+      'Up to 20 Users',
+      '3 Branches',
+      '20GB Storage',
+      '500K API Calls',
+      '5 Integrations'
+    ],
+    buttonText: 'Get Started'
+  },
+  {
+    icon: <Building2 className="w-6 h-6 text-primary" />,
+    name: 'Business',
+    description: 'For larger organizations',
+    price: 'R499',
+    features: [
+      'Up to 50 Users',
+      '10 Branches',
+      '100GB Storage',
+      '2M API Calls',
+      '15 Integrations'
+    ],
+    buttonText: 'Get Started'
+  },
+  {
+    icon: <Building className="w-6 h-6 text-primary" />,
+    name: 'Enterprise',
+    description: 'Custom solutions',
+    price: 'R999',
+    features: [
+      'Unlimited Users',
+      'Unlimited Branches',
+      '1TB Storage',
+      '10M API Calls',
+      'Unlimited Integrations'
+    ],
+    buttonText: 'Contact Sales'
+  }
+];
 
 const LandingPage: React.FunctionComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -90,11 +173,11 @@ const LandingPage: React.FunctionComponent = () => {
         {isMenuOpen && (
           <>
             {/* Overlay */}
-            <div 
+            <div
               className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
               onClick={() => setIsMenuOpen(false)}
             />
-            
+
             {/* Centered Menu */}
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               <div className="w-full max-w-sm p-6 mx-4 shadow-lg bg-card rounded-xl">
@@ -113,8 +196,8 @@ const LandingPage: React.FunctionComponent = () => {
                   >
                     Solutions
                   </Link>
-                  <Link 
-                    href="/sign-in" 
+                  <Link
+                    href="/sign-in"
                     onClick={() => setIsMenuOpen(false)}
                     className="w-full"
                   >
@@ -145,13 +228,16 @@ const LandingPage: React.FunctionComponent = () => {
             mobile-first platform for claims, quotations, and staff management
           </p>
           <div className="flex flex-row justify-center gap-4 mt-8">
-            <Button className="h-12 xs:text-[8px] text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80 font-normal" onClick={() => router.push('/sign-up')}>
+            <Button
+              className="h-12 xs:text-[8px] text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80 font-normal"
+              onClick={() => router.push("/sign-up")}
+            >
               Start Free Trial
             </Button>
             <Button
               variant="outline"
               className="h-12 text-xs font-normal uppercase transition-colors font-body hover:bg-primary hover:text-white"
-              onClick={() => router.push('/schedule-demo')}
+              onClick={() => router.push("/schedule-demo")}
             >
               Schedule Demo
             </Button>
@@ -165,7 +251,7 @@ const LandingPage: React.FunctionComponent = () => {
         >
           <div className="relative w-full aspect-[16/9] flex items-center justify-center">
             <div className="absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-background to-transparent" />
-            
+
             {/* Dashboard/Web View */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -187,7 +273,7 @@ const LandingPage: React.FunctionComponent = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="absolute hidden md:block -right-4 -bottom-10 w-[200px] h-[400px] lg:w-[300px] lg:h-[600px] xl:w-[320px] xl:h-[650px] lg:-right-10 lg:-bottom-16 z-20"
+              className="absolute hidden xl:block -right-4 -bottom-10 w-[200px] h-[400px] lg:w-[300px] lg:h-[600px] xl:w-[320px] xl:h-[650px] lg:-right-10 lg:-bottom-16 z-20"
             >
               <div className="relative w-full h-full drop-shadow-2xl">
                 <Image
@@ -234,7 +320,8 @@ const LandingPage: React.FunctionComponent = () => {
               Comprehensive Business Management Suite
             </h2>
             <p className="text-xs uppercase text-muted-foreground font-body">
-              Everything you need to streamline your operations and scale your business
+              Everything you need to streamline your operations and scale your
+              business
             </p>
           </motion.div>
 
@@ -244,7 +331,8 @@ const LandingPage: React.FunctionComponent = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+          >
             {/* Claims Management */}
             <motion.div
               variants={itemVariants}
@@ -257,17 +345,21 @@ const LandingPage: React.FunctionComponent = () => {
                 Claims Management
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Streamlined claims processing with automated workflows, document management, and real-time tracking
+                Streamlined claims processing with automated workflows, document
+                management, and real-time tracking
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated Processing
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated
+                  Processing
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Document Management
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Document
+                  Management
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Status Tracking
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Status
+                  Tracking
                 </li>
               </ul>
             </motion.div>
@@ -284,17 +376,20 @@ const LandingPage: React.FunctionComponent = () => {
                 Lead Management
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Capture and nurture leads with automated follow-ups and conversion tracking
+                Capture and nurture leads with automated follow-ups and
+                conversion tracking
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
                   <Check className="w-4 h-4 mr-2 text-primary" /> Lead Scoring
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated Follow-ups
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated
+                  Follow-ups
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Pipeline Analytics
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Pipeline
+                  Analytics
                 </li>
               </ul>
             </motion.div>
@@ -311,17 +406,21 @@ const LandingPage: React.FunctionComponent = () => {
                 Merchandise Control
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Complete merchandise management with inventory tracking and analytics
+                Complete merchandise management with inventory tracking and
+                analytics
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Stock Management
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Stock
+                  Management
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Product Cataloging
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Product
+                  Cataloging
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Sales Analytics
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Sales
+                  Analytics
                 </li>
               </ul>
             </motion.div>
@@ -338,17 +437,20 @@ const LandingPage: React.FunctionComponent = () => {
                 Online Store
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Integrated e-commerce solution with payment processing and order management
+                Integrated e-commerce solution with payment processing and order
+                management
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Payment Integration
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Payment
+                  Integration
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
                   <Check className="w-4 h-4 mr-2 text-primary" /> Order Tracking
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Customer Portal
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Customer
+                  Portal
                 </li>
               </ul>
             </motion.div>
@@ -365,17 +467,21 @@ const LandingPage: React.FunctionComponent = () => {
                 Advanced Task Management
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Comprehensive task management with automation and team collaboration
+                Comprehensive task management with automation and team
+                collaboration
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Team Assignment
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Team
+                  Assignment
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Progress Tracking
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Progress
+                  Tracking
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated Workflows
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Automated
+                  Workflows
                 </li>
               </ul>
             </motion.div>
@@ -392,17 +498,21 @@ const LandingPage: React.FunctionComponent = () => {
                 Enterprise Communication
               </h3>
               <p className="text-xs uppercase text-muted-foreground font-body">
-                Unified communication platform with real-time notifications and team collaboration
+                Unified communication platform with real-time notifications and
+                team collaboration
               </p>
               <ul className="mt-4 space-y-2">
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Real-time Notifications
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Real-time
+                  Notifications
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Team Chat & Updates
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Team Chat &
+                  Updates
                 </li>
                 <li className="flex items-center text-xs uppercase text-muted-foreground font-body">
-                  <Check className="w-4 h-4 mr-2 text-primary" /> Document Sharing
+                  <Check className="w-4 h-4 mr-2 text-primary" /> Document
+                  Sharing
                 </li>
               </ul>
             </motion.div>
@@ -420,7 +530,8 @@ const LandingPage: React.FunctionComponent = () => {
               Enterprise-Grade Integration
             </h4>
             <p className="text-xs uppercase text-muted-foreground font-body">
-              A comprehensive suite of business tools working seamlessly together to power your organization
+              A comprehensive suite of business tools working seamlessly
+              together to power your organization
             </p>
           </motion.div>
         </div>
@@ -443,189 +554,68 @@ const LandingPage: React.FunctionComponent = () => {
             </p>
           </motion.div>
 
+          {/* Pricing Plans */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid gap-6 mx-auto max-w-7xl md:grid-cols-4"
+            className="grid grid-cols-1 gap-8 mt-16 md:grid-cols-2 lg:grid-cols-4"
           >
-            {/* Starter Plan */}
-            <motion.div
-              variants={itemVariants}
-              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
-            >
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <Users className="w-6 h-6 text-primary" />
+            {pricingPlans.map((plan) => (
+              <motion.div
+                key={plan.name}
+                variants={itemVariants}
+                className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
+              >
+                {plan.isPopular && (
+                  <div className="absolute top-4 right-4">
+                    <span className="px-3 py-1 text-xs uppercase rounded-full bg-primary/10 text-primary font-body">
+                      Popular
+                    </span>
+                  </div>
+                )}
+                <div className="flex flex-col items-center gap-6">
+                  <div className="flex items-center justify-center w-10 h-10">
+                    {plan.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-normal uppercase font-body">
+                      {plan.name}
+                    </h3>
+                    <p className="mt-1 text-xs uppercase text-muted-foreground font-body">
+                      {plan.description}
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-normal font-body">{plan.price}</span>
+                    <span className="text-xs text-muted-foreground font-body">
+                      /month
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-xs uppercase font-body">Features</p>
+                    <ul className="space-y-4">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li
+                          key={featureIndex}
+                          className="flex items-center justify-center text-xs uppercase font-body"
+                        >
+                          <Check className="w-4 h-4 mr-3 text-primary" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 mt-4 text-xs uppercase transition-all group-hover:bg-primary group-hover:text-white"
+                  >
+                    {plan.buttonText}
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-normal uppercase font-body">Starter</h3>
-                  <p className="mt-1 text-xs uppercase text-muted-foreground font-body">For small teams</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-normal font-body">R99</span>
-                  <span className="text-xs text-muted-foreground font-body">/month</span>
-                </div>
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-xs uppercase font-body">Features</p>
-                  <ul className="space-y-4">
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Up to 5 Users
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 1 Branch
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 5GB Storage
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 10K API Calls
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 2 Integrations
-                    </li>
-                  </ul>
-                </div>
-                <Button variant="outline" className="w-full h-12 mt-4 text-xs uppercase transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                  Get Started
-                </Button>
-              </div>
-            </motion.div>
-
-            {/* Professional Plan */}
-            <motion.div
-              variants={itemVariants}
-              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
-            >
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 text-xs uppercase rounded-full bg-primary/10 text-primary font-body">
-                  Popular
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <Store className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-normal uppercase font-body">Professional</h3>
-                  <p className="mt-1 text-xs uppercase text-muted-foreground font-body">For growing teams</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-normal font-body">R199</span>
-                  <span className="text-xs text-muted-foreground font-body">/month</span>
-                </div>
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-xs uppercase font-body">Features</p>
-                  <ul className="space-y-4">
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Up to 20 Users
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 3 Branches
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 20GB Storage
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 500K API Calls
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 5 Integrations
-                    </li>
-                  </ul>
-                </div>
-                <Button variant="outline" className="w-full h-12 mt-4 text-xs uppercase transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                  Get Started
-                </Button>
-              </div>
-            </motion.div>
-
-            {/* Business Plan */}
-            <motion.div
-              variants={itemVariants}
-              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
-            >
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <Building2 className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-normal uppercase font-body">Business</h3>
-                  <p className="mt-1 text-xs uppercase text-muted-foreground font-body">For larger organizations</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-normal font-body">R499</span>
-                  <span className="text-xs text-muted-foreground font-body">/month</span>
-                </div>
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-xs uppercase font-body">Features</p>
-                  <ul className="space-y-4">
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Up to 50 Users
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 10 Branches
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 100GB Storage
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 2M API Calls
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 15 Integrations
-                    </li>
-                  </ul>
-                </div>
-                <Button variant="outline" className="w-full h-12 mt-4 text-xs uppercase transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                  Get Started
-                </Button>
-              </div>
-            </motion.div>
-
-            {/* Enterprise Plan */}
-            <motion.div
-              variants={itemVariants}
-              className="relative p-8 text-center transition-all cursor-pointer bg-card rounded-xl hover:shadow-lg group"
-            >
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <Building className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-normal uppercase font-body">Enterprise</h3>
-                  <p className="mt-1 text-xs uppercase text-muted-foreground font-body">Custom solutions</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-normal font-body">R999</span>
-                  <span className="text-xs text-muted-foreground font-body">/month</span>
-                </div>
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-xs uppercase font-body">Features</p>
-                  <ul className="space-y-4">
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Users
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Branches
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 1TB Storage
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> 10M API Calls
-                    </li>
-                    <li className="flex items-center justify-center text-xs uppercase font-body">
-                      <Check className="w-4 h-4 mr-3 text-primary" /> Unlimited Integrations
-                    </li>
-                  </ul>
-                </div>
-                <Button variant="outline" className="w-full h-12 mt-4 text-xs uppercase transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                  Contact Sales
-                </Button>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </motion.div>
 
           <motion.div
@@ -711,36 +701,69 @@ const LandingPage: React.FunctionComponent = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 text-white bg-primary">
-        <div className="container px-4 mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="mb-8 text-2xl font-normal uppercase font-body">
-              Ready to Transform Your Business Operations?
-            </h2>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/awesome0loro.apk" target="_blank" rel="noopener noreferrer" download>
-                <Button
-                  variant="secondary"
-                  className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
+      <section className="relative py-20 text-white bg-primary">
+        <div className="container px-4 mx-auto">
+          <div className="max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="text-xs uppercase text-white/80 font-body">TRY IT NOW</span>
+              <h2 className="mt-4 text-4xl font-normal tracking-tight uppercase font-body">
+                Ready to Transform Your Business Operations?
+              </h2>
+              <p className="mt-4 text-xs uppercase text-white/80 font-body">
+                Experience the power of LORO CRM with comprehensive features including claims management, 
+                lead tracking, GPS monitoring, attendance tracking, and professional quotation generation. 
+                All your business tools in one mobile-first platform.
+              </p>
+              <ul className="grid grid-cols-2 gap-3 mt-6">
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> Claims Processing
+                </li>
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> Lead Management
+                </li>
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> GPS Tracking
+                </li>
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> Staff Monitoring
+                </li>
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> Quotation System
+                </li>
+                <li className="flex items-center text-xs uppercase text-white/80 font-body">
+                  <Check className="w-4 h-4 mr-2 text-white/80" /> Real-time Analytics
+                </li>
+              </ul>
+              <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
+                <Link
+                  href="/awesome0loro.apk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download App
+                  <Button
+                    variant="secondary"
+                    className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download App
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-xs text-white uppercase transition-colors border-white font-body hover:bg-white/10 sm:w-auto"
+                  onClick={() => router.push("/sign-up")}
+                >
+                  Get Started
+                  <span className="ml-2">↗</span>
                 </Button>
-              </Link>
-              <Button
-                variant="secondary"
-                className="w-full h-12 text-xs uppercase transition-colors bg-white text-primary font-body hover:bg-white/90 sm:w-auto"
-                onClick={() => router.push('/sign-up')}
-              >
-                <Phone className="w-4 h-4 mr-2" />
-                Start Free Trial
-              </Button>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 

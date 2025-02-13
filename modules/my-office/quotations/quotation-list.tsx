@@ -216,6 +216,7 @@ const QuotationListComponent = ({
 
   return (
     <div className="flex flex-col gap-4">
+      <Header />
       <motion.div
         variants={containerVariants}
         initial="hidden"

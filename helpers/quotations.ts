@@ -24,7 +24,7 @@ export const fetchQuotations = async (config: RequestConfig) => {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
             return { quotations: [], message: 'Authentication failed. Please sign in again.' };
         }
-        console.error('Error fetching quotations:', error);
+        
         return { quotations: [], message: 'Error fetching quotations' };
     }
 };

@@ -72,10 +72,10 @@ export const fetchUsers = async (config: RequestConfig) => {
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            console.error('Error fetching users:', error.message)
             return { users: [], message: error.message }
         }
-        throw error
+
+        return error
     }
 }
 
@@ -93,7 +93,8 @@ export const createUser = async (userData: CreateUserDTO, config: RequestConfig)
             console.error('Error creating user:', error.message)
             return { message: error.message }
         }
-        throw error
+
+        return error
     }
 }
 
@@ -111,7 +112,8 @@ export const updateUser = async (uid: number, userData: UpdateUserDTO, config: R
             console.error('Error updating user:', error.message)
             return { message: error.message }
         }
-        throw error
+
+        return error
     }
 }
 
@@ -126,10 +128,10 @@ export const deleteUser = async (uid: number, config: RequestConfig) => {
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            console.error('Error deleting user:', error.message)
             return { message: error.message }
         }
-        throw error
+
+        return error
     }
 }
 
@@ -144,9 +146,9 @@ export const restoreUser = async (uid: number, config: RequestConfig) => {
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            console.error('Error restoring user:', error.message)
             return { message: error.message }
         }
-        throw error
+
+        return error
     }
 } 

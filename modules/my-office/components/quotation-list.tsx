@@ -79,7 +79,7 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by client" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Clients</SelectItem>
+              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Clients</SelectItem>
               {quotations
                 .filter(
                   (quotation, index, self) =>
@@ -99,7 +99,7 @@ const QuotationListComponent = ({
           </Select>
           <Select value={userFilter} onValueChange={setUserFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
-              <SelectValue placeholder="Filter by user" />
+              <SelectValue placeholder="Filter by user" className="text-[10px] font-normal uppercase font-body" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Users</SelectItem>
@@ -127,7 +127,7 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Status</SelectItem>
+              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Statuses</SelectItem>
               {Object.values(OrderStatus).map((status) => (
                 <SelectItem
                   key={status}

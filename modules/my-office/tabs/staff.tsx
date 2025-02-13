@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
-import { status } from "@/data/app-data"
+import { roles, status } from "@/data/app-data"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { createUser, fetchUsers, updateUser, User, CreateUserDTO, UpdateUserDTO, AccessLevel, AccountStatus } from "@/helpers/users"
 import { useSessionStore } from "@/store/use-session-store"
@@ -485,9 +485,7 @@ export const StaffModule = () => {
                                 <SelectValue placeholder="Filter by status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
-                                    All Status
-                                </SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-normal uppercase font-body" />
                                 {status?.map((status) => (
                                     <SelectItem key={status?.value} value={status?.value} className="text-[10px] font-normal uppercase font-body">
                                         {status?.label}
@@ -501,14 +499,16 @@ export const StaffModule = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
-                                    All Roles
+                                    All
                                 </SelectItem>
-                                <SelectItem value="USER" className="text-[10px] font-normal uppercase font-body">User</SelectItem>
-                                <SelectItem value="ADMIN" className="text-[10px] font-normal uppercase font-body">Admin</SelectItem>
-                                <SelectItem value="MANAGER" className="text-[10px] font-normal uppercase font-body">Manager</SelectItem>
+                                {roles?.map((role: { value: string, label: string }) => (
+                                    <SelectItem key={role?.value} value={role?.value} className="text-[10px] font-normal uppercase font-body">
+                                        {role?.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
-                        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                        {/* <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="default" size="sm">
                                     <Plus size={16} strokeWidth={1.5} className="text-white" />
@@ -524,7 +524,7 @@ export const StaffModule = () => {
                                 </DialogHeader>
                                 <UserForm onSubmit={handleCreateSubmit} submitText={createUserMutation.isPending ? 'Adding...' : 'Add Staff Member'} />
                             </DialogContent>
-                        </Dialog>
+                        </Dialog> */}
                     </div>
                 </div>
                 <div className="flex items-center justify-center w-full h-screen">
@@ -550,7 +550,7 @@ export const StaffModule = () => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
-                                All Status
+                                All Statuses
                             </SelectItem>
                             {status?.map((status) => (
                                 <SelectItem key={status?.value} value={status?.value} className="text-[10px] font-normal uppercase font-body">
@@ -567,8 +567,11 @@ export const StaffModule = () => {
                             <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">
                                 All Roles
                             </SelectItem>
-                            <SelectItem value="USER" className="text-[10px] font-normal uppercase font-body">User</SelectItem>
-                            <SelectItem value="ADMIN" className="text-[10px] font-normal uppercase font-body">Admin</SelectItem>
+                            {roles?.map((role: { value: string, label: string }) => (
+                                <SelectItem key={role?.value} value={role?.value} className="text-[10px] font-normal uppercase font-body">
+                                    {role?.label}
+                                </SelectItem>
+                            ))}
                             <SelectItem value="MANAGER" className="text-[10px] font-normal uppercase font-body">Manager</SelectItem>
                         </SelectContent>
                     </Select>

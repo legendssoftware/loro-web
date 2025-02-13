@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { leadStatuses } from "@/data/app-data";
 
-export const LeadsModule = () => {
+export const MerchandiseModule = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 

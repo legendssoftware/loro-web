@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { TaskCard } from "./task-card";
 import { ExistingTask } from "@/lib/types/tasks";
-import { TaskStatus } from "@/lib/enums/task.enums";
 import { PageLoader } from "@/components/page-loader";
 import {
   Select,
@@ -19,6 +18,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import toast from "react-hot-toast";
+import { taskStatuses } from "@/data/app-data";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -219,7 +219,12 @@ const TaskListComponent = ({
               <SelectValue placeholder="Filter by assignee" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Assignees</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                All Sales Agents
+              </SelectItem>
               {tasks
                 .flatMap((task) => task.assignees || [])
                 .filter(
@@ -244,17 +249,17 @@ const TaskListComponent = ({
             <SelectContent>
               <SelectItem
                 value="all"
-                className="text-[10px] font-normal font-body"
+                className="text-[10px] font-normal uppercase font-body"
               >
-                All Status
+                All Statuses
               </SelectItem>
-              {Object?.values(TaskStatus).map((status) => (
+              {taskStatuses?.map((status) => (
                 <SelectItem
-                  key={status}
-                  value={status}
-                  className="text-[10px] font-normal font-body"
+                  key={status?.value}
+                  value={status?.value}
+                  className="text-[10px] font-normal font-body uppercase"
                 >
-                  {status}
+                  {status?.label?.replace("_", " ")}
                 </SelectItem>
               ))}
             </SelectContent>

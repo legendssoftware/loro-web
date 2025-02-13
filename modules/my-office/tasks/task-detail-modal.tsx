@@ -29,8 +29,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { format } from "date-fns"
-import { UserSelect } from "./user-select"
-import { ClientSelect } from "./client-select"
+import { UserSelect } from "../../common/user-select"
+import { ClientSelect } from "../../common/client-select"
 import { updateTask } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"

@@ -86,11 +86,10 @@ export const createUser = async (userData: CreateUserDTO, config: RequestConfig)
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${config.headers.token}`
             }
-        })
+        })  
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            console.error('Error creating user:', error.message)
             return { message: error.message }
         }
 
@@ -109,7 +108,6 @@ export const updateUser = async (uid: number, userData: UpdateUserDTO, config: R
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            console.error('Error updating user:', error.message)
             return { message: error.message }
         }
 

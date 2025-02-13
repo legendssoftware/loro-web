@@ -53,18 +53,104 @@ export const useReports = () => {
     useQuery<DailyReport>({
       queryKey: ["daily-report"],
       queryFn: async () => {
-        const response = await axios.get<{ data: DailyReport }>(
-          `${API_URL}/reports/daily-report`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
+        try {
+          const response = await axios.get<DailyReport>(
+            `${API_URL}/reports/daily-report`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          // If the response is empty or invalid, return default data
+          if (!response.data) {
+            throw new Error('Invalid response data');
           }
-        );
-        return response.data.data;
+
+          return response.data;
+        } catch (error) {
+          console.error('Error fetching daily report:', error);
+          // Return a default DailyReport object with empty/zero values
+          return {
+            leads: {
+              total: 0,
+              review: [],
+              pending: [],
+              approved: [],
+              declined: [],
+              metrics: {
+                leadTrends: {
+                  growth: "0%"
+                }
+              }
+            },
+            claims: {
+              paid: [],
+              pending: [],
+              approved: [],
+              declined: [],
+              totalValue: "R0",
+              total: 0,
+              metrics: {
+                valueGrowth: "0%"
+              },
+              breakdown: []
+            },
+            tasks: {
+              pending: 0,
+              completed: 0,
+              missed: 0,
+              postponed: 0,
+              total: 0,
+              metrics: {
+                taskTrends: {
+                  growth: "0%"
+                }
+              }
+            },
+            orders: {
+              pending: 0,
+              processing: 0,
+              completed: 0,
+              cancelled: 0,
+              postponed: 0,
+              rejected: 0,
+              approved: 0,
+              metrics: {
+                totalQuotations: 0,
+                grossQuotationValue: "R0",
+                averageQuotationValue: "R0",
+                quotationTrends: {
+                  growth: "0%"
+                }
+              }
+            },
+            attendance: {
+              attendance: 0,
+              present: 0,
+              total: 0
+            },
+            metrics: {
+              totalQuotations: 0,
+              totalRevenue: "R0",
+              newCustomers: 0,
+              customerGrowth: "0%",
+              userSpecific: {
+                todayLeads: 0,
+                todayClaims: 0,
+                todayTasks: 0,
+                todayQuotations: 0,
+                hoursWorked: 0
+              }
+            }
+          };
+        }
       },
       enabled: !!accessToken,
+      retry: false, // Disable retries for this query
+      staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     });
 
   // Generate custom report

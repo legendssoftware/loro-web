@@ -37,13 +37,13 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
             layout
         >
             <Card
-                className="bg-card hover:border-primary/40 border-border shadow-none transition-colors cursor-pointer"
+                className="transition-colors shadow-none cursor-pointer bg-card hover:border-primary/40 border-border"
                 onClick={() => onClick(task)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && onClick(task)}
                 aria-label={`Task: ${task.description}`}>
-                <CardContent className="p-4 flex flex-col h-full justify-between gap-4">
+                <CardContent className="flex flex-col justify-between h-full gap-4 p-4">
                     <div className="flex items-center justify-between">
                         <Badge
                             variant="secondary"
@@ -67,19 +67,19 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                         </Badge>
                     </div>
                     <div className="space-y-2">
-                        <h3 className="font-body text-sm font-normal uppercase leading-tight text-card-foreground">
+                        <h3 className="text-sm font-normal leading-tight uppercase font-body text-card-foreground">
                             {task?.title?.length > 20 ? task?.title?.slice(0, 20) + "..." : task?.title}
                         </h3>
-                        <p className="text-xs font-body font-normal uppercase text-muted-foreground">
+                        <p className="text-xs font-normal uppercase font-body text-muted-foreground">
                             {task?.clients?.length > 1
                                 ? `${task?.clients?.length} Clients - ${task?.targetCategory}`
                                 : task?.clients?.[0]?.name}
                         </p>
                     </div>
-                    <div className="space-y-4 flex flex-row items-center justify-between">
+                    <div className="flex flex-row items-center justify-between space-y-4">
                         <div className="flex items-center justify-between pt-2 border-t">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                                <CalendarIcon className="w-3 h-3 text-muted-foreground" />
                                 <span className="text-[10px] font-body text-muted-foreground uppercase">
                                     {task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}
                                 </span>
@@ -90,7 +90,7 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                                 task?.assignees?.map((assignee) => (
                                     <Avatar
                                         key={assignee?.uid}
-                                        className="h-8 w-8 ring-2 ring-primary">
+                                        className="w-8 h-8 ring-2 ring-primary">
                                         {assignee?.photoURL && (
                                             <AvatarImage
                                                 src={assignee?.photoURL}

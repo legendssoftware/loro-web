@@ -5,8 +5,8 @@ import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
 import { Quotation } from "@/lib/types/quotations"
 import toast from 'react-hot-toast'
-import { QuotationDetailModal } from "../components/quotation-detail-modal"
-import { QuotationList } from "../components/quotation-list"
+import { QuotationList } from "./quotation-list"
+import { QuotationDetailModal } from "./quotation-detail-modal"
 
 export const QuotationsModule = () => {
     const { accessToken } = useSessionStore()
@@ -58,7 +58,7 @@ export const QuotationsModule = () => {
 
     return (
         <div className="flex flex-col w-full h-full gap-4">
-            <QuotationList 
+            <QuotationList  
                 quotations={quotationsData?.quotations || []}
                 onQuotationClick={handleQuotationClick}
                 isLoading={isLoading}

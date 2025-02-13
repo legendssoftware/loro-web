@@ -24,7 +24,6 @@ import { cn } from "@/lib/utils"
 import React from "react"
 import { useReports, ReportPeriod } from "@/hooks/use-reports"
 import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
 import { ReportType } from "@/lib/types/reports"
 
 // Animation variants
@@ -110,6 +109,16 @@ const quickReports = [
 	}
 ]
 
+interface StatData {
+	title: string;
+	value: string;
+	subtitle: string;
+	change: string;
+	trend: "up" | "down";
+	breakdown: Array<{ label: string; value: number }>;
+	sparkline: number[];
+}
+
 export default function Dashboard() {
 	const {
 		dateRange,
@@ -126,34 +135,35 @@ export default function Dashboard() {
 
 	React.useEffect(() => {
 		if (error) {
-			toast.error(error);
+			//use react hot toast
 		}
 	}, [error]);
 
-	// Update STATS_DATA to use dailyReport data
-	const statsData = React.useMemo(() => {
+	console.log(dailyReport);
+	
+	const statsData = React.useMemo<StatData[]>(() => {
 		if (!dailyReport) return [];
 
 		return [
 			{
 				title: "Claims Overview",
-				value: dailyReport.claims?.totalValue?.toString() || "R0",
+				value: dailyReport.claims?.totalValue || "R0",
 				subtitle: `${dailyReport.claims?.total || 0} total`,
 				change: dailyReport.claims?.metrics?.valueGrowth || "0%",
-				trend: dailyReport.claims?.metrics?.valueGrowth?.startsWith('+') ? "up" : "down",
+				trend: (dailyReport.claims?.metrics?.valueGrowth || "")?.startsWith('+') ? "up" : "down",
 				breakdown: [
-					{ label: "Paid", value: dailyReport.claims?.paid || 0 },
-					{ label: "Pending", value: dailyReport.claims?.pending || 0 },
-					{ label: "Declined", value: dailyReport.claims?.declined || 0 }
+					{ label: "Paid", value: dailyReport.claims?.paid?.length || 0 },
+					{ label: "Pending", value: dailyReport.claims?.pending?.length || 0 },
+					{ label: "Declined", value: dailyReport.claims?.declined?.length || 0 }
 				],
 				sparkline: [89, 100, 85, 98, 92, 78, 89],
 			},
 			{
 				title: "Quotations Overview",
-				value: dailyReport.orders?.metrics?.grossQuotationValue?.toString() || "R0",
+				value: dailyReport.orders?.metrics?.grossQuotationValue || "R0",
 				subtitle: `${dailyReport.orders?.metrics?.totalQuotations || 0} total`,
 				change: dailyReport.orders?.metrics?.quotationTrends?.growth || "0%",
-				trend: dailyReport.orders?.metrics?.quotationTrends?.growth?.startsWith('+') ? "up" : "down",
+				trend: (dailyReport.orders?.metrics?.quotationTrends?.growth || "")?.startsWith('+') ? "up" : "down",
 				breakdown: [
 					{ label: "Approved", value: dailyReport.orders?.approved || 0 },
 					{ label: "Processing", value: dailyReport.orders?.processing || 0 },
@@ -166,7 +176,7 @@ export default function Dashboard() {
 				value: `${dailyReport.tasks?.completed || 0} / ${dailyReport.tasks?.total || 0}`,
 				subtitle: "Tasks completed vs total",
 				change: dailyReport.tasks?.metrics?.taskTrends?.growth || "0%",
-				trend: dailyReport.tasks?.metrics?.taskTrends?.growth?.startsWith('+') ? "up" : "down",
+				trend: (dailyReport.tasks?.metrics?.taskTrends?.growth || "")?.startsWith('+') ? "up" : "down",
 				breakdown: [
 					{ label: "Completed", value: dailyReport.tasks?.completed || 0 },
 					{ label: "Pending", value: dailyReport.tasks?.pending || 0 },
@@ -181,6 +191,10 @@ export default function Dashboard() {
 				subtitle: "Staff present today",
 				change: `${dailyReport.attendance?.attendance || 0}%`,
 				trend: (dailyReport.attendance?.attendance || 0) >= 80 ? "up" : "down",
+				breakdown: [
+					{ label: "Present", value: dailyReport.attendance?.present || 0 },
+					{ label: "Total", value: dailyReport.attendance?.total || 0 }
+				],
 				sparkline: [82, 88, 80, 92, 75, 85, 78],
 			}
 		];

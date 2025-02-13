@@ -5,8 +5,8 @@ import type { UpdateTaskDTO } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
 import { ExistingTask } from "@/lib/types/tasks"
-import { TaskList } from "../components/task-list"
-import { TaskDetailModal } from "../components/task-detail-modal"
+import { TaskList } from "@/modules/my-office/tasks/task-list"
+import { TaskDetailModal } from "@/modules/my-office/tasks/task-detail-modal"
 import toast from 'react-hot-toast'
 
 export const TasksModule = () => {
@@ -134,7 +134,7 @@ export const TasksModule = () => {
     }, [deleteTaskMutation])
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="flex flex-col w-full h-full gap-4">
             <TaskList
                 tasks={tasksData?.tasks as ExistingTask[] || []}
                 onTaskClick={handleTaskClick}

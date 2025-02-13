@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { ExistingTask, SubTask } from "@/lib/types/tasks"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 interface EditTaskFormProps {
     task: ExistingTask
@@ -28,98 +26,98 @@ const EditTaskFormComponent = ({
             <ScrollArea className="h-[60vh] pr-4">
                 <div className="grid gap-6 py-4">
                     <div className="space-y-2">
-                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                        <h3 className="text-xs font-normal uppercase font-body text-muted-foreground">
                             Clients: {task?.clients?.length} total
                         </h3>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Name</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.clients?.[0]?.name}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.clients?.[0]?.name}</p>
                             </div>
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Email</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.clients?.[0]?.email}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.clients?.[0]?.email}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">address</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.clients?.[0]?.address}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.clients?.[0]?.address}</p>
                             </div>
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Phone</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.clients?.[0]?.phone}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.clients?.[0]?.phone}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Contact Person</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.clients?.[0]?.contactPerson}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.clients?.[0]?.contactPerson}</p>
                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                        <h3 className="text-xs font-normal uppercase font-body text-muted-foreground">
                             Task Details
                         </h3>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Repetition</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.repetitionType}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.repetitionType}</p>
                             </div>
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">repeats until</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.deadline ? format(new Date(task?.deadline), "MMM dd, yyyy") : "No deadline"}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Progress</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.progress} %</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.progress} %</p>
                             </div>
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Last Updated</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.updatedAt ? format(new Date(task?.updatedAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.updatedAt ? format(new Date(task?.updatedAt), "MMM dd, yyyy") : "No deadline"}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-1/2">
+                            <div className="flex flex-col w-1/2 gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Created</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.createdAt ? format(new Date(task?.createdAt), "MMM dd, yyyy") : "No deadline"}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.createdAt ? format(new Date(task?.createdAt), "MMM dd, yyyy") : "No deadline"}</p>
                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                        <h3 className="text-xs font-normal uppercase font-body text-muted-foreground">
                             Task Milestones
                         </h3>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-full">
+                            <div className="flex flex-col w-full gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Notes</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.notes}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.notes}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-full">
+                            <div className="flex flex-col w-full gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">Description</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.description}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.description}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1 w-full">
+                            <div className="flex flex-col w-full gap-1">
                                 <p className="text-[10px] font-body font-normal text-muted-foreground uppercase">comments</p>
-                                <p className="text-xs font-body font-normal text-card-foreground">{task?.comment}</p>
+                                <p className="text-xs font-normal font-body text-card-foreground">{task?.comment}</p>
                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-xs font-body font-normal text-muted-foreground uppercase">
+                        <h3 className="text-xs font-normal uppercase font-body text-muted-foreground">
                             Related Sub Tasks
                         </h3>
                         {
                             task?.subtasks?.map((subTask: SubTask) => (
-                                <div key={subTask?.uid} className="flex items-center justify-between border rounded px-3 py-4 cursor-pointer hover:bg-accent/40">
-                                    <p className="text-xs font-body font-normal text-card-foreground">{subTask?.title}</p>
+                                <div key={subTask?.uid} className="flex items-center justify-between px-3 py-4 border rounded cursor-pointer hover:bg-accent/40">
+                                    <p className="text-xs font-normal font-body text-card-foreground">{subTask?.title}</p>
                                     <Badge variant="outline" className={cn("font-body text-[10px] uppercase", subTask?.status === "COMPLETED" && "bg-green-100 text-green-600 border-green-200", subTask?.status !== "COMPLETED" && "bg-yellow-100 text-yellow-600 border-yellow-200")}>
                                         {subTask?.status}
                                     </Badge>
@@ -127,32 +125,24 @@ const EditTaskFormComponent = ({
                             ))
                         }
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input 
-                            type="password"
-                            id="password"
-                            placeholder="Enter new password"
-                        />
-                    </div>
                 </div>
             </ScrollArea>
-            <div className="flex justify-between items-center border-t pt-4">
-                <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center w-full gap-2">
                     <Button
                         variant="secondary"
                         size="lg"
                         onClick={onUpdate}
                         disabled={isUpdating}
-                        className="w-full font-body text-sm uppercase bg-violet-500 hover:bg-violet-600 text-white"
+                        className="w-full text-sm text-white uppercase font-body bg-violet-500 hover:bg-violet-600"
                     >
                         {isUpdating ? (
                             <div className="flex items-center gap-2">
-                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
-                                <p className="text-white font-normal text-xs">Updating...</p>
+                                <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin" />
+                                <p className="text-xs font-normal text-white">Updating...</p>
                             </div>
                         ) : (
-                            <p className="text-white font-normal text-xs">Update Task</p>
+                            <p className="text-xs font-normal text-white">Update Task</p>
                         )}
                     </Button>
                     <Button
@@ -160,15 +150,15 @@ const EditTaskFormComponent = ({
                         size="lg"
                         onClick={() => onDelete(task.uid)}
                         disabled={isDeleting}
-                        className="w-full font-body text-sm uppercase"
+                        className="w-full text-sm uppercase font-body"
                     >
                         {isDeleting ? (
                             <div className="flex items-center gap-2">
-                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
-                                <p className="text-white font-normal text-xs">Deleting...</p>
+                                <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin" />
+                                <p className="text-xs font-normal text-white">Deleting...</p>
                             </div>
                         ) : (
-                            <p className="text-white font-normal text-xs">Delete Task</p>
+                            <p className="text-xs font-normal text-white">Delete Task</p>
                         )}
                     </Button>
                 </div>

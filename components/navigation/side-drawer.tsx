@@ -46,7 +46,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             <div className="px-2 py-4 border-t border-border/10">
                 <div className="flex flex-col gap-2 p-3 rounded bg-accent/30">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 flex-row">
+                        <div className="flex flex-row items-center gap-1">
                             <div className="flex flex-col gap-0.5">
                                 <p className="text-[10px] font-body text-muted-foreground uppercase">
                                     My PLAN
@@ -71,9 +71,9 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                     "flex flex-col w-[200px] h-[98vh] my-[1vh] mx-4 rounded-3xl",
                     "border shadow-lg p-0 gap-0",
                 )}>
-                <SheetHeader className="p-6 flex items-center justify-between border-b border-border/10">
+                <SheetHeader className="flex items-center justify-between p-6 border-b border-border/10">
                     <SheetTitle asChild>
-                        <span className="text-xl font-bold font-body uppercase text-card-foreground">
+                        <span className="text-xl font-bold uppercase font-body text-card-foreground">
                             LORO CRM
                         </span>
                     </SheetTitle>

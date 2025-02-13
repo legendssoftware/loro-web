@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { TasksModule } from "@/modules/my-office/tabs/tasks";
 import {
   CheckSquare,
   FileText,
@@ -13,10 +12,11 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StaffModule } from "@/modules/my-office/tabs/staff";
-import { QuotationsModule } from "@/modules/my-office/tabs/quotations";
 import { ClaimsModule } from "@/modules/my-office/tabs/claims";
 import { LeadsModule } from "@/modules/my-office/tabs/leads";
 import { MerchandiseModule } from "@/modules/my-office/tabs/merchandise";
+import { QuotationsModule } from "@/modules/my-office/quotations/quotations";
+import { TasksModule } from "@/modules/my-office/tasks/tasks";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -139,7 +139,7 @@ export default function MyOfficePage() {
           </TabsContent>
           <TabsContent value="quotations" className="mt-4">
             <Card className="flex flex-col gap-2 border-0 shadow-none bg-card/20">
-              <QuotationsModule />
+              <QuotationsModule /> 
             </Card>
           </TabsContent>
           <TabsContent value="claims" className="mt-4">

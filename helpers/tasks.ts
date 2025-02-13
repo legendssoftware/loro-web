@@ -15,7 +15,7 @@ export type CreateTaskDTO = Omit<Task, 'uid' | 'createdAt' | 'updatedAt' | 'isDe
 export type UpdateTaskDTO = Partial<CreateTaskDTO>;
 
 // Fetch all tasks
-export const fetchTasks = async (config: RequestConfig) => {
+export const fetchTasks = async (config: RequestConfig): Promise<{ tasks: Task[], message: string }> => {
     try {
         const response = await axios.get<{ tasks: Task[], message: string }>(`${API_URL}/tasks`, {
             headers: {
@@ -24,9 +24,9 @@ export const fetchTasks = async (config: RequestConfig) => {
             }
         });
         return response.data;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        return { tasks: [], message: 'Error fetching tasks' };
+        // Return an empty tasks array with error message if request fails
+        return { tasks: [], message: error instanceof Error ? error.message : 'Failed to fetch tasks' };
     }
 };
 
@@ -91,7 +91,7 @@ export const deleteTask = async (ref: number, config: RequestConfig) => {
         });
         return response.data;
     } catch (error) {
-        throw error;
+        return error
     }
 };
 

@@ -20,7 +20,7 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
       const { status } = profileData.licenseInfo;
       const hasShownNotification = localStorage.getItem('licenseNotificationShown');
 
-      if (status === "active" && !hasShownNotification) {
+      if (status !== "active" && !hasShownNotification) {
         toast.custom(
           (t: Toast) => (
             <div

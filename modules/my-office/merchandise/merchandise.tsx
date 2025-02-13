@@ -26,6 +26,12 @@ export const MerchandiseModule = () => {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem
+                value="all"
+                className="font-body text-[10px] font-normal uppercase"
+              >
+                All Statuses
+              </SelectItem>
               {merchandiseStatuses?.map(
                 (status: { value: string; label: string }) => (
                   <SelectItem

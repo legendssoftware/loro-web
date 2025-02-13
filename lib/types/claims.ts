@@ -1,5 +1,4 @@
-import { User } from "./users";
-import { Branch } from "./branch";
+import { User } from "@/lib/types/users";
 
 export enum ClaimStatus {
     PENDING = "PENDING",
@@ -25,6 +24,12 @@ export enum ClaimCategory {
     ENTERTAINMENT = "ENTERTAINMENT"
 }
 
+export enum MerchandiseStatus {
+    PENDING = "PENDING",
+    REVIEW = "REVIEW",
+    DELETED = "DELETED"
+}
+
 export interface ClaimStats {
     total: number;
     pending: number;
@@ -35,36 +40,35 @@ export interface ClaimStats {
 
 export interface Claim {
     uid: number;
-    owner: User;
-    branch?: Branch;
+    title: string;
+    description: string;
     amount: string;
+    documentUrl?: string;
     category: ClaimCategory;
     status: ClaimStatus;
-    description: string;
-    attachments?: string[];
+    owner: User;
+    createdAt: string;
+    updatedAt: string;
     isDeleted: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date;
+    deletedAt?: string;
 }
 
 export interface CreateClaimDTO {
-    owner: { uid: number };
-    branch?: { uid: number };
-    amount: number;
-    category: ClaimCategory;
+    title: string;
     description: string;
-    attachments?: string[];
+    amount: number;
+    documentUrl?: string;
+    category: ClaimCategory;
+    owner: { uid: number };
 }
 
 export interface UpdateClaimDTO {
-    owner?: { uid: number };
-    branch?: { uid: number };
+    title?: string;
+    description?: string;
     amount?: number;
+    documentUrl?: string;
     category?: ClaimCategory;
     status?: ClaimStatus;
-    description?: string;
-    attachments?: string[];
 }
 
 export interface ClaimResponse {

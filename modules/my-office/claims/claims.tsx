@@ -26,11 +26,23 @@ export const ClaimsModule = () => {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              {claimStatuses?.map((status) => (
-                <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] font-normal uppercase">
-                  {status?.label}
-                </SelectItem>
-              ))}
+              <SelectItem
+                value="all"
+                className="font-body text-[10px] font-normal uppercase"
+              >
+                All Statuses
+              </SelectItem>
+              {claimStatuses?.map(
+                (status: { value: string; label: string }) => (
+                  <SelectItem
+                    key={status?.value}
+                    value={status?.value}
+                    className="font-body text-[10px] font-normal uppercase"
+                  >
+                    {status?.label}
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
         </div>

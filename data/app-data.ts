@@ -1,5 +1,5 @@
 import { TaskStatus } from "@/lib/enums/task.enums";
-import { ClaimStatus, ClaimCategory } from "@/lib/types/claims";
+import { ClaimStatus, ClaimCategory, MerchandiseStatus } from "@/lib/types/claims";
 import { LeadStatus } from "@/lib/types/leads";
 
 export const status = [
@@ -67,4 +67,10 @@ export const leadStatuses = [
   { label: "Negotiation", value: LeadStatus.NEGOTIATION },
   { label: "Won", value: LeadStatus.WON },
   { label: "Lost", value: LeadStatus.LOST },
+];
+
+
+export const merchandiseStatuses = [
+  { label: "Pending", value: MerchandiseStatus.PENDING },
+  { label: "Reviewed", value: MerchandiseStatus.REVIEW },
 ];

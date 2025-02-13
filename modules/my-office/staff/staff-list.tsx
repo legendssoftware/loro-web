@@ -82,7 +82,7 @@ export const StaffList = ({ staffData, onCreateClick, onUserAction }: StaffListP
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all" className="font-body text-[10px] uppercase">
-                                All Status
+                                All Statuses
                             </SelectItem>
                             {status?.map((status) => (
                                 <SelectItem key={status?.value} value={status?.value} className="font-body text-[10px] uppercase">

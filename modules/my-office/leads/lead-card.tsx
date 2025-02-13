@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Lead } from "@/lib/types/leads";
 import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
 
 interface LeadCardProps {
     lead: Lead;
@@ -29,6 +30,8 @@ const itemVariants = {
 };
 
 const LeadCard = ({ lead, onClick }: LeadCardProps) => {
+    const initials = `${lead?.owner?.name?.[0] || ''}${lead?.owner?.surname?.[0] || ''}`;
+
     return (
         <motion.div
             variants={itemVariants}
@@ -56,42 +59,48 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
                         >
                             {lead?.status}
                         </Badge>
-                        <span className="text-[10px] font-body text-muted-foreground uppercase">
-                            {lead?.createdAt && format(new Date(lead.createdAt), "MMM dd, yyyy")}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-[10px] font-body text-muted-foreground uppercase">
+                                {lead?.createdAt && format(new Date(lead.createdAt), "MMM dd, yyyy")}
+                            </span>
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-sm font-normal leading-tight uppercase font-body text-card-foreground">
                             {lead?.name?.length > 20 ? lead?.name?.slice(0, 20) + "..." : lead?.name}
                         </h3>
                         <div className="flex flex-col gap-1">
-                            <p className="text-xs font-normal uppercase font-body text-muted-foreground">
+                            <p className="text-[10px] font-normal uppercase font-body text-muted-foreground">
                                 {lead?.email}
                             </p>
-                            <p className="text-xs font-normal uppercase font-body text-muted-foreground">
+                            <p className="text-[10px] font-normal uppercase font-body text-muted-foreground">
                                 {lead?.phone}
                             </p>
                         </div>
                     </div>
                     {lead?.notes && (
-                        <p className="text-xs font-normal uppercase font-body text-muted-foreground line-clamp-2">
+                        <p className="text-[10px] font-normal uppercase font-body text-muted-foreground line-clamp-2">
                             {lead.notes}
                         </p>
                     )}
                     <div className="flex items-center justify-between pt-2 border-t">
                         <div className="flex items-center gap-2">
-                            {lead?.owner?.photoURL ? (
-                                <Avatar className="w-6 h-6 ring-2 ring-primary">
+                            <Avatar className="w-6 h-6 ring-2 ring-primary">
+                                {lead?.owner?.photoURL ? (
                                     <AvatarImage
                                         src={lead.owner.photoURL}
                                         alt={`${lead.owner.name}`}
                                     />
-                                </Avatar>
-                            ) : (
-                                <span className="text-[10px] font-body text-muted-foreground uppercase">
-                                    {lead?.owner?.name} {lead?.owner?.surname}
-                                </span>
-                            )}
+                                ) : (
+                                    <AvatarFallback className="text-[10px] font-body uppercase">
+                                        {initials}
+                                    </AvatarFallback>
+                                )}
+                            </Avatar>
+                            <span className="text-[10px] font-body text-muted-foreground uppercase">
+                                {lead?.owner?.name} {lead?.owner?.surname}
+                            </span>
                         </div>
                         {lead?.branch && (
                             <Badge variant="secondary" className="text-[10px] font-body uppercase">

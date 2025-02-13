@@ -82,7 +82,8 @@ const QuotationDetailModalComponent = ({
                                             'Not specified'}
                                     </p>
                                     <p>Total Items: {totalItems}</p>
-                                    <p className="pt-2 mt-2 border-t">Created By: 
+                                    <div className="pt-2 mt-2 border-t">
+                                        <span className="text-xs font-normal font-body">Created By:</span>
                                         {selectedQuotation?.placedBy ? (
                                             <div className="mt-1">
                                                 <div>{`${selectedQuotation.placedBy.name || ''} ${selectedQuotation.placedBy.surname || ''}`}</div>
@@ -93,7 +94,7 @@ const QuotationDetailModalComponent = ({
                                                 </Badge>
                                             </div>
                                         ) : 'N/A'}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -43,7 +43,6 @@ const LeadDetailModal = ({
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center justify-between">
-                        <span>Lead Details</span>
                         <Badge
                             variant={
                                 selectedLead.status === "APPROVED"
@@ -52,22 +51,22 @@ const LeadDetailModal = ({
                                     ? "secondary"
                                     : "destructive"
                             }
-                            className="text-xs"
+                            className="text-[10px] font-body uppercase"
                         >
                             {selectedLead.status}
                         </Badge>
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-[10px] font-body uppercase">
                         Created on {format(new Date(selectedLead.createdAt), "MMMM d, yyyy")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-lg font-semibold">{selectedLead.name}</h3>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                            <p>{selectedLead.email}</p>
-                            <p>{selectedLead.phone}</p>
+                        <h3 className="text-lg font-semibold uppercase font-body">{selectedLead.name}</h3>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                            <p className="text-[10px] font-normal uppercase font-body">{selectedLead.email}</p>
+                            <p className="text-[10px] font-normal uppercase font-body">{selectedLead.phone}</p>
                         </div>
                     </div>
 
@@ -76,8 +75,8 @@ const LeadDetailModal = ({
                     {selectedLead.notes && (
                         <>
                             <div>
-                                <h4 className="font-medium mb-2">Notes</h4>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                <h4 className="mb-2 font-medium uppercase font-body">Notes</h4>
+                                <p className="text-[10px] font-normal font-body whitespace-pre-wrap text-muted-foreground">
                                     {selectedLead.notes}
                                 </p>
                             </div>
@@ -86,14 +85,14 @@ const LeadDetailModal = ({
                     )}
 
                     <div className="space-y-2">
-                        <h4 className="font-medium">Owner Information</h4>
+                        <h4 className="font-medium uppercase font-body">Owner Information</h4>
                         <div className="text-sm text-muted-foreground">
-                            <p>
-                                {selectedLead.owner.name} {selectedLead.owner.surname}
+                            <p className="text-[10px] font-normal font-body uppercase">
+                                {selectedLead?.owner?.name} {selectedLead?.owner?.surname}
                             </p>
-                            {selectedLead.branch && (
-                                <p className="text-sm text-muted-foreground">
-                                    Branch: {selectedLead.branch.name}
+                            {selectedLead?.branch && (
+                                <p className="text-[10px] font-normal font-body uppercase">
+                                    Branch: {selectedLead?.branch?.name}
                                 </p>
                             )}
                         </div>
@@ -104,6 +103,7 @@ const LeadDetailModal = ({
                             variant="outline"
                             onClick={onClose}
                             disabled={isUpdating || isDeleting || isRestoring}
+                            className="text-[10px] font-body uppercase font-normal w-1/3"
                         >
                             Close
                         </Button>
@@ -112,10 +112,11 @@ const LeadDetailModal = ({
                                 variant="secondary"
                                 onClick={() => onRestore(selectedLead)}
                                 disabled={isUpdating || isDeleting || isRestoring}
+                                className="text-[10px] font-body uppercase font-normal w-1/3"
                             >
                                 {isRestoring ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                         Restoring...
                                     </>
                                 ) : (
@@ -128,10 +129,11 @@ const LeadDetailModal = ({
                                     variant="secondary"
                                     onClick={() => onUpdate(selectedLead)}
                                     disabled={isUpdating || isDeleting || isRestoring}
+                                    className="text-[10px] font-body uppercase font-normal w-1/3"
                                 >
                                     {isUpdating ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                             Updating...
                                         </>
                                     ) : (
@@ -142,10 +144,11 @@ const LeadDetailModal = ({
                                     variant="destructive"
                                     onClick={() => onDelete(selectedLead)}
                                     disabled={isUpdating || isDeleting || isRestoring}
+                                    className="text-[10px] font-body uppercase font-normal w-1/3"
                                 >
                                     {isDeleting ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                             Deleting...
                                         </>
                                     ) : (

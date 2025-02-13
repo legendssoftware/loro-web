@@ -81,8 +81,8 @@ export function TopNav() {
     return (
         <>
             <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="flex h-16 items-center px-2 justify-between">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between h-16 px-2">
+                    <div className="flex items-center justify-between w-full gap-2 md:w-auto">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -90,15 +90,16 @@ export function TopNav() {
                             onClick={() => setDrawerOpen(true)}>
                             <LayoutDashboardIcon strokeWidth={1.5} size={50} />
                         </Button>
-                        <span className="text-xl font-bold font-body uppercase">LORO CRM</span>
+                        <span className="text-xl font-bold uppercase font-body">LORO</span>
+                        <span className="hidden text-xl font-bold uppercase font-body md:block">CRM</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="items-center hidden gap-4 md:flex">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleSignOut}
                             className="text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20">
-                            <Power className="h-5 w-5" />
+                            <Power className="w-5 h-5" />
                             <span className="sr-only">Sign out</span>
                         </Button>
                         <ThemeToggler />
@@ -112,13 +113,13 @@ export function TopNav() {
                             onClick={() => setChatOpen(true)}
                             className="relative"
                         >
-                            <MessageCircle className="h-5 w-5" />
+                            <MessageCircle className="w-5 h-5" />
                             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center font-body uppercase">
                                 1
                             </span>
                         </Button>
                         <div className="relative">
-                            <Avatar className="h-8 w-8 ring-2 ring-primary">
+                            <Avatar className="w-8 h-8 ring-2 ring-primary">
                                 {profileData?.photoURL && (
                                     <AvatarImage
                                         src={profileData.photoURL}
@@ -129,7 +130,7 @@ export function TopNav() {
                                     {userInitials}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 ring-2 ring-white" />
+                            <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white" />
                         </div>
                     </div>
                 </div>

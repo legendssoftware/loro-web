@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
-import { Claim, ClaimStatus, ClaimCategory } from "@/lib/types/claims";
+import { Claim, ClaimCategory } from "@/lib/types/claims";
 import { ClaimCard } from "./claim-card";
 import {
   Select,
@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, List, LucideIcon } from "lucide-react";
+import { claimStatuses } from "@/data/app-data";
 
 interface ClaimListProps {
   claims: Claim[];
@@ -46,9 +47,8 @@ const ClaimListComponent = ({
       const matchesCategory =
         categoryFilter === "all" || claim.category === categoryFilter;
       const matchesUser =
-        userFilter === "all" ||
-        claim.owner.uid.toString() === userFilter;
-      const matchesSearch = 
+        userFilter === "all" || claim.owner.uid.toString() === userFilter;
+      const matchesSearch =
         claim.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         claim.owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         claim.owner.surname.toLowerCase().includes(searchQuery.toLowerCase());
@@ -68,8 +68,10 @@ const ClaimListComponent = ({
   if (filteredClaims.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-screen gap-2">
-        <FolderOpen className="w-10 h-10" size={50} strokeWidth={1.5}/>
-        <p className="text-xs font-normal uppercase font-body">No claims found</p>
+        <FolderOpen className="w-10 h-10" size={70} strokeWidth={1} />
+        <p className="text-xs font-normal uppercase font-body">
+          No claims found
+        </p>
       </div>
     );
   }
@@ -89,7 +91,15 @@ const ClaimListComponent = ({
               <SelectValue placeholder="Filter by user" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Users</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Users</span>
+                </div>
+              </SelectItem>
               {claims
                 .filter(
                   (claim, index, self) =>
@@ -112,7 +122,15 @@ const ClaimListComponent = ({
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Categories</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Categories</span>
+                </div>
+              </SelectItem>
               {Object.values(ClaimCategory).map((category) => (
                 <SelectItem
                   key={category}
@@ -129,16 +147,35 @@ const ClaimListComponent = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Statuses</SelectItem>
-              {Object.values(ClaimStatus).map((status) => (
-                <SelectItem
-                  key={status}
-                  value={status}
-                  className="text-[10px] font-normal uppercase font-body"
-                >
-                  {status}
-                </SelectItem>
-              ))}
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Statuses</span>
+                </div>
+              </SelectItem>
+              {claimStatuses?.map(
+                (status: {
+                  value: string;
+                  label: string;
+                  icon: LucideIcon;
+                }) => (
+                  <SelectItem
+                    key={status?.value}
+                    value={status?.value}
+                    className="text-[10px] font-normal font-body uppercase"
+                  >
+                    <div className="flex items-center gap-2">
+                      {status?.icon && (
+                        <status.icon size={17} strokeWidth={1.5} />
+                      )}
+                      <span>{status?.label?.replace("_", " ")}</span>
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -161,4 +198,4 @@ const ClaimListComponent = ({
   );
 };
 
-export const ClaimList = memo(ClaimListComponent); 
+export const ClaimList = memo(ClaimListComponent);

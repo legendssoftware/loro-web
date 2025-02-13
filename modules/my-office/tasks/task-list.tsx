@@ -19,6 +19,8 @@ import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import toast from "react-hot-toast";
 import { taskStatuses } from "@/data/app-data";
+import { List, LucideIcon } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -157,8 +159,6 @@ const TaskListComponent = ({
           },
         };
 
-        console.log(newTask, "new task data");
-
         await createTaskMutation.mutateAsync(newTask);
       } catch (error) {
         console.error("Error creating task:", error);
@@ -186,7 +186,7 @@ const TaskListComponent = ({
             onChange={handleSearchChange}
           />
           <Select value={clientFilter} onValueChange={handleClientChange}>
-            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by client" />
             </SelectTrigger>
             <SelectContent>
@@ -194,7 +194,10 @@ const TaskListComponent = ({
                 value="all"
                 className="text-[10px] font-normal uppercase font-body"
               >
-                All Clients
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Clients</span>
+                </div>
               </SelectItem>
               {tasks
                 .filter((task) => task.client)
@@ -215,7 +218,7 @@ const TaskListComponent = ({
             </SelectContent>
           </Select>
           <Select value={assigneeFilter} onValueChange={handleAssigneeChange}>
-            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by assignee" />
             </SelectTrigger>
             <SelectContent>
@@ -223,7 +226,10 @@ const TaskListComponent = ({
                 value="all"
                 className="text-[10px] font-normal uppercase font-body"
               >
-                All Sales Agents
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Sales Agents</span>
+                </div>
               </SelectItem>
               {tasks
                 .flatMap((task) => task.assignees || [])
@@ -237,31 +243,60 @@ const TaskListComponent = ({
                     value={assignee.uid.toString()}
                     className="text-[10px] font-normal uppercase font-body"
                   >
-                    {`${assignee.name} ${assignee.surname}`}
+                    <div className="flex flex-row items-center gap-2">
+                      <Avatar
+                        className={`${
+                          assignee.uid === Number(assigneeFilter)
+                            ? "h-5 w-5"
+                            : "h-8 w-8"
+                        }`}
+                      >
+                        <AvatarImage src={assignee?.photoURL} />
+                        <AvatarFallback>
+                          {assignee?.name?.charAt(0)}
+                          {assignee?.surname?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {`${assignee.name} ${assignee.surname}`}
+                    </div>
                   </SelectItem>
                 ))}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
                 value="all"
-                className="text-[10px] font-normal uppercase font-body"
+                className="text-[10px] font-normal uppercase font-body flex items-center gap-2 flex-row"
               >
-                All Statuses
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Statuses</span>
+                </div>
               </SelectItem>
-              {taskStatuses?.map((status) => (
-                <SelectItem
-                  key={status?.value}
-                  value={status?.value}
-                  className="text-[10px] font-normal font-body uppercase"
-                >
-                  {status?.label?.replace("_", " ")}
-                </SelectItem>
-              ))}
+              {taskStatuses?.map(
+                (status: {
+                  value: string;
+                  label: string;
+                  icon: LucideIcon;
+                }) => (
+                  <SelectItem
+                    key={status?.value}
+                    value={status?.value}
+                    className="text-[10px] font-normal font-body uppercase"
+                  >
+                    <div className="flex items-center gap-2">
+                      {status?.icon && (
+                        <status.icon size={17} strokeWidth={1.5} />
+                      )}
+                      <span>{status?.label?.replace("_", " ")}</span>
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
         </div>

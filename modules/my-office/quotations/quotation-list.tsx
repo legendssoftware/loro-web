@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
-import { OrderStatus, Quotation } from "@/lib/types/quotations";
+import { Quotation } from "@/lib/types/quotations";
 import { QuotationCard } from "./quotation-card";
 import {
   Select,
@@ -11,6 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Building2, BusIcon, List, Store } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { quotationStatuses } from "@/data/app-data";
 
 interface QuotationListProps {
   quotations: Quotation[];
@@ -79,7 +82,15 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by client" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Clients</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Clients</span>
+                </div>
+              </SelectItem>
               {quotations
                 .filter(
                   (quotation, index, self) =>
@@ -92,17 +103,31 @@ const QuotationListComponent = ({
                     value={quotation.client.uid.toString()}
                     className="text-[10px] font-normal uppercase font-body"
                   >
-                    {quotation.client.name}
+                    <div className="flex flex-row items-center gap-2">
+                      <Building2 size={17} strokeWidth={1.5} />
+                      {quotation.client.name}
+                    </div>
                   </SelectItem>
                 ))}
             </SelectContent>
           </Select>
           <Select value={userFilter} onValueChange={setUserFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
-              <SelectValue placeholder="Filter by user" className="text-[10px] font-normal uppercase font-body" />
+              <SelectValue
+                placeholder="Filter by user"
+                className="text-[10px] font-normal uppercase font-body"
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Users</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Users</span>
+                </div>
+              </SelectItem>
               {quotations
                 .filter(
                   (quotation, index, self) =>
@@ -117,7 +142,22 @@ const QuotationListComponent = ({
                     value={quotation.placedBy.uid.toString()}
                     className="text-[10px] font-normal uppercase font-body"
                   >
-                    {`${quotation.placedBy.name} ${quotation.placedBy.surname}`}
+                    <div className="flex flex-row items-center gap-2">
+                      <Avatar
+                        className={`${
+                          quotation.placedBy.uid === Number(userFilter)
+                            ? "h-5 w-5"
+                            : "h-8 w-8"
+                        }`}
+                      >
+                        <AvatarImage src={quotation.placedBy?.photoURL} />
+                        <AvatarFallback>
+                          {quotation.placedBy?.name?.charAt(0)}
+                          {quotation.placedBy?.surname?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {`${quotation.placedBy.name} ${quotation.placedBy.surname}`}
+                    </div>
                   </SelectItem>
                 ))}
             </SelectContent>
@@ -127,14 +167,27 @@ const QuotationListComponent = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-[10px] font-normal uppercase font-body">All Statuses</SelectItem>
-              {Object.values(OrderStatus).map((status) => (
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Statuses</span>
+                </div>
+              </SelectItem>
+              {quotationStatuses?.map((status) => (
                 <SelectItem
-                  key={status}
-                  value={status}
-                  className="text-[10px] font-normal uppercase font-body"
+                  key={status?.value}
+                  value={status?.value}
+                  className="text-[10px] font-normal font-body uppercase"
                 >
-                  {status}
+                  <div className="flex items-center gap-2">
+                    {status?.icon && (
+                      <status.icon size={17} strokeWidth={1.5} />
+                    )}
+                    <span>{status?.label?.replace("_", " ")}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>

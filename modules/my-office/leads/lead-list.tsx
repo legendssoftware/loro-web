@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/select";
 import { Lead } from "@/lib/types/leads";
 import LeadCard from "./lead-card";
-import { FolderOpen, Loader2 } from "lucide-react";
-import { LEAD_STATUSES } from "@/lib/enums/leads";
+import { FolderOpen, List } from "lucide-react";
+import { PageLoader } from "@/components/page-loader";
+import { leadStatuses } from "@/data/app-data";
 
 interface LeadListProps {
   leads: Lead[];
@@ -57,8 +58,8 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center w-full min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
       </div>
     );
   }
@@ -66,7 +67,10 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   if (!filteredLeads?.length) {
     return (
       <div className="flex flex-col items-center justify-center w-full min-h-[400px] gap-2">
-        <FolderOpen className="w-8 h-8 text-muted-foreground" strokeWidth={1.5} />
+        <FolderOpen
+          className="w-8 h-8 text-muted-foreground"
+          strokeWidth={1.5}
+        />
         <p className="text-xs font-normal uppercase text-muted-foreground font-body">
           No leads found
         </p>
@@ -94,15 +98,23 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
                 value="all"
                 className="text-[10px] font-normal uppercase font-body"
               >
-                All Statuses
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Statuses</span>
+                </div>
               </SelectItem>
-              {LEAD_STATUSES.map((status) => (
+              {leadStatuses.map((status) => (
                 <SelectItem
-                  key={status.value}
-                  value={status.value}
-                  className="text-[10px] font-normal uppercase font-body"
+                  key={status?.value}
+                  value={status?.value}
+                  className="text-[10px] font-normal font-body uppercase"
                 >
-                  {status.label}
+                  <div className="flex items-center gap-2">
+                    {status?.icon && (
+                      <status.icon size={17} strokeWidth={1.5} />
+                    )}
+                    <span>{status?.label?.replace("_", " ")}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>

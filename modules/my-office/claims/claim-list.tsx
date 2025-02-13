@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
-import { Claim, ClaimCategory } from "@/lib/types/claims";
+import { Claim } from "@/lib/types/claims";
 import { ClaimCard } from "./claim-card";
 import {
   Select,
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FolderOpen, List, LucideIcon } from "lucide-react";
-import { claimStatuses } from "@/data/app-data";
+import { claimCategories, claimStatuses } from "@/data/app-data";
 
 interface ClaimListProps {
   claims: Claim[];
@@ -112,15 +112,26 @@ const ClaimListComponent = ({
                   <span>All Categories</span>
                 </div>
               </SelectItem>
-              {Object.values(ClaimCategory).map((category) => (
-                <SelectItem
-                  key={category}
-                  value={category}
-                  className="text-[10px] font-normal uppercase font-body"
-                >
-                  {category}
-                </SelectItem>
-              ))}
+              {claimCategories?.map( 
+                (category: {
+                  value: string;
+                  label: string;
+                  icon: LucideIcon;
+                }) => (
+                  <SelectItem
+                    key={category?.value}
+                    value={category?.value}
+                    className="text-[10px] font-normal font-body uppercase"
+                  >
+                    <div className="flex items-center gap-2">
+                      {category?.icon && (
+                        <category.icon size={17} strokeWidth={1.5} />
+                      )}
+                      <span>{category?.label?.replace("_", " ")}</span>
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>

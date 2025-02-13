@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
 	Select,
@@ -9,11 +9,24 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { CalendarClock, HandCoins, ShoppingBag, UserPlus, Zap, CheckSquare } from "lucide-react"
-import { Sparkline } from "@/components/ui/sparkline"
+import { 
+	BarChart, 
+	Bar,
+	AreaChart,
+	Area,
+	XAxis,
+	CartesianGrid
+} from 'recharts'
 import { motion } from "framer-motion"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { 
+	Calendar as CalendarIcon, 
+	TrendingUp, 
+	TrendingDown, 
+	CalendarClock, 
+	ClipboardCheck,
+	FileText,
+} from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import {
 	Popover,
@@ -25,6 +38,14 @@ import React from "react"
 import { useReports, ReportPeriod } from "@/hooks/use-reports"
 import { Loader2 } from "lucide-react"
 import { ReportType } from "@/lib/types/reports"
+import {
+	ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	ChartLegend,
+	ChartLegendContent,
+} from "@/components/ui/chart"
 
 // Animation variants
 const containerVariants = {
@@ -72,10 +93,8 @@ const sectionVariants = {
 }
 
 const REPORT_OPTIONS = {
-	[ReportType.CLAIM]: { label: 'Claims Report', icon: <HandCoins className="w-4 h-4" /> },
-	[ReportType.QUOTATION]: { label: 'Quotations Report', icon: <ShoppingBag className="w-4 h-4" /> },
-	[ReportType.LEAD]: { label: 'Leads Report', icon: <UserPlus className="w-4 h-4" /> },
-	[ReportType.TASK]: { label: 'Tasks Report', icon: <CheckSquare className="w-4 h-4" /> }
+	[ReportType.QUOTATION]: { label: 'Quotations Report', icon: <FileText className="w-4 h-4" /> },
+	[ReportType.TASK]: { label: 'Tasks Report', icon: <ClipboardCheck className="w-4 h-4" /> }
 } as const
 
 const TIME_OPTIONS = [
@@ -86,38 +105,107 @@ const TIME_OPTIONS = [
 	{ value: ReportPeriod.YEARLY, label: 'Yearly', icon: <CalendarClock className="w-4 h-4" /> }
 ];
 
-const quickReports = [
-	{
-		title: "Monthly Claims Overview",
-		icon: <Zap className="w-4 h-4" />,
-		href: "/reports/monthly-claims"
-	},
-	{
-		title: "Weekly Journal Summary",
-		icon: <Zap className="w-4 h-4" />,
-		href: "/reports/weekly-journals"
-	},
-	{
-		title: "Daily Sales Report",
-		icon: <Zap className="w-4 h-4" />,
-		href: "/reports/daily-sales"
-	},
-	{
-		title: "Employee Attendance Tracker",
-		icon: <Zap className="w-4 h-4" />,
-		href: "/reports/attendance"
-	}
+// Sample data - In a real app, this would come from your API
+const quotationData = [
+	{ date: '2024-06-01', total: 20, accepted: 15, pending: 5 },
+	{ date: '2024-06-02', total: 25, accepted: 18, pending: 7 },
+	{ date: '2024-06-03', total: 30, accepted: 22, pending: 8 },
+	{ date: '2024-06-04', total: 22, accepted: 16, pending: 6 },
+	{ date: '2024-06-05', total: 28, accepted: 20, pending: 8 },
+	{ date: '2024-06-06', total: 15, accepted: 10, pending: 5 },
+	{ date: '2024-06-07', total: 18, accepted: 12, pending: 6 },
+	{ date: '2024-06-08', total: 20, accepted: 15, pending: 5 },
+	{ date: '2024-06-09', total: 25, accepted: 18, pending: 7 },
+	{ date: '2024-06-10', total: 30, accepted: 22, pending: 8 },
+	{ date: '2024-06-11', total: 22, accepted: 16, pending: 6 },
+	{ date: '2024-06-12', total: 28, accepted: 20, pending: 8 },
+	{ date: '2024-06-13', total: 15, accepted: 10, pending: 5 },
+	{ date: '2024-06-14', total: 18, accepted: 12, pending: 6 },
+	{ date: '2024-06-15', total: 20, accepted: 15, pending: 5 },
+	{ date: '2024-06-16', total: 25, accepted: 18, pending: 7 },
+	{ date: '2024-06-17', total: 30, accepted: 22, pending: 8 },
+	{ date: '2024-06-18', total: 22, accepted: 16, pending: 6 },
+	{ date: '2024-06-19', total: 28, accepted: 20, pending: 8 },
+	{ date: '2024-06-20', total: 15, accepted: 10, pending: 5 },
+	{ date: '2024-06-21', total: 18, accepted: 12, pending: 6 },
+	{ date: '2024-06-22', total: 20, accepted: 15, pending: 5 },
+	{ date: '2024-06-23', total: 25, accepted: 18, pending: 7 },
+	{ date: '2024-06-24', total: 30, accepted: 22, pending: 8 },
+	{ date: '2024-06-25', total: 22, accepted: 16, pending: 6 },
+	{ date: '2024-06-26', total: 28, accepted: 20, pending: 8 },
+	{ date: '2024-06-27', total: 15, accepted: 10, pending: 5 },
+	{ date: '2024-06-28', total: 18, accepted: 12, pending: 6 }
 ]
 
-interface StatData {
-	title: string;
-	value: string;
-	subtitle: string;
-	change: string;
-	trend: "up" | "down";
-	breakdown: Array<{ label: string; value: number }>;
-	sparkline: number[];
-}
+// Update the task data to match the new format
+const taskComparisonData = [
+	{ month: "January", completed: 186, pending: 80 },
+	{ month: "February", completed: 305, pending: 200 },
+	{ month: "March", completed: 237, pending: 120 },
+	{ month: "April", completed: 73, pending: 190 },
+	{ month: "May", completed: 209, pending: 130 },
+	{ month: "June", completed: 214, pending: 140 },
+]
+
+const taskChartConfig = {
+	completed: {
+		label: "Completed",
+		color: "hsl(var(--chart-1))",
+	},
+	pending: {
+		label: "Pending",
+		color: "hsl(var(--chart-2))",
+	},
+} satisfies ChartConfig
+
+const taskPriorityData = [
+	{ name: 'High', total: 45, completed: 30 },
+	{ name: 'Medium', total: 65, completed: 50 },
+	{ name: 'Low', total: 40, completed: 35 }
+]
+
+const revenueData = [
+	{ name: 'Week 1', value: 25000 },
+	{ name: 'Week 2', value: 32000 },
+	{ name: 'Week 3', value: 28000 },
+	{ name: 'Week 4', value: 35000 }
+]
+
+const taskPriorityConfig = {
+	total: {
+		label: "Total Tasks",
+		color: "hsl(var(--chart-1))",
+	},
+	completed: {
+		label: "Completed",
+		color: "hsl(var(--chart-2))",
+	},
+} satisfies ChartConfig
+
+const revenueConfig = {
+	value: {
+		label: "Revenue",
+		color: "hsl(var(--chart-1))",
+	},
+} satisfies ChartConfig
+
+const quotationChartConfig = {
+	quotations: {
+		label: "Quotations",
+	},
+	total: {
+		label: "Total",
+		color: "hsl(var(--chart-1))",
+	},
+	accepted: {
+		label: "Accepted",
+		color: "hsl(var(--chart-2))",
+	},
+	pending: {
+		label: "Pending",
+		color: "hsl(var(--chart-3))",
+	},
+} satisfies ChartConfig
 
 export default function Dashboard() {
 	const {
@@ -127,7 +215,6 @@ export default function Dashboard() {
 		setPeriod,
 		reportType,
 		setReportType,
-		dailyReport,
 		isGenerating,
 		error,
 		handleGenerateReport
@@ -139,118 +226,330 @@ export default function Dashboard() {
 		}
 	}, [error]);
 
-	console.log(dailyReport);
-	
-	const statsData = React.useMemo<StatData[]>(() => {
-		if (!dailyReport) return [];
-
-		return [
-			{
-				title: "Claims Overview",
-				value: dailyReport.claims?.totalValue || "R0",
-				subtitle: `${dailyReport.claims?.total || 0} total`,
-				change: dailyReport.claims?.metrics?.valueGrowth || "0%",
-				trend: (dailyReport.claims?.metrics?.valueGrowth || "")?.startsWith('+') ? "up" : "down",
-				breakdown: [
-					{ label: "Paid", value: dailyReport.claims?.paid?.length || 0 },
-					{ label: "Pending", value: dailyReport.claims?.pending?.length || 0 },
-					{ label: "Declined", value: dailyReport.claims?.declined?.length || 0 }
-				],
-				sparkline: [89, 100, 85, 98, 92, 78, 89],
-			},
-			{
-				title: "Quotations Overview",
-				value: dailyReport.orders?.metrics?.grossQuotationValue || "R0",
-				subtitle: `${dailyReport.orders?.metrics?.totalQuotations || 0} total`,
-				change: dailyReport.orders?.metrics?.quotationTrends?.growth || "0%",
-				trend: (dailyReport.orders?.metrics?.quotationTrends?.growth || "")?.startsWith('+') ? "up" : "down",
-				breakdown: [
-					{ label: "Approved", value: dailyReport.orders?.approved || 0 },
-					{ label: "Processing", value: dailyReport.orders?.processing || 0 },
-					{ label: "Pending", value: dailyReport.orders?.pending || 0 }
-				],
-				sparkline: [92, 75, 85, 78, 82, 88, 80],
-			},
-			{
-				title: "Tasks Status",
-				value: `${dailyReport.tasks?.completed || 0} / ${dailyReport.tasks?.total || 0}`,
-				subtitle: "Tasks completed vs total",
-				change: dailyReport.tasks?.metrics?.taskTrends?.growth || "0%",
-				trend: (dailyReport.tasks?.metrics?.taskTrends?.growth || "")?.startsWith('+') ? "up" : "down",
-				breakdown: [
-					{ label: "Completed", value: dailyReport.tasks?.completed || 0 },
-					{ label: "Pending", value: dailyReport.tasks?.pending || 0 },
-					{ label: "Missed", value: dailyReport.tasks?.missed || 0 },
-					{ label: "Postponed", value: dailyReport.tasks?.postponed || 0 }
-				],
-				sparkline: [82, 88, 80, 92, 75, 85, 78],
-			},
-			{
-				title: "Attendance Overview",
-				value: `${dailyReport.attendance?.present || 0} / ${dailyReport.attendance?.total || 0}`,
-				subtitle: "Staff present today",
-				change: `${dailyReport.attendance?.attendance || 0}%`,
-				trend: (dailyReport.attendance?.attendance || 0) >= 80 ? "up" : "down",
-				breakdown: [
-					{ label: "Present", value: dailyReport.attendance?.present || 0 },
-					{ label: "Total", value: dailyReport.attendance?.total || 0 }
-				],
-				sparkline: [82, 88, 80, 92, 75, 85, 78],
-			}
-		];
-	}, [dailyReport]);
-
 	return (
 		<motion.div
 			initial="hidden"
 			animate="show"
 			variants={containerVariants}
-			className="flex flex-col h-screen gap-3 overflow-y-scroll sm:p-2 md:p-4">
-			<motion.div
-				variants={containerVariants}
-				className="flex flex-wrap gap-2">
-				{statsData?.map((stat, index) => (
-					<motion.div
-						key={`${stat.title}-${index}`}
-						variants={itemVariants}
-						className="flex-1 min-w-[240px]">
-						<Card className="relative transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 hover:border-primary/40">
-							<CardContent className="p-6">
-								<div className="flex flex-col gap-4">
-									<p className="text-[10px] font-body text-muted-foreground font-normal uppercase">
-										{stat.title}
-									</p>
-									<div className="flex flex-col gap-2">
-										<h2 className="text-2xl font-semibold font-body">
-											{stat.value}
-										</h2>
-										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<span className={`text-xs font-body ${stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
-													{stat.change}
-												</span>
-												<span className="text-[8px] font-body text-muted-foreground font-normal uppercase">
-													vs previous month
-												</span>
-											</div>
-											<Sparkline
-												data={stat.sparkline}
-												color={stat.trend === 'up' ? '#10b981' : '#f43f5e'}
-											/>
-										</div>
-									</div>
+			className="flex flex-col h-screen gap-6 p-6 overflow-y-scroll">
+			
+			{/* Key Metrics Cards */}
+			<motion.div variants={containerVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+				<motion.div variants={itemVariants}>
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex flex-col gap-4">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Total Quotations</p>
+								<div className="flex items-center justify-between">
+									<h2 className="text-2xl font-bold font-body text-card-foreground">158</h2>
+									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
+										<TrendingUp className="w-4 h-4 mr-1" />
+										12.5%
+									</span>
 								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
-				))}
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
+							</div>
+						</CardContent>
+					</Card>
+				</motion.div>
+
+				<motion.div variants={itemVariants}>
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex flex-col gap-4">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Task Completion Rate</p>
+								<div className="flex items-center justify-between">
+									<h2 className="text-2xl font-bold font-body text-card-foreground">85%</h2>
+									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
+										<TrendingUp className="w-4 h-4 mr-1" />
+										5.2%
+									</span>
+								</div>
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last week</p>
+							</div>
+						</CardContent>
+					</Card>
+				</motion.div>
+
+				<motion.div variants={itemVariants}>
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex flex-col gap-4">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Average Quote Value</p>
+								<div className="flex items-center justify-between">
+									<h2 className="text-2xl font-bold font-body text-card-foreground">$2,850</h2>
+									<span className="flex items-center text-xs font-normal text-rose-500 font-body">
+										<TrendingDown className="w-4 h-4 mr-1" />
+										2.1%
+									</span>
+								</div>
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
+							</div>
+						</CardContent>
+					</Card>
+				</motion.div>
+
+				<motion.div variants={itemVariants}>
+					<Card>
+						<CardContent className="p-6">
+							<div className="flex flex-col gap-4">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Conversion Rate</p>
+								<div className="flex items-center justify-between">
+									<h2 className="text-2xl font-bold font-body text-card-foreground">72%</h2>
+									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
+										<TrendingUp className="w-4 h-4 mr-1" />
+										8.4%
+									</span>
+								</div>
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
+							</div>
+						</CardContent>
+					</Card>
+				</motion.div>
 			</motion.div>
-			<motion.div
-				variants={sectionVariants}>
+
+			{/* Charts Section */}
+			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+				<Card className="lg:col-span-2">
+					<CardHeader className="flex items-center gap-2 py-5 space-y-0 border-b sm:flex-row">
+						<div className="grid flex-1 gap-1 text-center sm:text-left">
+							<CardTitle>Quotation Trends</CardTitle>
+							<CardDescription>
+								Showing quotation statistics for the selected period
+							</CardDescription>
+						</div>
+						<Select defaultValue="7d">
+							<SelectTrigger
+								className="w-[160px] rounded-lg sm:ml-auto"
+								aria-label="Select time range"
+							>
+								<SelectValue placeholder="Last 7 days" />
+							</SelectTrigger>
+							<SelectContent className="rounded-xl">
+								<SelectItem value="90d" className="rounded-lg">
+									Last 3 months
+								</SelectItem>
+								<SelectItem value="30d" className="rounded-lg">
+									Last 30 days
+								</SelectItem>
+								<SelectItem value="7d" className="rounded-lg">
+									Last 7 days
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</CardHeader>
+					<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+						<ChartContainer
+							config={quotationChartConfig}
+							className="aspect-auto h-[250px] w-full"
+						>
+							<AreaChart data={quotationData}>
+								<defs>
+									<linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
+										<stop
+											offset="5%"
+											stopColor="var(--color-total)"
+											stopOpacity={0.8}
+										/>
+										<stop
+											offset="95%"
+											stopColor="var(--color-total)"
+											stopOpacity={0.1}
+										/>
+									</linearGradient>
+									<linearGradient id="fillAccepted" x1="0" y1="0" x2="0" y2="1">
+										<stop
+											offset="5%"
+											stopColor="var(--color-accepted)"
+											stopOpacity={0.8}
+										/>
+										<stop
+											offset="95%"
+											stopColor="var(--color-accepted)"
+											stopOpacity={0.1}
+										/>
+									</linearGradient>
+									<linearGradient id="fillPending" x1="0" y1="0" x2="0" y2="1">
+										<stop
+											offset="5%"
+											stopColor="var(--color-pending)"
+											stopOpacity={0.8}
+										/>
+										<stop
+											offset="95%"
+											stopColor="var(--color-pending)"
+											stopOpacity={0.1}
+										/>
+									</linearGradient>
+								</defs>
+								<CartesianGrid vertical={false} />
+								<XAxis
+									dataKey="date"
+									tickLine={false}
+									axisLine={false}
+									tickMargin={8}
+									minTickGap={32}
+									tickFormatter={(value) => {
+										const date = new Date(value)
+										return date.toLocaleDateString("en-US", {
+											month: "short",
+											day: "numeric",
+										})
+									}}
+								/>
+								<ChartTooltip
+									cursor={false}
+									content={
+										<ChartTooltipContent
+											labelFormatter={(value) => {
+												return new Date(value).toLocaleDateString("en-US", {
+													month: "short",
+													day: "numeric",
+												})
+											}}
+											indicator="dot"
+										/>
+									}
+								/>
+								<Area
+									dataKey="pending"
+									type="natural"
+									fill="url(#fillPending)"
+									stroke="var(--color-pending)"
+									stackId="a"
+								/>
+								<Area
+									dataKey="accepted"
+									type="natural"
+									fill="url(#fillAccepted)"
+									stroke="var(--color-accepted)"
+									stackId="a"
+								/>
+								<Area
+									dataKey="total"
+									type="natural"
+									fill="url(#fillTotal)"
+									stroke="var(--color-total)"
+									stackId="a"
+								/>
+								<ChartLegend content={<ChartLegendContent />} />
+							</AreaChart>
+						</ChartContainer>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-sm font-medium uppercase font-body text-card-foreground">Task Completion Trends</CardTitle>
+						<CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">This Week</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ChartContainer config={taskChartConfig}>
+							<BarChart data={taskComparisonData} height={300}>
+								<CartesianGrid vertical={false} />
+								<XAxis
+									dataKey="month"
+									tickLine={false}
+									tickMargin={10}
+									axisLine={false}
+									tickFormatter={(value) => value.slice(0, 3)}
+								/>
+								<ChartTooltip
+									cursor={false}
+									content={<ChartTooltipContent indicator="dashed" />}
+								/>
+								<Bar dataKey="completed" fill="var(--color-completed)" radius={5} />
+								<Bar dataKey="pending" fill="var(--color-pending)" radius={5} />
+							</BarChart>
+						</ChartContainer>
+					</CardContent>
+				<CardFooter className="flex-col items-center justify-center gap-2 text-sm">
+							<div className="flex gap-2 text-xs font-normal leading-none uppercase text-card-foreground font-body">
+							Task completion up by 5.2% this month <TrendingUp className="w-4 h-4" />
+						</div>
+						<div className="flex gap-2 font-normal leading-none uppercase text-card-foreground font-body text-[10px]">
+							Showing task completion trends for the last 6 months
+						</div>
+					</CardFooter>
+				</Card>
+			</div>
+
+			{/* Bottom Section */}
+			<div className="grid gap-6 md:grid-cols-2">
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-sm font-medium uppercase font-body text-card-foreground">Task Completion by Priority</CardTitle>
+						<CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">This Week</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ChartContainer config={taskPriorityConfig}>
+							<BarChart data={taskPriorityData} height={300}>
+								<CartesianGrid vertical={false} />
+								<XAxis
+									dataKey="name"
+									tickLine={false}
+									tickMargin={10}
+									axisLine={false}
+								/>
+								<ChartTooltip
+									cursor={false}
+									content={<ChartTooltipContent indicator="dashed" />}
+								/>
+								<Bar dataKey="total" fill="var(--color-total)" radius={5} barSize={50} />
+								<Bar dataKey="completed" fill="var(--color-completed)" radius={5} barSize={50} />
+							</BarChart>
+						</ChartContainer>
+					</CardContent>
+					<CardFooter className="flex-col items-center justify-center gap-2 text-sm">
+						<div className="flex gap-2 text-xs font-normal leading-none uppercase text-card-foreground font-body">
+							High priority completion rate increased by 8.4% <TrendingUp className="w-4 h-4" />
+						</div>
+						<div className="flex gap-2 font-normal leading-none uppercase text-card-foreground font-body text-[10px]">
+							Showing task completion rates across different priority levels
+						</div>
+					</CardFooter>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-sm font-medium uppercase font-body text-card-foreground">Weekly Revenue</CardTitle>
+						<CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">Last 4 Weeks</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ChartContainer config={revenueConfig}>
+							<BarChart data={revenueData} height={300}>
+								<CartesianGrid vertical={false} />
+								<XAxis
+									dataKey="name"
+									tickLine={false}
+									tickMargin={10}
+									axisLine={false}
+								/>
+								<ChartTooltip
+									cursor={false}
+									content={<ChartTooltipContent indicator="dashed" />}
+								/>
+								<Bar dataKey="value" fill="var(--color-value)" radius={5} barSize={50} />
+							</BarChart>
+						</ChartContainer>
+					</CardContent>
+						<CardFooter className="flex-col items-center justify-center gap-2 text-sm">
+						<div className="flex gap-2 text-xs font-normal leading-none uppercase text-card-foreground font-body">
+							Revenue up by 12.5% from last week <TrendingUp className="w-4 h-4" />
+						</div>
+						<div className="flex gap-2 font-normal leading-none uppercase text-card-foreground font-body text-[10px]">
+							Showing weekly revenue trends for the past month
+						</div>
+					</CardFooter>
+				</Card>
+			</div>
+
+			{/* Report Generator Section */}
+			<motion.div variants={sectionVariants}>
 				<Card className="transition-all duration-500 border shadow-sm cursor-pointer bg-card border-border/80 hover:border-primary/40">
 					<CardHeader className="space-y-0">
-						<CardTitle className="font-normal uppercase text-md font-body">Generate Custom Report</CardTitle>
-						<p className="text-muted-foreground font-body uppercase font-normal text-[10px]">Select date range, report type, and store to generate a custom report</p>
+						<CardTitle className="font-normal uppercase text-md font-body text-card-foreground">Generate Detailed Report</CardTitle>
+						<p className="text-muted-foreground font-body uppercase font-normal text-[10px]">Select date range and report type to generate a comprehensive analysis</p>
 					</CardHeader>
 					<CardContent>
 						<div className="flex flex-col gap-6 md:flex-row">
@@ -342,25 +641,6 @@ export default function Dashboard() {
 						</div>
 					</CardContent>
 				</Card>
-			</motion.div>
-			<motion.div
-				variants={containerVariants}
-				className="flex flex-wrap gap-4">
-				{quickReports.map((report, index) => (
-					<motion.div
-						key={index}
-						variants={itemVariants}
-						className="flex-1 min-w-[240px]">
-						<Card className="transition-all duration-500 border shadow-sm cursor-pointer border-border/80 hover:border-primary/40">
-							<CardContent className="p-6">
-								<div className="flex items-center gap-3">
-									<Zap size={23} strokeWidth={1.5} className="text-card-foreground" />
-									<span className="text-[10px] font-body uppercase font-normal text-card-foreground">{report?.title}</span>
-								</div>
-							</CardContent>
-						</Card>
-					</motion.div>
-				))}
 			</motion.div>
 		</motion.div>
 	)

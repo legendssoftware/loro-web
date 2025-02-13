@@ -1,4 +1,5 @@
-import { User } from "@/lib/types/users";
+import { Branch } from "./branch";
+import { User } from "./users";
 
 export enum ClaimStatus {
     PENDING = "PENDING",
@@ -40,13 +41,14 @@ export interface ClaimStats {
 
 export interface Claim {
     uid: number;
-    title: string;
-    description: string;
+    owner: User;
+    branch?: Branch;
     amount: string;
-    documentUrl?: string;
     category: ClaimCategory;
     status: ClaimStatus;
-    owner: User;
+    description?: string;
+    notes?: string;
+    attachments?: string[];
     createdAt: string;
     updatedAt: string;
     isDeleted: boolean;

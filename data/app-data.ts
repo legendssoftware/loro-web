@@ -61,12 +61,9 @@ export const roles = [
 
 export const leadStatuses = [
   { label: "Pending", value: LeadStatus.PENDING },
-  { label: "Qualified", value: LeadStatus.QUALIFIED },
-  { label: "Contacted", value: LeadStatus.CONTACTED },
-  { label: "Proposal", value: LeadStatus.PROPOSAL },
-  { label: "Negotiation", value: LeadStatus.NEGOTIATION },
-  { label: "Won", value: LeadStatus.WON },
-  { label: "Lost", value: LeadStatus.LOST },
+  { label: "Approved", value: LeadStatus.APPROVED },
+  { label: "Review", value: LeadStatus.REVIEW },
+  { label: "Declined", value: LeadStatus.DECLINED },
 ];
 
 

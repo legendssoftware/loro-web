@@ -20,9 +20,9 @@ export const MerchandiseModule = () => {
     <div className="flex flex-col w-full h-full gap-2">
       <div className="flex flex-row items-center justify-end gap-2">
         <div className="flex flex-row items-center justify-center gap-2">
-          <Input placeholder="search..." className="w-[300px]" />
+          <Input placeholder="search..." className="w-[300px] bg-card" />
           <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-card">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>

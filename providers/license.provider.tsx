@@ -18,8 +18,9 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (profileData?.licenseInfo) {
       const { status } = profileData.licenseInfo;
+      const hasShownNotification = localStorage.getItem('licenseNotificationShown');
 
-      if (status !== "active") {
+      if (status === "active" && !hasShownNotification) {
         toast.custom(
           (t: Toast) => (
             <div
@@ -56,6 +57,7 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
             position: "bottom-center",
           }
         );
+        localStorage.setItem('licenseNotificationShown', 'true');
       }
     }
   }, [profileData]);

@@ -1,52 +1,77 @@
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
-import { claimStatuses } from "@/data/app-data";
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { fetchClaims, deleteClaim, updateClaim } from "@/helpers/claims"
+import { useSessionStore } from "@/store/use-session-store"
+import { RequestConfig } from "@/lib/types/tasks"
+import { Claim, UpdateClaimDTO } from "@/lib/types/claims"
+import toast from 'react-hot-toast'
+import { ClaimList } from "./claim-list"
+import { ClaimDetailModal } from "./claim-detail-modal"
 
 export const ClaimsModule = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { accessToken } = useSessionStore()
+    const queryClient = useQueryClient()
+    const [isClaimDetailModalOpen, setIsClaimDetailModalOpen] = useState(false)
+    const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
 
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-  };
+    const config: RequestConfig = {
+        headers: {
+            token: `${accessToken}`,
+        },
+    }
 
-  return (
-    <div className="flex flex-col w-full h-full gap-2">
-      <div className="flex flex-row items-center justify-end gap-2">
-        <div className="flex flex-row items-center justify-center gap-2">
-          <Input placeholder="search..." className="w-[300px]" />
-          <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="all"
-                className="font-body text-[10px] font-normal uppercase"
-              >
-                All Statuses
-              </SelectItem>
-              {claimStatuses?.map(
-                (status: { value: string; label: string }) => (
-                  <SelectItem
-                    key={status?.value}
-                    value={status?.value}
-                    className="font-body text-[10px] font-normal uppercase"
-                  >
-                    {status?.label}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
+    const { data: claimsData, isLoading } = useQuery({
+        queryKey: ['claims'],
+        queryFn: () => fetchClaims(config),
+        enabled: !!accessToken,
+    })
+
+    const updateClaimMutation = useMutation({
+        mutationFn: ({ ref, updatedClaim }: { ref: number; updatedClaim: UpdateClaimDTO }) =>
+            updateClaim({ ref, updatedClaim, config }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['claims'] })
+            toast.success('Claim updated successfully')
+            setIsClaimDetailModalOpen(false)
+        },
+        onError: () => {
+            toast.error('Failed to update claim')
+        }
+    })
+
+    const deleteClaimMutation = useMutation({
+        mutationFn: (uid: number) => deleteClaim(uid, config),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['claims'] })
+            toast.success('Claim deleted successfully')
+            setIsClaimDetailModalOpen(false)
+        },
+        onError: () => {
+            toast.error('Failed to delete claim')
+        }
+    })
+
+    const handleClaimClick = (claim: Claim) => {
+        setSelectedClaim(claim)
+        setIsClaimDetailModalOpen(true)
+    }
+
+    return (
+        <div className="flex flex-col w-full h-full gap-4">
+            <ClaimList  
+                claims={claimsData?.claims || []}
+                onClaimClick={handleClaimClick}
+                isLoading={isLoading}
+            />
+
+            <ClaimDetailModal 
+                isOpen={isClaimDetailModalOpen}
+                onOpenChange={setIsClaimDetailModalOpen}
+                selectedClaim={selectedClaim}
+                onDelete={(uid) => deleteClaimMutation.mutate(uid)}
+                isUpdating={updateClaimMutation.isPending}
+                isDeleting={deleteClaimMutation.isPending}
+            />
         </div>
-      </div>
-    </div>
-  );
-};
+    )
+}

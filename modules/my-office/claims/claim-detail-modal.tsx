@@ -1,0 +1,204 @@
+import { memo } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Claim } from "@/lib/types/claims";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface ClaimDetailModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedClaim: Claim | null;
+  onDelete: (uid: number) => void;
+  isUpdating: boolean;
+  isDeleting: boolean;
+}
+
+const ClaimDetailModalComponent = ({
+  isOpen,
+  onOpenChange,
+  selectedClaim,
+  onDelete,
+  isDeleting,
+  isUpdating,
+}: ClaimDetailModalProps) => {
+  if (!selectedClaim) return null;
+
+  const amount = Number(selectedClaim?.amount || 0);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col bg-card [&_.close-button]:hidden">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-normal font-body">
+              CLAIM #{selectedClaim?.uid}
+            </DialogTitle>
+            <Badge
+              variant="outline"
+              className="text-[10px] font-body uppercase"
+            >
+              {selectedClaim?.status || "N/A"}
+            </Badge>
+          </div>
+        </DialogHeader>
+        <ScrollArea className="flex-1">
+          <div className="flex flex-col gap-6 p-1">
+            {/* Header Information */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                  Owner Information
+                </h3>
+                <div className="text-xs font-normal font-body">
+                  <p className="font-normal">{`${
+                    selectedClaim?.owner?.name || "N/A"
+                  } ${selectedClaim?.owner?.surname || ""}`}</p>
+                  <p>Email: {selectedClaim?.owner?.email || "N/A"}</p>
+                  <p>Phone: {selectedClaim?.owner?.phone || "N/A"}</p>
+                  <Badge variant="secondary" className="mt-1 text-[10px]">
+                    {selectedClaim?.owner?.accessLevel?.toUpperCase()}
+                  </Badge>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                  Claim Details
+                </h3>
+                <div className="text-xs font-normal font-body">
+                  <p>Category: {selectedClaim?.category || "N/A"}</p>
+                  <p>Amount: R{amount.toFixed(2)}</p>
+                  <p>Status: {selectedClaim?.status || "N/A"}</p>
+                  <p>
+                    Created:{" "}
+                    {selectedClaim?.createdAt
+                      ? format(
+                          new Date(selectedClaim.createdAt),
+                          "MMM dd, yyyy HH:mm"
+                        )
+                      : "N/A"}
+                  </p>
+                  <p>
+                    Last Updated:{" "}
+                    {selectedClaim?.updatedAt
+                      ? format(
+                          new Date(selectedClaim.updatedAt),
+                          "MMM dd, yyyy HH:mm"
+                        )
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Description */}
+            {selectedClaim?.description && (
+              <div className="space-y-2">
+                <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                  Description
+                </h3>
+                <p className="text-xs font-normal font-body">
+                  {selectedClaim.description}
+                </p>
+              </div>
+            )}
+
+            {/* Notes */}
+            {selectedClaim?.notes && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                    Notes
+                  </h3>
+                  <p className="text-xs font-normal font-body">
+                    {selectedClaim.notes}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Attachments */}
+            {selectedClaim?.attachments &&
+              selectedClaim.attachments.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                      Attachments
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedClaim.attachments.map((attachment, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-[10px] font-body"
+                        >
+                          {attachment}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+            {/* Branch Information */}
+            {selectedClaim?.branch && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                    Branch Information
+                  </h3>
+                  <div className="text-xs font-normal font-body">
+                    <p>Name: {selectedClaim.branch.name}</p>
+                    <p>Location: {selectedClaim.branch?.address}</p>
+                    <p>Contact: {selectedClaim.branch?.phone}</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="flex flex-row gap-2 pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full h-10 text-xs tracking-wider bg-transparent font-body hover:bg-transparent"
+          >
+            CLOSE
+          </Button>
+          <Button
+            onClick={() => {
+              /* handle update */
+            }}
+            disabled={isUpdating}
+            className="w-full h-10 text-xs tracking-wider text-white font-body bg-primary hover:bg-primary/90"
+          >
+            UPDATE CLAIM
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => onDelete(selectedClaim.uid)}
+            disabled={isDeleting}
+            className="w-full h-10 text-xs tracking-wider font-body"
+          >
+            DELETE CLAIM
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const ClaimDetailModal = memo(ClaimDetailModalComponent);

@@ -1,40 +1,61 @@
-import { Client } from "./clients";
 import { User } from "./users";
+import { Client } from "./clients";
+import { Branch } from "./branch";
 
 export enum LeadStatus {
     PENDING = "PENDING",
-    CONTACTED = "CONTACTED",
-    QUALIFIED = "QUALIFIED",
-    PROPOSAL = "PROPOSAL",
-    NEGOTIATION = "NEGOTIATION",
-    WON = "WON",
-    LOST = "LOST"
+    APPROVED = "APPROVED",
+    REVIEW = "REVIEW",
+    DECLINED = "DECLINED"
 }
 
 export interface Lead {
     uid: number;
-    title: string;
-    description?: string;
-    status: LeadStatus;
-    client: Client;
-    owner: User;
+    name: string;
+    email: string;
+    phone: string;
+    notes?: string;
     createdAt: string;
     updatedAt: string;
+    status: LeadStatus;
     isDeleted: boolean;
+    owner: User;
+    branch?: Branch;
+    client?: Client;
 }
 
 export interface CreateLeadDTO {
-    title: string;
-    description?: string;
-    status: LeadStatus;
-    clientId: number;
-    ownerId: number;
+    name: string;
+    email: string;
+    phone: string;
+    notes?: string;
+    status?: LeadStatus;
+    isDeleted?: boolean;
+    owner: { uid: number };
+    branch: { uid: number };
+    client?: { uid: number };
 }
 
 export interface UpdateLeadDTO {
-    title?: string;
-    description?: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    notes?: string;
     status?: LeadStatus;
-    clientId?: number;
-    ownerId?: number;
+    isDeleted?: boolean;
+}
+
+export interface LeadStats {
+    total: number;
+    pending: number;
+    approved: number;
+    inReview: number;
+    declined: number;
+}
+
+export interface LeadResponse {
+    message: string;
+    leads?: Lead[];
+    lead?: Lead;
+    stats?: LeadStats;
 } 

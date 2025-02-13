@@ -56,30 +56,8 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
     );
   }, [leads, statusFilter, searchQuery]);
 
-  if (isLoading) {
+  const Header = () => {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <PageLoader />
-      </div>
-    );
-  }
-
-  if (!filteredLeads?.length) {
-    return (
-      <div className="flex flex-col items-center justify-center w-full min-h-[400px] gap-2">
-        <FolderOpen
-          className="w-8 h-8 text-muted-foreground"
-          strokeWidth={1.5}
-        />
-        <p className="text-xs font-normal uppercase text-muted-foreground font-body">
-          No leads found
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
       <div className="flex items-center justify-end gap-4">
         <div className="flex items-center gap-2">
           <Input
@@ -121,7 +99,37 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
           </Select>
         </div>
       </div>
+    );
+  };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
+      </div>
+    );
+  }
+
+  if (!filteredLeads?.length) {
+    return (
+      <div className="space-y-4">
+        <Header />
+        <div className="flex flex-col items-center justify-center w-full gap-2 h-96">
+          <FolderOpen
+            className="w-8 h-8 text-muted-foreground"
+            strokeWidth={1.5}
+          />
+          <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+            No leads found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Header />
       <motion.div
         variants={containerVariants}
         initial="hidden"

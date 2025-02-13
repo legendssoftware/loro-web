@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { List, Plus } from "lucide-react";
+import { FolderOpen, List, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,8 +77,8 @@ export const StaffList = ({
     return matchesStatus && matchesRole && matchesSearch;
   });
 
-  return (
-    <div className="flex flex-col w-full h-full gap-4">
+  const Header = () => {
+    return (
       <div className="flex flex-row items-center justify-end gap-2">
         <div className="flex flex-row items-center justify-center gap-2">
           <Input
@@ -153,6 +153,29 @@ export const StaffList = ({
           </Button>
         </div>
       </div>
+    );
+  };
+
+  if (!filteredStaff?.length) {
+    return (
+      <div className="space-y-4">
+        <Header />
+        <div className="flex flex-col items-center justify-center w-full gap-2 h-96">
+          <FolderOpen
+            className="w-8 h-8 text-muted-foreground"
+            strokeWidth={1.5}
+          />
+          <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+            No staff found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col w-full h-full gap-4">
+      <Header />
       <motion.div
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
         variants={containerVariants}

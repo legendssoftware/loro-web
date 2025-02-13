@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, BusIcon, List, Store } from "lucide-react";
+import { Building2, FolderOpen, List } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quotationStatuses } from "@/data/app-data";
 
@@ -59,16 +59,8 @@ const QuotationListComponent = ({
     });
   }, [quotations, statusFilter, clientFilter, userFilter, searchQuery]);
 
-  if (isLoading) {
+  const Header = () => {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <PageLoader />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-end gap-2">
         <Input
           placeholder="search..."
@@ -194,6 +186,36 @@ const QuotationListComponent = ({
           </Select>
         </div>
       </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
+      </div>
+    );
+  }
+
+  if (!filteredQuotations?.length) {
+    return (
+      <div className="space-y-4">
+        <Header />
+        <div className="flex flex-col items-center justify-center w-full gap-2 h-96">
+          <FolderOpen
+            className="w-8 h-8 text-muted-foreground"
+            strokeWidth={1.5}
+          />
+          <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+            No quotations found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
       <motion.div
         variants={containerVariants}
         initial="hidden"

@@ -1,95 +1,103 @@
-'use client';
+"use client";
 
 import {
-	createContext,
-	useContext,
-	useEffect,
-	useMemo,
-	ReactNode,
-	useState,
-} from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useSessionStore, type ProfileData } from '@/store/use-session-store';
-import { tokenValidator } from '@/lib/tools/tokenValidator';
-import { PageLoader } from '@/components/page-loader';
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  ReactNode,
+  useState,
+} from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useSessionStore, type ProfileData } from "@/store/use-session-store";
+import { tokenValidator } from "@/lib/tools/tokenValidator";
+import { PageLoader } from "@/components/page-loader";
 
 interface AuthContextType {
-	isAuthenticated: boolean;
-	isLoading: boolean;
-	user: ProfileData | null;
-	signIn: (credentials: { username: string; password: string }) => Promise<void>;
-	signOut: () => void;
-	error: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: ProfileData | null;
+  signIn: (credentials: {
+    username: string;
+    password: string;
+  }) => Promise<void>;
+  signOut: () => void;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-	const router = useRouter();
-	const pathname = usePathname();
-	const {
-		isAuthenticated,
-		loading: isLoading,
-		profileData: user,
-		error,
-		signIn,
-		signOut,
-		accessToken
-	} = useSessionStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const {
+    isAuthenticated,
+    loading: isLoading,
+    profileData: user,
+    error,
+    signIn,
+    signOut,
+    accessToken,
+  } = useSessionStore();
 
-	const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-	useEffect(() => {
-		const timer = setTimeout(async () => {
-			const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/landing-page', 'download'];
-			const isPublicPath = publicPaths.includes(pathname);
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const publicPaths = [
+        "/sign-in",
+        "/sign-up",
+        "/forgot-password",
+        "/new-password",
+        "/landing-page",
+        "download",
+      ];
+      const isPublicPath = publicPaths.includes(pathname);
 
-			if (!isPublicPath) {
-				if (!accessToken || !tokenValidator(accessToken)) {
-					signOut();
-					router.push('/sign-in');
-				}
-			}
+      if (!isPublicPath) {
+        if (!accessToken || !tokenValidator(accessToken)) {
+          signOut();
+          router.push("/landing-page");
+        }
+      }
 
-			setIsInitialLoading(false);
-		}, 500);
+      setIsInitialLoading(false);
+    }, 500);
 
-		return () => clearTimeout(timer);
-	}, [accessToken, signOut, router, pathname]);
+    return () => clearTimeout(timer);
+  }, [accessToken, signOut, router, pathname]);
 
-	const contextValue = useMemo(
-		() => ({
-			isAuthenticated,
-			isLoading,
-			user,
-			error,
-			signIn,
-			signOut,
-		}),
-		[isAuthenticated, isLoading, user, error, signIn, signOut]
-	);
+  const contextValue = useMemo(
+    () => ({
+      isAuthenticated,
+      isLoading,
+      user,
+      error,
+      signIn,
+      signOut,
+    }),
+    [isAuthenticated, isLoading, user, error, signIn, signOut]
+  );
 
-	if (isInitialLoading) {
-		return (
-			<div className='flex items-center justify-center w-full h-screen'>
-				<PageLoader />
-			</div>
-		);
-	}
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
+      </div>
+    );
+  }
 
-	return (
-		<AuthContext.Provider value={contextValue}>
-			{children}
-		</AuthContext.Provider>
-	);
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-	const context = useContext(AuthContext);
+  const context = useContext(AuthContext);
 
-	if (context === undefined) {
-		throw new Error('useAuth must be used within an AuthProvider');
-	}
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
 
-	return context;
-} 
+  return context;
+}

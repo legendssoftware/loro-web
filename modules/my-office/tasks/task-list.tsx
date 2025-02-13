@@ -19,7 +19,7 @@ import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import toast from "react-hot-toast";
 import { taskStatuses } from "@/data/app-data";
-import { List, LucideIcon } from "lucide-react";
+import { FolderOpen, List, LucideIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const containerVariants = {
@@ -167,16 +167,8 @@ const TaskListComponent = ({
     [createTaskMutation, profileData]
   );
 
-  if (isLoading) {
+  const Header = () => {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <PageLoader />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col w-full h-full gap-4">
       <div className="flex flex-row items-center justify-end gap-2">
         <div className="flex flex-row items-center justify-center gap-2">
           <Input
@@ -307,6 +299,37 @@ const TaskListComponent = ({
           isSubmitting={createTaskMutation.isPending}
         />
       </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
+      </div>
+    );
+  }
+
+  if (!filteredTasks?.length) {
+    return (
+      <div className="space-y-4">
+        <Header />
+        <div className="flex flex-col items-center justify-center w-full gap-2 h-96">
+          <FolderOpen
+            className="w-8 h-8 text-muted-foreground"
+            strokeWidth={1.5}
+          />
+          <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+            No tasks found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col w-full h-full gap-4">
+      <Header />
       <motion.div
         variants={containerVariants}
         initial="hidden"

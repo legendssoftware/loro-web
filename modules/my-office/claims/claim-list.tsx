@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { FolderOpen, List, LucideIcon } from "lucide-react";
 import { claimCategories, claimStatuses } from "@/data/app-data";
+import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
 
 interface ClaimListProps {
   claims: Claim[];
@@ -38,6 +39,7 @@ const ClaimListComponent = ({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [userFilter, setUserFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredClaims = useMemo(() => {
@@ -51,11 +53,21 @@ const ClaimListComponent = ({
       const matchesSearch =
         claim.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         claim.owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        claim.owner.surname.toLowerCase().includes(searchQuery.toLowerCase());
+        claim.owner.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        claim.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        claim.amount.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesStatus && matchesCategory && matchesUser && matchesSearch;
+      // Add period filtering
+      const matchesPeriod = (() => {
+        if (periodFilter === "all") return true;
+        const { from, to } = getDateRangeFromPeriod(periodFilter);
+        const claimDate = new Date(claim.createdAt);
+        return claimDate >= from && claimDate <= to;
+      })();
+
+      return matchesStatus && matchesCategory && matchesUser && matchesSearch && matchesPeriod;
     });
-  }, [claims, statusFilter, categoryFilter, userFilter, searchQuery]);
+  }, [claims, statusFilter, categoryFilter, userFilter, searchQuery, periodFilter]);
 
   const Header = () => {
     return (
@@ -67,6 +79,10 @@ const ClaimListComponent = ({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="flex items-center gap-2">
+          <PeriodFilter 
+            value={periodFilter}
+            onValueChange={setPeriodFilter}
+          />
           <Select value={userFilter} onValueChange={setUserFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by user" />
@@ -78,7 +94,7 @@ const ClaimListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Users</span>
+                  <span>All Sales Reps</span>
                 </div>
               </SelectItem>
               {claims

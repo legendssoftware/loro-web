@@ -36,14 +36,14 @@ export const CategorySelect = ({
 
     return (
         <div className="grid gap-1.5">
-            <Label htmlFor="category" className="text-xs font-body text-card-foreground uppercase font-normal">
+            <Label htmlFor="category" className="text-xs font-normal uppercase font-body text-card-foreground">
                 Target Category
             </Label>
             {!isCustom ? (
                 <Select
                     value={value || ''}
                     onValueChange={handleChange}>
-                    <SelectTrigger className="font-body text-xs">
+                    <SelectTrigger className="text-xs font-body">
                         <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -72,14 +72,14 @@ export const CategorySelect = ({
                         placeholder="Enter custom category"
                         value={value || ''}
                         onChange={(e) => onChange(e.target.value)}
-                        className="font-body text-xs"
+                        className="text-xs font-body"
                     />
                     <button
                         onClick={() => {
                             setIsCustom(false);
                             onChange(undefined);
                         }}
-                        className="px-2 py-1 text-xs font-body bg-secondary text-secondary-foreground rounded"
+                        className="px-2 py-1 text-xs rounded font-body bg-secondary text-secondary-foreground"
                     >
                         Cancel
                     </button>

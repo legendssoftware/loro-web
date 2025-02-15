@@ -13,6 +13,7 @@ import LeadCard from "./lead-card";
 import { FolderOpen, List } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { leadStatuses } from "@/data/app-data";
+import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
 
 interface LeadListProps {
   leads: Lead[];
@@ -26,49 +27,52 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2,
     },
   },
 };
 
 const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredLeads = useMemo(() => {
-    return (
-      leads?.filter((lead) => {
-        const matchesStatus =
-          statusFilter === "all" || lead?.status === statusFilter;
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch =
-          searchQuery === "" ||
-          lead?.name?.toLowerCase().includes(searchLower) ||
-          lead?.email?.toLowerCase().includes(searchLower) ||
-          lead?.phone?.toLowerCase().includes(searchLower) ||
-          lead?.notes?.toLowerCase().includes(searchLower) ||
-          lead?.owner?.name?.toLowerCase().includes(searchLower) ||
-          lead?.owner?.surname?.toLowerCase().includes(searchLower) ||
-          lead?.branch?.name?.toLowerCase().includes(searchLower);
+    return leads.filter((lead) => {
+      const matchesStatus =
+        statusFilter === "all" || lead.status === statusFilter;
+      const matchesSearch =
+        lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.phone.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesStatus && matchesSearch;
-      }) || []
-    );
-  }, [leads, statusFilter, searchQuery]);
+      // Add period filtering
+      const matchesPeriod = (() => {
+        if (periodFilter === "all") return true;
+        const { from, to } = getDateRangeFromPeriod(periodFilter);
+        const leadDate = new Date(lead.createdAt);
+        return leadDate >= from && leadDate <= to;
+      })();
+
+      return matchesStatus && matchesSearch && matchesPeriod;
+    });
+  }, [leads, statusFilter, searchQuery, periodFilter]);
 
   const Header = () => {
     return (
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-2">
+        <Input
+          placeholder="search..."
+          className="w-[300px] bg-card"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
         <div className="flex items-center gap-2">
-          <Input
-            type="text"
-            placeholder="search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[300px] shadow-none bg-card"
+          <PeriodFilter 
+            value={periodFilter}
+            onValueChange={setPeriodFilter}
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] h-9 shadow-none bg-card outline-none">
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -128,16 +132,20 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <Header />
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4"
+        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
         {filteredLeads.map((lead) => (
-          <LeadCard key={lead?.uid} lead={lead} onClick={onLeadClick} />
+          <LeadCard
+            key={lead.uid}
+            lead={lead}
+            onClick={() => onLeadClick(lead)}
+          />
         ))}
       </motion.div>
     </div>

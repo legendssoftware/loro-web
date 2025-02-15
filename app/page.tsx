@@ -26,6 +26,7 @@ import {
 	CalendarClock, 
 	ClipboardCheck,
 	FileText,
+	Loader2
 } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -35,9 +36,8 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import React from "react"
-import { useReports, ReportPeriod } from "@/hooks/use-reports"
-import { Loader2 } from "lucide-react"
-import { ReportType } from "@/lib/types/reports"
+import { useReports } from "@/hooks/use-reports"
+import { ReportType, ReportPeriod, ReportResponse, BreakdownMetric } from "@/lib/types/reports"
 import {
 	ChartConfig,
 	ChartContainer,
@@ -46,6 +46,8 @@ import {
 	ChartLegend,
 	ChartLegendContent,
 } from "@/components/ui/chart"
+import { toast } from 'sonner'
+import { DateRange } from "react-day-picker"
 
 // Animation variants
 const containerVariants = {
@@ -93,59 +95,19 @@ const sectionVariants = {
 }
 
 const REPORT_OPTIONS = {
-	[ReportType.QUOTATION]: { label: 'Quotations Report', icon: <FileText className="w-4 h-4" /> },
-	[ReportType.TASK]: { label: 'Tasks Report', icon: <ClipboardCheck className="w-4 h-4" /> }
+	'quotation': { label: 'Quotations Report', icon: <FileText className="w-4 h-4" /> },
+	'task': { label: 'Tasks Report', icon: <ClipboardCheck className="w-4 h-4" /> },
+	'lead': { label: 'Leads Report', icon: <TrendingUp className="w-4 h-4" /> },
+	'claim': { label: 'Claims Report', icon: <FileText className="w-4 h-4" /> }
 } as const
 
 const TIME_OPTIONS = [
-	{ value: ReportPeriod.DAILY, label: 'Daily', icon: <CalendarClock className="w-4 h-4" /> },
-	{ value: ReportPeriod.WEEKLY, label: 'Weekly', icon: <CalendarClock className="w-4 h-4" /> },
-	{ value: ReportPeriod.MONTHLY, label: 'Monthly', icon: <CalendarClock className="w-4 h-4" /> },
-	{ value: ReportPeriod.QUARTERLY, label: 'Quarterly', icon: <CalendarClock className="w-4 h-4" /> },
-	{ value: ReportPeriod.YEARLY, label: 'Yearly', icon: <CalendarClock className="w-4 h-4" /> }
+	{ value: 'daily', label: 'Daily', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: 'weekly', label: 'Weekly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: 'monthly', label: 'Monthly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: 'quarterly', label: 'Quarterly', icon: <CalendarClock className="w-4 h-4" /> },
+	{ value: 'yearly', label: 'Yearly', icon: <CalendarClock className="w-4 h-4" /> }
 ];
-
-// Sample data - In a real app, this would come from your API
-const quotationData = [
-	{ date: '2024-06-01', total: 20, accepted: 15, pending: 5 },
-	{ date: '2024-06-02', total: 25, accepted: 18, pending: 7 },
-	{ date: '2024-06-03', total: 30, accepted: 22, pending: 8 },
-	{ date: '2024-06-04', total: 22, accepted: 16, pending: 6 },
-	{ date: '2024-06-05', total: 28, accepted: 20, pending: 8 },
-	{ date: '2024-06-06', total: 15, accepted: 10, pending: 5 },
-	{ date: '2024-06-07', total: 18, accepted: 12, pending: 6 },
-	{ date: '2024-06-08', total: 20, accepted: 15, pending: 5 },
-	{ date: '2024-06-09', total: 25, accepted: 18, pending: 7 },
-	{ date: '2024-06-10', total: 30, accepted: 22, pending: 8 },
-	{ date: '2024-06-11', total: 22, accepted: 16, pending: 6 },
-	{ date: '2024-06-12', total: 28, accepted: 20, pending: 8 },
-	{ date: '2024-06-13', total: 15, accepted: 10, pending: 5 },
-	{ date: '2024-06-14', total: 18, accepted: 12, pending: 6 },
-	{ date: '2024-06-15', total: 20, accepted: 15, pending: 5 },
-	{ date: '2024-06-16', total: 25, accepted: 18, pending: 7 },
-	{ date: '2024-06-17', total: 30, accepted: 22, pending: 8 },
-	{ date: '2024-06-18', total: 22, accepted: 16, pending: 6 },
-	{ date: '2024-06-19', total: 28, accepted: 20, pending: 8 },
-	{ date: '2024-06-20', total: 15, accepted: 10, pending: 5 },
-	{ date: '2024-06-21', total: 18, accepted: 12, pending: 6 },
-	{ date: '2024-06-22', total: 20, accepted: 15, pending: 5 },
-	{ date: '2024-06-23', total: 25, accepted: 18, pending: 7 },
-	{ date: '2024-06-24', total: 30, accepted: 22, pending: 8 },
-	{ date: '2024-06-25', total: 22, accepted: 16, pending: 6 },
-	{ date: '2024-06-26', total: 28, accepted: 20, pending: 8 },
-	{ date: '2024-06-27', total: 15, accepted: 10, pending: 5 },
-	{ date: '2024-06-28', total: 18, accepted: 12, pending: 6 }
-]
-
-// Update the task data to match the new format
-const taskComparisonData = [
-	{ month: "January", completed: 186, pending: 80 },
-	{ month: "February", completed: 305, pending: 200 },
-	{ month: "March", completed: 237, pending: 120 },
-	{ month: "April", completed: 73, pending: 190 },
-	{ month: "May", completed: 209, pending: 130 },
-	{ month: "June", completed: 214, pending: 140 },
-]
 
 const taskChartConfig = {
 	completed: {
@@ -156,20 +118,7 @@ const taskChartConfig = {
 		label: "Pending",
 		color: "hsl(var(--chart-2))",
 	},
-} satisfies ChartConfig
-
-const taskPriorityData = [
-	{ name: 'High', total: 45, completed: 30 },
-	{ name: 'Medium', total: 65, completed: 50 },
-	{ name: 'Low', total: 40, completed: 35 }
-]
-
-const revenueData = [
-	{ name: 'Week 1', value: 25000 },
-	{ name: 'Week 2', value: 32000 },
-	{ name: 'Week 3', value: 28000 },
-	{ name: 'Week 4', value: 35000 }
-]
+} satisfies ChartConfig;
 
 const taskPriorityConfig = {
 	total: {
@@ -180,14 +129,14 @@ const taskPriorityConfig = {
 		label: "Completed",
 		color: "hsl(var(--chart-2))",
 	},
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 const revenueConfig = {
 	value: {
 		label: "Revenue",
 		color: "hsl(var(--chart-1))",
 	},
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 const quotationChartConfig = {
 	quotations: {
@@ -205,7 +154,141 @@ const quotationChartConfig = {
 		label: "Pending",
 		color: "hsl(var(--chart-3))",
 	},
-} satisfies ChartConfig
+} satisfies ChartConfig;
+
+// Transform functions
+const transformQuotationData = (data: ReportResponse | null) => {
+	// Handle daily report format
+	if (data?.orders) {
+		const quotations = data.orders;
+		return [{
+			date: new Date().toISOString(),
+			total: quotations.metrics.totalQuotations || 0,
+			accepted: quotations.approved || 0,
+			pending: quotations.pending || 0
+		}];
+	}
+
+	// Handle generated report format
+	if (!data?.trends?.patterns?.daily || !data?.financial?.quotations) return [];
+	
+	const { conversion = 0 } = data.financial.quotations;
+	
+	return Object.entries(data.trends.patterns.daily).map(([date, value]) => {
+		const total = Number(value || 0);
+		return {
+			date: new Date(date).toISOString(),
+			total,
+			accepted: Math.round(total * (conversion / 100)),
+			pending: Math.round(total * ((100 - conversion) / 100))
+		};
+	});
+};
+
+const transformTaskData = (data: ReportResponse | null) => {
+	// Handle daily report format
+	if (data?.tasks) {
+		return [{
+			month: 'Today',
+			completed: data.tasks.completed || 0,
+			pending: data.tasks.pending || 0
+		}];
+	}
+
+	// Handle generated report format
+	if (!data?.performance?.tasks?.byType || !data?.performance?.tasks?.completionRate) return [];
+	
+	const { completionRate = 0 } = data.performance.tasks;
+	
+	return Object.entries(data.performance.tasks.byType).map(([type, value]) => ({
+		month: type,
+		completed: Math.round(Number(value || 0) * (completionRate / 100)),
+		pending: Math.round(Number(value || 0) * ((100 - completionRate) / 100))
+	}));
+};
+
+const transformPriorityData = (data: ReportResponse | null) => {
+	// Handle daily report format
+	if (data?.tasks) {
+		return [{
+			name: 'Tasks',
+			total: data.tasks.total || 0,
+			completed: data.tasks.completed || 0
+		}];
+	}
+
+	// Handle generated report format
+	if (!data?.performance?.tasks?.byPriority || !data?.performance?.tasks?.completionRate) return [];
+	
+	const { completionRate = 0 } = data.performance.tasks;
+	
+	return Object.entries(data.performance.tasks.byPriority).map(([priority, value]) => ({
+		name: priority,
+		total: Number(value || 0),
+		completed: Math.round(Number(value || 0) * (completionRate / 100))
+	}));
+};
+
+const transformRevenueData = (data: ReportResponse | null) => {
+	// Handle daily report format
+	if (data?.orders) {
+		return [{
+			name: 'Today',
+			value: Number(data.orders.metrics.grossQuotationValue?.replace(/[^0-9.-]+/g, '') || 0),
+			percentage: 100
+		}];
+	}
+
+	// Handle generated report format
+	if (!data?.financial?.revenue?.breakdown) return [];
+	
+	return data.financial.revenue.breakdown.map((metric: BreakdownMetric) => ({
+		name: metric.category,
+		value: Number(metric.value || 0),
+		percentage: Number(metric.percentage || 0)
+	}));
+};
+
+// Helper functions to get metrics from either format
+const getQuotationMetrics = (data: ReportResponse | null) => {
+	if (data?.orders) {
+		return {
+			total: data.orders.metrics.totalQuotations,
+			growth: data.orders.metrics.quotationTrends?.growth || '0',
+			trend: data.orders.metrics.quotationTrends?.growth?.startsWith('+') ? 'up' : 'down',
+			averageValue: Number(data.orders.metrics.averageQuotationValue?.replace(/[^0-9.-]+/g, '') || 0),
+			conversion: (data.orders.approved / (data.orders.metrics.totalQuotations || 1)) * 100
+		};
+	}
+
+	return {
+		total: data?.financial?.quotations?.total || 0,
+		growth: data?.financial?.revenue?.growth || '0',
+		trend: data?.financial?.revenue?.trend || 'stable',
+		averageValue: data?.financial?.quotations?.averageValue || 0,
+		conversion: data?.financial?.quotations?.conversion || 0
+	};
+};
+
+const getTaskMetrics = (data: ReportResponse | null) => {
+	if (data?.tasks) {
+		return {
+			completionRate: (data.tasks.completed / (data.tasks.total || 1)) * 100,
+			growth: data.tasks.metrics?.taskTrends?.growth || '0',
+			completed: data.tasks.completed,
+			total: data.tasks.total,
+			averageTime: 'N/A'
+		};
+	}
+
+	return {
+		completionRate: data?.performance?.tasks?.completionRate || 0,
+		growth: '0',
+		completed: data?.performance?.tasks?.completed || 0,
+		total: data?.performance?.tasks?.total || 1,
+		averageTime: data?.performance?.tasks?.averageCompletionTime || 'N/A'
+	};
+};
 
 export default function Dashboard() {
 	const {
@@ -215,16 +298,50 @@ export default function Dashboard() {
 		setPeriod,
 		reportType,
 		setReportType,
+		data,
 		isGenerating,
 		error,
 		handleGenerateReport
 	} = useReports();
 
+	// Transform data for charts using memoized functions
+	const quotationData = React.useMemo(() => transformQuotationData(data), [data]);
+	const taskComparisonData = React.useMemo(() => transformTaskData(data), [data]);
+	const taskPriorityData = React.useMemo(() => transformPriorityData(data), [data]);
+	const revenueData = React.useMemo(() => transformRevenueData(data), [data]);
+
+	// Get metrics for the cards
+	const quotationMetrics = React.useMemo(() => getQuotationMetrics(data), [data]);
+	const taskMetrics = React.useMemo(() => getTaskMetrics(data), [data]);
+
+	// Format currency with the correct locale and symbol
+	const formatCurrency = (value: number) => {
+		return new Intl.NumberFormat('en-ZA', {
+			style: 'currency',
+			currency: 'ZAR',
+		}).format(value).replace('ZAR', 'R');
+	};
+
+	// Format percentage with sign
+	const formatPercentage = (value: number, includeSign = true) => {
+		const formatted = Math.abs(value).toFixed(1);
+		return includeSign ? `${value >= 0 ? '+' : '-'}${formatted}%` : `${formatted}%`;
+	};
+
 	React.useEffect(() => {
 		if (error) {
-			//use react hot toast
+			toast.error(error.message);
 		}
 	}, [error]);
+
+	const handleDateRangeChange = (range: DateRange | undefined) => {
+		if (range?.from) {
+			setDateRange({
+				from: range.from,
+				to: range.to || range.from
+			});
+		}
+	};
 
 	return (
 		<motion.div
@@ -241,10 +358,19 @@ export default function Dashboard() {
 							<div className="flex flex-col gap-4">
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Total Quotations</p>
 								<div className="flex items-center justify-between">
-									<h2 className="text-2xl font-bold font-body text-card-foreground">158</h2>
-									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
-										<TrendingUp className="w-4 h-4 mr-1" />
-										12.5%
+									<h2 className="text-2xl font-bold font-body text-card-foreground">
+										{quotationMetrics.total.toLocaleString()}
+									</h2>
+									<span className={cn(
+										"flex items-center text-xs font-normal font-body",
+										quotationMetrics.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'
+									)}>
+										{quotationMetrics.trend === 'up' ? (
+											<TrendingUp className="w-4 h-4 mr-1" />
+										) : (
+											<TrendingDown className="w-4 h-4 mr-1" />
+										)}
+										{formatPercentage(Number(quotationMetrics.growth))}
 									</span>
 								</div>
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
@@ -259,10 +385,12 @@ export default function Dashboard() {
 							<div className="flex flex-col gap-4">
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Task Completion Rate</p>
 								<div className="flex items-center justify-between">
-									<h2 className="text-2xl font-bold font-body text-card-foreground">85%</h2>
+									<h2 className="text-2xl font-bold font-body text-card-foreground">
+										{formatPercentage(taskMetrics.completionRate, false)}
+									</h2>
 									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
 										<TrendingUp className="w-4 h-4 mr-1" />
-										5.2%
+										{formatPercentage(((taskMetrics.completed) / (taskMetrics.total) * 100))}
 									</span>
 								</div>
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last week</p>
@@ -277,10 +405,19 @@ export default function Dashboard() {
 							<div className="flex flex-col gap-4">
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Average Quote Value</p>
 								<div className="flex items-center justify-between">
-									<h2 className="text-2xl font-bold font-body text-card-foreground">$2,850</h2>
-									<span className="flex items-center text-xs font-normal text-rose-500 font-body">
-										<TrendingDown className="w-4 h-4 mr-1" />
-										2.1%
+									<h2 className="text-2xl font-bold font-body text-card-foreground">
+										{formatCurrency(quotationMetrics.averageValue)}
+									</h2>
+									<span className={cn(
+										"flex items-center text-xs font-normal font-body",
+										quotationMetrics.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'
+									)}>
+										{quotationMetrics.trend === 'up' ? (
+											<TrendingUp className="w-4 h-4 mr-1" />
+										) : (
+											<TrendingDown className="w-4 h-4 mr-1" />
+										)}
+										{formatPercentage(Number(quotationMetrics.growth))}
 									</span>
 								</div>
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
@@ -295,10 +432,12 @@ export default function Dashboard() {
 							<div className="flex flex-col gap-4">
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">Conversion Rate</p>
 								<div className="flex items-center justify-between">
-									<h2 className="text-2xl font-bold font-body text-card-foreground">72%</h2>
+									<h2 className="text-2xl font-bold font-body text-card-foreground">
+										{formatPercentage(quotationMetrics.conversion, false)}
+									</h2>
 									<span className="flex items-center text-xs font-normal text-emerald-500 font-body">
 										<TrendingUp className="w-4 h-4 mr-1" />
-										8.4%
+										{formatPercentage(quotationMetrics.conversion)}
 									</span>
 								</div>
 								<p className="text-xs font-normal uppercase text-muted-foreground font-body">vs last month</p>
@@ -313,10 +452,10 @@ export default function Dashboard() {
 				<Card className="lg:col-span-2">
 					<CardHeader className="flex items-center gap-2 py-5 space-y-0 border-b sm:flex-row">
 						<div className="grid flex-1 gap-1 text-center sm:text-left">
-							<CardTitle>Quotation Trends</CardTitle>
-							<CardDescription>
-								Showing quotation statistics for the selected period
-							</CardDescription>
+							<CardTitle className="font-normal uppercase font-body text-card-foreground">Quotation Trends</CardTitle>
+							{/* <CardDescription className="font-normal uppercase font-body text-muted-foreground">
+								{data ? `Data from ${format(new Date(data.metadata.generatedAt), 'PPP')}` : 'No data available'}
+							</CardDescription> */}
 						</div>
 						<Select defaultValue="7d">
 							<SelectTrigger
@@ -339,137 +478,159 @@ export default function Dashboard() {
 						</Select>
 					</CardHeader>
 					<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-						<ChartContainer
-							config={quotationChartConfig}
-							className="aspect-auto h-[250px] w-full"
-						>
-							<AreaChart data={quotationData}>
-								<defs>
-									<linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
-										<stop
-											offset="5%"
-											stopColor="var(--color-total)"
-											stopOpacity={0.8}
-										/>
-										<stop
-											offset="95%"
-											stopColor="var(--color-total)"
-											stopOpacity={0.1}
-										/>
-									</linearGradient>
-									<linearGradient id="fillAccepted" x1="0" y1="0" x2="0" y2="1">
-										<stop
-											offset="5%"
-											stopColor="var(--color-accepted)"
-											stopOpacity={0.8}
-										/>
-										<stop
-											offset="95%"
-											stopColor="var(--color-accepted)"
-											stopOpacity={0.1}
-										/>
-									</linearGradient>
-									<linearGradient id="fillPending" x1="0" y1="0" x2="0" y2="1">
-										<stop
-											offset="5%"
-											stopColor="var(--color-pending)"
-											stopOpacity={0.8}
-										/>
-										<stop
-											offset="95%"
-											stopColor="var(--color-pending)"
-											stopOpacity={0.1}
-										/>
-									</linearGradient>
-								</defs>
-								<CartesianGrid vertical={false} />
-								<XAxis
-									dataKey="date"
-									tickLine={false}
-									axisLine={false}
-									tickMargin={8}
-									minTickGap={32}
-									tickFormatter={(value) => {
-										const date = new Date(value)
-										return date.toLocaleDateString("en-US", {
-											month: "short",
-											day: "numeric",
-										})
-									}}
-								/>
-								<ChartTooltip
-									cursor={false}
-									content={
-										<ChartTooltipContent
-											labelFormatter={(value) => {
-												return new Date(value).toLocaleDateString("en-US", {
-													month: "short",
-													day: "numeric",
-												})
-											}}
-											indicator="dot"
-										/>
-									}
-								/>
-								<Area
-									dataKey="pending"
-									type="natural"
-									fill="url(#fillPending)"
-									stroke="var(--color-pending)"
-									stackId="a"
-								/>
-								<Area
-									dataKey="accepted"
-									type="natural"
-									fill="url(#fillAccepted)"
-									stroke="var(--color-accepted)"
-									stackId="a"
-								/>
-								<Area
-									dataKey="total"
-									type="natural"
-									fill="url(#fillTotal)"
-									stroke="var(--color-total)"
-									stackId="a"
-								/>
-								<ChartLegend content={<ChartLegendContent />} />
-							</AreaChart>
-						</ChartContainer>
+						{data ? (
+							<ChartContainer
+								config={quotationChartConfig}
+								className="aspect-auto h-[250px] w-full"
+							>
+								<AreaChart data={quotationData}>
+									<defs>
+										<linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
+											<stop
+												offset="5%"
+												stopColor="var(--color-total)"
+												stopOpacity={0.8}
+											/>
+											<stop
+												offset="95%"
+												stopColor="var(--color-total)"
+												stopOpacity={0.1}
+											/>
+										</linearGradient>
+										<linearGradient id="fillAccepted" x1="0" y1="0" x2="0" y2="1">
+											<stop
+												offset="5%"
+												stopColor="var(--color-accepted)"
+												stopOpacity={0.8}
+											/>
+											<stop
+												offset="95%"
+												stopColor="var(--color-accepted)"
+												stopOpacity={0.1}
+											/>
+										</linearGradient>
+										<linearGradient id="fillPending" x1="0" y1="0" x2="0" y2="1">
+											<stop
+												offset="5%"
+												stopColor="var(--color-pending)"
+												stopOpacity={0.8}
+											/>
+											<stop
+												offset="95%"
+												stopColor="var(--color-pending)"
+												stopOpacity={0.1}
+											/>
+										</linearGradient>
+									</defs>
+									<CartesianGrid vertical={false} />
+									<XAxis
+										dataKey="date"
+										tickLine={false}
+										axisLine={false}
+										tickMargin={8}
+										minTickGap={32}
+										tickFormatter={(value) => {
+											const date = new Date(value)
+											return date.toLocaleDateString("en-US", {
+												month: "short",
+												day: "numeric",
+											})
+										}}
+									/>
+									<ChartTooltip
+										cursor={false}
+										content={
+											<ChartTooltipContent
+												labelFormatter={(value) => {
+													return new Date(value).toLocaleDateString("en-US", {
+														month: "short",
+														day: "numeric",
+													})
+												}}
+												indicator="dot"
+											/>
+										}
+									/>
+									<Area
+										dataKey="pending"
+										type="natural"
+										fill="url(#fillPending)"
+										stroke="var(--color-pending)"
+										stackId="a"
+									/>
+									<Area
+										dataKey="accepted"
+										type="natural"
+										fill="url(#fillAccepted)"
+										stroke="var(--color-accepted)"
+										stackId="a"
+									/>
+									<Area
+										dataKey="total"
+										type="natural"
+										fill="url(#fillTotal)"
+										stroke="var(--color-total)"
+										stackId="a"
+									/>
+									<ChartLegend content={<ChartLegendContent />} />
+								</AreaChart>
+							</ChartContainer>
+						) : (
+							<div className="flex items-center justify-center h-[250px]">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">
+									{isGenerating ? 'Generating report...' : 'No data available'}
+								</p>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-sm font-medium uppercase font-body text-card-foreground">Task Completion Trends</CardTitle>
-						<CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">This Week</CardDescription>
+						{/* <CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">
+							{data ? `Last updated ${format(new Date(data.metadata.generatedAt), 'PPP')}` : 'No data available'}
+						</CardDescription> */}
 					</CardHeader>
 					<CardContent>
-						<ChartContainer config={taskChartConfig}>
-							<BarChart data={taskComparisonData} height={300}>
-								<CartesianGrid vertical={false} />
-								<XAxis
-									dataKey="month"
-									tickLine={false}
-									tickMargin={10}
-									axisLine={false}
-									tickFormatter={(value) => value.slice(0, 3)}
-								/>
-								<ChartTooltip
-									cursor={false}
-									content={<ChartTooltipContent indicator="dashed" />}
-								/>
-								<Bar dataKey="completed" fill="var(--color-completed)" radius={5} />
-								<Bar dataKey="pending" fill="var(--color-pending)" radius={5} />
-							</BarChart>
-						</ChartContainer>
+						{data ? (
+							<ChartContainer config={taskChartConfig}>
+								<BarChart data={taskComparisonData} height={300}>
+									<CartesianGrid vertical={false} />
+									<XAxis
+										dataKey="month"
+										tickLine={false}
+										tickMargin={10}
+										axisLine={false}
+										tickFormatter={(value) => value.slice(0, 3)}
+									/>
+									<ChartTooltip
+										cursor={false}
+										content={<ChartTooltipContent indicator="dashed" />}
+									/>
+									<Bar dataKey="completed" fill="var(--color-completed)" radius={5} />
+									<Bar dataKey="pending" fill="var(--color-pending)" radius={5} />
+								</BarChart>
+							</ChartContainer>
+						) : (
+							<div className="flex items-center justify-center h-[300px]">
+								<p className="text-xs font-normal uppercase text-muted-foreground font-body">
+									{isGenerating ? 'Generating report...' : 'No data available'}
+								</p>
+							</div>
+						)}
 					</CardContent>
-				<CardFooter className="flex-col items-center justify-center gap-2 text-sm">
-							<div className="flex gap-2 text-xs font-normal leading-none uppercase text-card-foreground font-body">
-							Task completion up by 5.2% this month <TrendingUp className="w-4 h-4" />
-						</div>
-						<div className="flex gap-2 font-normal leading-none uppercase text-card-foreground font-body text-[10px]">
-							Showing task completion trends for the last 6 months
-						</div>
+					<CardFooter className="flex-col items-center justify-center gap-2 text-sm">
+						{/* {data && (
+							<>
+								<div className="flex gap-2 text-xs font-normal leading-none uppercase text-card-foreground font-body">
+									Task completion up by {data.performance.tasks.completionRate}% this month <TrendingUp className="w-4 h-4" />
+								</div>
+								<div className="flex gap-2 font-normal leading-none uppercase text-card-foreground font-body text-[10px]">
+									Average completion time: {data.performance.tasks.averageCompletionTime}
+								</div>
+							</>
+						)} */}
 					</CardFooter>
 				</Card>
 			</div>
@@ -580,7 +741,7 @@ export default function Dashboard() {
 											mode="range"
 											defaultMonth={dateRange?.from}
 											selected={dateRange}
-											onSelect={setDateRange}
+											onSelect={handleDateRangeChange}
 											numberOfMonths={2}
 											className="border rounded-md"
 										/>

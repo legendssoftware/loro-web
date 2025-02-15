@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchQuotations, deleteQuotation, updateQuotation } from "@/helpers/quotations"
+import { fetchQuotations, updateQuotation } from "@/helpers/quotations"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
-import { Quotation } from "@/lib/types/quotations"
+import { Quotation, OrderStatus } from "@/lib/types/quotations"
 import toast from 'react-hot-toast'
 import { QuotationList } from "./quotation-list"
 import { QuotationDetailModal } from "./quotation-detail-modal"
@@ -27,33 +27,25 @@ export const QuotationsModule = () => {
     })
 
     const updateQuotationMutation = useMutation({
-        mutationFn: ({ ref, updatedQuotation }: { ref: number; updatedQuotation: Partial<Quotation> }) =>
-            updateQuotation({ ref, updatedQuotation, config }),
+        mutationFn: ({ ref, status }: { ref: number; status: OrderStatus }) =>
+            updateQuotation({ ref, updatedQuotation: { status }, config }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['quotations'] })
-            toast.success('Quotation updated successfully')
+            toast.success('Quotation status updated successfully')
             setIsQuotationDetailModalOpen(false)
         },
         onError: () => {
-            toast.error('Failed to update quotation')
-        }
-    })
-
-    const deleteQuotationMutation = useMutation({
-        mutationFn: (uid: number) => deleteQuotation(uid, config),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['quotations'] })
-            toast.success('Quotation deleted successfully')
-            setIsQuotationDetailModalOpen(false)
-        },
-        onError: () => {
-            toast.error('Failed to delete quotation')
+            toast.error('Failed to update quotation status')
         }
     })
 
     const handleQuotationClick = (quotation: Quotation) => {
         setSelectedQuotation(quotation)
         setIsQuotationDetailModalOpen(true)
+    }
+
+    const handleStatusUpdate = (uid: number, status: OrderStatus) => {
+        updateQuotationMutation.mutate({ ref: uid, status })
     }
 
     return (
@@ -68,9 +60,8 @@ export const QuotationsModule = () => {
                 isOpen={isQuotationDetailModalOpen}
                 onOpenChange={setIsQuotationDetailModalOpen}
                 selectedQuotation={selectedQuotation}
-                onDelete={(uid) => deleteQuotationMutation.mutate(uid)}
+                onUpdate={handleStatusUpdate}
                 isUpdating={updateQuotationMutation.isPending}
-                isDeleting={deleteQuotationMutation.isPending}
             />
         </div>
     )

@@ -121,19 +121,7 @@ export interface GeneratedReport {
     updatedAt: string;
 }
 
-export enum ReportType {
-    CLAIM = 'CLAIM',
-    QUOTATION = 'QUOTATION',
-    LEAD = 'LEAD',
-    TASK = 'TASK'
-}
-
-export interface MetricTrend {
-    current: number;
-    previous: number;
-    growth: string;
-    trend: 'up' | 'down' | 'stable';
-}
+export type MetricTrend = 'up' | 'down' | 'stable';
 
 export interface BreakdownMetric {
     category: string;
@@ -146,7 +134,7 @@ export interface FinancialMetrics {
         current: number;
         previous: number;
         growth: string;
-        trend: 'up' | 'down' | 'stable';
+        trend: MetricTrend;
         breakdown: BreakdownMetric[];
     };
     claims: {
@@ -232,21 +220,111 @@ export interface TrendMetrics {
     };
 }
 
+export interface DailyReportMetrics {
+    totalQuotations: number;
+    grossQuotationValue: string;
+    averageQuotationValue: string;
+    quotationTrends?: {
+        growth: string;
+    };
+}
+
+export interface DailyReportOrders {
+    pending: number;
+    processing: number;
+    completed: number;
+    cancelled: number;
+    postponed: number;
+    rejected: number;
+    approved: number;
+    metrics: DailyReportMetrics;
+}
+
+export interface DailyReportTasks {
+    pending: number;
+    completed: number;
+    missed: number;
+    postponed: number;
+    total: number;
+    metrics?: {
+        taskTrends: {
+            growth: string;
+        };
+    };
+}
+
 export interface ReportResponse {
-    metadata: {
+    // Generated report format
+    metadata?: {
         generatedAt: string;
         period: string;
         filters: Record<string, unknown>;
     };
-    financial: FinancialMetrics;
-    performance: PerformanceMetrics;
-    comparison: ComparisonMetrics;
-    trends: TrendMetrics;
-    summary: {
+    financial?: FinancialMetrics;
+    performance?: PerformanceMetrics;
+    comparison?: ComparisonMetrics;
+    trends?: TrendMetrics;
+    summary?: {
         highlights: string[];
         recommendations: string[];
     };
+
+    // Daily report format
+    orders?: DailyReportOrders;
+    tasks?: DailyReportTasks;
+    leads?: {
+        pending: number;
+        approved: number;
+        inReview: number;
+        declined: number;
+        total: number;
+        metrics?: {
+            leadTrends: {
+                growth: string;
+            };
+        };
+    };
+    claims?: {
+        pending: number;
+        approved: number;
+        declined: number;
+        paid: number;
+        totalValue: string;
+        total: number;
+        metrics?: {
+            valueGrowth: string;
+        };
+    };
+    attendance?: {
+        attendance: number;
+        present: number;
+        total: number;
+    };
 }
+
+export interface ChartDataPoint {
+    date: string;
+    value: number;
+    trend?: MetricTrend;
+}
+
+export interface TaskMetrics {
+    total: number;
+    completed: number;
+    pending: number;
+    priority: Record<string, number>;
+}
+
+export interface QuotationMetrics {
+    total: number;
+    accepted: number;
+    pending: number;
+    averageValue: number;
+    conversion: number;
+}
+
+export type ReportPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+export type ReportType = 'quotation' | 'task' | 'lead' | 'claim';
 //     leads: {
 //         pending: number;
 //         approved: number;

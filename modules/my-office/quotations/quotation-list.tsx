@@ -14,6 +14,7 @@ import {
 import { Building2, FolderOpen, List } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quotationStatuses } from "@/data/app-data";
+import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
 
 interface QuotationListProps {
   quotations: Quotation[];
@@ -39,6 +40,7 @@ const QuotationListComponent = ({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [userFilter, setUserFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredQuotations = useMemo(() => {
@@ -55,9 +57,16 @@ const QuotationListComponent = ({
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
-      return matchesStatus && matchesClient && matchesUser && matchesSearch;
+      const matchesPeriod = (() => {
+        if (periodFilter === "all") return true;
+        const { from, to } = getDateRangeFromPeriod(periodFilter);
+        const quotationDate = new Date(quotation.createdAt);
+        return quotationDate >= from && quotationDate <= to;
+      })();
+
+      return matchesStatus && matchesClient && matchesUser && matchesSearch && matchesPeriod;
     });
-  }, [quotations, statusFilter, clientFilter, userFilter, searchQuery]);
+  }, [quotations, statusFilter, clientFilter, userFilter, searchQuery, periodFilter]);
 
   const Header = () => {
     return (
@@ -69,6 +78,10 @@ const QuotationListComponent = ({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="flex items-center gap-2">
+          <PeriodFilter 
+            value={periodFilter}
+            onValueChange={setPeriodFilter}
+          />
           <Select value={clientFilter} onValueChange={setClientFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by client" />
@@ -117,7 +130,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Users</span>
+                  <span>All Sales Reps</span>
                 </div>
               </SelectItem>
               {quotations

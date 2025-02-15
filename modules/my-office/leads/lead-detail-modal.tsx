@@ -128,8 +128,8 @@ const LeadDetailModal = ({
                                 <Button
                                     variant="secondary"
                                     onClick={() => onUpdate(selectedLead)}
-                                    disabled={isUpdating || isDeleting || isRestoring}
-                                    className="text-[10px] font-body uppercase font-normal w-1/3"
+                                    disabled
+                                    className="text-[10px] font-body uppercase font-normal w-1/3 cursor-not-allowed"
                                 >
                                     {isUpdating ? (
                                         <>
@@ -143,7 +143,7 @@ const LeadDetailModal = ({
                                 <Button
                                     variant="destructive"
                                     onClick={() => onDelete(selectedLead)}
-                                    disabled={isUpdating || isDeleting || isRestoring}
+                                    disabled
                                     className="text-[10px] font-body uppercase font-normal w-1/3"
                                 >
                                     {isDeleting ? (

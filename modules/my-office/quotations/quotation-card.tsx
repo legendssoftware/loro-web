@@ -17,7 +17,8 @@ const itemVariants = {
 }
 
 const QuotationCardComponent = ({ quotation, onClick }: QuotationCardProps) => {
-    const amount = Number(quotation?.totalAmount)
+    const amount = Number(quotation?.totalAmount || 0)
+    const quotationDate = quotation?.quotationDate ? new Date(quotation.quotationDate) : new Date()
 
     return (
         <motion.div variants={itemVariants}>
@@ -28,15 +29,15 @@ const QuotationCardComponent = ({ quotation, onClick }: QuotationCardProps) => {
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <Badge variant="outline" className="text-xs font-body">
-                                {quotation.status}
+                                {quotation?.status || 'N/A'}
                             </Badge>
                             <span className="text-xs font-body">
-                                #{quotation.quotationNumber}
+                                #{quotation?.quotationNumber || 'N/A'}
                             </span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-body text-muted-foreground">
-                                {format(new Date(quotation.quotationDate), 'MMM dd, yyyy')}
+                                {format(quotationDate, 'MMM dd, yyyy')}
                             </span>
                             <span className={cn(
                                 "text-xs font-body",
@@ -46,7 +47,7 @@ const QuotationCardComponent = ({ quotation, onClick }: QuotationCardProps) => {
                             </span>
                         </div>
                         <div className="text-xs truncate font-body text-muted-foreground">
-                            {quotation.client.name}
+                            {quotation?.client?.name || 'Unknown Client'}
                         </div>
                     </div>
                 </CardContent>

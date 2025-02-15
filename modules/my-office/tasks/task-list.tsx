@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { TaskCard } from "./task-card";
-import { ExistingTask } from "@/lib/types/tasks";
+import { ExistingTask, User } from "@/lib/types/tasks";
 import { PageLoader } from "@/components/page-loader";
 import {
   Select,
@@ -19,8 +19,9 @@ import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import toast from "react-hot-toast";
 import { taskStatuses } from "@/data/app-data";
-import { FolderOpen, List, LucideIcon } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { FolderOpen, List, Building2 } from "lucide-react";
+import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -44,32 +45,15 @@ const TaskListComponent = ({
   onTaskClick,
   isLoading,
 }: TaskListProps) => {
-  const { accessToken, profileData } = useSessionStore();
-  const queryClient = useQueryClient();
+  const { accessToken } = useSessionStore();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleStatusChange = useCallback((status: string) => {
-    setStatusFilter(status);
-  }, []);
-
-  const handleClientChange = useCallback((client: string) => {
-    setClientFilter(client);
-  }, []);
-
-  const handleAssigneeChange = useCallback((assignee: string) => {
-    setAssigneeFilter(assignee);
-  }, []);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    []
-  );
+  const queryClient = useQueryClient();
 
   const config: RequestConfig = {
     headers: {
@@ -81,46 +65,24 @@ const TaskListComponent = ({
     mutationFn: (data: CreateTaskDTO) => createTask(data, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task created successfully", {
-        style: {
-          borderRadius: "5px",
-          background: "#333",
-          color: "#fff",
-          fontFamily: "var(--font-unbounded)",
-          fontSize: "12px",
-          textTransform: "uppercase",
-          fontWeight: "300",
-          padding: "16px",
-        },
-        duration: 2000,
-        position: "bottom-center",
-        icon: "✅",
-      });
+      toast.success("Task created successfully");
       setIsNewTaskModalOpen(false);
     },
-    onError: (error: Error) => {
-      const errorMessage =
-        error.message === "item(s) not found"
-          ? "Unable to create task. Please try again."
-          : `Failed to create task: ${error.message}`;
-
-      toast.error(errorMessage, {
-        style: {
-          borderRadius: "5px",
-          background: "#333",
-          color: "#fff",
-          fontFamily: "var(--font-unbounded)",
-          fontSize: "12px",
-          textTransform: "uppercase",
-          fontWeight: "300",
-          padding: "16px",
-        },
-        duration: 5000,
-        position: "bottom-center",
-        icon: "❌",
-      });
+    onError: () => {
+      toast.error("Failed to create task");
     },
   });
+
+  const handleCreateTask = useCallback(
+    async (data: CreateTaskDTO) => {
+      try {
+        await createTaskMutation.mutateAsync(data);
+      } catch (error) {
+        console.error("Failed to create task:", error);
+      }
+    },
+    [createTaskMutation]
+  );
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -129,56 +91,54 @@ const TaskListComponent = ({
       const matchesClient =
         clientFilter === "all" || task.client?.uid.toString() === clientFilter;
       const matchesAssignee =
-        assigneeFilter === "all" ||
-        task.assignees?.some((a) => a.uid.toString() === assigneeFilter);
-      const matchesSearch = task.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        assigneeFilter === "all" || task.assignees?.some(assignee => assignee.uid.toString() === assigneeFilter);
+      const matchesSearch =
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesStatus && matchesClient && matchesAssignee && matchesSearch;
+      const matchesPeriod = (() => {
+        if (periodFilter === "all") return true;
+        const { from, to } = getDateRangeFromPeriod(periodFilter);
+        const taskDate = new Date(task.createdAt);
+        return taskDate >= from && taskDate <= to;
+      })();
+
+      return matchesStatus && matchesClient && matchesAssignee && matchesSearch && matchesPeriod;
     });
-  }, [tasks, statusFilter, clientFilter, assigneeFilter, searchQuery]);
-
-  const handleCreateTask = useCallback(
-    async (data: CreateTaskDTO) => {
-      try {
-        const newTask = {
-          ...data,
-          owner: {
-            uid: Number(profileData?.uid) || 0,
-            username: profileData?.username || "",
-            name: profileData?.name || "",
-            surname: profileData?.surname || "",
-            email: profileData?.email || "",
-            phone: profileData?.phone || "",
-            photoURL: profileData?.photoURL || "",
-            accessLevel: profileData?.accessLevel || "",
-            userref: profileData?.userref || "",
-            organisationRef: Number(profileData?.organisationRef) || 0,
-            status: "active",
-          },
-        };
-
-        await createTaskMutation.mutateAsync(newTask);
-      } catch (error) {
-        console.error("Error creating task:", error);
-      }
-    },
-    [createTaskMutation, profileData]
-  );
+  }, [tasks, statusFilter, clientFilter, assigneeFilter, searchQuery, periodFilter]);
 
   const Header = () => {
+    const uniqueAssignees = useMemo(() => {
+      const assigneesSet = new Set<number>();
+      const assigneesList: User[] = [];
+      
+      tasks.forEach(task => {
+        task.assignees?.forEach(assignee => {
+          if (!assigneesSet.has(assignee.uid)) {
+            assigneesSet.add(assignee.uid);
+            assigneesList.push(assignee);
+          }
+        });
+      });
+      
+      return assigneesList;
+    }, [tasks]);
+
     return (
-      <div className="flex flex-row items-center justify-end gap-2">
-        <div className="flex flex-row items-center justify-center gap-2">
-          <Input
-            placeholder="search..."
-            className="w-[300px] shadow-none bg-card"
-            value={searchQuery}
-            onChange={handleSearchChange}
+      <div className="flex items-center justify-end gap-2">
+        <Input
+          placeholder="search..."
+          className="w-[300px] bg-card"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <div className="flex items-center gap-2">
+          <PeriodFilter 
+            value={periodFilter}
+            onValueChange={setPeriodFilter}
           />
-          <Select value={clientFilter} onValueChange={handleClientChange}>
-            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
+          <Select value={clientFilter} onValueChange={setClientFilter}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by client" />
             </SelectTrigger>
             <SelectContent>
@@ -192,25 +152,26 @@ const TaskListComponent = ({
                 </div>
               </SelectItem>
               {tasks
-                .filter((task) => task.client)
                 .filter(
                   (task, index, self) =>
-                    index ===
-                    self.findIndex((t) => t.client?.uid === task.client?.uid)
+                    task.client && index === self.findIndex((t) => t.client?.uid === task.client?.uid)
                 )
-                .map((task) => (
+                .map((task) => task.client && (
                   <SelectItem
-                    key={task.client?.uid}
-                    value={task.client?.uid.toString() || ""}
+                    key={task.client.uid}
+                    value={task.client.uid.toString()}
                     className="text-[10px] font-normal uppercase font-body"
                   >
-                    {task.client?.name || "Unknown"}
+                    <div className="flex flex-row items-center gap-2">
+                      <Building2 size={17} strokeWidth={1.5} />
+                      {task.client.name}
+                    </div>
                   </SelectItem>
                 ))}
             </SelectContent>
           </Select>
-          <Select value={assigneeFilter} onValueChange={handleAssigneeChange}>
-            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
+          <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by assignee" />
             </SelectTrigger>
             <SelectContent>
@@ -220,75 +181,57 @@ const TaskListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Sales Agents</span>
+                  <span>All Assignees</span>
                 </div>
               </SelectItem>
-              {tasks
-                .flatMap((task) => task.assignees || [])
-                .filter(
-                  (assignee, index, self) =>
-                    index === self.findIndex((a) => a.uid === assignee.uid)
-                )
-                .map((assignee) => (
-                  <SelectItem
-                    key={assignee.uid}
-                    value={assignee.uid.toString()}
-                    className="text-[10px] font-normal uppercase font-body"
-                  >
-                    <div className="flex flex-row items-center gap-2">
-                      <Avatar
-                        className={`${
-                          assignee.uid === Number(assigneeFilter)
-                            ? "h-5 w-5"
-                            : "h-8 w-8"
-                        }`}
-                      >
-                        <AvatarImage src={assignee?.photoURL} />
-                        <AvatarFallback>
-                          {assignee?.name?.charAt(0)}
-                          {assignee?.surname?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      {`${assignee.name} ${assignee.surname}`}
-                    </div>
-                  </SelectItem>
-                ))}
+              {uniqueAssignees.map((assignee) => (
+                <SelectItem
+                  key={assignee.uid}
+                  value={assignee.uid.toString()}
+                  className="text-[10px] font-normal uppercase font-body"
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <Avatar className="w-5 h-5">
+                      <AvatarImage src={assignee.photoURL} />
+                      <AvatarFallback>
+                        {assignee.name?.charAt(0)}
+                        {assignee.surname?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {`${assignee.name} ${assignee.surname}`}
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[200px] shadow-none bg-card outline-none">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
                 value="all"
-                className="text-[10px] font-normal uppercase font-body flex items-center gap-2 flex-row"
+                className="text-[10px] font-normal uppercase font-body"
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
                   <span>All Statuses</span>
                 </div>
               </SelectItem>
-              {taskStatuses?.map(
-                (status: {
-                  value: string;
-                  label: string;
-                  icon: LucideIcon;
-                }) => (
-                  <SelectItem
-                    key={status?.value}
-                    value={status?.value}
-                    className="text-[10px] font-normal font-body uppercase"
-                  >
-                    <div className="flex items-center gap-2">
-                      {status?.icon && (
-                        <status.icon size={17} strokeWidth={1.5} />
-                      )}
-                      <span>{status?.label?.replace("_", " ")}</span>
-                    </div>
-                  </SelectItem>
-                )
-              )}
+              {taskStatuses?.map((status) => (
+                <SelectItem
+                  key={status?.value}
+                  value={status?.value}
+                  className="text-[10px] font-normal font-body uppercase"
+                >
+                  <div className="flex items-center gap-2">
+                    {status?.icon && (
+                      <status.icon size={17} strokeWidth={1.5} />
+                    )}
+                    <span>{status?.label?.replace("_", " ")}</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

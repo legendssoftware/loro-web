@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useSessionStore } from '@/store/use-session-store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -12,10 +11,8 @@ export const api = axios.create({
 
 // Add request interceptor to add auth token
 api.interceptors.request.use((config) => {
-  const accessToken = useSessionStore.getState().accessToken;
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
+  // Don't get token from store in interceptor to avoid SSR issues
+  // Token should be passed in headers from the component/hook
   return config;
 });
 
@@ -23,10 +20,34 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Only notify about unauthorized access, don't redirect
-      console.error('Unauthorized access - please sign in again');
-    }
+    // Let the component handle the error
     return Promise.reject(error);
   }
-); 
+);
+
+export const fetchOrganisations = async (token: string) => {
+  try {
+    const response = await api.get('/organisations', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchBranches = async (organisationId: number | null, token: string) => {
+  if (!organisationId) return [];
+  try {
+    const response = await api.get(`/branches?organisation=${organisationId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}; 

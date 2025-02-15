@@ -3,6 +3,7 @@ import { RequestConfig } from '@/lib/types/tasks'
 import { Branch } from '@/lib/types/branch'
 import { Reward } from '@/lib/types/rewards'
 import { AxiosError } from 'axios'
+import { Organisation } from './organisation'
 
 export enum AccessLevel {
     USER = 'user',
@@ -33,6 +34,7 @@ export interface User {
     updatedAt: Date
     branch?: Branch
     rewards?: Reward[]
+    organisation?: Organisation
 }
 
 export interface CreateUserDTO {

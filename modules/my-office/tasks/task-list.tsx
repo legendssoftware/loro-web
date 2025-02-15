@@ -17,7 +17,7 @@ import { useSessionStore } from "@/store/use-session-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
-import toast from "react-hot-toast";
+import { showToast } from "@/lib/utils/toast";
 import { taskStatuses } from "@/data/app-data";
 import { FolderOpen, List, Building2 } from "lucide-react";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
@@ -65,11 +65,11 @@ const TaskListComponent = ({
     mutationFn: (data: CreateTaskDTO) => createTask(data, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Task created successfully");
+      showToast.success("Task created successfully");
       setIsNewTaskModalOpen(false);
     },
-    onError: () => {
-      toast.error("Failed to create task");
+    onError: (error) => {
+      showToast.error("Failed to create task", error);
     },
   });
 
@@ -89,7 +89,7 @@ const TaskListComponent = ({
       const matchesStatus =
         statusFilter === "all" || task.status === statusFilter;
       const matchesClient =
-        clientFilter === "all" || task.client?.uid.toString() === clientFilter;
+        clientFilter === "all" || task.clients?.some(client => client.uid.toString() === clientFilter);
       const matchesAssignee =
         assigneeFilter === "all" || task.assignees?.some(assignee => assignee.uid.toString() === assigneeFilter);
       const matchesSearch =
@@ -122,7 +122,26 @@ const TaskListComponent = ({
       });
       
       return assigneesList;
-    }, [tasks]);
+    }, []);
+
+    const uniqueClients = useMemo(() => {
+      const clientsSet = new Set<number>();
+      const clientsList: { uid: number; name: string }[] = [];
+      
+      tasks.forEach(task => {
+        task.clients?.forEach(client => {
+          if (!clientsSet.has(client.uid)) {
+            clientsSet.add(client.uid);
+            clientsList.push({
+              uid: client.uid,
+              name: client.name || 'Unknown Client'
+            });
+          }
+        });
+      });
+      
+      return clientsList.sort((a, b) => a.name.localeCompare(b.name));
+    }, []);
 
     return (
       <div className="flex items-center justify-end gap-2">
@@ -151,23 +170,18 @@ const TaskListComponent = ({
                   <span>All Clients</span>
                 </div>
               </SelectItem>
-              {tasks
-                .filter(
-                  (task, index, self) =>
-                    task.client && index === self.findIndex((t) => t.client?.uid === task.client?.uid)
-                )
-                .map((task) => task.client && (
-                  <SelectItem
-                    key={task.client.uid}
-                    value={task.client.uid.toString()}
-                    className="text-[10px] font-normal uppercase font-body"
-                  >
-                    <div className="flex flex-row items-center gap-2">
-                      <Building2 size={17} strokeWidth={1.5} />
-                      {task.client.name}
-                    </div>
-                  </SelectItem>
-                ))}
+              {uniqueClients.map((client) => (
+                <SelectItem
+                  key={client.uid}
+                  value={client.uid.toString()}
+                  className="text-[10px] font-normal uppercase font-body"
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <Building2 size={17} strokeWidth={1.5} />
+                    <span>{client.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>

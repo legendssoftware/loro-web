@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, FolderOpen, List } from "lucide-react";
+import { Building2, FolderOpen, List, TrendingUp, TrendingDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quotationStatuses } from "@/data/app-data";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
@@ -41,10 +41,11 @@ const QuotationListComponent = ({
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [userFilter, setUserFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
+  const [valueSort, setValueSort] = useState<"none" | "asc" | "desc">("none");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredQuotations = useMemo(() => {
-    return quotations.filter((quotation) => {
+    const filtered = quotations.filter((quotation) => {
       const matchesStatus =
         statusFilter === "all" || quotation.status === statusFilter;
       const matchesClient =
@@ -66,7 +67,18 @@ const QuotationListComponent = ({
 
       return matchesStatus && matchesClient && matchesUser && matchesSearch && matchesPeriod;
     });
-  }, [quotations, statusFilter, clientFilter, userFilter, searchQuery, periodFilter]);
+
+    // Apply value sorting if selected
+    if (valueSort !== "none") {
+      filtered.sort((a, b) => {
+        const aValue = Number(a.totalAmount || 0);
+        const bValue = Number(b.totalAmount || 0);
+        return valueSort === "asc" ? aValue - bValue : bValue - aValue;
+      });
+    }
+
+    return filtered;
+  }, [quotations, statusFilter, clientFilter, userFilter, searchQuery, periodFilter, valueSort]);
 
   const Header = () => {
     return (
@@ -82,6 +94,40 @@ const QuotationListComponent = ({
             value={periodFilter}
             onValueChange={setPeriodFilter}
           />
+          <Select value={valueSort} onValueChange={(value: "none" | "asc" | "desc") => setValueSort(value)}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+              <SelectValue placeholder="Sort by value" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="none"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>Default Order</span>
+                </div>
+              </SelectItem>
+              <SelectItem
+                value="asc"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <TrendingUp size={17} strokeWidth={1.5} />
+                  <span>Lowest to Highest</span>
+                </div>
+              </SelectItem>
+              <SelectItem
+                value="desc"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <TrendingDown size={17} strokeWidth={1.5} />
+                  <span>Highest to Lowest</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={clientFilter} onValueChange={setClientFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by client" />

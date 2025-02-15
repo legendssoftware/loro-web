@@ -14,6 +14,7 @@ import { FolderOpen, List } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { leadStatuses } from "@/data/app-data";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface LeadListProps {
   leads: Lead[];
@@ -34,16 +35,21 @@ const containerVariants = {
 const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
+  const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       const matchesStatus =
         statusFilter === "all" || lead.status === statusFilter;
+      const matchesOwner =
+        ownerFilter === "all" || lead.owner?.uid.toString() === ownerFilter;
       const matchesSearch =
         lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.phone.toLowerCase().includes(searchQuery.toLowerCase());
+        lead.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.owner?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.owner?.surname?.toLowerCase().includes(searchQuery.toLowerCase());
 
       // Add period filtering
       const matchesPeriod = (() => {
@@ -53,11 +59,32 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
         return leadDate >= from && leadDate <= to;
       })();
 
-      return matchesStatus && matchesSearch && matchesPeriod;
+      return matchesStatus && matchesOwner && matchesSearch && matchesPeriod;
     });
-  }, [leads, statusFilter, searchQuery, periodFilter]);
+  }, [leads, statusFilter, ownerFilter, searchQuery, periodFilter]);
+
+  console.log(filteredLeads);
 
   const Header = () => {
+    const uniqueOwners = useMemo(() => {
+      const ownersSet = new Set<number>();
+      const ownersList: { uid: number; name: string; surname: string; photoURL: string }[] = [];
+      
+      leads.forEach(lead => {
+        if (lead.owner && !ownersSet.has(lead.owner.uid)) {
+          ownersSet.add(lead.owner.uid);
+          ownersList.push({
+            uid: lead.owner.uid,
+            name: lead.owner.name,
+            surname: lead.owner.surname,
+            photoURL: lead.owner.photoURL
+          });
+        }
+      });
+      
+      return ownersList.sort((a, b) => a.name.localeCompare(b.name));
+    }, []);
+
     return (
       <div className="flex items-center justify-end gap-2">
         <Input
@@ -71,6 +98,40 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
             value={periodFilter}
             onValueChange={setPeriodFilter}
           />
+          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+              <SelectValue placeholder="Filter by owner" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span>All Sales Reps</span>
+                </div>
+              </SelectItem>
+              {uniqueOwners.map((owner) => (
+                <SelectItem
+                  key={owner.uid}
+                  value={owner.uid.toString()}
+                  className="text-[10px] font-normal uppercase font-body"
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <Avatar className="w-5 h-5">
+                      <AvatarImage src={owner.photoURL} />
+                      <AvatarFallback>
+                        {owner.name?.charAt(0)}
+                        {owner.surname?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {`${owner.name} ${owner.surname}`}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />

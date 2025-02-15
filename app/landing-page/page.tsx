@@ -307,6 +307,157 @@ const LandingPage: React.FunctionComponent = () => {
         `}</style>
       </section>
 
+      {/* Features Showcase Section */}
+      <section id="features" className="w-full py-20 bg-accent/5">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="container px-4 mx-auto"
+        >
+          <h2 className="text-3xl font-normal text-center uppercase font-body">
+            Manage Your Business
+          </h2>
+          <div className="grid grid-cols-1 gap-8 mt-12 md:grid-cols-2 lg:grid-cols-3">
+            <motion.div variants={itemVariants} className="p-6 transition-shadow bg-card rounded-xl hover:shadow-lg">
+              <ClipboardList className="w-8 h-8 text-primary" />
+              <h3 className="mt-4 text-lg font-normal uppercase font-body">Real-Time Task Management</h3>
+              <p className="mt-2 text-xs text-muted-foreground font-body">
+                Create, track, and update tasks with instant notifications and status changes
+              </p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="p-6 transition-shadow bg-card rounded-xl hover:shadow-lg">
+              <Users className="w-8 h-8 text-primary" />
+              <h3 className="mt-4 text-lg font-normal uppercase font-body">Staff Management</h3>
+              <p className="mt-2 text-xs text-muted-foreground font-body">
+                Efficiently manage your team, track performance, and handle staff documentation
+              </p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="p-6 transition-shadow bg-card rounded-xl hover:shadow-lg">
+              <Package className="w-8 h-8 text-primary" />
+              <h3 className="mt-4 text-lg font-normal uppercase font-body">Quotation Processing</h3>
+              <p className="mt-2 text-xs text-muted-foreground font-body">
+                Streamline your quotation workflow with automated processing and tracking
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Success Metrics Section */}
+      <section className="w-full py-20">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="container px-4 mx-auto"
+        >
+          <h2 className="text-3xl font-normal text-center uppercase font-body">
+            Impact on Your Business
+          </h2>
+          <div className="grid grid-cols-1 gap-8 mt-12 md:grid-cols-3">
+            <motion.div variants={itemVariants} className="p-6 text-center">
+              <p className="text-4xl font-normal text-primary font-body">99.9%</p>
+              <p className="mt-2 text-xs uppercase text-muted-foreground font-body">Uptime</p>
+              <p className="mt-1 text-xs font-body">Enterprise-grade reliability</p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="p-6 text-center">
+              <p className="text-4xl font-normal text-primary font-body">60%</p>
+              <p className="mt-2 text-xs uppercase text-muted-foreground font-body">Time Saved</p>
+              <p className="mt-1 text-xs font-body">In task management</p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="p-6 text-center">
+              <p className="text-4xl font-normal text-primary font-body">45%</p>
+              <p className="mt-2 text-xs uppercase text-muted-foreground font-body">Productivity Boost</p>
+              <p className="mt-1 text-xs font-body">Team efficiency increase</p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Use Case Showcase */}
+      <section className="w-full py-20 bg-accent/5">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="container px-4 mx-auto"
+        >
+          <h2 className="text-3xl font-normal text-center uppercase font-body">
+            Perfect For Every Team
+          </h2>
+          <div className="grid grid-cols-1 gap-8 mt-12 md:grid-cols-2">
+            <motion.div variants={itemVariants} className="p-6 transition-shadow bg-card rounded-xl hover:shadow-lg">
+              <Building2 className="w-8 h-8 text-primary" />
+              <h3 className="mt-4 text-lg font-normal uppercase font-body">Enterprise Teams</h3>
+              <p className="mt-2 text-xs text-muted-foreground font-body">
+                Scale your operations with unlimited users and custom workflows
+              </p>
+              <ul className="mt-4 space-y-2">
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Multi-branch management
+                </li>
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Custom integrations
+                </li>
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Advanced analytics
+                </li>
+              </ul>
+            </motion.div>
+            <motion.div variants={itemVariants} className="p-6 transition-shadow bg-card rounded-xl hover:shadow-lg">
+              <Store className="w-8 h-8 text-primary" />
+              <h3 className="mt-4 text-lg font-normal uppercase font-body">Growing Businesses</h3>
+              <p className="mt-2 text-xs text-muted-foreground font-body">
+                Optimize your operations with scalable solutions
+              </p>
+              <ul className="mt-4 space-y-2">
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Automated workflows
+                </li>
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Real-time reporting
+                </li>
+                <li className="flex items-center text-xs font-body">
+                  <Check className="w-4 h-4 mr-2 text-primary" />
+                  Team collaboration
+                </li>
+              </ul>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Call-to-Action Section */}
+      <section className="w-full py-20">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="container px-4 mx-auto"
+        >
+          <div className="p-8 text-center bg-primary rounded-xl">
+            <h2 className="text-3xl font-normal text-white uppercase font-body">
+              Start Optimizing Your Business Today
+            </h2>
+            <p className="mt-4 text-xs uppercase text-white/80 font-body">
+              Join thousands of businesses already using LORO CRM
+            </p>
+            <Button 
+              className="h-12 mt-8 text-xs font-normal uppercase transition-colors bg-white text-primary font-body hover:bg-white/90"
+              onClick={() => router.push("/sign-up")}
+            >
+              Start Free Trial
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container px-4 mx-auto">

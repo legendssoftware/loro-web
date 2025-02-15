@@ -1,9 +1,7 @@
 import { memo, useState, useMemo } from "react";
-import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
 import { Quotation } from "@/lib/types/quotations";
-import { QuotationCard } from "./quotation-card";
 import {
   Select,
   SelectContent,
@@ -11,26 +9,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, FolderOpen, List, TrendingUp, TrendingDown } from "lucide-react";
+import { Building2, FolderOpen, List, TrendingUp, TrendingDown, Pencil, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quotationStatuses } from "@/data/app-data";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface QuotationListProps {
   quotations: Quotation[];
   onQuotationClick: (quotation: Quotation) => void;
   isLoading: boolean;
 }
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
 
 const QuotationListComponent = ({
   quotations,
@@ -43,6 +35,7 @@ const QuotationListComponent = ({
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [valueSort, setValueSort] = useState<"none" | "asc" | "desc">("none");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedQuotations, setSelectedQuotations] = useState<number[]>([]);
 
   const filteredQuotations = useMemo(() => {
     const filtered = quotations.filter((quotation) => {
@@ -105,7 +98,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>Default Order</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>Default Order</span>
                 </div>
               </SelectItem>
               <SelectItem
@@ -114,7 +107,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <TrendingUp size={17} strokeWidth={1.5} />
-                  <span>Lowest to Highest</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>Lowest to Highest</span>
                 </div>
               </SelectItem>
               <SelectItem
@@ -123,7 +116,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <TrendingDown size={17} strokeWidth={1.5} />
-                  <span>Highest to Lowest</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>Highest to Lowest</span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -139,7 +132,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Clients</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>All Clients</span>
                 </div>
               </SelectItem>
               {quotations
@@ -176,7 +169,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Sales Reps</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>All Sales Reps</span>
                 </div>
               </SelectItem>
               {quotations
@@ -224,7 +217,7 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span>All Statuses</span>
+                  <span className='text-[10px] font-normal uppercase font-body'>All Statuses</span>
                 </div>
               </SelectItem>
               {quotationStatuses?.map((status) => (
@@ -237,7 +230,7 @@ const QuotationListComponent = ({
                     {status?.icon && (
                       <status.icon size={17} strokeWidth={1.5} />
                     )}
-                    <span>{status?.label?.replace("_", " ")}</span>
+                    <span className='text-[10px] font-normal uppercase font-body'>{status?.label?.replace("_", " ")}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -265,7 +258,7 @@ const QuotationListComponent = ({
             className="w-8 h-8 text-muted-foreground"
             strokeWidth={1.5}
           />
-          <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+          <p className="text-[10px] font-normal uppercase text-muted-foreground font-body">
             No quotations found
           </p>
         </div>
@@ -273,23 +266,95 @@ const QuotationListComponent = ({
     );
   }
 
+  const toggleQuotation = (quotationId: number) => {
+    setSelectedQuotations(prev => 
+      prev.includes(quotationId) 
+        ? prev.filter(id => id !== quotationId)
+        : [...prev, quotationId]
+    );
+  };
+
+  const toggleAllQuotations = () => {
+    setSelectedQuotations(prev => 
+      prev.length === filteredQuotations.length
+        ? []
+        : filteredQuotations.map(q => q.uid)
+    );
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <Header />
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
-      >
-        {filteredQuotations.map((quotation) => (
-          <QuotationCard
-            key={quotation.uid}
-            quotation={quotation}
-            onClick={() => onQuotationClick(quotation)}
-          />
-        ))}
-      </motion.div>
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[30px] text-[10px] font-normal uppercase font-body">
+                <Checkbox 
+                  checked={selectedQuotations.length === filteredQuotations.length}
+                  onCheckedChange={toggleAllQuotations}
+                />
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Order</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body"  >Date</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Customer</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Payment</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Total</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Delivery</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Items</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">Fulfillment</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredQuotations.map((quotation) => (
+              <TableRow key={quotation.uid} className="cursor-pointer hover:bg-muted">
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  <Checkbox 
+                    checked={selectedQuotations.includes(quotation.uid)}
+                    onCheckedChange={() => toggleQuotation(quotation.uid)}
+                  />
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">#{quotation.quotationNumber}</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">{format(new Date(quotation.createdAt), "dd MMM, yyyy")}</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">{quotation.client.name}</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  <Badge 
+                    variant={quotation.status === "Pending" ? "secondary" : "default"}
+                    className="font-normal text-[8px] font-body uppercase text-white"
+                  >
+                    {quotation.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">R{Number(quotation.totalAmount).toFixed(2)}</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">N/A</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">{quotation.totalItems} items</TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body"    >
+                  <Badge 
+                    variant={quotation.status === "Pending" ? "destructive" : "default"}
+                    className="font-normal text-[8px] font-body uppercase text-white"
+                  >
+                    {quotation.status === "Pending" ? "Unfulfilled" : "Fulfilled"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => onQuotationClick(quotation)}
+                      className="p-2 rounded-md hover:bg-muted text-[10px] font-normal uppercase font-body"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 rounded-md hover:bg-muted text-[10px] font-normal uppercase font-body  ">
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

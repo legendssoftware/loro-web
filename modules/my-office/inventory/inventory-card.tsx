@@ -17,6 +17,7 @@ const itemVariants = {
 };
 
 export const InventoryCard = memo(({ product, onClick }: InventoryCardProps) => {
+  console.log(product, 'map this product')
   return (
     <motion.div variants={itemVariants}>
       <Card

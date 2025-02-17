@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, List, LucideIcon } from "lucide-react";
+import { FolderOpen, List, LucideIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { claimCategories, claimStatuses } from "@/data/app-data";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { Button } from "@/components/ui/button";
 
 interface ClaimListProps {
   claims: Claim[];
@@ -41,6 +42,8 @@ const ClaimListComponent = ({
   const [userFilter, setUserFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const claimsPerPage = 20;
 
   const filteredClaims = useMemo(() => {
     return claims.filter((claim) => {
@@ -68,6 +71,26 @@ const ClaimListComponent = ({
       return matchesStatus && matchesCategory && matchesUser && matchesSearch && matchesPeriod;
     });
   }, [claims, statusFilter, categoryFilter, userFilter, searchQuery, periodFilter]);
+
+  const paginatedClaims = useMemo(() => {
+    const startIndex = (currentPage - 1) * claimsPerPage;
+    const endIndex = startIndex + claimsPerPage;
+    return filteredClaims.slice(startIndex, endIndex);
+  }, [filteredClaims, currentPage]);
+
+  const totalPages = Math.ceil(filteredClaims.length / claimsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const Header = () => {
     return (
@@ -217,7 +240,7 @@ const ClaimListComponent = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col w-full h-full gap-4">
       <Header />
       <motion.div
         variants={containerVariants}
@@ -225,14 +248,35 @@ const ClaimListComponent = ({
         animate="show"
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
-        {filteredClaims.map((claim) => (
-          <ClaimCard
-            key={claim.uid}
-            claim={claim}
-            onClick={() => onClaimClick(claim)}
-          />
+        {paginatedClaims?.map((claim) => (
+          <ClaimCard key={claim.uid} claim={claim} onClick={onClaimClick} />
         ))}
       </motion.div>
+      {filteredClaims.length > claimsPerPage && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs font-normal font-body">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

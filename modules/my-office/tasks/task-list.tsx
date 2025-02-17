@@ -19,9 +19,10 @@ import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import { showToast } from "@/lib/utils/toast";
 import { taskStatuses } from "@/data/app-data";
-import { FolderOpen, List, Building2 } from "lucide-react";
+import { FolderOpen, List, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -52,6 +53,8 @@ const TaskListComponent = ({
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 20;
 
   const queryClient = useQueryClient();
 
@@ -106,6 +109,26 @@ const TaskListComponent = ({
       return matchesStatus && matchesClient && matchesAssignee && matchesSearch && matchesPeriod;
     });
   }, [tasks, statusFilter, clientFilter, assigneeFilter, searchQuery, periodFilter]);
+
+  const paginatedTasks = useMemo(() => {
+    const startIndex = (currentPage - 1) * tasksPerPage;
+    const endIndex = startIndex + tasksPerPage;
+    return filteredTasks.slice(startIndex, endIndex);
+  }, [filteredTasks, currentPage]);
+
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const Header = () => {
     const uniqueAssignees = useMemo(() => {
@@ -293,7 +316,7 @@ const TaskListComponent = ({
         animate="show"
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
-        {filteredTasks?.map((task: ExistingTask) => (
+        {paginatedTasks?.map((task: ExistingTask) => (
           <TaskCard
             key={task?.uid}
             task={task}
@@ -301,6 +324,31 @@ const TaskListComponent = ({
           />
         ))}
       </motion.div>
+      {filteredTasks.length > tasksPerPage && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs font-normal font-body">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

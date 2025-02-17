@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { FolderOpen, List, Plus } from "lucide-react";
+import { FolderOpen, List, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +55,8 @@ export const StaffList = ({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const staffPerPage = 30;
 
   const filteredStaff = staffData?.filter((user: User) => {
     const matchesStatus =
@@ -76,6 +78,26 @@ export const StaffList = ({
       );
     return matchesStatus && matchesRole && matchesSearch;
   });
+
+  const paginatedStaff = useMemo(() => {
+    const startIndex = (currentPage - 1) * staffPerPage;
+    const endIndex = startIndex + staffPerPage;
+    return filteredStaff.slice(startIndex, endIndex);
+  }, [filteredStaff, currentPage]);
+
+  const totalPages = Math.ceil(filteredStaff.length / staffPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const Header = () => {
     return (
@@ -182,12 +204,37 @@ export const StaffList = ({
         initial="hidden"
         animate="show"
       >
-        {filteredStaff?.map((user: User) => (
+        {paginatedStaff?.map((user: User) => (
           <motion.div key={user.uid} variants={itemVariants} layout>
             <StaffCard user={user} onAction={onUserAction} />
           </motion.div>
         ))}
       </motion.div>
+      {filteredStaff.length > staffPerPage && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs font-normal font-body">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

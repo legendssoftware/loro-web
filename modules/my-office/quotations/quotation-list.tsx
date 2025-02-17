@@ -9,14 +9,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, FolderOpen, List, TrendingUp, TrendingDown, Pencil, MessageSquare } from "lucide-react";
+import {
+  Building2,
+  FolderOpen,
+  List,
+  TrendingUp,
+  TrendingDown,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quotationStatuses } from "@/data/app-data";
-import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  PeriodFilter,
+  PeriodFilterValue,
+  getDateRangeFromPeriod,
+} from "@/modules/common/period-filter";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 interface QuotationListProps {
   quotations: Quotation[];
@@ -36,6 +57,8 @@ const QuotationListComponent = ({
   const [valueSort, setValueSort] = useState<"none" | "asc" | "desc">("none");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuotations, setSelectedQuotations] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const quotationsPerPage = 15;
 
   const filteredQuotations = useMemo(() => {
     const filtered = quotations.filter((quotation) => {
@@ -58,7 +81,13 @@ const QuotationListComponent = ({
         return quotationDate >= from && quotationDate <= to;
       })();
 
-      return matchesStatus && matchesClient && matchesUser && matchesSearch && matchesPeriod;
+      return (
+        matchesStatus &&
+        matchesClient &&
+        matchesUser &&
+        matchesSearch &&
+        matchesPeriod
+      );
     });
 
     // Apply value sorting if selected
@@ -71,7 +100,35 @@ const QuotationListComponent = ({
     }
 
     return filtered;
-  }, [quotations, statusFilter, clientFilter, userFilter, searchQuery, periodFilter, valueSort]);
+  }, [
+    quotations,
+    statusFilter,
+    clientFilter,
+    userFilter,
+    searchQuery,
+    periodFilter,
+    valueSort,
+  ]);
+
+  const paginatedQuotations = useMemo(() => {
+    const startIndex = (currentPage - 1) * quotationsPerPage;
+    const endIndex = startIndex + quotationsPerPage;
+    return filteredQuotations.slice(startIndex, endIndex);
+  }, [filteredQuotations, currentPage]);
+
+  const totalPages = Math.ceil(filteredQuotations.length / quotationsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const Header = () => {
     return (
@@ -83,11 +140,13 @@ const QuotationListComponent = ({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="flex items-center gap-2">
-          <PeriodFilter 
-            value={periodFilter}
-            onValueChange={setPeriodFilter}
-          />
-          <Select value={valueSort} onValueChange={(value: "none" | "asc" | "desc") => setValueSort(value)}>
+          <PeriodFilter value={periodFilter} onValueChange={setPeriodFilter} />
+          <Select
+            value={valueSort}
+            onValueChange={(value: "none" | "asc" | "desc") =>
+              setValueSort(value)
+            }
+          >
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Sort by value" />
             </SelectTrigger>
@@ -98,7 +157,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>Default Order</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    Default Order
+                  </span>
                 </div>
               </SelectItem>
               <SelectItem
@@ -107,7 +168,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <TrendingUp size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>Lowest to Highest</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    Lowest to Highest
+                  </span>
                 </div>
               </SelectItem>
               <SelectItem
@@ -116,7 +179,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <TrendingDown size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>Highest to Lowest</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    Highest to Lowest
+                  </span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -132,7 +197,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>All Clients</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    All Clients
+                  </span>
                 </div>
               </SelectItem>
               {quotations
@@ -169,7 +236,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>All Sales Reps</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    All Sales Reps
+                  </span>
                 </div>
               </SelectItem>
               {quotations
@@ -217,7 +286,9 @@ const QuotationListComponent = ({
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
-                  <span className='text-[10px] font-normal uppercase font-body'>All Statuses</span>
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    All Statuses
+                  </span>
                 </div>
               </SelectItem>
               {quotationStatuses?.map((status) => (
@@ -230,7 +301,9 @@ const QuotationListComponent = ({
                     {status?.icon && (
                       <status.icon size={17} strokeWidth={1.5} />
                     )}
-                    <span className='text-[10px] font-normal uppercase font-body'>{status?.label?.replace("_", " ")}</span>
+                    <span className="text-[10px] font-normal uppercase font-body">
+                      {status?.label?.replace("_", " ")}
+                    </span>
                   </div>
                 </SelectItem>
               ))}
@@ -267,18 +340,18 @@ const QuotationListComponent = ({
   }
 
   const toggleQuotation = (quotationId: number) => {
-    setSelectedQuotations(prev => 
-      prev.includes(quotationId) 
-        ? prev.filter(id => id !== quotationId)
+    setSelectedQuotations((prev) =>
+      prev.includes(quotationId)
+        ? prev.filter((id) => id !== quotationId)
         : [...prev, quotationId]
     );
   };
 
   const toggleAllQuotations = () => {
-    setSelectedQuotations(prev => 
+    setSelectedQuotations((prev) =>
       prev.length === filteredQuotations.length
         ? []
-        : filteredQuotations.map(q => q.uid)
+        : filteredQuotations.map((q) => q.uid)
     );
   };
 
@@ -290,63 +363,101 @@ const QuotationListComponent = ({
           <TableHeader>
             <TableRow>
               <TableHead className="w-[30px] text-[10px] font-normal uppercase font-body">
-                <Checkbox 
-                  checked={selectedQuotations.length === filteredQuotations.length}
+                <Checkbox
+                  checked={
+                    selectedQuotations.length === filteredQuotations.length
+                  }
                   onCheckedChange={toggleAllQuotations}
                 />
               </TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Order</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body"  >Date</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Customer</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Payment</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Total</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Delivery</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Items</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body">Fulfillment</TableHead>
-              <TableHead className="text-[10px] font-normal uppercase font-body text-right">Action</TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Order
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Date
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Customer
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Payment
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Total
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Delivery
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Items
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body">
+                Fulfillment
+              </TableHead>
+              <TableHead className="text-[10px] font-normal uppercase font-body text-right">
+                Action
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredQuotations.map((quotation) => (
-              <TableRow key={quotation.uid} className="cursor-pointer hover:bg-muted">
+            {paginatedQuotations.map((quotation) => (
+              <TableRow
+                key={quotation.uid}
+                className="cursor-pointer hover:bg-muted"
+              >
                 <TableCell className="text-[10px] font-normal uppercase font-body">
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedQuotations.includes(quotation.uid)}
                     onCheckedChange={() => toggleQuotation(quotation.uid)}
                   />
                 </TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">#{quotation.quotationNumber}</TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">{format(new Date(quotation.createdAt), "dd MMM, yyyy")}</TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">{quotation.client.name}</TableCell>
                 <TableCell className="text-[10px] font-normal uppercase font-body">
-                  <Badge 
-                    variant={quotation.status === "Pending" ? "secondary" : "default"}
+                  #{quotation.quotationNumber}
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  {format(new Date(quotation.createdAt), "dd MMM, yyyy")}
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  {quotation.client.name}
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  <Badge
+                    variant={
+                      quotation.status === "Pending" ? "secondary" : "default"
+                    }
                     className="font-normal text-[8px] font-body uppercase text-white"
                   >
                     {quotation.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">R{Number(quotation.totalAmount).toFixed(2)}</TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">N/A</TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body">{quotation.totalItems} items</TableCell>
-                <TableCell className="text-[10px] font-normal uppercase font-body"    >
-                  <Badge 
-                    variant={quotation.status === "Pending" ? "destructive" : "default"}
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  R{Number(quotation.totalAmount).toFixed(2)}
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  N/A
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  {quotation.totalItems} items
+                </TableCell>
+                <TableCell className="text-[10px] font-normal uppercase font-body">
+                  <Badge
+                    variant={
+                      quotation.status === "Pending" ? "destructive" : "default"
+                    }
                     className="font-normal text-[8px] font-body uppercase text-white"
                   >
-                    {quotation.status === "Pending" ? "Unfulfilled" : "Fulfilled"}
+                    {quotation.status === "Pending"
+                      ? "Unfulfilled"
+                      : "Fulfilled"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-[10px] font-normal uppercase font-body">
                   <div className="flex justify-end gap-2">
-                    <button 
+                    <button
                       onClick={() => onQuotationClick(quotation)}
                       className="p-2 rounded-md hover:bg-muted text-[10px] font-normal uppercase font-body"
                     >
                       <Pencil className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-md hover:bg-muted text-[10px] font-normal uppercase font-body  ">
-                      <MessageSquare className="w-4 h-4" />
                     </button>
                   </div>
                 </TableCell>
@@ -355,6 +466,31 @@ const QuotationListComponent = ({
           </TableBody>
         </Table>
       </div>
+      {filteredQuotations.length > quotationsPerPage && (
+        <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="w-8 h-8"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-xs font-normal font-body">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

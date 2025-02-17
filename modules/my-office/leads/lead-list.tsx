@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/select";
 import { Lead } from "@/lib/types/leads";
 import LeadCard from "./lead-card";
-import { FolderOpen, List } from "lucide-react";
+import { FolderOpen, List, ChevronLeft, ChevronRight } from "lucide-react";
 import { PageLoader } from "@/components/page-loader";
 import { leadStatuses } from "@/data/app-data";
 import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 interface LeadListProps {
   leads: Lead[];
@@ -37,6 +38,8 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const leadsPerPage = 20;
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -62,6 +65,26 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
       return matchesStatus && matchesOwner && matchesSearch && matchesPeriod;
     });
   }, [leads, statusFilter, ownerFilter, searchQuery, periodFilter]);
+
+  const paginatedLeads = useMemo(() => {
+    const startIndex = (currentPage - 1) * leadsPerPage;
+    const endIndex = startIndex + leadsPerPage;
+    return filteredLeads.slice(startIndex, endIndex);
+  }, [filteredLeads, currentPage]);
+
+  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   console.log(filteredLeads);
 
@@ -193,7 +216,7 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col w-full h-full gap-4">
       <Header />
       <motion.div
         variants={containerVariants}
@@ -201,14 +224,35 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
         animate="show"
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
-        {filteredLeads.map((lead) => (
-          <LeadCard
-            key={lead.uid}
-            lead={lead}
-            onClick={() => onLeadClick(lead)}
-          />
+        {paginatedLeads?.map((lead) => (
+          <LeadCard key={lead.uid} lead={lead} onClick={onLeadClick} />
         ))}
       </motion.div>
+      {filteredLeads.length > leadsPerPage && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs font-normal font-body">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

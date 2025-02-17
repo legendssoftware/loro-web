@@ -1,8 +1,6 @@
 import { memo, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { InventoryCard } from "./inventory-card";
-import { Product } from "@/lib/types/products";
 import { PageLoader } from "@/components/page-loader";
 import {
   Select,
@@ -11,17 +9,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NewInventoryModal } from "./new-inventory-modal";
-import { CreateProductDTO } from "@/lib/types/products";
 import { useSessionStore } from "@/store/use-session-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProduct } from "@/helpers/products";
-import { RequestConfig } from "@/lib/types/products";
 import { showToast } from "@/lib/utils/toast";
-import { productStatuses } from "@/data/app-data";
-import { List, Package, ChevronLeft, ChevronRight } from "lucide-react";
-import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { productCategories } from "@/data/app-data";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import {
+  PeriodFilterValue,
+  getDateRangeFromPeriod,
+} from "@/modules/common/period-filter";
 import { Button } from "@/components/ui/button";
+import {
+  CreateProductDTO,
+  Product,
+  RequestConfig,
+  UpdateProductDTO,
+} from "@/lib/types/products";
+import { createProduct } from "@/helpers/products";
+import { InventoryCard } from "./inventory-card";
+import { InventoryDetailModal } from "./inventory-detail-modal";
+import { NewInventoryModal } from "./new-inventory-modal";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,24 +42,42 @@ const containerVariants = {
 };
 
 interface InventoryListProps {
-  products: Product[];
+  products: {
+    data: Product[];
+    meta: {
+      total: number;
+      page: number;
+      lastPage: number;
+    };
+  };
   onProductClick: (product: Product) => void;
   isLoading: boolean;
+  onPageChange: (page: number) => void;
+  currentPage: number;
+  onDelete: (uid: number) => void;
+  onUpdate: (ref: number, data: UpdateProductDTO) => void;
+  isUpdating: boolean;
+  isDeleting: boolean;
 }
 
 const InventoryListComponent = ({
   products,
-  onProductClick,
   isLoading,
+  onPageChange,
+  currentPage,
+  onDelete,
+  onUpdate,
+  isUpdating,
+  isDeleting,
 }: InventoryListProps) => {
   const { accessToken } = useSessionStore();
   const [isNewProductModalOpen, setIsNewProductModalOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
+  const [periodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 20;
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -86,7 +111,7 @@ const InventoryListComponent = ({
   );
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return products.data.filter((product) => {
       const matchesStatus =
         statusFilter === "all" || product.status === statusFilter;
       const matchesCategory =
@@ -104,27 +129,7 @@ const InventoryListComponent = ({
 
       return matchesStatus && matchesCategory && matchesSearch && matchesPeriod;
     });
-  }, [products, statusFilter, categoryFilter, searchQuery, periodFilter]);
-
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * productsPerPage;
-    const endIndex = startIndex + productsPerPage;
-    return filteredProducts.slice(startIndex, endIndex);
-  }, [filteredProducts, currentPage]);
-
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-    }
-  };
+  }, [products.data, statusFilter, categoryFilter, searchQuery, periodFilter]);
 
   if (isLoading) {
     return (
@@ -145,86 +150,50 @@ const InventoryListComponent = ({
         <div className="flex items-center justify-end gap-2">
           <Input
             placeholder="search..."
-            className="w-[300px] bg-card font-body text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-xs"
           />
-          <div className="flex items-center gap-2">
-            <PeriodFilter 
-              value={periodFilter}
-              onValueChange={setPeriodFilter}
-            />
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px] shadow-none bg-card outline-none font-body text-xs">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                All Categories
+              </SelectItem>
+              {productCategories.map((category) => (
                 <SelectItem
-                  value="all"
+                  key={category.value}
+                  value={category.value}
                   className="text-[10px] font-normal uppercase font-body"
                 >
-                  <div className="flex flex-row items-center gap-2">
-                    <List size={17} strokeWidth={1.5} />
-                    <span>All Categories</span>
-                  </div>
+                  {category.label}
                 </SelectItem>
-                {Array.from(new Set(products.map(p => p.category))).sort().map((category) => (
-                  <SelectItem
-                    key={category}
-                    value={category}
-                    className="text-[10px] font-normal uppercase font-body"
-                  >
-                    <div className="flex flex-row items-center gap-2">
-                      <Package size={17} strokeWidth={1.5} />
-                      <span>{category}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] shadow-none bg-card outline-none font-body text-xs">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="all"
-                  className="text-[10px] font-normal uppercase font-body"
-                >
-                  <div className="flex flex-row items-center gap-2">
-                    <List size={17} strokeWidth={1.5} />
-                    <span>All Statuses</span>
-                  </div>
-                </SelectItem>
-                {productStatuses.map((status) => (
-                  <SelectItem
-                    key={status.value}
-                    value={status.value}
-                    className="text-[10px] font-normal uppercase font-body"
-                  >
-                    <div className="flex flex-row items-center gap-2">
-                      <Package size={17} strokeWidth={1.5} />
-                      <span>{status.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={() => setIsNewProductModalOpen(true)}
-              className="bg-primary text-white hover:bg-primary/90 text-[10px] font-normal uppercase font-body"
-            >
-              Add Product
-            </Button>
-          </div>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => setIsNewProductModalOpen(true)}
+            className="text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {paginatedProducts.map((product) => (
+        {filteredProducts.map((product) => (
           <InventoryCard
             key={product.uid}
             product={product}
-            onClick={() => onProductClick(product)}
+            onClick={() => {
+              setSelectedProduct(product);
+              setIsDetailModalOpen(true);
+            }}
           />
         ))}
       </div>
@@ -232,25 +201,34 @@ const InventoryListComponent = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={handlePrevPage}
+          onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="w-8 h-8"
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
         <span className="text-xs font-normal font-body">
-          {currentPage} / {totalPages}
+          {currentPage} / {products.meta.lastPage}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleNextPage}
-          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === products.meta.lastPage}
           className="w-8 h-8"
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
+      <InventoryDetailModal
+        isOpen={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        selectedProduct={selectedProduct}
+        onDelete={onDelete}
+        onUpdate={onUpdate}
+        isUpdating={isUpdating}
+        isDeleting={isDeleting}
+      />
       <NewInventoryModal
         isOpen={isNewProductModalOpen}
         onOpenChange={setIsNewProductModalOpen}
@@ -261,4 +239,4 @@ const InventoryListComponent = ({
   );
 };
 
-export const InventoryList = memo(InventoryListComponent); 
+export const InventoryList = memo(InventoryListComponent);

@@ -18,34 +18,40 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";  
-import { productStatuses } from "@/data/app-data";
+} from "@/components/ui/select";
+import { productStatuses, productCategories } from "@/data/app-data";
 import { Loader2 } from "lucide-react";
 import { UpdateProductDTO } from "@/lib/types/products";
 import { Product } from "@/lib/types/products";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }).optional(),
-  description: z.string().optional(),
-  category: z.string().optional(),
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  description: z.string(),
+  category: z.string(),
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
     message: "Price must be a non-negative number.",
-  }).optional(),
-  stockQuantity: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Stock quantity must be a non-negative number.",
-  }).optional(),
-  sku: z.string().optional(),
-  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK"]).optional(),
+  }),
+  salePrice: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Sale price must be a non-negative number.",
+  }),
+  saleStart: z.string().optional(),
+  saleEnd: z.string().optional(),
+  discount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Discount must be a non-negative number.",
+  }),
+  barcode: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Barcode must be a non-negative number.",
+  }),
+  packageQuantity: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Package quantity must be a non-negative number.",
+  }),
+  brand: z.string(),
+  weight: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Weight must be a non-negative number.",
+  }),
+  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "ACTIVE"]),
   imageUrl: z.string().url().optional().or(z.literal("")),
-  warehouseLocation: z.string().optional(),
-  productReferenceCode: z.string().min(2, {
-    message: "Product reference code must be at least 2 characters.",
-  }).optional(),
-  reorderPoint: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Reorder point must be a non-negative number.",
-  }).optional(),
+  isOnPromotion: z.boolean().default(false),
 });
 
 interface EditInventoryFormProps {
@@ -59,46 +65,51 @@ export const EditInventoryForm = ({
   isSubmitting,
   onSubmit,
 }: EditInventoryFormProps) => {
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: product.name,
-      description: product.description,
-      category: product.category,
-      price: product.price.toString(),
-      stockQuantity: product.stockQuantity.toString(),
-      sku: product.sku,
-      status: product.status,
-      imageUrl: product.imageUrl || "",
-      warehouseLocation: product.warehouseLocation || "",
-      productReferenceCode: product.productReferenceCode,
-      reorderPoint: product.reorderPoint?.toString() || "10",
+      name: product?.name ?? "",
+      description: product?.description ?? "",
+      category: product?.category ?? "",
+      price: product?.price?.toString() ?? "0",
+      salePrice: product?.salePrice?.toString() ?? "0",
+      saleStart: product?.saleStart ? new Date(product.saleStart).toISOString().split('T')[0] : undefined,
+      saleEnd: product?.saleEnd ? new Date(product.saleEnd).toISOString().split('T')[0] : undefined,
+      discount: product?.discount?.toString() ?? "0",
+      barcode: product?.barcode?.toString() ?? "",
+      packageQuantity: product?.packageQuantity?.toString() ?? "0",
+      brand: product?.brand ?? "",
+      weight: product?.weight?.toString() ?? "0",
+      status: product?.status ?? "AVAILABLE",
+      imageUrl: product?.imageUrl ?? "",
+      isOnPromotion: product?.isOnPromotion ?? false,
     },
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit({
       ...values,
-      price: values.price ? Number(values.price) : undefined,
-      stockQuantity: values.stockQuantity ? Number(values.stockQuantity) : undefined,
-      reorderPoint: values.reorderPoint ? Number(values.reorderPoint) : undefined,
+      price: Number(values.price),
+      salePrice: Number(values.salePrice),
+      saleStart: values.saleStart ? new Date(values.saleStart) : undefined,
+      saleEnd: values.saleEnd ? new Date(values.saleEnd) : undefined,
+      discount: Number(values.discount),
+      barcode: Number(values.barcode),
+      packageQuantity: Number(values.packageQuantity),
+      weight: Number(values.weight),
     });
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-4"
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Product name" {...field} />
                 </FormControl>
@@ -108,12 +119,12 @@ export const EditInventoryForm = ({
           />
           <FormField
             control={form.control}
-            name="productReferenceCode"
+            name="brand"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reference Code</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Brand</FormLabel>
                 <FormControl>
-                  <Input placeholder="REF-001" {...field} />
+                  <Input placeholder="Brand name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -125,11 +136,11 @@ export const EditInventoryForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel className="text-[10px] font-normal uppercase font-body">Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Product description"
-                  className="resize-none"
+                  className="font-normal resize-none text-md md:text-xs font-body"
                   {...field}
                 />
               </FormControl>
@@ -143,22 +154,37 @@ export const EditInventoryForm = ({
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Input placeholder="Product category" {...field} />
-                </FormControl>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {productCategories.map((category) => (
+                      <SelectItem
+                        key={category.value}
+                        value={category.value}
+                        className="text-[10px] font-normal uppercase font-body"
+                      >
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="sku"
+            name="barcode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>SKU</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Barcode</FormLabel>
                 <FormControl>
-                  <Input placeholder="ELE-PRO-001-000001" {...field} />
+                  <Input placeholder="1234567890" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -171,15 +197,9 @@ export const EditInventoryForm = ({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Price</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    {...field}
-                  />
+                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -187,17 +207,12 @@ export const EditInventoryForm = ({
           />
           <FormField
             control={form.control}
-            name="stockQuantity"
+            name="packageQuantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stock Quantity</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Package Quantity</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                  />
+                  <Input type="number" min="0" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -207,12 +222,12 @@ export const EditInventoryForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="warehouseLocation"
+            name="salePrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Warehouse Location</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Sale Price</FormLabel>
                 <FormControl>
-                  <Input placeholder="A1-B2-C3" {...field} />
+                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -220,17 +235,12 @@ export const EditInventoryForm = ({
           />
           <FormField
             control={form.control}
-            name="reorderPoint"
+            name="discount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reorder Point</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Discount (%)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                    {...field}
-                  />
+                  <Input type="number" min="0" max="100" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -240,12 +250,40 @@ export const EditInventoryForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="saleStart"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Image URL</FormLabel>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Sale Start Date</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/image.jpg" {...field} />
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="saleEnd"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Sale End Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Weight (g)</FormLabel>
+                <FormControl>
+                  <Input type="number" min="0" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -256,11 +294,8 @@ export const EditInventoryForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel className="text-[10px] font-normal uppercase font-body">Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -283,9 +318,40 @@ export const EditInventoryForm = ({
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[10px] font-normal uppercase font-body">Image URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/image.jpg" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isOnPromotion"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-2">
+              <FormControl>
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={field.onChange}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+              </FormControl>
+              <FormLabel className="text-[10px] font-normal uppercase font-body">On Promotion</FormLabel>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button
           type="submit"
-          className="w-full mt-4"
+          className="w-full mt-4 text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -300,4 +366,4 @@ export const EditInventoryForm = ({
       </form>
     </Form>
   );
-}; 
+};

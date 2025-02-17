@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CreateProductDTO } from "@/helpers/products";
+import { CreateProductDTO } from "@/lib/types/products";
 import { NewInventoryForm } from "./new-inventory-form";
+
 
 interface NewInventoryModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ export const NewInventoryModal = ({
             Add New Product
           </DialogTitle>
         </DialogHeader>
-        <NewInventoryForm onSubmit={onSubmit} isSubmitting={isCreating} />
+        <NewInventoryForm onSubmit={onSubmit} isSubmitting={isCreating} /> 
       </DialogContent>
     </Dialog>
   );

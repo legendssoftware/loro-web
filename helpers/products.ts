@@ -1,11 +1,11 @@
 import { CreateProductDTO, RequestConfig, UpdateProductDTO } from "@/lib/types/products";
 
-export const fetchProducts = async (config: RequestConfig) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+export const fetchProducts = async (config: RequestConfig, page: number = 1, limit: number = 20) => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?page=${page}&limit=${limit}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      ...config.headers,
+      "Authorization": `Bearer ${config.headers.token}`,
     },
   });
 
@@ -21,7 +21,7 @@ export const createProduct = async (data: CreateProductDTO, config: RequestConfi
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...config.headers,
+      "Authorization": `Bearer ${config.headers.token}`,
     },
     body: JSON.stringify(data),
   });
@@ -48,7 +48,7 @@ export const updateProduct = async ({
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        ...config.headers,
+        "Authorization": `Bearer ${config.headers.token}`,
       },
       body: JSON.stringify(updatedProduct),
     }
@@ -68,7 +68,7 @@ export const deleteProduct = async (ref: number, config: RequestConfig) => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...config.headers,
+        "Authorization": `Bearer ${config.headers.token}`,
       },
     }
   );

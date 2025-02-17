@@ -30,12 +30,18 @@ const formSchema = z.object({
   }),
   description: z.string().optional(),
   category: z.string().optional(),
-  price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Price must be a non-negative number.",
-  }).optional(),
-  stockQuantity: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Stock quantity must be a non-negative number.",
-  }).optional(),
+  price: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: "Price must be a non-negative number.",
+    })
+    .optional(),
+  stockQuantity: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: "Stock quantity must be a non-negative number.",
+    })
+    .optional(),
   sku: z.string().optional(),
   status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK"]).optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
@@ -43,9 +49,12 @@ const formSchema = z.object({
   productReferenceCode: z.string().min(2, {
     message: "Product reference code must be at least 2 characters.",
   }),
-  reorderPoint: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Reorder point must be a non-negative number.",
-  }).optional(),
+  reorderPoint: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: "Reorder point must be a non-negative number.",
+    })
+    .optional(),
 });
 
 interface NewInventoryFormProps {
@@ -80,8 +89,12 @@ export const NewInventoryForm = ({
     onSubmit({
       ...values,
       price: values.price ? Number(values.price) : undefined,
-      stockQuantity: values.stockQuantity ? Number(values.stockQuantity) : undefined,
-      reorderPoint: values.reorderPoint ? Number(values.reorderPoint) : undefined,
+      stockQuantity: values.stockQuantity
+        ? Number(values.stockQuantity)
+        : undefined,
+      reorderPoint: values.reorderPoint
+        ? Number(values.reorderPoint)
+        : undefined,
       reseller: { uid: user?.uid || 0 },
     });
   };
@@ -98,9 +111,11 @@ export const NewInventoryForm = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Name
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="Product name" {...field} />
+                  <Input placeholder="name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -111,9 +126,11 @@ export const NewInventoryForm = ({
             name="productReferenceCode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reference Code</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Reference Code
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="REF-001" {...field} />
+                  <Input placeholder="ref-001" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -125,11 +142,13 @@ export const NewInventoryForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                Description
+              </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Product description"
-                  className="resize-none"
+                  placeholder="description"
+                  className="text-xs font-normal resize-none font-body"
                   {...field}
                 />
               </FormControl>
@@ -143,9 +162,11 @@ export const NewInventoryForm = ({
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Category
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="Product category" {...field} />
+                  <Input placeholder="category" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -156,9 +177,11 @@ export const NewInventoryForm = ({
             name="sku"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>SKU</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  SKU
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="ELE-PRO-001-000001" {...field} />
+                  <Input placeholder="sku" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -171,7 +194,9 @@ export const NewInventoryForm = ({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Price
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -190,14 +215,11 @@ export const NewInventoryForm = ({
             name="stockQuantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stock Quantity</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Stock Quantity
+                </FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    {...field}
-                  />
+                  <Input type="number" min="0" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -210,7 +232,9 @@ export const NewInventoryForm = ({
             name="warehouseLocation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Warehouse Location</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Warehouse Location
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="A1-B2-C3" {...field} />
                 </FormControl>
@@ -223,14 +247,11 @@ export const NewInventoryForm = ({
             name="reorderPoint"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reorder Point</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Reorder Point
+                </FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                    {...field}
-                  />
+                  <Input type="number" min="0" placeholder="10" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -243,9 +264,14 @@ export const NewInventoryForm = ({
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Image URL</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Image URL
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/image.jpg" {...field} />
+                  <Input
+                    placeholder="https://example.com/image.jpg"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -256,7 +282,9 @@ export const NewInventoryForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                  Status
+                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
@@ -283,11 +311,7 @@ export const NewInventoryForm = ({
             )}
           />
         </div>
-        <Button
-          type="submit"
-          className="w-full mt-4"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" className="w-full mt-4 text-white font-body text-[10px] uppercase font-normal" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -300,4 +324,4 @@ export const NewInventoryForm = ({
       </form>
     </Form>
   );
-}; 
+};

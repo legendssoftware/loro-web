@@ -1,54 +1,29 @@
-export type ProductStatus = "AVAILABLE" | "LOW_STOCK" | "OUT_OF_STOCK";
+export type ProductStatus = "AVAILABLE" | "LOW_STOCK" | "OUT_OF_STOCK" | "ACTIVE";
 
-export interface Product {
+export type Product = {
   uid: number;
   name: string;
   description: string;
   category: string;
   price: number;
-  status: ProductStatus;
+  salePrice: number;
+  saleStart?: Date;
+  saleEnd?: Date;
+  discount: number;
+  barcode: number;
+  packageQuantity: number;
+  brand: string;
+  weight: number;
+  status: "AVAILABLE" | "LOW_STOCK" | "OUT_OF_STOCK" | "ACTIVE";
   imageUrl?: string;
-  sku: string;
-  warehouseLocation?: string;
-  stockQuantity: number;
-  productReferenceCode: string;
-  reorderPoint?: number;
-  reseller: { uid: number };
-  createdAt: string;
-  updatedAt: string;
-  isDeleted: boolean;
-}
+  isOnPromotion: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-export interface CreateProductDTO {
-  name: string;
-  description?: string;
-  price?: number;
-  category?: string;
-  status?: ProductStatus;
-  imageUrl?: string;
-  sku?: string;
-  warehouseLocation?: string;
-  stockQuantity?: number;
-  productReferenceCode: string;
-  reorderPoint?: number;
-  reseller: { uid: number };
-}
+export type UpdateProductDTO = Partial<Omit<Product, "uid" | "createdAt" | "updatedAt">>;
 
-export interface UpdateProductDTO {
-  name?: string;
-  description?: string;
-  price?: number;
-  category?: string;
-  status?: ProductStatus;
-  imageUrl?: string;
-  sku?: string;
-  warehouseLocation?: string;
-  stockQuantity?: number;
-  productReferenceCode?: string;
-  reorderPoint?: number;
-  reseller?: { uid: number };
-  isDeleted?: boolean;
-}
+export type CreateProductDTO = Omit<Product, "uid" | "createdAt" | "updatedAt">;
 
 export interface RequestConfig {
   headers: {

@@ -145,3 +145,23 @@ export const productStatuses = [
     label: "Out of Stock",
   },
 ] as const;
+
+export const productCategories = [
+  { value: "FRESH_PRODUCE", label: "Fresh Produce" },
+  { value: "MEAT_POULTRY", label: "Meat & Poultry" },
+  { value: "DAIRY_EGGS", label: "Dairy & Eggs" },
+  { value: "BAKERY", label: "Bakery" },
+  { value: "FROZEN_FOODS", label: "Frozen Foods" },
+  { value: "PANTRY_STAPLES", label: "Pantry Staples" },
+  { value: "BEVERAGES", label: "Beverages" },
+  { value: "SNACKS", label: "Snacks & Confectionery" },
+  { value: "CANNED_GOODS", label: "Canned & Jarred Goods" },
+  { value: "DELI", label: "Deli & Prepared Foods" },
+  { value: "SEAFOOD", label: "Seafood" },
+  { value: "CONDIMENTS", label: "Condiments & Sauces" },
+  { value: "BAKING", label: "Baking Supplies" },
+  { value: "INTERNATIONAL", label: "International Foods" },
+  { value: "ORGANIC", label: "Organic & Natural" },
+  { value: "HOUSEHOLD", label: "Household Essentials" },
+  { value: "OTHER", label: "Other" },
+] as const;

@@ -12,6 +12,8 @@ export const InventoryModule = () => {
     const queryClient = useQueryClient()
     const [isProductDetailModalOpen, setIsProductDetailModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const limit = 20
 
     const config: RequestConfig = {
         headers: {
@@ -20,8 +22,8 @@ export const InventoryModule = () => {
     }
 
     const { data: productsData, isLoading } = useQuery({
-        queryKey: ['products'],
-        queryFn: () => fetchProducts(config),
+        queryKey: ['products', currentPage],
+        queryFn: () => fetchProducts(config, currentPage, limit),
         enabled: !!accessToken,
     })
 
@@ -48,6 +50,7 @@ export const InventoryModule = () => {
             setIsProductDetailModalOpen(false)
         },
         onError: (error: Error) => {
+            console.error('Update error:', error)
             toast.error('Failed to update product: ' + error.message, {
                 style: {
                     borderRadius: '5px',
@@ -59,12 +62,13 @@ export const InventoryModule = () => {
                     fontWeight: '300',
                     padding: '16px',
                 },
+                duration: 5000,
             })
         }
     })
 
     const deleteProductMutation = useMutation({
-        mutationFn: (ref: number) => deleteProduct(ref, config),
+        mutationFn: (uid: number) => deleteProduct(uid, config),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] })
             toast.success('Product deleted successfully', {
@@ -85,6 +89,7 @@ export const InventoryModule = () => {
             setIsProductDetailModalOpen(false)
         },
         onError: (error: Error) => {
+            console.error('Delete error:', error)
             toast.error('Failed to delete product: ' + error.message, {
                 style: {
                     borderRadius: '5px',
@@ -113,30 +118,29 @@ export const InventoryModule = () => {
             await deleteProductMutation.mutateAsync(uid)
         } catch (error) {
             console.error('Failed to delete product:', error)
-            toast.error('Failed to delete product', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '❌',
-            })
         }
     }, [deleteProductMutation])
+
+    const handleUpdateProduct = useCallback(async (ref: number, updatedProduct: UpdateProductDTO) => {
+        try {
+            await updateProductMutation.mutateAsync({ ref, updatedProduct })
+        } catch (error) {
+            console.error('Failed to update product:', error)
+        }
+    }, [updateProductMutation])
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page)
+    }, [])
 
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <InventoryList
-                products={productsData?.data || []}
+                products={productsData || { data: [], meta: { total: 0, page: 1, lastPage: 1 } }}
                 onProductClick={handleProductClick}
                 isLoading={isLoading}
+                onPageChange={handlePageChange}
+                currentPage={currentPage}
             />
 
             <InventoryDetailModal
@@ -144,6 +148,7 @@ export const InventoryModule = () => {
                 onOpenChange={setIsProductDetailModalOpen}
                 selectedProduct={selectedProduct}
                 onDelete={handleDeleteProduct}
+                onUpdate={handleUpdateProduct}
                 isUpdating={updateProductMutation.isPending}
                 isDeleting={deleteProductMutation.isPending}
             />

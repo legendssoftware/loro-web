@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { productStatuses, productCategories } from "@/data/app-data";
 import { Loader2 } from "lucide-react";
-import { UpdateProductDTO } from "@/lib/types/products";
+import { ProductStatus, UpdateProductDTO } from "@/lib/types/products";
 import { Product } from "@/lib/types/products";
 
 const formSchema = z.object({
@@ -73,14 +73,12 @@ export const EditInventoryForm = ({
       category: product?.category ?? "",
       price: product?.price?.toString() ?? "0",
       salePrice: product?.salePrice?.toString() ?? "0",
-      saleStart: product?.saleStart ? new Date(product.saleStart).toISOString().split('T')[0] : undefined,
-      saleEnd: product?.saleEnd ? new Date(product.saleEnd).toISOString().split('T')[0] : undefined,
       discount: product?.discount?.toString() ?? "0",
       barcode: product?.barcode?.toString() ?? "",
       packageQuantity: product?.packageQuantity?.toString() ?? "0",
       brand: product?.brand ?? "",
       weight: product?.weight?.toString() ?? "0",
-      status: product?.status ?? "AVAILABLE",
+      status: product?.status as ProductStatus ?? "AVAILABLE" as ProductStatus,
       imageUrl: product?.imageUrl ?? "",
       isOnPromotion: product?.isOnPromotion ?? false,
     },
@@ -91,10 +89,8 @@ export const EditInventoryForm = ({
       ...values,
       price: Number(values.price),
       salePrice: Number(values.salePrice),
-      saleStart: values.saleStart ? new Date(values.saleStart) : undefined,
-      saleEnd: values.saleEnd ? new Date(values.saleEnd) : undefined,
       discount: Number(values.discount),
-      barcode: Number(values.barcode),
+      barcode: values.barcode,
       packageQuantity: Number(values.packageQuantity),
       weight: Number(values.weight),
     });
@@ -250,34 +246,6 @@ export const EditInventoryForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="saleStart"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[10px] font-normal uppercase font-body">Sale Start Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="saleEnd"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[10px] font-normal uppercase font-body">Sale End Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
             name="weight"
             render={({ field }) => (
               <FormItem>
@@ -341,7 +309,7 @@ export const EditInventoryForm = ({
                   type="checkbox"
                   checked={field.value}
                   onChange={field.onChange}
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  className="w-4 h-4 border-gray-300 rounded text-primary focus:ring-primary"
                 />
               </FormControl>
               <FormLabel className="text-[10px] font-normal uppercase font-body">On Promotion</FormLabel>

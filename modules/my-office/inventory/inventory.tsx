@@ -133,8 +133,6 @@ export const InventoryModule = () => {
         setCurrentPage(page)
     }, [])
 
-    console.log(productsData, 'productsData')
-    
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <InventoryList
@@ -155,7 +153,6 @@ export const InventoryModule = () => {
                 isUpdating={updateProductMutation.isPending}
                 isDeleting={deleteProductMutation.isPending}
             />
-
             <InventoryDetailModal
                 isOpen={isProductDetailModalOpen}
                 onOpenChange={setIsProductDetailModalOpen}

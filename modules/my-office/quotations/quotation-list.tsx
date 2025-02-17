@@ -53,6 +53,7 @@ const QuotationListComponent = ({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [userFilter, setUserFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [valueSort, setValueSort] = useState<"none" | "asc" | "desc">("none");
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,6 +71,9 @@ const QuotationListComponent = ({
       const matchesUser =
         userFilter === "all" ||
         quotation.placedBy.uid.toString() === userFilter;
+      const matchesCategory =
+        categoryFilter === "all" ||
+        quotation.quotationItems.some(item => item.product.sku === categoryFilter);
       const matchesSearch = quotation.quotationNumber
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
@@ -85,6 +89,7 @@ const QuotationListComponent = ({
         matchesStatus &&
         matchesClient &&
         matchesUser &&
+        matchesCategory &&
         matchesSearch &&
         matchesPeriod
       );
@@ -108,6 +113,7 @@ const QuotationListComponent = ({
     searchQuery,
     periodFilter,
     valueSort,
+    categoryFilter,
   ]);
 
   const paginatedQuotations = useMemo(() => {
@@ -131,6 +137,19 @@ const QuotationListComponent = ({
   };
 
   const Header = () => {
+    // Get unique SKUs from all quotation items
+    const uniqueSkus = useMemo(() => {
+      const skus = new Set<string>();
+      quotations.forEach(quotation => {
+        quotation.quotationItems.forEach(item => {
+          if (item.product.sku) {
+            skus.add(item.product.sku);
+          }
+        });
+      });
+      return Array.from(skus);
+    }, [quotations]);
+
     return (
       <div className="flex items-center justify-end gap-2">
         <Input
@@ -141,6 +160,38 @@ const QuotationListComponent = ({
         />
         <div className="flex items-center gap-2">
           <PeriodFilter value={periodFilter} onValueChange={setPeriodFilter} />
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
+              <SelectValue placeholder="Filter by SKU" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  <List size={17} strokeWidth={1.5} />
+                  <span className="text-[10px] font-normal uppercase font-body">
+                    All SKUs
+                  </span>
+                </div>
+              </SelectItem>
+              {uniqueSkus.map((sku) => (
+                <SelectItem
+                  key={sku}
+                  value={sku}
+                  className="text-[10px] font-normal uppercase font-body"
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <FolderOpen size={17} strokeWidth={1.5} />
+                    <span className="text-[10px] font-normal uppercase font-body">
+                      {sku}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
             value={valueSort}
             onValueChange={(value: "none" | "asc" | "desc") =>

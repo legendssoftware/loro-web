@@ -22,8 +22,8 @@ export type Product = {
   packageDetails: string;
   isOnPromotion: boolean;
   salePrice: number | null;
-  promotionStartDate: string | null;
-  promotionEndDate: string | null;
+  promotionStartDate: Date | null;
+  promotionEndDate: Date | null;
   discount: number | null;
   packageQuantity: number;
   packageUnit: string;

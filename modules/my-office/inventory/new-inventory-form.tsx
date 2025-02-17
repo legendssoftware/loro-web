@@ -20,32 +20,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateProductDTO, ProductStatus } from "@/lib/types/products";
-import { productStatuses } from "@/data/app-data";
+import { productStatuses, productCategories } from "@/data/app-data";
 import { Loader2 } from "lucide-react";
-import { useSessionStore } from "@/store/use-session-store";
 
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  price: z
+  description: z.string(),
+  category: z.string(),
+  price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Price must be a non-negative number.",
+  }),
+  salePrice: z
     .string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Price must be a non-negative number.",
-    })
-    .optional(),
+      message: "Sale price must be a non-negative number.",
+    }),
+  saleStart: z.string().optional(),
+  saleEnd: z.string().optional(),
+  discount: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: "Discount must be a non-negative number.",
+    }),
+  barcode: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Barcode must be a non-negative number.",
+  }),
+  packageQuantity: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: "Package quantity must be a non-negative number.",
+    }),
+  brand: z.string(),
+  weight: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: "Weight must be a non-negative number.",
+  }),
   stockQuantity: z
     .string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: "Stock quantity must be a non-negative number.",
-    })
-    .optional(),
-  sku: z.string().optional(),
-  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK"]).optional(),
+    }),
+  sku: z.string(),
+  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "ACTIVE"]) as z.ZodType<ProductStatus>,
   imageUrl: z.string().url().optional().or(z.literal("")),
-  warehouseLocation: z.string().optional(),
+  warehouseLocation: z.string(),
   productReferenceCode: z.string().min(2, {
     message: "Product reference code must be at least 2 characters.",
   }),
@@ -53,8 +72,9 @@ const formSchema = z.object({
     .string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: "Reorder point must be a non-negative number.",
-    })
-    .optional(),
+    }),
+  isOnPromotion: z.boolean().default(false),
+  packageDetails: z.string().optional(),
 });
 
 interface NewInventoryFormProps {
@@ -66,36 +86,49 @@ export const NewInventoryForm = ({
   onSubmit,
   isSubmitting,
 }: NewInventoryFormProps) => {
-  const { user } = useSessionStore();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
       category: "",
-      price: "",
-      stockQuantity: "",
+      price: "0",
+      salePrice: "0",
+      discount: "0",
+      barcode: "",
+      packageQuantity: "0",
+      brand: "",
+      weight: "0",
+      stockQuantity: "0",
       sku: "",
       status: "AVAILABLE" as ProductStatus,
       imageUrl: "",
       warehouseLocation: "",
       productReferenceCode: "",
       reorderPoint: "10",
+      isOnPromotion: false,
+      packageDetails: "",
     },
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit({
       ...values,
-      price: values.price ? Number(values.price) : undefined,
-      stockQuantity: values.stockQuantity
-        ? Number(values.stockQuantity)
-        : undefined,
-      reorderPoint: values.reorderPoint
-        ? Number(values.reorderPoint)
-        : undefined,
-      reseller: { uid: user?.uid || 0 },
+      price: Number(values.price),
+      salePrice: Number(values.salePrice),
+      discount: Number(values.discount),
+      barcode: values.barcode,
+      packageQuantity: Number(values.packageQuantity),
+      weight: Number(values.weight),
+      stockQuantity: Number(values.stockQuantity),
+      reorderPoint: Number(values.reorderPoint),
+      productRef: values.productReferenceCode,
+      isDeleted: false,
+      promotionStartDate: values.saleStart ? new Date(values.saleStart) : null,
+      promotionEndDate: values.saleEnd ? new Date(values.saleEnd) : null,
+      packageUnit: "unit",
+      imageUrl: values.imageUrl || null,
+      packageDetails: values.packageDetails || ""
     });
   };
 
@@ -103,7 +136,7 @@ export const NewInventoryForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 h-[calc(100vh-12rem)] overflow-y-auto px-1"
       >
         <div className="grid grid-cols-2 gap-4">
           <FormField
@@ -111,11 +144,11 @@ export const NewInventoryForm = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
                   Name
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="name" {...field} />
+                  <Input placeholder="Product name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -123,14 +156,14 @@ export const NewInventoryForm = ({
           />
           <FormField
             control={form.control}
-            name="productReferenceCode"
+            name="brand"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
-                  Reference Code
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Brand
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="ref-001" {...field} />
+                  <Input placeholder="Brand name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -142,13 +175,13 @@ export const NewInventoryForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="block text-xs font-light text-white uppercase font-body">
+              <FormLabel className="text-[10px] font-normal uppercase font-body">
                 Description
               </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="description"
-                  className="text-xs font-normal resize-none font-body"
+                  placeholder="Product description"
+                  className="font-normal resize-none text-md md:text-xs font-body"
                   {...field}
                 />
               </FormControl>
@@ -162,26 +195,44 @@ export const NewInventoryForm = ({
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
                   Category
                 </FormLabel>
-                <FormControl>
-                  <Input placeholder="category" {...field} />
-                </FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {productCategories.map((category) => (
+                      <SelectItem
+                        key={category.value}
+                        value={category.value}
+                        className="text-[10px] font-normal uppercase font-body"
+                      >
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="sku"
+            name="barcode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
-                  SKU
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Barcode
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="sku" {...field} />
+                  <Input placeholder="1234567890" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -194,7 +245,7 @@ export const NewInventoryForm = ({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
                   Price
                 </FormLabel>
                 <FormControl>
@@ -212,11 +263,11 @@ export const NewInventoryForm = ({
           />
           <FormField
             control={form.control}
-            name="stockQuantity"
+            name="packageQuantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
-                  Stock Quantity
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Package Quantity
                 </FormLabel>
                 <FormControl>
                   <Input type="number" min="0" placeholder="0" {...field} />
@@ -229,14 +280,58 @@ export const NewInventoryForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="warehouseLocation"
+            name="salePrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
-                  Warehouse Location
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Sale Price
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="A1-B2-C3" {...field} />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="discount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Discount (%)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="stockQuantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Stock Quantity
+                </FormLabel>
+                <FormControl>
+                  <Input type="number" min="0" placeholder="0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -247,7 +342,7 @@ export const NewInventoryForm = ({
             name="reorderPoint"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
                   Reorder Point
                 </FormLabel>
                 <FormControl>
@@ -261,17 +356,78 @@ export const NewInventoryForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="weight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
-                  Image URL
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Weight (g)
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    {...field}
-                  />
+                  <Input type="number" min="0" placeholder="0" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="packageDetails"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Package Details
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Package details" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="sku"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  SKU
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="SKU" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="productReferenceCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Reference Code
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="ref-001" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="warehouseLocation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
+                  Warehouse Location
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="A1-B2-C3" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,7 +438,7 @@ export const NewInventoryForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="block text-xs font-light text-white uppercase font-body">
+                <FormLabel className="text-[10px] font-normal uppercase font-body">
                   Status
                 </FormLabel>
                 <Select
@@ -311,7 +467,46 @@ export const NewInventoryForm = ({
             )}
           />
         </div>
-        <Button type="submit" className="w-full mt-4 text-white font-body text-[10px] uppercase font-normal" disabled={isSubmitting}>
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[10px] font-normal uppercase font-body">
+                Image URL
+              </FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/image.jpg" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isOnPromotion"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-2">
+              <FormControl>
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={field.onChange}
+                  className="w-4 h-4 border-gray-300 rounded text-primary focus:ring-primary"
+                />
+              </FormControl>
+              <FormLabel className="text-[10px] font-normal uppercase font-body">
+                On Promotion
+              </FormLabel>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          className="w-full mt-4 text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

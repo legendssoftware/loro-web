@@ -8,6 +8,7 @@ import {
   HandCoins,
   UserPlusIcon,
   Users,
+  Package,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClaimsModule } from "@/modules/my-office/claims/claims";
@@ -15,6 +16,7 @@ import { QuotationsModule } from "@/modules/my-office/quotations/quotations";
 import { TasksModule } from "@/modules/my-office/tasks/tasks";
 import { StaffModule } from "@/modules/my-office/staff/staff";
 import LeadsModule from "@/modules/my-office/leads/leads";
+import { InventoryModule } from "@/modules/my-office/inventory/inventory";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -111,6 +113,17 @@ export default function MyOfficePage() {
               />
               <p className="text-xs font-normal uppercase font-body">Leads</p>
             </TabsTrigger>
+            <TabsTrigger
+              className="data-[state=active]:bg-none data-[state=active]:shadow-none data-[state=active]:border-b pb-2 data-[state=active]:border-b-primary data-[state=active]:rounded-none gap-2 font-normal font-body uppercase w-[170px]"
+              value="inventory"
+            >
+              <Package
+                size={16}
+                strokeWidth={1.5}
+                className="text-=card-foreground"
+              />
+              <p className="text-xs font-normal uppercase font-body">Inventory</p>
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="tasks" className="mt-4">
             <Card className="flex flex-col gap-2 border-0 shadow-none bg-card/20">
@@ -135,6 +148,11 @@ export default function MyOfficePage() {
           <TabsContent value="leads" className="mt-4">
             <Card className="flex flex-col gap-2 border-0 shadow-none bg-card/20">
               <LeadsModule />
+            </Card>
+          </TabsContent>
+          <TabsContent value="inventory" className="mt-4">
+            <Card className="flex flex-col gap-2 border-0 shadow-none bg-card/20">
+              <InventoryModule />
             </Card>
           </TabsContent>
         </Tabs>

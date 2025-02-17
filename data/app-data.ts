@@ -130,3 +130,18 @@ export const quotationStatuses = [
   { label: "Approved", value: QuotationStatus.APPROVED, icon: CheckCircle2 },
   { label: "Declined", value: QuotationStatus.DECLINED, icon: FileX },
 ];
+
+export const productStatuses = [
+  {
+    value: "AVAILABLE",
+    label: "Available",
+  },
+  {
+    value: "LOW_STOCK",
+    label: "Low Stock",
+  },
+  {
+    value: "OUT_OF_STOCK",
+    label: "Out of Stock",
+  },
+] as const;

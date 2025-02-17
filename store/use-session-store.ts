@@ -32,6 +32,15 @@ export interface ProfileData {
     userref: string;
 }
 
+interface User {
+    uid: number;
+    email: string;
+    name: string;
+    surname: string;
+    role: string;
+    photoURL?: string;
+}
+
 interface SessionState {
     isAuthenticated: boolean;
     accessToken: string | null;
@@ -39,6 +48,7 @@ interface SessionState {
     profileData: ProfileData | null;
     loading: boolean;
     error: string | null;
+    user: User | null;
 }
 
 interface SessionActions {
@@ -46,6 +56,8 @@ interface SessionActions {
     signOut: () => void;
     setSession: (session: Partial<SessionState>) => void;
     clearSession: () => void;
+    setAccessToken: (token: string | null) => void;
+    setUser: (user: User | null) => void;
 }
 
 const initialState: SessionState = {
@@ -55,6 +67,7 @@ const initialState: SessionState = {
     profileData: null,
     loading: false,
     error: null,
+    user: null,
 };
 
 // API functions
@@ -87,6 +100,7 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                             refreshToken: response.refreshToken,
                             profileData: response.profileData,
                             loading: false,
+                            user: response.user,
                         });
                     } else {
                         throw new Error('Invalid response from server');
@@ -125,6 +139,10 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                 delete api.defaults.headers.common['Authorization'];
                 set(initialState);
             },
+
+            setAccessToken: (token) => set({ accessToken: token }),
+
+            setUser: (user) => set({ user }),
         }),
         {
             name: 'session-storage',
@@ -134,6 +152,7 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                 accessToken: state.accessToken,
                 refreshToken: state.refreshToken,
                 profileData: state.profileData,
+                user: state.user,
             }),
         }
     )
@@ -161,6 +180,7 @@ export const useSignInMutation = () => {
                     accessToken: response.accessToken,
                     refreshToken: response.refreshToken,
                     profileData: response.profileData,
+                    user: response.user,
                 });
             }
             return response;

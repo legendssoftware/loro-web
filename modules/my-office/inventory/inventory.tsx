@@ -1,40 +1,152 @@
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
-import { generalStatuses } from "@/data/app-data";
+import { useState, useCallback } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useSessionStore } from "@/store/use-session-store"
+import toast from 'react-hot-toast'
+import { Product, RequestConfig, UpdateProductDTO } from "@/lib/types/products"
+import { deleteProduct, fetchProducts, updateProduct } from "@/helpers/products"
+import { InventoryDetailModal } from "./inventory-detail-modal"
+import { InventoryList } from "./inventory-list"
 
 export const InventoryModule = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+    const { accessToken } = useSessionStore()
+    const queryClient = useQueryClient()
+    const [isProductDetailModalOpen, setIsProductDetailModalOpen] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-  };
+    const config: RequestConfig = {
+        headers: {
+            token: `${accessToken}`,
+        },
+    }
 
-  return (
-    <div className="flex flex-col w-full h-full gap-2">
-      <div className="flex flex-row items-center justify-end gap-2">
-        <div className="flex flex-row items-center justify-center gap-2">
-          <Input placeholder="search..." className="w-[300px]" />
-          <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              {generalStatuses?.map((status) => (
-                <SelectItem key={status?.value} value={status?.value}>
-                  {status?.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    const { data: productsData, isLoading } = useQuery({
+        queryKey: ['products'],
+        queryFn: () => fetchProducts(config),
+        enabled: !!accessToken,
+    })
+
+    const updateProductMutation = useMutation({
+        mutationFn: ({ ref, updatedProduct }: { ref: number; updatedProduct: UpdateProductDTO }) =>
+            updateProduct({ ref, updatedProduct, config }), 
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+            toast.success('Product updated successfully', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅',
+            })
+            setIsProductDetailModalOpen(false)
+        },
+        onError: (error: Error) => {
+            toast.error('Failed to update product: ' + error.message, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+            })
+        }
+    })
+
+    const deleteProductMutation = useMutation({
+        mutationFn: (ref: number) => deleteProduct(ref, config),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+            toast.success('Product deleted successfully', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅',
+            })
+            setIsProductDetailModalOpen(false)
+        },
+        onError: (error: Error) => {
+            toast.error('Failed to delete product: ' + error.message, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
+        }
+    })
+
+    const handleProductClick = useCallback((product: Product) => {
+        setSelectedProduct(product)
+        setIsProductDetailModalOpen(true)
+    }, [])
+
+    const handleDeleteProduct = useCallback(async (uid: number) => {
+        try {
+            await deleteProductMutation.mutateAsync(uid)
+        } catch (error) {
+            console.error('Failed to delete product:', error)
+            toast.error('Failed to delete product', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            })
+        }
+    }, [deleteProductMutation])
+
+    return (
+        <div className="flex flex-col w-full h-full gap-4">
+            <InventoryList
+                products={productsData?.data || []}
+                onProductClick={handleProductClick}
+                isLoading={isLoading}
+            />
+
+            <InventoryDetailModal
+                isOpen={isProductDetailModalOpen}
+                onOpenChange={setIsProductDetailModalOpen}
+                selectedProduct={selectedProduct}
+                onDelete={handleDeleteProduct}
+                isUpdating={updateProductMutation.isPending}
+                isDeleting={deleteProductMutation.isPending}
+            />
         </div>
-      </div>
-    </div>
-  );
-};
+    )
+}

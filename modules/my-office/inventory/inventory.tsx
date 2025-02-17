@@ -133,10 +133,19 @@ export const InventoryModule = () => {
         setCurrentPage(page)
     }, [])
 
+    console.log(productsData, 'productsData')
+    
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <InventoryList
-                products={productsData || { data: [], meta: { total: 0, page: 1, lastPage: 1 } }}
+                products={{
+                    data: productsData?.data || [],
+                    meta: {
+                        total: productsData?.meta?.total || 0,
+                        page: currentPage,
+                        lastPage: productsData?.meta?.totalPages || 1
+                    }
+                }}
                 onProductClick={handleProductClick}
                 isLoading={isLoading}
                 onPageChange={handlePageChange}

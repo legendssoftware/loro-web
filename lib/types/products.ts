@@ -16,6 +16,17 @@ export type Product = {
   createdAt: string;
   updatedAt: string;
   isDeleted: boolean;
+  barcode: string;
+  brand: string;
+  weight: number;
+  packageDetails: string;
+  isOnPromotion: boolean;
+  salePrice: number | null;
+  promotionStartDate: string | null;
+  promotionEndDate: string | null;
+  discount: number | null;
+  packageQuantity: number;
+  packageUnit: string;
 };
 
 export type UpdateProductDTO = Partial<Omit<Product, "uid" | "createdAt" | "updatedAt">>;

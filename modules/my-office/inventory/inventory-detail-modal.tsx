@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Edit, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,36 +63,28 @@ export const InventoryDetailModal = ({
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <DialogTitle className="text-lg font-medium font-heading line-clamp-1">
-                {selectedProduct.name}
+                {selectedProduct?.name}
               </DialogTitle>
             </div>
             <div className="flex items-center gap-2">
               <Badge
                 variant={
-                  selectedProduct.status === "AVAILABLE"
+                  selectedProduct?.status === "AVAILABLE"
                     ? "success"
-                    : selectedProduct.status === "LOW_STOCK"
+                    : selectedProduct?.status === "LOW_STOCK"
                     ? "warning"
                     : "destructive"
                 }
                 className="text-[10px] font-normal uppercase font-body"
               >
-                {selectedProduct.status}
+                {selectedProduct?.status}
               </Badge>
               <Badge
                 variant="outline"
                 className="text-[10px] font-normal uppercase font-body"
               >
-                {selectedProduct.category}
+                {selectedProduct?.category}
               </Badge>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClose}
-                className="w-6 h-6"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -108,98 +99,192 @@ export const InventoryDetailModal = ({
           <div className="flex flex-col gap-6">
             <div className="relative w-full h-64 overflow-hidden rounded-lg">
               <Image
-                src={selectedProduct.imageUrl || "/placeholder.png"}
-                alt={selectedProduct.name}
+                src={selectedProduct?.imageUrl || "/placeholder.png"}
+                alt={selectedProduct?.name}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
-              {selectedProduct.isOnPromotion && (
+              {selectedProduct?.isOnPromotion && (
                 <Badge
                   variant="destructive"
                   className="absolute top-2 right-2 text-[10px] font-normal uppercase font-body"
                 >
-                  {selectedProduct.discount}% OFF
+                  {selectedProduct?.discount}% OFF
                 </Badge>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div className="flex flex-col gap-4">
-                <div>
-                  <h4 className="text-xs font-normal text-muted-foreground uppercase font-body">Description</h4>
-                  <p className="text-sm font-body">{selectedProduct.description}</p>
-                </div>
-                <div>
-                  <h4 className="text-xs font-normal text-muted-foreground uppercase font-body">Brand</h4>
-                  <p className="text-sm font-body">{selectedProduct.brand}</p>
-                </div>
-                <div>
-                  <h4 className="text-xs font-normal text-muted-foreground uppercase font-body">Package Details</h4>
-                  <div className="flex items-center gap-4">
-                    <p className="text-sm font-body">Weight: {selectedProduct.weight}g</p>
-                    <p className="text-sm font-body">Quantity: {selectedProduct.packageQuantity}</p>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1">
+                <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                  Description
+                </h4>
+                <p className="text-sm font-body">
+                  {selectedProduct?.description}
+                </p>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <div>
-                  <h4 className="text-xs font-normal text-muted-foreground uppercase font-body">Pricing</h4>
-                  <div className="flex flex-col">
-                    <p className="text-lg font-medium font-heading">
-                      {selectedProduct.isOnPromotion ? (
+              <div className="flex flex-col gap-1">
+                <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                  Pricing & Promotion
+                </h4>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl font-medium font-heading">
+                      {selectedProduct?.isOnPromotion ? (
                         <>
-                          <span className="text-destructive">{formatCurrency(selectedProduct.salePrice)}</span>
-                          <span className="ml-2 text-sm line-through text-muted-foreground">
-                            {formatCurrency(selectedProduct.price)}
+                          <span className="text-destructive">
+                            {formatCurrency(selectedProduct?.salePrice || 0)}
+                          </span>
+                          <span className="ml-2 text-base line-through text-muted-foreground">
+                            {formatCurrency(selectedProduct?.price || 0)}
                           </span>
                         </>
                       ) : (
-                        formatCurrency(selectedProduct.price)
+                        formatCurrency(selectedProduct?.price || 0)
                       )}
                     </p>
-                    {selectedProduct.isOnPromotion && (
-                      <p className="text-sm text-muted-foreground font-body">
-                        Sale ends: {new Date(selectedProduct.saleEnd!).toLocaleDateString()}
-                      </p>
+                    {selectedProduct?.isOnPromotion && (
+                      <Badge variant="destructive" className="text-[10px] font-normal uppercase font-body">
+                        {selectedProduct?.discount}% OFF
+                      </Badge>
                     )}
                   </div>
+                  {selectedProduct?.isOnPromotion && (
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">
+                        Promotion Period
+                      </p>
+                      <div className="flex items-center gap-2 text-sm font-body">
+                        <span>
+                          {selectedProduct?.promotionStartDate ? 
+                            new Date(selectedProduct.promotionStartDate).toLocaleDateString() 
+                            : 'Not set'}
+                        </span>
+                        <span>-</span>
+                        <span>
+                          {selectedProduct?.promotionEndDate ? 
+                            new Date(selectedProduct.promotionEndDate).toLocaleDateString() 
+                            : 'Not set'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h4 className="text-xs font-normal text-muted-foreground uppercase font-body">Barcode</h4>
-                  <p className="text-sm font-mono">{selectedProduct.barcode}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                    Product Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">SKU</p>
+                      <p className="font-mono text-sm">{selectedProduct?.sku}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Product Ref</p>
+                      <p className="font-mono text-sm">{selectedProduct?.productRef}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Barcode</p>
+                      <p className="font-mono text-sm">{selectedProduct?.barcode}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Brand</p>
+                      <p className="text-sm font-body">{selectedProduct?.brand}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                    Package Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Weight</p>
+                      <p className="text-sm font-body">{selectedProduct?.weight}g</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Package Details</p>
+                      <p className="text-sm font-body">{selectedProduct?.packageDetails || "Not specified"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                    Stock Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Current Stock</p>
+                      <p className="text-sm font-body">{selectedProduct?.stockQuantity} units</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Reorder Point</p>
+                      <p className="text-sm font-body">{selectedProduct?.reorderPoint} units</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Location</p>
+                      <p className="text-sm font-body">{selectedProduct?.warehouseLocation || "Not specified"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Package Quantity</p>
+                      <p className="text-sm font-body">{selectedProduct?.packageQuantity} per pack</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
+                    Timestamps
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Created</p>
+                      <p className="text-sm font-body">
+                        {new Date(selectedProduct?.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-body uppercase">Last Updated</p>
+                      <p className="text-sm font-body">
+                        {new Date(selectedProduct?.updatedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-4 mt-4 border-t">
+            <div className="flex items-center justify-between w-full gap-4 pt-4 mt-4 border-t">
+              <Button
+                variant="default"
+                className="flex-1 text-xs font-normal text-white uppercase font-body bg-[#8B5CF6] hover:bg-[#7C3AED]"
+                onClick={() => setIsEditing(true)}
+                disabled={isUpdating}
+              >
+                Update Product
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    size="sm"
-                    className="text-xs font-normal uppercase font-body"
+                    className="flex-1 text-xs font-normal text-white uppercase font-body bg-[#EF4444] hover:bg-[#DC2626]"
                     disabled={isDeleting}
                   >
-                    {isDeleting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </>
-                    )}
+                    Delete Product
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the
-                      product and remove it from our servers.
+                      This action cannot be undone. This will permanently delete
+                      the product and remove it from our servers.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -215,15 +300,6 @@ export const InventoryDetailModal = ({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <Button
-                variant="default"
-                size="sm"
-                className="text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
             </div>
           </div>
         )}

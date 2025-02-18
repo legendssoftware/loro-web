@@ -12,7 +12,7 @@ import {
 import { useSessionStore } from "@/store/use-session-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showToast } from "@/lib/utils/toast";
-import { productCategories } from "@/data/app-data";
+import { productCategories, productStatuses } from "@/data/app-data";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
   PeriodFilterValue,
@@ -24,6 +24,7 @@ import {
   Product,
   RequestConfig,
   UpdateProductDTO,
+  ProductStatus,
 } from "@/lib/types/products";
 import { createProduct } from "@/helpers/products";
 import { InventoryCard } from "./inventory-card";
@@ -72,7 +73,7 @@ const InventoryListComponent = ({
 }: InventoryListProps) => {
   const { accessToken } = useSessionStore();
   const [isNewProductModalOpen, setIsNewProductModalOpen] = useState(false);
-  const [statusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [periodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,12 +114,12 @@ const InventoryListComponent = ({
   const filteredProducts = useMemo(() => {
     return products.data.filter((product) => {
       const matchesStatus =
-        statusFilter === "all" || product.status === statusFilter;
+        statusFilter === "all" || product.status?.toUpperCase() === statusFilter;
       const matchesCategory =
         categoryFilter === "all" || product.category === categoryFilter;
       const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+        product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product?.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesPeriod = (() => {
         if (periodFilter === "all") return true;
@@ -154,6 +155,28 @@ const InventoryListComponent = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="max-w-xs"
           />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="all"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                All Statuses
+              </SelectItem>
+              {productStatuses.map((status) => (
+                <SelectItem
+                  key={status.value}
+                  value={status.value}
+                  className="text-[10px] font-normal uppercase font-body"
+                >
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All Categories" />

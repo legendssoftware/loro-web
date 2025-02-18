@@ -144,6 +144,18 @@ export const productStatuses = [
     value: "OUT_OF_STOCK",
     label: "Out of Stock",
   },
+  {
+    value: "DISCONTINUED",
+    label: "Discontinued",
+  },
+  {
+    value: "ACTIVE",
+    label: "Active",
+  },
+  {
+    value: "OTHER",
+    label: "Other",
+  },
 ] as const;
 
 export const productCategories = [

@@ -588,9 +588,9 @@ export default function Dashboard() {
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-sm font-medium uppercase font-body text-card-foreground">Task Completion Trends</CardTitle>
-						{/* <CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">
-							{data ? `Last updated ${format(new Date(data.metadata.generatedAt), 'PPP')}` : 'No data available'}
-						</CardDescription> */}
+						<CardDescription className="text-xs font-normal uppercase font-body text-muted-foreground">
+							<p>task completion trends this week</p>
+						</CardDescription>
 					</CardHeader>
 					<CardContent>
 						{data ? (
@@ -608,8 +608,8 @@ export default function Dashboard() {
 										cursor={false}
 										content={<ChartTooltipContent indicator="dashed" />}
 									/>
-									<Bar dataKey="completed" fill="var(--color-completed)" radius={5} />
-									<Bar dataKey="pending" fill="var(--color-pending)" radius={5} />
+									<Bar dataKey="completed" fill="var(--color-completed)" radius={3} barSize={20} />
+									<Bar dataKey="pending" fill="var(--color-pending)" radius={3} barSize={20} />
 								</BarChart>
 							</ChartContainer>
 						) : (
@@ -656,8 +656,8 @@ export default function Dashboard() {
 									cursor={false}
 									content={<ChartTooltipContent indicator="dashed" />}
 								/>
-								<Bar dataKey="total" fill="var(--color-total)" radius={5} barSize={50} />
-								<Bar dataKey="completed" fill="var(--color-completed)" radius={5} barSize={50} />
+								<Bar dataKey="total" fill="var(--color-total)"  radius={3} barSize={20}/>
+								<Bar dataKey="completed" fill="var(--color-completed)"  radius={3} barSize={20}/>
 							</BarChart>
 						</ChartContainer>
 					</CardContent>

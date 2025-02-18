@@ -371,23 +371,25 @@ const QuotationDetailModalComponent = ({
           <div className="flex flex-row gap-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
-              className="w-full h-10 text-xs tracking-wider bg-transparent font-body hover:bg-transparent"
+              className="w-full h-10 text-[10px] font-normal tracking-wider bg-transparent font-body hover:bg-transparent"
             >
               CLOSE
             </Button>
             <Button
               disabled
+              size="sm"
               onClick={handleUpdate}
-              className="w-full h-10 text-xs tracking-wider text-white uppercase cursor-not-allowed font-body bg-primary hover:bg-primary/90"
+              className="w-full h-10 text-[10px] font-normal tracking-wider text-white uppercase cursor-not-allowed font-body bg-primary hover:bg-primary/90"
             >
               {isUpdating ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin" />
-                  <p className="text-xs font-normal text-white">Updating...</p>
+                  <p className="font-normal text-white">Updating...</p>
                 </div>
               ) : (
-                <p className="text-xs font-normal text-white">Update Status</p>
+                <p className="font-normal text-white">Update Status</p>
               )}
             </Button>
           </div>

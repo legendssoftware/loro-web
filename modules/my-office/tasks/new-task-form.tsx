@@ -152,7 +152,7 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
             <ScrollArea className="h-[60vh] pr-4">
                 <div className="grid gap-4 py-2">
                     <div className="grid gap-1.5">
-                        <Label htmlFor="title" className="text-xs font-body text-card-foreground uppercase font-normal">
+                        <Label htmlFor="title" className="text-xs font-normal uppercase font-body text-card-foreground">
                             Title
                         </Label>
                         <Input
@@ -163,11 +163,11 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                             className={cn("font-body text-xs", errors.title && "border-red-500 focus-visible:ring-red-500")}
                         />
                         {errors.title && (
-                            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+                            <p className="mt-1 text-xs text-red-500">{errors.title}</p>
                         )}
                     </div>
                     <div className="grid gap-1.5">
-                        <Label htmlFor="description" className="text-xs font-body text-card-foreground uppercase font-normal">
+                        <Label htmlFor="description" className="text-xs font-normal uppercase font-body text-card-foreground">
                             Description
                         </Label>
                         <Textarea
@@ -178,18 +178,18 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                             className={cn("font-body text-xs", errors.description && "border-red-500 focus-visible:ring-red-500")}
                         />
                         {errors.description && (
-                            <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+                            <p className="mt-1 text-xs text-red-500">{errors.description}</p>
                         )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-1.5">
-                            <Label htmlFor="taskType" className="text-xs font-body text-card-foreground uppercase font-normal">
+                            <Label htmlFor="taskType" className="text-xs font-normal uppercase font-body text-card-foreground">
                                 Task Type
                             </Label>
                             <Select
                                 value={formData.taskType}
                                 onValueChange={value => setFormData(prev => ({ ...prev, taskType: value as TaskType }))}>
-                                <SelectTrigger className="font-body text-xs">
+                                <SelectTrigger className="text-xs font-body">
                                     <SelectValue placeholder="Select task type" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -202,13 +202,13 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                             </Select>
                         </div>
                         <div className="grid gap-1.5">
-                            <Label htmlFor="priority" className="text-xs font-body text-card-foreground uppercase font-normal">
+                            <Label htmlFor="priority" className="text-xs font-normal uppercase font-body text-card-foreground">
                                 Priority
                             </Label>
                             <Select
                                 value={formData.priority}
                                 onValueChange={value => setFormData(prev => ({ ...prev, priority: value as Priority }))}>
-                                <SelectTrigger className="font-body text-xs">
+                                <SelectTrigger className="text-xs font-body">
                                     <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -223,17 +223,17 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-1.5">
-                            <Label className="text-xs font-body text-card-foreground uppercase">Deadline</Label>
+                            <Label className="text-xs uppercase font-body text-card-foreground">Deadline</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         className={cn("w-full justify-start text-left font-normal text-xs font-body shadow-none", !formData?.deadline && "text-muted-foreground")}>
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="w-4 h-4 mr-2" />
                                         {formData.deadline ? (
                                             format(formData.deadline, "LLL dd, y")
                                         ) : (
-                                            <span className="text-card-foreground text-xs uppercase">Pick a date</span>
+                                            <span className="text-xs uppercase text-card-foreground">Pick a date</span>
                                         )}
                                     </Button>
                                 </PopoverTrigger>
@@ -249,17 +249,17 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                         </div>
 
                         <div className="grid gap-1.5">
-                            <Label className="text-xs font-body text-card-foreground uppercase">Repetition End Date</Label>
+                            <Label className="text-xs uppercase font-body text-card-foreground">Repetition End Date</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         className={cn("w-full justify-start text-left font-normal text-xs font-body shadow-none", !formData?.repetitionEndDate && "text-muted-foreground")}>
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="w-4 h-4 mr-2" />
                                         {formData.repetitionEndDate ? (
                                             format(formData.repetitionEndDate, "LLL dd, y")
                                         ) : (
-                                            <span className="text-card-foreground text-xs uppercase">Pick a date</span>
+                                            <span className="text-xs uppercase text-card-foreground">Pick a date</span>
                                         )}
                                     </Button>
                                 </PopoverTrigger>
@@ -276,13 +276,13 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-1.5">
-                            <Label htmlFor="repetition" className="text-xs font-body text-card-foreground uppercase font-normal">
+                            <Label htmlFor="repetition" className="text-xs font-normal uppercase font-body text-card-foreground">
                                 Repetition Type
                             </Label>
                             <Select
                                 value={formData.repetitionType}
                                 onValueChange={value => setFormData(prev => ({ ...prev, repetitionType: value as RepetitionType }))}>
-                                <SelectTrigger className="font-body text-xs">
+                                <SelectTrigger className="text-xs font-body">
                                     <SelectValue placeholder="Select repetition type" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -296,13 +296,13 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                         </div>
 
                         <div className="grid gap-1.5">
-                            <Label htmlFor="targetCategory" className="text-xs font-body text-card-foreground uppercase font-normal">
+                            <Label htmlFor="targetCategory" className="text-xs font-normal uppercase font-body text-card-foreground">
                                 Target Category
                             </Label>
                             <Select
                                 value={formData.targetCategory}
                                 onValueChange={value => setFormData(prev => ({ ...prev, targetCategory: value as TargetCategory }))}>
-                                <SelectTrigger className="font-body text-xs">
+                                <SelectTrigger className="text-xs font-body">
                                     <SelectValue placeholder="Select target category" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -331,11 +331,11 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                         </div>
                     </div>
                     <div className="grid gap-1.5">
-                        <Label htmlFor="subtasks" className="text-xs font-body text-card-foreground uppercase font-normal">Subtasks</Label>
+                        <Label htmlFor="subtasks" className="text-xs font-normal uppercase font-body text-card-foreground">Subtasks</Label>
                         {formData.subtasks.map((subtask, index) => (
-                            <div key={index} className="flex flex-col gap-2 border rounded-lg p-4">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="text-sm font-body font-normal text-card-foreground uppercase">
+                            <div key={index} className="flex flex-col gap-2 p-4 border rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-normal uppercase font-body text-card-foreground">
                                         Sub-task {index + 1}
                                     </h4>
                                     <Button
@@ -343,12 +343,12 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleRemoveSubtask(index)}
-                                        className="h-8 w-8"
+                                        className="w-8 h-8"
                                     >
-                                        <X className="h-4 w-4" />
+                                        <X className="w-4 h-4" />
                                     </Button>
                                 </div>
-                                <div className="flex-1 grid gap-2">
+                                <div className="grid flex-1 gap-2">
                                     <Input
                                         placeholder="Subtask title"
                                         value={subtask.title}
@@ -357,7 +357,7 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                                             newSubtasks[index].title = e.target.value
                                             setFormData(prev => ({ ...prev, subtasks: newSubtasks }))
                                         }}
-                                        className="font-body text-xs"
+                                        className="text-xs font-body"
                                     />
                                     <Textarea
                                         placeholder="Subtask description"
@@ -367,7 +367,7 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                                             newSubtasks[index].description = e.target.value
                                             setFormData(prev => ({ ...prev, subtasks: newSubtasks }))
                                         }}
-                                        className="font-body text-xs"
+                                        className="text-xs font-body"
                                     />
                                 </div>
                             </div>
@@ -376,35 +376,35 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
                             type="button"
                             variant="outline"
                             onClick={handleAddSubtask}
-                            className="font-body text-xs font-normal uppercase text-card-foreground"
+                            className="text-xs font-normal uppercase font-body text-card-foreground"
                         >
                             Add Subtask
                         </Button>
                     </div>
 
                     <div className="grid gap-1.5">
-                        <Label htmlFor="attachments" className="text-xs font-body text-card-foreground uppercase font-normal">Attachments</Label>
+                        <Label htmlFor="attachments" className="text-xs font-normal uppercase font-body text-card-foreground">Attachments</Label>
                         <Input
                             id="attachments"
                             type="file"
                             multiple
                             accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                             onChange={handleAttachmentChange}
-                            className="font-body text-xs"
+                            className="text-xs font-body"
                         />
                     </div>
                 </div>
             </ScrollArea>
-            <div className="mt-4 w-full border-t pt-4">
+            <div className="w-full pt-4 mt-4 border-t">
                 <Button
                     type="submit"
-                    size="lg"
-                    className="w-full font-body text-xs font-normal uppercase bg-violet-500 hover:bg-violet-600 text-white"
+                    size="sm"
+                    className="w-full text-[10px] font-normal text-white uppercase font-body bg-violet-500 hover:bg-violet-600"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
                         <div className="flex items-center gap-2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                            <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin" />
                             <p className="text-white">Creating Task...</p>
                         </div>
                     ) : (

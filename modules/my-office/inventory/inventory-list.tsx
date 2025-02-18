@@ -24,7 +24,6 @@ import {
   Product,
   RequestConfig,
   UpdateProductDTO,
-  ProductStatus,
 } from "@/lib/types/products";
 import { createProduct } from "@/helpers/products";
 import { InventoryCard } from "./inventory-card";
@@ -114,7 +113,8 @@ const InventoryListComponent = ({
   const filteredProducts = useMemo(() => {
     return products.data.filter((product) => {
       const matchesStatus =
-        statusFilter === "all" || product.status?.toUpperCase() === statusFilter;
+        statusFilter === "all" ||
+        product.status?.toUpperCase() === statusFilter;
       const matchesCategory =
         categoryFilter === "all" || product.category === categoryFilter;
       const matchesSearch =

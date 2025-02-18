@@ -38,7 +38,7 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
             layout
         >
             <Card
-                className="transition-colors shadow-none cursor-pointer bg-card hover:border-primary/40 border-border"
+                className="h-56 transition-colors shadow-none cursor-pointer bg-card hover:border-primary/40 border-border"
                 onClick={() => onClick(lead)}
                 role="button"
                 tabIndex={0}

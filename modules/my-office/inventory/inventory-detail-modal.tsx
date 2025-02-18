@@ -263,7 +263,7 @@ export const InventoryDetailModal = ({
             <div className="flex items-center justify-between w-full gap-4 pt-4 mt-4 border-t">
               <Button
                 variant="default"
-                className="flex-1 text-xs font-normal text-white uppercase font-body bg-[#8B5CF6] hover:bg-[#7C3AED]"
+                className="flex-1 text-[10px] font-normal text-white uppercase font-body bg-[#8B5CF6] hover:bg-[#7C3AED]"
                 onClick={() => setIsEditing(true)}
                 disabled={isUpdating}
               >
@@ -273,7 +273,7 @@ export const InventoryDetailModal = ({
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    className="flex-1 text-xs font-normal text-white uppercase font-body bg-[#EF4444] hover:bg-[#DC2626]"
+                    className="flex-1 text-[10px] font-normal text-white uppercase font-body bg-[#EF4444] hover:bg-[#DC2626]"
                     disabled={isDeleting}
                   >
                     Delete Product
@@ -292,7 +292,7 @@ export const InventoryDetailModal = ({
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
-                      className="text-xs font-normal text-white uppercase bg-destructive font-body hover:bg-destructive/90"
+                      className="text-[10px] font-normal text-white uppercase bg-destructive font-body hover:bg-destructive/90"
                       onClick={() => onDelete(selectedProduct.uid)}
                     >
                       Delete

@@ -264,7 +264,8 @@ export const StaffForm = ({
       <DialogFooter>
         <Button
           type="submit"
-          className="text-xs font-normal text-white uppercase font-body"
+          size="sm"
+          className="text-[10px] font-normal text-white uppercase font-body"
           disabled={isSubmitting}
         >
           {submitText}

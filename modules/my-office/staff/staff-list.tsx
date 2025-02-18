@@ -169,7 +169,7 @@ export const StaffList = ({
           </Select>
           <Button variant="default" size="sm" onClick={onCreateClick}>
             <Plus size={16} strokeWidth={1.5} className="text-white" />
-            <p className="text-xs font-normal text-white uppercase font-body">
+            <p className="text-[10px] font-normal text-white uppercase font-body">
               Add
             </p>
           </Button>
@@ -211,15 +211,15 @@ export const StaffList = ({
         ))}
       </motion.div>
       {filteredStaff.length > staffPerPage && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+        <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"
             size="icon"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="text-xs font-normal font-body">
             {currentPage} / {totalPages}
@@ -229,9 +229,9 @@ export const StaffList = ({
             size="icon"
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       )}

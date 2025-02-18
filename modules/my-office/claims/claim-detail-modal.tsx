@@ -26,12 +26,8 @@ const ClaimDetailModalComponent = ({
   onOpenChange,
   selectedClaim,
   onDelete,
-  isDeleting,
-  isUpdating,
 }: ClaimDetailModalProps) => {
   if (!selectedClaim) return null;
-
-  const amount = Number(selectedClaim?.amount || 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -54,46 +50,96 @@ const ClaimDetailModalComponent = ({
             {/* Header Information */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
                   Owner Information
-                </h3>
+                </h4>
                 <div className="text-xs font-normal font-body">
-                  <p className="font-normal">{`${
-                    selectedClaim?.owner?.name || "N/A"
-                  } ${selectedClaim?.owner?.surname || ""}`}</p>
-                  <p>Email: {selectedClaim?.owner?.email || "N/A"}</p>
-                  <p>Phone: {selectedClaim?.owner?.phone || "N/A"}</p>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Name:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {`${selectedClaim?.owner?.name || "N/A"} ${
+                        selectedClaim?.owner?.surname || ""
+                      }`}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Phone:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.owner?.phone}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Email:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.owner?.email}
+                    </p>
+                  </div>
                   <Badge variant="secondary" className="mt-1 text-[10px]">
                     {selectedClaim?.owner?.accessLevel?.toUpperCase()}
                   </Badge>
                 </div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-xs font-normal tracking-wider uppercase font-body">
+                <h4 className="text-xs font-normal uppercase text-muted-foreground font-body">
                   Claim Details
-                </h3>
+                </h4>
                 <div className="text-xs font-normal font-body">
-                  <p>Category: {selectedClaim?.category || "N/A"}</p>
-                  <p>Amount: R{amount.toFixed(2)}</p>
-                  <p>Status: {selectedClaim?.status || "N/A"}</p>
-                  <p>
-                    Created:{" "}
-                    {selectedClaim?.createdAt
-                      ? format(
-                          new Date(selectedClaim.createdAt),
-                          "MMM dd, yyyy HH:mm"
-                        )
-                      : "N/A"}
-                  </p>
-                  <p>
-                    Last Updated:{" "}
-                    {selectedClaim?.updatedAt
-                      ? format(
-                          new Date(selectedClaim.updatedAt),
-                          "MMM dd, yyyy HH:mm"
-                        )
-                      : "N/A"}
-                  </p>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Status:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.status}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Amount:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.amount}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Category:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.category}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Created:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.createdAt
+                        ? format(
+                            new Date(selectedClaim.createdAt),
+                            "MMM dd, yyyy HH:mm"
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground font-body uppercase">
+                      Last Updated:
+                    </p>
+                    <p className="font-body text-[10px] font-normal uppercase">
+                      {selectedClaim?.updatedAt
+                        ? format(
+                            new Date(selectedClaim.updatedAt),
+                            "MMM dd, yyyy HH:mm"
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -174,7 +220,7 @@ const ClaimDetailModalComponent = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full h-10 text-xs tracking-wider bg-transparent font-body hover:bg-transparent"
+            className="w-full h-10 text-[10px] tracking-wider bg-transparent font-body hover:bg-transparent"
           >
             CLOSE
           </Button>
@@ -182,16 +228,16 @@ const ClaimDetailModalComponent = ({
             onClick={() => {
               /* handle update */
             }}
-            disabled={isUpdating}
-            className="w-full h-10 text-xs tracking-wider text-white font-body bg-primary hover:bg-primary/90"
+            disabled
+            className="w-full h-10 text-[10px] tracking-wider text-white font-body bg-primary hover:bg-primary/90"
           >
             UPDATE CLAIM
           </Button>
           <Button
             variant="destructive"
             onClick={() => onDelete(selectedClaim.uid)}
-            disabled={isDeleting}
-            className="w-full h-10 text-xs tracking-wider font-body"
+            disabled
+            className="w-full h-10 text-[10px] font-normal tracking-wider font-body"
           >
             DELETE CLAIM
           </Button>

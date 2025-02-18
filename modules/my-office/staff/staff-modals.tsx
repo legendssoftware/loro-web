@@ -53,7 +53,7 @@ export const StaffModals = ({
                     </DialogHeader>
                     <StaffForm
                         onSubmit={onCreateSubmit}
-                        submitText={isCreating ? 'Adding...' : 'Add Staff Member'}
+                        submitText={isCreating ? 'Adding...' : 'Add User'}
                         isSubmitting={isCreating}
                     />
                 </DialogContent>
@@ -62,8 +62,8 @@ export const StaffModals = ({
             <Dialog open={isEditModalOpen} onOpenChange={onEditModalChange}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-medium font-body">Edit Staff Member</DialogTitle>
-                        <DialogDescription className="text-sm text-muted-foreground">
+                        <DialogTitle className="text-lg font-medium uppercase font-body">Edit Staff Member</DialogTitle>
+                        <DialogDescription className="text-[10px] uppercase text-muted-foreground font-body">
                             Update the staff members information below.
                         </DialogDescription>
                     </DialogHeader>
@@ -88,13 +88,13 @@ export const StaffModals = ({
                     </DialogHeader>
                     <DialogFooter className="flex gap-2">
                         <Button
-                            className="text-xs font-normal uppercase font-body"
+                            className="text-[10px] font-normal uppercase font-body"
                             variant="outline"
                             onClick={() => onDeactivateModalChange(false)}>
                             Cancel
                         </Button>
                         <Button
-                            className="text-xs font-normal uppercase font-body"
+                            className="text-[10px] font-normal uppercase font-body"
                             variant="destructive"
                             onClick={onDeactivate}
                             disabled={isDeactivating}>

@@ -131,10 +131,10 @@ const EditTaskFormComponent = ({
                 <div className="flex items-center w-full gap-2">
                     <Button
                         variant="secondary"
-                        size="lg"
+                        size="sm"
                         onClick={onUpdate}
                         disabled={isUpdating}
-                        className="w-full text-sm text-white uppercase font-body bg-violet-500 hover:bg-violet-600"
+                        className="w-full text-[10px] font-normal text-white uppercase font-body bg-violet-500 hover:bg-violet-600"
                     >
                         {isUpdating ? (
                             <div className="flex items-center gap-2">
@@ -142,15 +142,15 @@ const EditTaskFormComponent = ({
                                 <p className="text-xs font-normal text-white">Updating...</p>
                             </div>
                         ) : (
-                            <p className="text-xs font-normal text-white">Update Task</p>
+                            <p className="font-normal text-white">Update Task</p>
                         )}
                     </Button>
                     <Button
                         variant="destructive"
-                        size="lg"
+                        size="sm"
                         onClick={() => onDelete(task.uid)}
                         disabled={isDeleting}
-                        className="w-full text-sm uppercase font-body"
+                        className="w-full text-[10px] font-normal text-white uppercase font-body"
                     >
                         {isDeleting ? (
                             <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ const EditTaskFormComponent = ({
                                 <p className="text-xs font-normal text-white">Deleting...</p>
                             </div>
                         ) : (
-                            <p className="text-xs font-normal text-white">Delete Task</p>
+                            <p className="font-normal text-white">Delete Task</p>
                         )}
                     </Button>
                 </div>

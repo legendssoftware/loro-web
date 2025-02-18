@@ -30,15 +30,15 @@ const NewTaskModalComponent = ({
             <DialogTrigger asChild>
                 <Button variant="default" size="sm">
                     <Plus size={16} strokeWidth={1.5} className="text-white" />
-                    <p className="text-xs font-normal font-body uppercase text-white">Add</p>
+                    <p className="text-[10px] font-normal font-body uppercase text-white">Add</p>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[700px]">
                 <DialogHeader>
                     <DialogTitle>
-                        <span className="text-xl font-body text-card-foreground uppercase">New Task</span>
+                        <span className="text-xl uppercase font-body text-card-foreground">New Task</span>
                     </DialogTitle>
-                    <DialogDescription className="text-xs font-body text-card-foreground uppercase">
+                    <DialogDescription className="text-xs uppercase font-body text-card-foreground">
                         Create a new task by filling out the form below.
                     </DialogDescription>
                 </DialogHeader>

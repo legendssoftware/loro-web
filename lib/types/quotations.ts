@@ -10,6 +10,8 @@ export interface QuotationItem {
         uid: number;
         name: string;
         sku: string;
+        barcode: string;
+        productRef: string;
     };
 }
 

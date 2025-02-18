@@ -58,7 +58,7 @@ const QuotationDetailModalComponent = ({
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col bg-card [&_.close-button]:hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-normal font-body">
+            <DialogTitle className="text-lg font-normal uppercase font-body">
               QUOTATION #{selectedQuotation?.quotationNumber}
             </DialogTitle>
             <Badge
@@ -75,22 +75,42 @@ const QuotationDetailModalComponent = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h3 className="text-xs font-normal tracking-wider uppercase font-body">
-                  Client Information
+                  {selectedQuotation?.client?.name || "N/A"}
                 </h3>
                 <div className="text-xs font-normal font-body">
-                  <p className="font-normal">
-                    {selectedQuotation?.client?.name || "N/A"}
-                  </p>
-                  <p>
-                    Contact: {selectedQuotation?.client?.contactPerson || "N/A"}
-                  </p>
-                  <p>Email: {selectedQuotation?.client?.email || "N/A"}</p>
-                  <p>Phone: {selectedQuotation?.client?.phone || "N/A"}</p>
-                  <p>
-                    Alt Phone:{" "}
-                    {selectedQuotation?.client?.alternativePhone || "N/A"}
-                  </p>
-                  <p>Address: {selectedQuotation?.client?.address || "N/A"}</p>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Contact:
+                    </p>
+                    <p>{selectedQuotation?.client?.contactPerson || "N/A"}</p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Email:
+                    </p>
+                    <p>{selectedQuotation?.client?.email || "N/A"}</p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Phone:
+                    </p>
+                    <p>{selectedQuotation?.client?.phone || "N/A"}</p>
+                  </div>
+
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Alt Phone:
+                    </p>
+                    <p>
+                      {selectedQuotation?.client?.alternativePhone || "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Address:
+                    </p>
+                    <p>{selectedQuotation?.client?.address || "N/A"}</p>
+                  </div>
                   <p>
                     {[
                       selectedQuotation?.client?.city,
@@ -104,33 +124,51 @@ const QuotationDetailModalComponent = ({
               </div>
               <div className="space-y-2">
                 <h3 className="text-xs font-normal tracking-wider uppercase font-body">
-                  Quotation Details
+                  Quotation Details:
                 </h3>
                 <div className="text-xs font-normal font-body">
-                  <p>Reference: {selectedQuotation?.client?.ref || "N/A"}</p>
-                  <p>
-                    Date:{" "}
-                    {selectedQuotation?.quotationDate
-                      ? format(
-                          new Date(selectedQuotation.quotationDate),
-                          "MMM dd, yyyy"
-                        )
-                      : "N/A"}
-                  </p>
-                  <p>
-                    Valid Until:{" "}
-                    {selectedQuotation?.validUntil
-                      ? format(
-                          new Date(selectedQuotation.validUntil),
-                          "MMM dd, yyyy"
-                        )
-                      : "Not specified"}
-                  </p>
-                  <p>Total Items: {totalItems}</p>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Reference:
+                    </p>
+                    <p>{selectedQuotation?.client?.ref || "N/A"}</p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Date:
+                    </p>
+                    <p>
+                      {selectedQuotation?.quotationDate
+                        ? format(
+                            new Date(selectedQuotation.quotationDate),
+                            "MMM dd, yyyy"
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Valid Until
+                    </p>
+                    <p>
+                      {selectedQuotation?.validUntil
+                        ? format(
+                            new Date(selectedQuotation.validUntil),
+                            "MMM dd, yyyy"
+                          )
+                        : "Not specified"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Total Items
+                    </p>
+                    <p>{totalItems}</p>
+                  </div>
                   <div className="pt-2 mt-2 border-t">
-                    <span className="text-xs font-normal font-body">
+                    <h3 className="text-xs font-normal tracking-wider uppercase font-body">
                       Created By:
-                    </span>
+                    </h3>
                     {selectedQuotation?.placedBy ? (
                       <div className="mt-1">
                         <div>{`${selectedQuotation.placedBy.name || ""} ${
@@ -163,41 +201,45 @@ const QuotationDetailModalComponent = ({
               </h3>
               <div className="border rounded-lg">
                 <table className="w-full">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="py-2 px-4 text-left text-[10px] font-normal font-body uppercase tracking-wider">
-                        Item
-                      </th>
-                      <th className="py-2 px-4 text-right text-[10px] font-normal font-body uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="py-2 px-4 text-right text-[10px] font-normal font-body uppercase tracking-wider">
-                        Total
-                      </th>
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-4 py-2 text-[10px] font-normal uppercase tracking-wider text-left font-body">Product</th>
+                      <th className="px-4 py-2 text-[10px] font-normal uppercase tracking-wider text-left font-body">SKU/Reference</th>
+                      <th className="px-4 py-2 text-[10px] font-normal uppercase tracking-wider text-center font-body">Quantity</th>
+                      <th className="px-4 py-2 text-[10px] font-normal uppercase tracking-wider text-right font-body">Unit Price</th>
+                      <th className="px-4 py-2 text-[10px] font-normal uppercase tracking-wider text-right font-body">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="font-body">
-                    {selectedQuotation?.quotationItems?.map((item) => (
-                      <tr key={item?.uid} className="border-t">
-                        <td className="px-4 py-2 text-xs font-normal">
-                          Item #{item?.uid || "N/A"}
+                  <tbody className="divide-y">
+                    {selectedQuotation?.quotationItems?.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-[10px] uppercase font-normal font-body">
+                          {item?.product?.name || "N/A"}
                         </td>
-                        <td className="px-4 py-2 text-xs font-normal text-right">
+                        <td className="px-4 py-2 text-[10px] uppercase font-normal font-body">
+                          <div className="flex flex-col">
+                            <span>SKU: {item?.product?.sku || "N/A"}</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              Ref: {item?.product?.productRef || "N/A"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-[10px] font-normal text-center font-body">
                           {item?.quantity || 0}
                         </td>
-                        <td className="px-4 py-2 text-xs font-normal text-right">
+                        <td className="px-4 py-2 text-[10px] font-normal text-right font-body">
+                          R{Number(item?.unitPrice || 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-[10px] font-normal text-right font-body">
                           R{Number(item?.totalPrice || 0).toFixed(2)}
                         </td>
                       </tr>
                     ))}
                     <tr className="border-t bg-muted/50">
-                      <td
-                        colSpan={2}
-                        className="py-2 px-4 text-[10px] font-normal uppercase tracking-wider text-right"
-                      >
+                      <td colSpan={4} className="py-2 px-4 text-[10px] font-normal uppercase tracking-wider text-right font-body">
                         Total Amount
                       </td>
-                      <td className="px-4 py-2 text-xs font-normal text-right">
+                      <td className="px-4 py-2 text-[16px] font-normal text-right font-body">
                         R{totalAmount.toFixed(2)}
                       </td>
                     </tr>
@@ -213,19 +255,29 @@ const QuotationDetailModalComponent = ({
                   Shipping Information
                 </h3>
                 <div className="text-xs font-normal font-body">
-                  <p>
-                    Method:{" "}
-                    {selectedQuotation?.shippingMethod || "Not specified"}
-                  </p>
-                  <p>
-                    Instructions:{" "}
-                    {selectedQuotation?.shippingInstructions || "None"}
-                  </p>
-                  <p>
-                    Packaging:{" "}
-                    {selectedQuotation?.packagingRequirements ||
-                      "Standard packaging"}
-                  </p>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Method:
+                    </p>
+                    <p>
+                      {selectedQuotation?.shippingMethod || "Not specified"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Packaging:
+                    </p>
+                    <p>
+                      {selectedQuotation?.packagingRequirements ||
+                        "Standard packaging"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Instructions:
+                    </p>
+                    <p>{selectedQuotation?.shippingInstructions || "None"}</p>
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -233,29 +285,41 @@ const QuotationDetailModalComponent = ({
                   Additional Details
                 </h3>
                 <div className="text-xs font-normal font-body">
-                  <p>
-                    Created:{" "}
-                    {selectedQuotation?.createdAt
-                      ? format(
-                          new Date(selectedQuotation.createdAt),
-                          "MMM dd, yyyy HH:mm"
-                        )
-                      : "N/A"}
-                  </p>
-                  <p>
-                    Last Updated:{" "}
-                    {selectedQuotation?.updatedAt
-                      ? format(
-                          new Date(selectedQuotation.updatedAt),
-                          "MMM dd, yyyy HH:mm"
-                        )
-                      : "N/A"}
-                  </p>
-                  {selectedQuotation?.resellerCommission && (
-                    <p>
-                      Commission: R
-                      {Number(selectedQuotation.resellerCommission).toFixed(2)}
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Created:
                     </p>
+                    <p>
+                      {selectedQuotation?.createdAt
+                        ? format(
+                            new Date(selectedQuotation.createdAt),
+                            "MMM dd, yyyy HH:mm"
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                      Last Updated:
+                    </p>
+                    <p>
+                      {selectedQuotation?.updatedAt
+                        ? format(
+                            new Date(selectedQuotation.updatedAt),
+                            "MMM dd, yyyy HH:mm"
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  {selectedQuotation?.resellerCommission && (
+                    <div className="flex flex-row items-center gap-1">
+                      <p className="text-[10px] font-normal uppercase text-muted-foreground">
+                        Commission: R
+                        {Number(selectedQuotation.resellerCommission).toFixed(
+                          2
+                        )}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>

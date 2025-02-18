@@ -73,7 +73,7 @@ const QuotationListComponent = ({
         quotation.placedBy.uid.toString() === userFilter;
       const matchesCategory =
         categoryFilter === "all" ||
-        quotation.quotationItems.some(item => item.product.sku === categoryFilter);
+        quotation.quotationItems?.some(item => item?.product?.sku === categoryFilter) || false;
       const matchesSearch = quotation.quotationNumber
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
@@ -141,8 +141,8 @@ const QuotationListComponent = ({
     const uniqueSkus = useMemo(() => {
       const skus = new Set<string>();
       quotations.forEach(quotation => {
-        quotation.quotationItems.forEach(item => {
-          if (item.product.sku) {
+        quotation.quotationItems?.forEach(item => {
+          if (item?.product?.sku) {
             skus.add(item.product.sku);
           }
         });

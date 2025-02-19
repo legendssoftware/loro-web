@@ -99,7 +99,7 @@ export const fetchUsers = async (config: RequestConfig): Promise<{ users: User[]
     }
 }
 
-export const createUser = async (userData: CreateUserDTO, config: RequestConfig): Promise<User> => {
+export const createUser = async (userData: CreateUserDTO, config: RequestConfig): Promise<{ message: string }> => {
     try {
         const response = await axios.post(`${API_URL}/user`, userData, {
             headers: {
@@ -111,16 +111,13 @@ export const createUser = async (userData: CreateUserDTO, config: RequestConfig)
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            if (error.response) {
-                throw new Error(error.response.data.message || 'Failed to create user')
-            }
-            throw new Error('Network error occurred')
+            return { message: error.message }
         }
-        throw error
+        return { message: 'An unknown error occurred' }
     }
 }
 
-export const updateUser = async (uid: number, userData: UpdateUserDTO, config: RequestConfig): Promise<User> => {
+export const updateUser = async (uid: number, userData: UpdateUserDTO, config: RequestConfig): Promise<{ message: string }> => {
     try {
         const response = await axios.patch(`${API_URL}/user/${uid}`, userData, {
             headers: {
@@ -132,12 +129,9 @@ export const updateUser = async (uid: number, userData: UpdateUserDTO, config: R
         return response.data
     } catch (error) {
         if (error instanceof AxiosError) {
-            if (error.response) {
-                throw new Error(error.response.data.message || 'Failed to update user')
-            }
-            throw new Error('Network error occurred')
+            return { message: error.message }
         }
-        throw error
+        return { message: 'An unknown error occurred' }
     }
 }
 
@@ -151,10 +145,6 @@ export const deleteUser = async (uid: number, config: RequestConfig) => {
         })
         return response.data
     } catch (error) {
-        if (error instanceof AxiosError) {
-            return { message: error.message }
-        }
-
         return error
     }
 }
@@ -169,10 +159,6 @@ export const restoreUser = async (uid: number, config: RequestConfig) => {
         })
         return response.data
     } catch (error) {
-        if (error instanceof AxiosError) {
-            return { message: error.message }
-        }
-
         return error
     }
 } 

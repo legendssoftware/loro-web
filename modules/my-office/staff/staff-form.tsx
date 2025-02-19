@@ -17,9 +17,23 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchOrganizations } from "@/helpers/organizations";
 import { useSessionStore } from "@/store/use-session-store";
 
+interface FormSubmitData {
+  name?: string;
+  surname?: string;
+  email?: string;
+  username?: string;
+  phone?: string;
+  accessLevel?: AccessLevel;
+  status?: AccountStatus;
+  password?: string;
+  photoURL?: string;
+  branch?: { uid: number };
+  organisation?: { uid: number };
+}
+
 interface StaffFormProps {
   user?: User;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (data: FormSubmitData) => void;
   submitText: string;
   isSubmitting?: boolean;
 }
@@ -73,7 +87,43 @@ export const StaffForm = ({
   };
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 py-4">
+    <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+      const rawData = Object.fromEntries(formData.entries());
+      
+      const data = {
+        name: String(rawData.name || ''),
+        surname: String(rawData.surname || ''),
+        email: String(rawData.email || ''),
+        username: String(rawData.username || ''),
+        phone: String(rawData.phone || ''),
+        accessLevel: String(rawData.accessLevel || '') as AccessLevel,
+        status: String(rawData.status || '') as AccountStatus,
+        password: String(rawData.password || ''),
+        photoURL: String(rawData.photoURL || ''),
+        branchId: String(rawData.branchId || ''),
+        organisationRef: String(rawData.organisationRef || '')
+      };
+      
+      // Transform data to match server DTO format, only including changed values
+      const transformedData: FormSubmitData = {
+        // Only include non-empty values
+        ...(data.name && { name: data.name }),
+        ...(data.surname && { surname: data.surname }),
+        ...(data.email && { email: data.email }),
+        ...(data.username && { username: data.username }),
+        ...(data.phone && { phone: data.phone }),
+        ...(data.accessLevel && { accessLevel: data.accessLevel }),
+        ...(data.password && data.password !== '' && { password: data.password }),
+        ...(data.photoURL && { photoURL: data.photoURL }),
+        // Transform branch and org refs to match server format
+        ...(data.branchId && data.branchId !== '' && { branch: { uid: Number(data.branchId) } }),
+        ...(data.organisationRef && data.organisationRef !== '' && { organisation: { uid: Number(data.organisationRef) } })
+      };
+      
+      onSubmit(transformedData);
+    }} className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label
@@ -231,7 +281,7 @@ export const StaffForm = ({
                   disabled
                   className="font-body text-[10px] uppercase text-muted-foreground"
                 >
-                  No organizations available
+                  No org (s) available
                 </SelectItem>
               ) : (
                 organizations.map((org) => (
@@ -300,53 +350,21 @@ export const StaffForm = ({
         </div>
       </div>
       {user && (
-        <>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="status"
-              className="font-body font-normal uppercase text-[10px]"
-            >
-              Account Status
-            </Label>
-            <Select name="status" defaultValue={user?.status}>
-              <SelectTrigger className="bg-background">
-                <SelectValue
-                  placeholder="Select status"
-                  className="font-body text-[12px] uppercase"
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value={AccountStatus.ACTIVE}
-                  className="font-body text-[10px] uppercase"
-                >
-                  Active
-                </SelectItem>
-                <SelectItem
-                  value={AccountStatus.INACTIVE}
-                  className="font-body text-[10px] uppercase"
-                >
-                  Inactive
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="password"
-              className="font-body font-normal uppercase text-[10px]"
-            >
-              Change Password
-            </Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="leave blank to keep current password"
-              className="text-[12px]"
-            />
-          </div>
-        </>
+        <div className="grid gap-2">
+          <Label
+            htmlFor="password"
+            className="font-body font-normal uppercase text-[10px]"
+          >
+            Change Password
+          </Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="leave blank to keep current password"
+            className="text-[12px]"
+          />
+        </div>
       )}
       {!user && (
         <div className="grid gap-2">

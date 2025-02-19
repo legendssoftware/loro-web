@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createUser, fetchUsers, updateUser, User, CreateUserDTO, UpdateUserDTO, AccessLevel, AccountStatus } from "@/helpers/users"
+import { createUser, fetchUsers, updateUser, User, CreateUserDTO, UpdateUserDTO, AccountStatus } from "@/helpers/users"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
 import { PageLoader } from "@/components/page-loader"
@@ -164,43 +164,13 @@ export const StaffModule = () => {
         }
     })
 
-    const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.currentTarget)
-        const userData: CreateUserDTO = {
-            email: formData.get('email') as string,
-            username: formData.get('username') as string,
-            name: formData.get('name') as string,
-            surname: formData.get('surname') as string,
-            phone: formData.get('phone') as string,
-            accessLevel: formData.get('accessLevel') as AccessLevel,
-            password: formData.get('password') as string,
-            status: AccountStatus.ACTIVE,
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png', // Default placeholder image
-            organisationRef: Number(formData.get('organisationRef')), // Convert to number
-            branchId: Number(formData.get('branchId')), // Convert to number
-        }
-        createUserMutation.mutate(userData)
+    const handleCreateSubmit = (formData: CreateUserDTO) => {
+        createUserMutation.mutate(formData)
     }
 
-    const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const handleEditSubmit = (formData: UpdateUserDTO) => {
         if (!selectedUser) return
-
-        const formData = new FormData(e.currentTarget)
-        const userData: UpdateUserDTO = {
-            email: formData.get('email') as string,
-            username: formData.get('username') as string,
-            name: formData.get('name') as string,
-            surname: formData.get('surname') as string,
-            phone: formData.get('phone') as string,
-            accessLevel: formData.get('accessLevel') as AccessLevel,
-            status: formData.get('status') as AccountStatus,
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png',
-            organisationRef: Number(formData.get('organisationRef')), // Convert to number
-            branchId: Number(formData.get('branchId')), // Convert to number
-        }
-        updateUserMutation.mutate({ uid: selectedUser.uid, userData })
+        updateUserMutation.mutate({ uid: selectedUser.uid, userData: formData })
     }
 
     const handleDeactivate = () => {

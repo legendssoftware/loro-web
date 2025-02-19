@@ -7,7 +7,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { User } from "@/helpers/users"
+import { User, CreateUserDTO, UpdateUserDTO } from "@/helpers/users"
 import { StaffForm } from "./staff-form"
 
 interface StaffModalsProps {
@@ -18,8 +18,8 @@ interface StaffModalsProps {
     onCreateModalChange: (open: boolean) => void
     onEditModalChange: (open: boolean) => void
     onDeactivateModalChange: (open: boolean) => void
-    onCreateSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-    onEditSubmit: (e: React.FormEvent<HTMLFormElement>) => void
+    onCreateSubmit: (data: CreateUserDTO) => void
+    onEditSubmit: (data: UpdateUserDTO) => void
     onDeactivate: () => void
     isCreating: boolean
     isUpdating: boolean

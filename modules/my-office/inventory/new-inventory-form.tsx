@@ -62,7 +62,17 @@ const formSchema = z.object({
       message: "Stock quantity must be a non-negative number.",
     }),
   sku: z.string(),
-  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "ACTIVE"]) as z.ZodType<ProductStatus>,
+  status: z.enum([
+    "active",
+    "inactive",
+    "hidden",
+    "special",
+    "new",
+    "discontinued",
+    "bestseller",
+    "hotdeals",
+    "outofstock"
+  ]),
   imageUrl: z.string().url().optional().or(z.literal("")),
   warehouseLocation: z.string(),
   productReferenceCode: z.string().min(2, {
@@ -101,7 +111,7 @@ export const NewInventoryForm = ({
       weight: "0",
       stockQuantity: "0",
       sku: "",
-      status: "AVAILABLE" as ProductStatus,
+      status: "active" as ProductStatus,
       imageUrl: "",
       warehouseLocation: "",
       productReferenceCode: "",

@@ -76,6 +76,7 @@ const InventoryListComponent = ({
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [periodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('asc');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -111,15 +112,29 @@ const InventoryListComponent = ({
   );
 
   const filteredProducts = useMemo(() => {
-    return products.data.filter((product) => {
+    const searchTerm = searchQuery.trim().toLowerCase();
+    
+    const filtered = products.data.filter((product) => {
       const matchesStatus =
         statusFilter === "all" ||
-        product.status?.toUpperCase() === statusFilter;
+        product.status?.toUpperCase().trim() === statusFilter.trim();
       const matchesCategory =
-        categoryFilter === "all" || product.category === categoryFilter;
-      const matchesSearch =
-        product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product?.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        categoryFilter === "all" || 
+        product.category?.trim() === categoryFilter.trim();
+      
+      // Enhanced search across multiple fields with trimmed values
+      const searchableFields = [
+        product?.name,
+        product?.description,
+        product?.category,
+        product?.warehouseLocation,
+        product?.productRef,
+        product?.sku,
+        product?.brand
+      ].map(field => (field || '').trim().toLowerCase());
+      
+      const matchesSearch = searchTerm === '' || 
+        searchableFields.some(field => field.includes(searchTerm));
 
       const matchesPeriod = (() => {
         if (periodFilter === "all") return true;
@@ -130,7 +145,16 @@ const InventoryListComponent = ({
 
       return matchesStatus && matchesCategory && matchesSearch && matchesPeriod;
     });
-  }, [products.data, statusFilter, categoryFilter, searchQuery, periodFilter]);
+
+    // Sort the filtered products with trimmed values
+    return [...filtered].sort((a, b) => {
+      const nameA = (a.name || '').trim().toLowerCase();
+      const nameB = (b.name || '').trim().toLowerCase();
+      return orderBy === 'asc' 
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
+  }, [products.data, statusFilter, categoryFilter, searchQuery, periodFilter, orderBy]);
 
   if (isLoading) {
     return (
@@ -150,7 +174,7 @@ const InventoryListComponent = ({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-end gap-2">
           <Input
-            placeholder="search..."
+            placeholder="search name, description, category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="max-w-xs bg-card"
@@ -197,6 +221,25 @@ const InventoryListComponent = ({
                   {category.label}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={orderBy} onValueChange={(value: 'asc' | 'desc') => setOrderBy(value)}>
+            <SelectTrigger className="w-[180px] bg-card">
+              <SelectValue placeholder="↑ Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="asc"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                sort A - Z
+              </SelectItem>
+              <SelectItem
+                value="desc"
+                className="text-[10px] font-normal uppercase font-body"
+              >
+                sort Z - A
+              </SelectItem>
             </SelectContent>
           </Select>
           <Button

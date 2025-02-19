@@ -49,7 +49,17 @@ const formSchema = z.object({
   weight: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
     message: "Weight must be a non-negative number.",
   }),
-  status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "ACTIVE"]),
+  status: z.enum([
+    "active",
+    "inactive",
+    "hidden",
+    "special",
+    "new",
+    "discontinued",
+    "bestseller",
+    "hotdeals",
+    "outofstock"
+  ]),
   imageUrl: z.string().url().optional().or(z.literal("")),
   isOnPromotion: z.boolean().default(false),
 });

@@ -69,11 +69,15 @@ export const InventoryDetailModal = ({
             <div className="flex items-center gap-2">
               <Badge
                 variant={
-                  selectedProduct?.status === "AVAILABLE"
+                  selectedProduct?.status === "active"
                     ? "success"
-                    : selectedProduct?.status === "LOW_STOCK"
+                    : selectedProduct?.status === "outofstock"
+                    ? "destructive"
+                    : selectedProduct?.status === "inactive"
+                    ? "secondary"
+                    : selectedProduct?.status === "hotdeals" || selectedProduct?.status === "bestseller"
                     ? "warning"
-                    : "destructive"
+                    : "outline"
                 }
                 className="text-[10px] font-normal uppercase font-body"
               >
@@ -281,8 +285,8 @@ export const InventoryDetailModal = ({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className="font-normal uppercase text-md font-body" >Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-[10px] font-normal uppercase font-body">
                       This action cannot be undone. This will permanently delete
                       the product and remove it from our servers.
                     </AlertDialogDescription>

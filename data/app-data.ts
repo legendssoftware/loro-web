@@ -133,29 +133,41 @@ export const quotationStatuses = [
 
 export const productStatuses = [
   {
-    value: "AVAILABLE",
-    label: "Available",
-  },
-  {
-    value: "LOW_STOCK",
-    label: "Low Stock",
-  },
-  {
-    value: "OUT_OF_STOCK",
-    label: "Out of Stock",
-  },
-  {
-    value: "DISCONTINUED",
-    label: "Discontinued",
-  },
-  {
-    value: "ACTIVE",
+    value: "active",
     label: "Active",
   },
   {
-    value: "OTHER",
-    label: "Other",
+    value: "inactive",
+    label: "Inactive",
   },
+  {
+    value: "hidden",
+    label: "Hidden",
+  },
+  {
+    value: "special",
+    label: "Special",
+  },
+  {
+    value: "new",
+    label: "New",
+  },
+  {
+    value: "discontinued",
+    label: "Discontinued",
+  },
+  {
+    value: "bestseller",
+    label: "Best Seller",
+  },
+  {
+    value: "hotdeals",
+    label: "Hot Deals",
+  },
+  {
+    value: "outofstock",
+    label: "Out of Stock",
+  }
 ] as const;
 
 export const productCategories = [

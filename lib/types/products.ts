@@ -1,4 +1,13 @@
-export type ProductStatus = "AVAILABLE" | "LOW_STOCK" | "OUT_OF_STOCK" | "ACTIVE";
+export type ProductStatus = 
+  | "active"
+  | "inactive"
+  | "hidden"
+  | "special"
+  | "new"
+  | "discontinued"
+  | "bestseller"
+  | "hotdeals"
+  | "outofstock";
 
 export type Product = {
   uid: number;

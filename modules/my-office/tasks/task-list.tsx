@@ -14,8 +14,8 @@ import {
 import { NewTaskModal } from "./new-task-modal";
 import { CreateTaskDTO } from "@/helpers/tasks";
 import { useSessionStore } from "@/store/use-session-store";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { createTask, fetchTasks } from "@/helpers/tasks";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createTask } from "@/helpers/tasks";
 import { RequestConfig } from "@/lib/types/tasks";
 import { showToast } from "@/lib/utils/toast";
 import { taskStatuses } from "@/data/app-data";
@@ -29,7 +29,6 @@ import {
 import {
   PeriodFilter,
   PeriodFilterValue,
-  getDateRangeFromPeriod,
 } from "@/modules/common/period-filter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -46,11 +45,13 @@ const containerVariants = {
 };
 
 interface TaskListProps {
+  tasks: ExistingTask[];
   onTaskClick: (task: ExistingTask) => void;
-  onCreateClick: () => void;
+  onCreateClick?: () => void;
+  isLoading?: boolean;
 }
 
-const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
+const TaskListComponent = ({ tasks, onTaskClick, isLoading = false }: TaskListProps) => {
   const { accessToken } = useSessionStore();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -68,6 +69,47 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
       token: accessToken || "",
     },
   };
+
+  const uniqueAssignees = useMemo(() => {
+    const assigneesSet = new Set<number>();
+    const assigneesList: User[] = [];
+
+    tasks.forEach((task) => {
+      task.assignees?.forEach((assignee) => {
+        if (
+          !assigneesSet.has(assignee.uid) &&
+          "username" in assignee &&
+          "name" in assignee &&
+          "surname" in assignee &&
+          "email" in assignee
+        ) {
+          assigneesSet.add(assignee.uid);
+          assigneesList.push(assignee as User);
+        }
+      });
+    });
+
+    return assigneesList;
+  }, [tasks]);
+
+  const uniqueClients = useMemo(() => {
+    const clientsSet = new Set<number>();
+    const clientsList: { uid: number; name: string }[] = [];
+
+    tasks.forEach((task) => {
+      task.clients?.forEach((client) => {
+        if (!clientsSet.has(client.uid)) {
+          clientsSet.add(client.uid);
+          clientsList.push({
+            uid: client.uid,
+            name: client.name || "Unknown Client",
+          });
+        }
+      });
+    });
+
+    return clientsList.sort((a, b) => a.name.localeCompare(b.name));
+  }, [tasks]);
 
   const createTaskMutation = useMutation({
     mutationFn: (data: CreateTaskDTO) => createTask(data, config),
@@ -92,41 +134,15 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
     [createTaskMutation]
   );
 
-  const { data: tasksData, isLoading } = useQuery({
-    queryKey: [
-      "tasks",
-      currentPage,
-      statusFilter,
-      clientFilter,
-      assigneeFilter,
-      searchQuery,
-      periodFilter,
-    ],
-    queryFn: () =>
-      fetchTasks({
-        ...config,
-        page: currentPage,
-        limit: tasksPerPage,
-        filters: {
-          status: statusFilter !== "all" ? statusFilter : undefined,
-          clientId: clientFilter !== "all" ? Number(clientFilter) : undefined,
-          assigneeId:
-            assigneeFilter !== "all" ? Number(assigneeFilter) : undefined,
-          search: searchQuery || undefined,
-          startDate:
-            periodFilter !== "all"
-              ? getDateRangeFromPeriod(periodFilter).from
-              : undefined,
-          endDate:
-            periodFilter !== "all"
-              ? getDateRangeFromPeriod(periodFilter).to
-              : undefined,
-        },
-      }),
-    enabled: !!accessToken,
-  });
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <PageLoader />
+      </div>
+    );
+  }
 
-  const totalPages = tasksData?.meta?.totalPages || 1;
+  const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -139,47 +155,6 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
       setCurrentPage((prev) => prev - 1);
     }
   };
-
-  const uniqueAssignees = useMemo(() => {
-    const assigneesSet = new Set<number>();
-    const assigneesList: User[] = [];
-
-    tasksData?.data?.forEach((task) => {
-      task.assignees?.forEach((assignee) => {
-        if (
-          !assigneesSet.has(assignee.uid) &&
-          "username" in assignee &&
-          "name" in assignee &&
-          "surname" in assignee &&
-          "email" in assignee
-        ) {
-          assigneesSet.add(assignee.uid);
-          assigneesList.push(assignee as User);
-        }
-      });
-    });
-
-    return assigneesList;
-  }, [tasksData?.data]);
-
-  const uniqueClients = useMemo(() => {
-    const clientsSet = new Set<number>();
-    const clientsList: { uid: number; name: string }[] = [];
-
-    tasksData?.data?.forEach((task) => {
-      task.clients?.forEach((client) => {
-        if (!clientsSet.has(client.uid)) {
-          clientsSet.add(client.uid);
-          clientsList.push({
-            uid: client.uid,
-            name: client.name || "Unknown Client",
-          });
-        }
-      });
-    });
-
-    return clientsList.sort((a, b) => a.name.localeCompare(b.name));
-  }, [tasksData]);
 
   const Header = () => {
     return (
@@ -295,15 +270,7 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <PageLoader />
-      </div>
-    );
-  }
-
-  if (!tasksData?.data?.length) {
+  if (!tasks.length) {
     return (
       <div className="space-y-4">
         <Header />
@@ -329,7 +296,7 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
         animate="show"
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
-        {tasksData?.data?.map((task) => (
+        {tasks.map((task) => (
           <TaskCard
             key={task?.uid}
             task={task as ExistingTask}
@@ -337,7 +304,7 @@ const TaskListComponent = ({ onTaskClick }: TaskListProps) => {
           />
         ))}
       </motion.div>
-      {!!tasksData?.meta?.total && tasksData.meta.total > tasksPerPage && (
+      {!!tasks.length && tasks.length > tasksPerPage && (
         <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"

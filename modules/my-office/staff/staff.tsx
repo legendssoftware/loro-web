@@ -12,7 +12,7 @@ export const StaffModule = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false)
-    const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
     const [currentPage, setCurrentPage] = useState(1)
     const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -106,7 +106,7 @@ export const StaffModule = () => {
                 icon: '✅',
             })
             setIsEditModalOpen(false)
-            setSelectedUser(null)
+            setSelectedUser(undefined)
         },
         onError: (error: Error) => {
             const errorMessage = error.message === "item(s) not found"
@@ -152,7 +152,7 @@ export const StaffModule = () => {
                 icon: '✅',
             })
             setIsDeactivateModalOpen(false)
-            setSelectedUser(null)
+            setSelectedUser(undefined)
         },
         onError: (error: Error) => {
             const errorMessage = error.message === "item(s) not found"
@@ -222,6 +222,12 @@ export const StaffModule = () => {
         setCurrentPage(1) // Reset to first page when filtering
     }
 
+    const handleModalClose = () => {
+        setSelectedUser(undefined)
+        setIsEditModalOpen(false)
+        setIsDeactivateModalOpen(false)
+    }
+
     if (isLoading) {
         return (
             <div className="flex flex-col w-full h-full gap-4">
@@ -254,8 +260,8 @@ export const StaffModule = () => {
                 isDeactivateModalOpen={isDeactivateModalOpen}
                 selectedUser={selectedUser}
                 onCreateModalChange={setIsCreateModalOpen}
-                onEditModalChange={setIsEditModalOpen}
-                onDeactivateModalChange={setIsDeactivateModalOpen}
+                onEditModalChange={handleModalClose}
+                onDeactivateModalChange={handleModalClose}
                 onCreateSubmit={handleCreateSubmit}
                 onEditSubmit={handleEditSubmit}
                 onDeactivate={handleDeactivate}

@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchOrganizations } from "@/helpers/organizations";
 import { useSessionStore } from "@/store/use-session-store";
 
-interface FormSubmitData {
+export interface FormSubmitData {
   name?: string;
   surname?: string;
   email?: string;

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchClaims, deleteClaim, updateClaim } from "@/helpers/claims"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
-import { Claim, UpdateClaimDTO } from "@/lib/types/claims"
+import { Claim, UpdateClaimDTO, ClaimCategory } from "@/lib/types/claims"
 import toast from 'react-hot-toast'
 import { ClaimList } from "./claim-list"
 import { ClaimDetailModal } from "./claim-detail-modal"
@@ -111,6 +111,14 @@ export const ClaimsModule = () => {
                 onOpenChange={setIsClaimDetailModalOpen}
                 selectedClaim={selectedClaim}
                 onDelete={(uid) => deleteClaimMutation.mutate(uid)}
+                onUpdate={(uid, data) => updateClaimMutation.mutate({ 
+                    ref: uid, 
+                    updatedClaim: { 
+                        ...data, 
+                        amount: Number(data.amount),
+                        category: data.category as ClaimCategory
+                    } 
+                })}
                 isUpdating={updateClaimMutation.isPending}
                 isDeleting={deleteClaimMutation.isPending}
             />

@@ -7,23 +7,23 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { User, CreateUserDTO, UpdateUserDTO } from "@/helpers/users"
-import { StaffForm } from "./staff-form"
+import { User, CreateUserDTO, UpdateUserDTO, AccountStatus, AccessLevel } from "@/helpers/users"
+import { StaffForm, FormSubmitData } from "./staff-form"
 
 interface StaffModalsProps {
     isCreateModalOpen: boolean
     isEditModalOpen: boolean
     isDeactivateModalOpen: boolean
-    selectedUser: User | null
+    selectedUser?: User
     onCreateModalChange: (open: boolean) => void
     onEditModalChange: (open: boolean) => void
     onDeactivateModalChange: (open: boolean) => void
     onCreateSubmit: (data: CreateUserDTO) => void
     onEditSubmit: (data: UpdateUserDTO) => void
-    onDeactivate: () => void
-    isCreating: boolean
-    isUpdating: boolean
-    isDeactivating: boolean
+    onDeactivate: (user: User) => void
+    isCreating?: boolean
+    isUpdating?: boolean
+    isDeactivating?: boolean
 }
 
 export const StaffModals = ({
@@ -41,6 +41,51 @@ export const StaffModals = ({
     isUpdating,
     isDeactivating,
 }: StaffModalsProps) => {
+    const handleCreateSubmit = (data: FormSubmitData) => {
+        if (!data.name || !data.surname || !data.email || !data.username || !data.phone || !data.password) {
+            return; // Form validation should prevent this case
+        }
+
+        const createDTO: CreateUserDTO = {
+            name: data.name,
+            surname: data.surname,
+            email: data.email,
+            username: data.username,
+            phone: data.phone,
+            password: data.password,
+            photoURL: data.photoURL || '',
+            accessLevel: data.accessLevel || AccessLevel.USER,
+            status: data.status || AccountStatus.ACTIVE,
+            userref: data.username,
+            isDeleted: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            branch: data.branch ? { uid: data.branch.uid, name: 'Default Branch' } : undefined,
+            organisation: data.organisation ? { uid: data.organisation.uid, name: 'Default Organisation' } : undefined,
+            organisationRef: data.organisation?.uid.toString(),
+        };
+        onCreateSubmit(createDTO);
+    };
+
+    const handleEditSubmit = (data: FormSubmitData) => {
+        const updateDTO: UpdateUserDTO = {
+            ...(data.name && { name: data.name }),
+            ...(data.surname && { surname: data.surname }),
+            ...(data.email && { email: data.email }),
+            ...(data.username && { username: data.username }),
+            ...(data.phone && { phone: data.phone }),
+            ...(data.accessLevel && { accessLevel: data.accessLevel }),
+            ...(data.password && { password: data.password }),
+            ...(data.photoURL && { photoURL: data.photoURL }),
+            ...(data.branch && { branch: { uid: data.branch.uid, name: 'Default Branch' } }),
+            ...(data.organisation && { 
+                organisation: { uid: data.organisation.uid, name: 'Default Organisation' },
+                organisationRef: data.organisation.uid.toString(),
+            }),
+        };
+        onEditSubmit(updateDTO);
+    };
+
     return (
         <>
             <Dialog open={isCreateModalOpen} onOpenChange={onCreateModalChange}>
@@ -52,7 +97,7 @@ export const StaffModals = ({
                         </DialogDescription>
                     </DialogHeader>
                     <StaffForm
-                        onSubmit={onCreateSubmit}
+                        onSubmit={handleCreateSubmit}
                         submitText={isCreating ? 'Adding...' : 'Add User'}
                         isSubmitting={isCreating}
                     />
@@ -70,7 +115,7 @@ export const StaffModals = ({
                     {selectedUser && (
                         <StaffForm
                             user={selectedUser}
-                            onSubmit={onEditSubmit}
+                            onSubmit={handleEditSubmit}
                             submitText={isUpdating ? 'Saving...' : 'Update Profile'}
                             isSubmitting={isUpdating}
                         />
@@ -82,21 +127,22 @@ export const StaffModals = ({
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-medium uppercase font-body">Deactivate Staff Member</DialogTitle>
-                        <DialogDescription className="text-sm uppercase text-card-foreground">
-                            Are you sure you want to deactivate this staff member? This action can be reversed later.
+                        <DialogDescription className="text-[10px] uppercase text-muted-foreground font-body">
+                            Are you sure you want to deactivate this staff member?
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="flex gap-2">
+                    <div className="py-4">
+                        <p className="text-[12px] font-normal font-body">
+                            This action will deactivate the staff member&apos;s account. They will no longer be able to access the system.
+                        </p>
+                    </div>
+                    <DialogFooter>
                         <Button
-                            className="text-[10px] font-normal uppercase font-body"
-                            variant="outline"
-                            onClick={() => onDeactivateModalChange(false)}>
-                            Cancel
-                        </Button>
-                        <Button
-                            className="text-[10px] font-normal uppercase font-body"
+                            type="button"
                             variant="destructive"
-                            onClick={onDeactivate}
+                            size="sm"
+                            className="text-[10px] font-normal uppercase font-body"
+                            onClick={() => selectedUser && onDeactivate(selectedUser)}
                             disabled={isDeactivating}>
                             {isDeactivating ? 'Deactivating...' : 'Deactivate'}
                         </Button>

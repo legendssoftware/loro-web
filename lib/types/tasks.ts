@@ -117,6 +117,8 @@ export interface ExistingTask extends Omit<TaskFormData, 'deadline' | 'repetitio
     }[];
 }
 
+export type TaskFilterValue = string | number | boolean | Date | null | undefined;
+
 export interface RequestConfig {
     headers: {
         token?: string;
@@ -128,6 +130,16 @@ export interface RequestConfig {
     filters?: {
         status?: string;
         search?: string;
-        [key: string]: any;
+        startDate?: Date;
+        endDate?: Date;
+        priority?: Priority;
+        taskType?: TaskType;
+        targetCategory?: TargetCategory;
+        assigneeId?: number;
+        clientId?: number;
+        branchId?: number;
+        isOverdue?: boolean;
+        isDeleted?: boolean;
+        [key: string]: TaskFilterValue;
     };
 }

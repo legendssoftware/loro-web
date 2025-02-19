@@ -1,6 +1,7 @@
 import { Task } from '@/lib/types/tasks';
 import axios from 'axios';
 import { RequestConfig } from "@/lib/types/tasks";
+import { Priority, TaskType, TargetCategory } from "@/lib/enums/task.enums";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -35,6 +36,12 @@ export interface TasksRequestConfig extends Omit<RequestConfig, 'headers'> {
         search?: string;
         startDate?: Date;
         endDate?: Date;
+        priority?: Priority;
+        taskType?: TaskType;
+        targetCategory?: TargetCategory;
+        branchId?: number;
+        isOverdue?: boolean;
+        isDeleted?: boolean;
     };
 }
 
@@ -51,6 +58,12 @@ export const fetchTasks = async (config: TasksRequestConfig): Promise<PaginatedT
             ...(filters?.search && { search: filters.search }),
             ...(filters?.startDate && { startDate: filters.startDate.toISOString() }),
             ...(filters?.endDate && { endDate: filters.endDate.toISOString() }),
+            ...(filters?.priority && { priority: filters.priority }),
+            ...(filters?.taskType && { taskType: filters.taskType }),
+            ...(filters?.targetCategory && { targetCategory: filters.targetCategory }),
+            ...(filters?.branchId && { branchId: filters.branchId.toString() }),
+            ...(filters?.isOverdue !== undefined && { isOverdue: filters.isOverdue.toString() }),
+            ...(filters?.isDeleted !== undefined && { isDeleted: filters.isDeleted.toString() }),
         });
 
         const response = await fetch(

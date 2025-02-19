@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -20,9 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { productStatuses, productCategories } from "@/data/app-data";
-import { Loader2 } from "lucide-react";
 import { ProductStatus, UpdateProductDTO } from "@/lib/types/products";
 import { Product } from "@/lib/types/products";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -66,13 +65,11 @@ const formSchema = z.object({
 
 interface EditInventoryFormProps {
   product: Product;
-  isSubmitting: boolean;
   onSubmit: (data: UpdateProductDTO) => void;
 }
 
 export const EditInventoryForm = ({
   product,
-  isSubmitting,
   onSubmit,
 }: EditInventoryFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -94,21 +91,29 @@ export const EditInventoryForm = ({
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSubmit({
-      ...values,
-      price: Number(values.price),
-      salePrice: Number(values.salePrice),
-      discount: Number(values.discount),
-      barcode: values.barcode,
-      packageQuantity: Number(values.packageQuantity),
-      weight: Number(values.weight),
+  // Expose form submission method to parent
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      const isValid = form.formState.isValid;
+      if (isValid) {
+        const formData = {
+          ...value,
+          price: Number(value.price),
+          salePrice: Number(value.salePrice),
+          discount: Number(value.discount),
+          barcode: value.barcode,
+          packageQuantity: Number(value.packageQuantity),
+          weight: Number(value.weight),
+        };
+        onSubmit(formData);
+      }
     });
-  };
+    return () => subscription.unsubscribe();
+  }, [form, onSubmit]);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -327,20 +332,6 @@ export const EditInventoryForm = ({
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          className="w-full mt-4 text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Updating...
-            </>
-          ) : (
-            "Update Product"
-          )}
-        </Button>
       </form>
     </Form>
   );

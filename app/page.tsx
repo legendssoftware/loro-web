@@ -156,26 +156,25 @@ const quotationChartConfig = {
 	},
 } satisfies ChartConfig;
 
-// Transform functions
+// Improved data transformation functions
 const transformQuotationData = (data: ReportResponse | null) => {
-	// Handle daily report format
+	if (!data) return [];
+	
 	if (data?.orders) {
-		const quotations = data.orders;
 		return [{
 			date: new Date().toISOString(),
-			total: quotations.metrics.totalQuotations || 0,
-			accepted: quotations.approved || 0,
-			pending: quotations.pending || 0
+			total: Math.max(0, data.orders.metrics.totalQuotations || 0),
+			accepted: Math.max(0, data.orders.approved || 0),
+			pending: Math.max(0, data.orders.pending || 0)
 		}];
 	}
 
-	// Handle generated report format
 	if (!data?.trends?.patterns?.daily || !data?.financial?.quotations) return [];
 	
-	const { conversion = 0 } = data.financial.quotations;
+	const conversion = Math.max(0, data.financial.quotations.conversion || 0);
 	
 	return Object.entries(data.trends.patterns.daily).map(([date, value]) => {
-		const total = Number(value || 0);
+		const total = Math.max(0, Number(value || 0));
 		return {
 			date: new Date(date).toISOString(),
 			total,
@@ -249,43 +248,49 @@ const transformRevenueData = (data: ReportResponse | null) => {
 	}));
 };
 
-// Helper functions to get metrics from either format
+// Get metrics for the cards
 const getQuotationMetrics = (data: ReportResponse | null) => {
 	if (data?.orders) {
+		const total = Math.max(0, data.orders.metrics.totalQuotations || 0);
+		const approved = Math.max(0, data.orders.approved || 0);
 		return {
-			total: data.orders.metrics.totalQuotations,
+			total,
 			growth: data.orders.metrics.quotationTrends?.growth || '0',
 			trend: data.orders.metrics.quotationTrends?.growth?.startsWith('+') ? 'up' : 'down',
 			averageValue: Number(data.orders.metrics.averageQuotationValue?.replace(/[^0-9.-]+/g, '') || 0),
-			conversion: (data.orders.approved / (data.orders.metrics.totalQuotations || 1)) * 100
+			conversion: total > 0 ? (approved / total) * 100 : 0
 		};
 	}
 
 	return {
-		total: data?.financial?.quotations?.total || 0,
+		total: Math.max(0, data?.financial?.quotations?.total || 0),
 		growth: data?.financial?.revenue?.growth || '0',
 		trend: data?.financial?.revenue?.trend || 'stable',
-		averageValue: data?.financial?.quotations?.averageValue || 0,
-		conversion: data?.financial?.quotations?.conversion || 0
+		averageValue: Math.max(0, data?.financial?.quotations?.averageValue || 0),
+		conversion: Math.max(0, data?.financial?.quotations?.conversion || 0)
 	};
 };
 
 const getTaskMetrics = (data: ReportResponse | null) => {
 	if (data?.tasks) {
+		const completed = Math.max(0, data.tasks.completed || 0);
+		const total = Math.max(0, data.tasks.total || 1);
 		return {
-			completionRate: (data.tasks.completed / (data.tasks.total || 1)) * 100,
+			completionRate: total > 0 ? (completed / total) * 100 : 0,
 			growth: data.tasks.metrics?.taskTrends?.growth || '0',
-			completed: data.tasks.completed,
-			total: data.tasks.total,
+			completed,
+			total,
 			averageTime: 'N/A'
 		};
 	}
 
+	const completed = Math.max(0, data?.performance?.tasks?.completed || 0);
+	const total = Math.max(0, data?.performance?.tasks?.total || 1);
 	return {
-		completionRate: data?.performance?.tasks?.completionRate || 0,
+		completionRate: total > 0 ? (completed / total) * 100 : 0,
 		growth: '0',
-		completed: data?.performance?.tasks?.completed || 0,
-		total: data?.performance?.tasks?.total || 1,
+		completed,
+		total,
 		averageTime: data?.performance?.tasks?.averageCompletionTime || 'N/A'
 	};
 };

@@ -176,7 +176,9 @@ export const StaffModule = () => {
             accessLevel: formData.get('accessLevel') as AccessLevel,
             password: formData.get('password') as string,
             status: AccountStatus.ACTIVE,
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png' // Default placeholder image
+            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png', // Default placeholder image
+            organisationRef: Number(formData.get('organisationRef')), // Convert to number
+            branchId: Number(formData.get('branchId')), // Convert to number
         }
         createUserMutation.mutate(userData)
     }
@@ -194,7 +196,9 @@ export const StaffModule = () => {
             phone: formData.get('phone') as string,
             accessLevel: formData.get('accessLevel') as AccessLevel,
             status: formData.get('status') as AccountStatus,
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png'
+            photoURL: 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png',
+            organisationRef: Number(formData.get('organisationRef')), // Convert to number
+            branchId: Number(formData.get('branchId')), // Convert to number
         }
         updateUserMutation.mutate({ uid: selectedUser.uid, userData })
     }

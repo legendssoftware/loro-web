@@ -13,6 +13,9 @@ import {
 import { DialogFooter } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, AccessLevel, AccountStatus } from "@/helpers/users";
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrganizations } from "@/helpers/organizations";
+import { useSessionStore } from "@/store/use-session-store";
 
 interface StaffFormProps {
   user?: User;
@@ -30,6 +33,33 @@ export const StaffForm = ({
   const [imagePreview, setImagePreview] = useState<string | null>(
     user?.photoURL || null
   );
+  const [selectedOrg, setSelectedOrg] = useState<string | undefined>(
+    user?.organisation?.uid?.toString() || undefined
+  );
+  const { accessToken } = useSessionStore();
+
+  const config = {
+    headers: {
+      token: accessToken || "",
+    },
+  };
+
+  const { data: organizations } = useQuery({
+    queryKey: ["organizations"],
+    queryFn: () => fetchOrganizations(config),
+    enabled: !!accessToken,
+  });
+
+  const { data: branches, isLoading: isLoadingBranches } = useQuery({
+    queryKey: ["branches", selectedOrg],
+    queryFn: () => {
+      const selectedOrganization = organizations?.find(
+        (org) => org.uid.toString() === selectedOrg
+      );
+      return selectedOrganization?.branches || [];
+    },
+    enabled: !!selectedOrg && !!organizations,
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,34 +194,159 @@ export const StaffForm = ({
           </Select>
         </div>
       </div>
-      {user && (
+      <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label
-            htmlFor="status"
+            htmlFor="organisation"
             className="font-body font-normal uppercase text-[10px]"
           >
-            Account Status
+            Organization
           </Label>
-          <Select name="status" defaultValue={user?.status}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
+          <Select
+            name="organisationRef"
+            defaultValue={user?.organisation?.uid?.toString() || ""}
+            onValueChange={(value) => {
+              setSelectedOrg(value);
+              // Reset branch selection when organization changes
+              const form = document.querySelector("form");
+
+              if (form) {
+                const branchSelect = form.querySelector(
+                  'select[name="branchId"]'
+                ) as HTMLSelectElement;
+                if (branchSelect) branchSelect.value = "";
+              }
+            }}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue
+                placeholder="Select organization"
+                className="font-body text-[12px] uppercase"
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                value={AccountStatus.ACTIVE}
-                className="font-body text-[10px] uppercase"
-              >
-                Active
-              </SelectItem>
-              <SelectItem
-                value={AccountStatus.INACTIVE}
-                className="font-body text-[10px] uppercase"
-              >
-                Inactive
-              </SelectItem>
+              {!organizations?.length ? (
+                <SelectItem
+                  value="no-orgs"
+                  disabled
+                  className="font-body text-[10px] uppercase text-muted-foreground"
+                >
+                  No organizations available
+                </SelectItem>
+              ) : (
+                organizations.map((org) => (
+                  <SelectItem
+                    key={org.uid}
+                    value={org.uid.toString()}
+                    className="font-body text-[10px] uppercase"
+                  >
+                    {org.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
+        <div className="grid gap-2">
+          <Label
+            htmlFor="branch"
+            className="font-body font-normal uppercase text-[10px]"
+          >
+            Branch
+          </Label>
+          <Select
+            name="branchId"
+            defaultValue={user?.branch?.uid?.toString() || ""}
+            disabled={!selectedOrg}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue
+                placeholder={
+                  !selectedOrg ? "Select org first" : "Select branch"
+                }
+                className="font-body text-[12px] uppercase"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {isLoadingBranches ? (
+                <SelectItem
+                  value="loading"
+                  disabled
+                  className="font-body text-[10px] uppercase text-muted-foreground"
+                >
+                  Loading branches...
+                </SelectItem>
+              ) : !branches?.length ? (
+                <SelectItem
+                  value="no-branches"
+                  disabled
+                  className="font-body text-[10px] uppercase text-muted-foreground"
+                >
+                  No branches available
+                </SelectItem>
+              ) : (
+                branches.map((branch) => (
+                  <SelectItem
+                    key={branch.uid}
+                    value={branch.uid.toString()}
+                    className="font-body text-[10px] uppercase"
+                  >
+                    {branch.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {user && (
+        <>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="status"
+              className="font-body font-normal uppercase text-[10px]"
+            >
+              Account Status
+            </Label>
+            <Select name="status" defaultValue={user?.status}>
+              <SelectTrigger className="bg-background">
+                <SelectValue
+                  placeholder="Select status"
+                  className="font-body text-[12px] uppercase"
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  value={AccountStatus.ACTIVE}
+                  className="font-body text-[10px] uppercase"
+                >
+                  Active
+                </SelectItem>
+                <SelectItem
+                  value={AccountStatus.INACTIVE}
+                  className="font-body text-[10px] uppercase"
+                >
+                  Inactive
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="password"
+              className="font-body font-normal uppercase text-[10px]"
+            >
+              Change Password
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="leave blank to keep current password"
+              className="text-[12px]"
+            />
+          </div>
+        </>
       )}
       {!user && (
         <div className="grid gap-2">
@@ -205,7 +360,7 @@ export const StaffForm = ({
             id="password"
             name="password"
             type="password"
-            placeholder="****************************"
+            placeholder="Enter password"
             required
             className="text-[12px]"
           />

@@ -71,7 +71,7 @@ export const StaffModals = ({
                         <StaffForm
                             user={selectedUser}
                             onSubmit={onEditSubmit}
-                            submitText={isUpdating ? 'Saving...' : 'Save Changes'}
+                            submitText={isUpdating ? 'Saving...' : 'Update Profile'}
                             isSubmitting={isUpdating}
                         />
                     )}

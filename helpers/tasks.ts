@@ -1,32 +1,79 @@
 import { Task } from '@/lib/types/tasks';
 import axios from 'axios';
+import { RequestConfig } from "@/lib/types/tasks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-export type RequestConfig = {
-    headers: {
-        token: string;
-    };
-};
 
 export type CreateTaskDTO = Omit<Task, 'uid' | 'createdAt' | 'updatedAt' | 'isDeleted'> & {
     client?: { uid: number }[];
 };
 export type UpdateTaskDTO = Partial<CreateTaskDTO>;
 
+export interface PaginatedTasksResponse {
+    data: Task[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+    message: string;
+}
+
+export interface TasksRequestConfig extends Omit<RequestConfig, 'headers'> {
+    page?: number;
+    limit?: number;
+    headers?: {
+        token?: string;
+        Authorization?: string;
+        'Content-Type'?: string;
+    };
+    filters?: {
+        status?: string;
+        clientId?: number;
+        assigneeId?: number;
+        search?: string;
+        startDate?: Date;
+        endDate?: Date;
+    };
+}
+
 // Fetch all tasks
-export const fetchTasks = async (config: RequestConfig): Promise<{ tasks: Task[], message: string }> => {
+export const fetchTasks = async (config: TasksRequestConfig): Promise<PaginatedTasksResponse> => {
     try {
-        const response = await axios.get<{ tasks: Task[], message: string }>(`${API_URL}/tasks`, {
-            headers: {
-                'Authorization': `Bearer ${config?.headers?.token}`,
-                'Content-Type': 'application/json'
-            }
+        const { page = 1, limit = 20, headers, filters } = config;
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+            ...(filters?.status && { status: filters.status }),
+            ...(filters?.clientId && { clientId: filters.clientId.toString() }),
+            ...(filters?.assigneeId && { assigneeId: filters.assigneeId.toString() }),
+            ...(filters?.search && { search: filters.search }),
+            ...(filters?.startDate && { startDate: filters.startDate.toISOString() }),
+            ...(filters?.endDate && { endDate: filters.endDate.toISOString() }),
         });
-        return response.data;
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/tasks?${queryParams.toString()}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${headers?.token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks');
+        }
+        
+        const data = await response.json();
+        return data;
     } catch (error) {
-        // Return an empty tasks array with error message if request fails
-        return { tasks: [], message: error instanceof Error ? error.message : 'Failed to fetch tasks' };
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error("Failed to fetch tasks");
     }
 };
 

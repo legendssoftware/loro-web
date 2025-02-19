@@ -4,27 +4,43 @@ import { RequestConfig } from "@/lib/types/tasks";
 import { API_URL } from "@/lib/utils/endpoints";
 
 // Fetch all leads
-export const fetchLeads = async (config: RequestConfig) => {
-    if (!config?.headers?.token) {
-        return { leads: [], message: "Authentication token is missing", stats: null };
-    }
-
+export const fetchLeads = async (config: RequestConfig): Promise<LeadResponse> => {
     try {
-        const response = await axios.get<LeadResponse>(`${API_URL}/leads`, {
-            headers: {
-                Authorization: `Bearer ${config.headers.token}`,
-                "Content-Type": "application/json",
-            },
+        const { page = 1, limit = 20, headers, filters } = config;
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+            ...(filters?.status && { status: filters.status }),
+            ...(filters?.search && { search: filters.search }),
         });
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            if (error.response?.status === 401) {
-                return { leads: [], message: "Authentication failed. Please sign in again.", stats: null };
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/leads?${queryParams.toString()}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${headers?.token}`,
+                    'Content-Type': 'application/json'
+                }
             }
-            return { leads: [], message: error.message, stats: null };
+        );
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch leads');
         }
-        return { leads: [], message: "Error fetching leads", stats: null };
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        return {
+            data: [],
+            meta: {
+                total: 0,
+                page: 1,
+                limit: 20,
+                totalPages: 0
+            },
+            message: error instanceof Error ? error.message : "Failed to fetch leads"
+        };
     }
 };
 

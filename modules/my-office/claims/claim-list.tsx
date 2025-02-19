@@ -11,15 +11,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, List, LucideIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { claimCategories, claimStatuses } from "@/data/app-data";
-import { PeriodFilter, PeriodFilterValue, getDateRangeFromPeriod } from "@/modules/common/period-filter";
+import { FolderOpen, List, ChevronLeft, ChevronRight } from "lucide-react";
+import { claimStatuses } from "@/data/app-data";
+import { getDateRangeFromPeriod, PeriodFilterValue } from "@/modules/common/period-filter";
 import { Button } from "@/components/ui/button";
 
 interface ClaimListProps {
   claims: Claim[];
   onClaimClick: (claim: Claim) => void;
   isLoading: boolean;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onSearch: (query: string) => void;
+  onStatusFilter: (status: string) => void;
+  searchQuery: string;
+  statusFilter: string;
 }
 
 const containerVariants = {
@@ -28,6 +35,23 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
     },
   },
 };
@@ -36,14 +60,17 @@ const ClaimListComponent = ({
   claims,
   onClaimClick,
   isLoading,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onSearch,
+  onStatusFilter,
+  searchQuery,
+  statusFilter,
 }: ClaimListProps) => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [userFilter, setUserFilter] = useState<string>("all");
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const claimsPerPage = 20;
+  const [categoryFilter] = useState<string>("all");
+  const [userFilter] = useState<string>("all");
+  const [periodFilter] = useState<PeriodFilterValue>("all");
 
   const filteredClaims = useMemo(() => {
     return claims.filter((claim) => {
@@ -73,140 +100,49 @@ const ClaimListComponent = ({
   }, [claims, statusFilter, categoryFilter, userFilter, searchQuery, periodFilter]);
 
   const paginatedClaims = useMemo(() => {
-    const startIndex = (currentPage - 1) * claimsPerPage;
-    const endIndex = startIndex + claimsPerPage;
+    const startIndex = (currentPage - 1) * 25;
+    const endIndex = startIndex + 25;
     return filteredClaims.slice(startIndex, endIndex);
   }, [filteredClaims, currentPage]);
 
-  const totalPages = Math.ceil(filteredClaims.length / claimsPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-    }
-  };
-
   const Header = () => {
     return (
-      <div className="flex items-center justify-end gap-2">
-        <Input
-          placeholder="search..."
-          className="w-[300px] bg-card"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <div className="flex items-center gap-2">
-          <PeriodFilter 
-            value={periodFilter}
-            onValueChange={setPeriodFilter}
+      <div className="flex flex-row items-center justify-end gap-2">
+        <div className="flex flex-row items-center justify-center gap-2">
+          <Input
+            placeholder="search..."
+            className="w-[300px] shadow-none bg-card"
+            value={searchQuery}
+            onChange={(e) => onSearch(e.target.value)}
           />
-          <Select value={userFilter} onValueChange={setUserFilter}>
-            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
-              <SelectValue placeholder="Filter by user" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="all"
-                className="text-[10px] font-normal uppercase font-body"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  <List size={17} strokeWidth={1.5} />
-                  <span>All Sales Reps</span>
-                </div>
-              </SelectItem>
-              {claims
-                .filter(
-                  (claim, index, self) =>
-                    index ===
-                    self.findIndex((c) => c.owner.uid === claim.owner.uid)
-                )
-                .map((claim) => (
-                  <SelectItem
-                    key={claim.owner.uid}
-                    value={claim.owner.uid.toString()}
-                    className="text-[10px] font-normal uppercase font-body"
-                  >
-                    {`${claim.owner.name} ${claim.owner.surname}`}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="all"
-                className="text-[10px] font-normal uppercase font-body"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  <List size={17} strokeWidth={1.5} />
-                  <span>All Categories</span>
-                </div>
-              </SelectItem>
-              {claimCategories?.map( 
-                (category: {
-                  value: string;
-                  label: string;
-                  icon: LucideIcon;
-                }) => (
-                  <SelectItem
-                    key={category?.value}
-                    value={category?.value}
-                    className="text-[10px] font-normal font-body uppercase"
-                  >
-                    <div className="flex items-center gap-2">
-                      {category?.icon && (
-                        <category.icon size={17} strokeWidth={1.5} />
-                      )}
-                      <span>{category?.label?.replace("_", " ")}</span>
-                    </div>
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={onStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
                 value="all"
-                className="text-[10px] font-normal uppercase font-body"
+                className="font-body text-[10px] uppercase"
               >
                 <div className="flex flex-row items-center gap-2">
                   <List size={17} strokeWidth={1.5} />
                   <span>All Statuses</span>
                 </div>
               </SelectItem>
-              {claimStatuses?.map(
-                (status: {
-                  value: string;
-                  label: string;
-                  icon: LucideIcon;
-                }) => (
-                  <SelectItem
-                    key={status?.value}
-                    value={status?.value}
-                    className="text-[10px] font-normal font-body uppercase"
-                  >
-                    <div className="flex items-center gap-2">
-                      {status?.icon && (
-                        <status.icon size={17} strokeWidth={1.5} />
-                      )}
-                      <span>{status?.label?.replace("_", " ")}</span>
-                    </div>
-                  </SelectItem>
-                )
-              )}
+              {claimStatuses?.map((status) => (
+                <SelectItem
+                  key={status?.value}
+                  value={status?.value}
+                  className="text-[10px] font-normal font-body uppercase"
+                >
+                  <div className="flex items-center gap-2">
+                    {status?.icon && (
+                      <status.icon size={17} strokeWidth={1.5} />
+                    )}
+                    <span>{status?.label?.replace("_", " ")}</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -243,25 +179,27 @@ const ClaimListComponent = ({
     <div className="flex flex-col w-full h-full gap-4">
       <Header />
       <motion.div
+        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
         {paginatedClaims?.map((claim) => (
-          <ClaimCard key={claim.uid} claim={claim} onClick={onClaimClick} />
+          <motion.div key={claim.uid} variants={itemVariants} layout>
+            <ClaimCard claim={claim} onClick={onClaimClick} />
+          </motion.div>
         ))}
       </motion.div>
-      {filteredClaims.length > claimsPerPage && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+      {totalPages > 1 && (
+        <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"
             size="icon"
-            onClick={handlePrevPage}
+            onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="text-xs font-normal font-body">
             {currentPage} / {totalPages}
@@ -269,11 +207,11 @@ const ClaimListComponent = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleNextPage}
+            onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       )}

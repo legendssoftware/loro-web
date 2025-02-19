@@ -117,8 +117,17 @@ export interface ExistingTask extends Omit<TaskFormData, 'deadline' | 'repetitio
     }[];
 }
 
-export type RequestConfig = {
+export interface RequestConfig {
     headers: {
-        token: string;
+        token?: string;
+        Authorization?: string;
+        'Content-Type'?: string;
     };
-};
+    page?: number;
+    limit?: number;
+    filters?: {
+        status?: string;
+        search?: string;
+        [key: string]: any;
+    };
+}

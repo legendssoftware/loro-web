@@ -54,8 +54,12 @@ export interface LeadStats {
 }
 
 export interface LeadResponse {
+    data: Lead[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
     message: string;
-    leads?: Lead[];
-    lead?: Lead;
-    stats?: LeadStats;
 } 

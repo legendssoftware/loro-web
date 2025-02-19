@@ -21,6 +21,13 @@ interface LeadListProps {
   leads: Lead[];
   onLeadClick: (lead: Lead) => void;
   isLoading: boolean;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onSearch: (query: string) => void;
+  onStatusFilter: (status: string) => void;
+  searchQuery: string;
+  statusFilter: string;
 }
 
 const containerVariants = {
@@ -29,17 +36,41 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
+      delayChildren: 0.1,
     },
   },
 };
 
-const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
+const LeadList = ({
+  leads,
+  onLeadClick,
+  isLoading,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onSearch,
+  onStatusFilter,
+  searchQuery,
+  statusFilter,
+}: LeadListProps) => {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const leadsPerPage = 20;
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -67,22 +98,20 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
   }, [leads, statusFilter, ownerFilter, searchQuery, periodFilter]);
 
   const paginatedLeads = useMemo(() => {
-    const startIndex = (currentPage - 1) * leadsPerPage;
-    const endIndex = startIndex + leadsPerPage;
+    const startIndex = (currentPage - 1) * 20;
+    const endIndex = startIndex + 20;
     return filteredLeads.slice(startIndex, endIndex);
   }, [filteredLeads, currentPage]);
 
-  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
-
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
+      onPageChange(currentPage + 1);
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
+      onPageChange(currentPage - 1);
     }
   };
 
@@ -114,7 +143,7 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
           placeholder="search..."
           className="w-[300px] bg-card"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => onSearch(e.target.value)}
         />
         <div className="flex items-center gap-2">
           <PeriodFilter 
@@ -155,7 +184,7 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
               ))}
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={onStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -219,25 +248,27 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
     <div className="flex flex-col w-full h-full gap-4">
       <Header />
       <motion.div
+        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
         {paginatedLeads?.map((lead) => (
-          <LeadCard key={lead.uid} lead={lead} onClick={onLeadClick} />
+          <motion.div key={lead.uid} variants={itemVariants} layout>
+            <LeadCard lead={lead} onClick={onLeadClick} />
+          </motion.div>
         ))}
       </motion.div>
-      {filteredLeads.length > leadsPerPage && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-card rounded-full shadow-lg border">
+      {totalPages > 1 && (
+        <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"
             size="icon"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="text-xs font-normal font-body">
             {currentPage} / {totalPages}
@@ -247,9 +278,9 @@ const LeadList = ({ leads, onLeadClick, isLoading }: LeadListProps) => {
             size="icon"
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className="h-8 w-8"
+            className="w-8 h-8"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       )}

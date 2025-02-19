@@ -8,35 +8,43 @@ import { RequestConfig } from "@/lib/types/tasks";
 import { API_URL } from "@/lib/utils/endpoints";
 
 // Fetch all claims
-export const fetchClaims = async (config: RequestConfig) => {
-  if (!config?.headers?.token) {
-    return {
-      claims: [],
-      message: "Authentication token is missing",
-      stats: null,
-    };
-  }
-
+export const fetchClaims = async (config: RequestConfig): Promise<ClaimResponse> => {
   try {
-    const response = await axios.get<ClaimResponse>(`${API_URL}/claims`, {
-      headers: {
-        Authorization: `Bearer ${config.headers.token}`,
-        "Content-Type": "application/json",
-      },
+    const { page = 1, limit = 20, headers, filters } = config;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(filters?.status && { status: filters.status }),
+      ...(filters?.search && { search: filters.search }),
     });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        return {
-          claims: [],
-          message: "Authentication failed. Please sign in again.",
-          stats: null,
-        };
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/claims?${queryParams.toString()}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${headers?.token}`,
+          'Content-Type': 'application/json'
+        }
       }
-      return { claims: [], message: error.message, stats: null };
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch claims');
     }
-    return { claims: [], message: "Error fetching claims", stats: null };
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return {
+      data: [],
+      meta: {
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0
+      },
+      message: error instanceof Error ? error.message : "Failed to fetch claims"
+    };
   }
 };
 

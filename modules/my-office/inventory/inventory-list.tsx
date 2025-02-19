@@ -153,10 +153,10 @@ const InventoryListComponent = ({
             placeholder="search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-xs"
+            className="max-w-xs bg-card"
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-card">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -178,7 +178,7 @@ const InventoryListComponent = ({
             </SelectContent>
           </Select>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-card">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -201,10 +201,10 @@ const InventoryListComponent = ({
           </Select>
           <Button
             onClick={() => setIsNewProductModalOpen(true)}
-            className="text-xs font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
+            className="text-[10px] font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Product
+            <Plus className="w-4 h-4 mr-1" />
+            Add
           </Button>
         </div>
       </div>

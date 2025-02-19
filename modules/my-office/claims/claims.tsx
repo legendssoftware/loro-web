@@ -7,12 +7,16 @@ import { Claim, UpdateClaimDTO } from "@/lib/types/claims"
 import toast from 'react-hot-toast'
 import { ClaimList } from "./claim-list"
 import { ClaimDetailModal } from "./claim-detail-modal"
+import { PageLoader } from "@/components/page-loader"
 
 export const ClaimsModule = () => {
     const { accessToken } = useSessionStore()
     const queryClient = useQueryClient()
     const [isClaimDetailModalOpen, setIsClaimDetailModalOpen] = useState(false)
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState<string>("all")
 
     const config: RequestConfig = {
         headers: {
@@ -21,8 +25,17 @@ export const ClaimsModule = () => {
     }
 
     const { data: claimsData, isLoading } = useQuery({
-        queryKey: ['claims'],
-        queryFn: () => fetchClaims(config),
+        queryKey: ["claims", currentPage, statusFilter, searchQuery],
+        queryFn: () =>
+            fetchClaims({
+                ...config,
+                page: currentPage,
+                limit: 25,
+                filters: {
+                    ...(statusFilter !== "all" && { status: statusFilter }),
+                    ...(searchQuery && { search: searchQuery }),
+                },
+            }),
         enabled: !!accessToken,
     })
 
@@ -56,12 +69,41 @@ export const ClaimsModule = () => {
         setIsClaimDetailModalOpen(true)
     }
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page)
+    }
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query)
+        setCurrentPage(1) // Reset to first page when searching
+    }
+
+    const handleStatusFilter = (status: string) => {
+        setStatusFilter(status)
+        setCurrentPage(1) // Reset to first page when filtering
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center w-full h-screen">
+                <PageLoader />
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <ClaimList  
-                claims={claimsData?.claims || []}
-                onClaimClick={handleClaimClick}
+                claims={claimsData?.data || []}
                 isLoading={isLoading}
+                onClaimClick={handleClaimClick}
+                currentPage={currentPage}
+                totalPages={claimsData?.meta?.totalPages || 1}
+                onPageChange={handlePageChange}
+                onSearch={handleSearch}
+                onStatusFilter={handleStatusFilter}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
             />
 
             <ClaimDetailModal 

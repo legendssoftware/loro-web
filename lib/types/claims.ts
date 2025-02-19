@@ -74,14 +74,12 @@ export interface UpdateClaimDTO {
 }
 
 export interface ClaimResponse {
-    message: string;
-    claims?: Claim[];
-    claim?: Claim;
-    stats?: {
+    data: Claim[];
+    meta: {
         total: number;
-        pending: number;
-        approved: number;
-        declined: number;
-        paid: number;
+        page: number;
+        limit: number;
+        totalPages: number;
     };
+    message: string;
 } 

@@ -7,12 +7,16 @@ import { fetchLeads, updateLead, deleteLead, restoreLead } from "@/helpers/leads
 import { RequestConfig } from "@/lib/types/tasks";
 import LeadList from "./lead-list";
 import LeadDetailModal from "./lead-detail-modal";
+import { PageLoader } from "@/components/page-loader";
 
 const LeadsModule = () => {
     const { accessToken } = useSessionStore();
     const queryClient = useQueryClient();
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const config: RequestConfig = {
         headers: {
@@ -21,8 +25,17 @@ const LeadsModule = () => {
     };
 
     const { data: leadsData, isLoading } = useQuery({
-        queryKey: ["leads"],
-        queryFn: () => fetchLeads(config),
+        queryKey: ["leads", currentPage, statusFilter, searchQuery],
+        queryFn: () =>
+            fetchLeads({
+                ...config,
+                page: currentPage,
+                limit: 20,
+                filters: {
+                    ...(statusFilter !== "all" && { status: statusFilter }),
+                    ...(searchQuery && { search: searchQuery }),
+                },
+            }),
         enabled: !!accessToken,
     });
 
@@ -91,12 +104,41 @@ const LeadsModule = () => {
         restoreLeadMutation.mutate(lead.uid);
     };
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        setCurrentPage(1); // Reset to first page when searching
+    };
+
+    const handleStatusFilter = (status: string) => {
+        setStatusFilter(status);
+        setCurrentPage(1); // Reset to first page when filtering
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center w-full h-screen">
+                <PageLoader />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-4">
             <LeadList
-                leads={leadsData?.leads || []}
-                onLeadClick={handleLeadClick}
+                leads={leadsData?.data || []}
                 isLoading={isLoading}
+                onLeadClick={handleLeadClick}
+                currentPage={currentPage}
+                totalPages={leadsData?.meta?.totalPages || 1}
+                onPageChange={handlePageChange}
+                onSearch={handleSearch}
+                onStatusFilter={handleStatusFilter}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
             />
             <LeadDetailModal
                 isOpen={isModalOpen}

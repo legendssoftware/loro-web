@@ -1,4 +1,3 @@
-import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { FolderOpen, List, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -45,60 +44,31 @@ interface StaffListProps {
   staffData: User[];
   onCreateClick: () => void;
   onUserAction: (user: User, action: "edit" | "deactivate") => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onSearch: (query: string) => void;
+  onStatusFilter: (status: string) => void;
+  onRoleFilter: (role: string) => void;
+  searchQuery: string;
+  statusFilter: string;
+  roleFilter: string;
 }
 
 export const StaffList = ({
   staffData,
   onCreateClick,
   onUserAction,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onSearch,
+  onStatusFilter,
+  onRoleFilter,
+  searchQuery,
+  statusFilter,
+  roleFilter,
 }: StaffListProps) => {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const staffPerPage = 30;
-
-  const filteredStaff = staffData?.filter((user: User) => {
-    const matchesStatus =
-      statusFilter.toLowerCase() === "all" ||
-      user.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesRole =
-      roleFilter.toLowerCase() === "all" ||
-      user.accessLevel.toLowerCase() === roleFilter.toLowerCase();
-    const searchTerms = searchQuery.toLowerCase().split(" ");
-    const matchesSearch =
-      searchQuery === "" ||
-      searchTerms.every(
-        (term) =>
-          user.name.toLowerCase().includes(term) ||
-          user.surname.toLowerCase().includes(term) ||
-          user.email.toLowerCase().includes(term) ||
-          user.username.toLowerCase().includes(term) ||
-          user.phone.toLowerCase().includes(term)
-      );
-    return matchesStatus && matchesRole && matchesSearch;
-  });
-
-  const paginatedStaff = useMemo(() => {
-    const startIndex = (currentPage - 1) * staffPerPage;
-    const endIndex = startIndex + staffPerPage;
-    return filteredStaff.slice(startIndex, endIndex);
-  }, [filteredStaff, currentPage]);
-
-  const totalPages = Math.ceil(filteredStaff.length / staffPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-    }
-  };
-
   const Header = () => {
     return (
       <div className="flex flex-row items-center justify-end gap-2">
@@ -107,9 +77,9 @@ export const StaffList = ({
             placeholder="search..."
             className="w-[300px] shadow-none bg-card"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
           />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={onStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -139,7 +109,7 @@ export const StaffList = ({
               ))}
             </SelectContent>
           </Select>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <Select value={roleFilter} onValueChange={onRoleFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
@@ -178,7 +148,7 @@ export const StaffList = ({
     );
   };
 
-  if (!filteredStaff?.length) {
+  if (!staffData?.length) {
     return (
       <div className="space-y-4">
         <Header />
@@ -204,18 +174,18 @@ export const StaffList = ({
         initial="hidden"
         animate="show"
       >
-        {paginatedStaff?.map((user: User) => (
+        {staffData?.map((user: User) => (
           <motion.div key={user.uid} variants={itemVariants} layout>
             <StaffCard user={user} onAction={onUserAction} />
           </motion.div>
         ))}
       </motion.div>
-      {filteredStaff.length > staffPerPage && (
+      {totalPages > 1 && (
         <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"
             size="icon"
-            onClick={handlePrevPage}
+            onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="w-8 h-8"
           >
@@ -227,7 +197,7 @@ export const StaffList = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleNextPage}
+            onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="w-8 h-8"
           >

@@ -1,20 +1,22 @@
 import axios from 'axios'
 import { RequestConfig } from '@/lib/types/tasks'
-import { Branch } from '@/lib/types/branch'
 import { Reward } from '@/lib/types/rewards'
-import { AxiosError } from 'axios'
-import { Organisation } from './organisation'
 
 export enum AccessLevel {
-    USER = 'USER',
-    ADMIN = 'ADMIN',
-    MANAGER = 'MANAGER'
+    USER = 'user',
+    ADMIN = 'admin',
+    MANAGER = 'manager',
+    SUPPORT = 'support',
+    DEVELOPER = 'developer',
+    OWNER = 'owner',
+    SUPERVISOR = 'supervisor'
 }
 
 export enum AccountStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    PENDING = 'PENDING'
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+    PENDING = 'pending',
+    SUSPENDED = 'suspended'
 }
 
 export interface User {
@@ -31,107 +33,138 @@ export interface User {
     isDeleted: boolean
     createdAt: string
     updatedAt: string
-    branch?: Branch
+    branch?: {
+        uid: number
+        name: string
+    }
     rewards?: Reward[]
-    organisation?: Organisation
+    organisation?: {
+        uid: number
+        name: string
+    }
     organisationRef?: string
 }
 
-export interface CreateUserDTO {
-    username: string
+export interface CreateUserDTO extends Omit<User, 'uid'> {
     password: string
-    name: string
-    surname: string
-    email: string
-    phone: string
-    photoURL: string
-    accessLevel: AccessLevel
-    status: AccountStatus
-    userref?: string
-    organisationRef?: number
-    branchId?: number
 }
 
-export interface UpdateUserDTO {
-    username?: string
-    name?: string
-    surname?: string
-    email?: string
-    phone?: string
-    photoURL?: string
-    accessLevel?: AccessLevel
-    status?: AccountStatus
-    userref?: string
-    organisationRef?: number
-    branchId?: number
+export type UpdateUserDTO = Partial<CreateUserDTO>
+
+export interface UsersRequestConfig extends Omit<RequestConfig, 'headers'> {
+    page?: number
+    limit?: number
+    headers?: {
+        token?: string
+        Authorization?: string
+        'Content-Type'?: string
+    }
+    filters?: {
+        status?: string
+        accessLevel?: string
+        search?: string
+        branchId?: number
+        organisationId?: number
+    }
+}
+
+export interface PaginatedUsersResponse {
+    data: User[]
+    meta: {
+        total: number
+        page: number
+        limit: number
+        totalPages: number
+    }
+    message: string
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-export const fetchUsers = async (config: RequestConfig): Promise<{ users: User[] }> => {
+export const fetchUsers = async (config: UsersRequestConfig): Promise<PaginatedUsersResponse> => {
     try {
-        const response = await axios.get(`${API_URL}/user`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.headers.token}`
-            },
-            timeout: 5000 // 5 second timeout
+        const { page = 1, limit = 10, headers, filters } = config
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+            ...(filters?.status && { status: filters.status }),
+            ...(filters?.accessLevel && { accessLevel: filters.accessLevel }),
+            ...(filters?.search && { search: filters.search }),
+            ...(filters?.branchId && { branchId: filters.branchId.toString() }),
+            ...(filters?.organisationId && { organisationId: filters.organisationId.toString() }),
         })
-        return response.data
-    } catch (error) {
-        if (error instanceof AxiosError) {
-            if (error.code === 'ECONNABORTED') {
-                console.error('Request timeout:', error)
-                return { users: [] }
+
+        const response = await fetch(
+            `${API_URL}/user?${queryParams.toString()}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${headers?.token}`,
+                    'Content-Type': 'application/json'
+                }
             }
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                console.error('Server error:', error.response.data)
-                return { users: [] }
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error('Network error:', error.message)
-                return { users: [] }
-            }
+        )
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch users')
         }
-        return { users: [] }
+        
+        const data = await response.json()
+        return data
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to fetch users")
     }
 }
 
-export const createUser = async (userData: CreateUserDTO, config: RequestConfig): Promise<{ message: string }> => {
+export const createUser = async (userData: CreateUserDTO, config: RequestConfig) => {
     try {
-        const response = await axios.post(`${API_URL}/user`, userData, {
+        const response = await fetch(`${API_URL}/user`, {
+            method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.headers.token}`
+                'Authorization': `Bearer ${config?.headers?.token}`,
+                'Content-Type': 'application/json'
             },
-            timeout: 5000
+            body: JSON.stringify(userData)
         })
-        return response.data
-    } catch (error) {
-        if (error instanceof AxiosError) {
-            return { message: error.message }
+
+        if (!response.ok) {
+            throw new Error('Failed to create user')
         }
-        return { message: 'An unknown error occurred' }
+
+        const data = await response.json()
+        return data
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to create user")
     }
 }
 
-export const updateUser = async (uid: number, userData: UpdateUserDTO, config: RequestConfig): Promise<{ message: string }> => {
+export const updateUser = async (uid: number, userData: UpdateUserDTO, config: RequestConfig) => {
     try {
-        const response = await axios.patch(`${API_URL}/user/${uid}`, userData, {
+        const response = await fetch(`${API_URL}/user/${uid}`, {
+            method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.headers.token}`
+                'Authorization': `Bearer ${config?.headers?.token}`,
+                'Content-Type': 'application/json'
             },
-            timeout: 5000
+            body: JSON.stringify(userData)
         })
-        return response.data
-    } catch (error) {
-        if (error instanceof AxiosError) {
-            return { message: error.message }
+
+        if (!response.ok) {
+            throw new Error('Failed to update user')
         }
-        return { message: 'An unknown error occurred' }
+
+        const data = await response.json()
+        return data
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to update user")
     }
 }
 

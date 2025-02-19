@@ -13,6 +13,10 @@ export const StaffModule = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState<string>("all")
+    const [roleFilter, setRoleFilter] = useState<string>("all")
     const { accessToken } = useSessionStore()
     const queryClient = useQueryClient()
 
@@ -23,8 +27,17 @@ export const StaffModule = () => {
     }
 
     const { data: staffData, isLoading } = useQuery({
-        queryKey: ['users'],
-        queryFn: () => fetchUsers(config),
+        queryKey: ['users', currentPage, statusFilter, roleFilter, searchQuery],
+        queryFn: () => fetchUsers({
+            ...config,
+            page: currentPage,
+            limit: 20,
+            filters: {
+                ...(statusFilter !== 'all' && { status: statusFilter }),
+                ...(roleFilter !== 'all' && { accessLevel: roleFilter }),
+                ...(searchQuery && { search: searchQuery })
+            }
+        }),
         enabled: !!accessToken
     })
 
@@ -190,6 +203,25 @@ export const StaffModule = () => {
         }
     }
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page)
+    }
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query)
+        setCurrentPage(1) // Reset to first page when searching
+    }
+
+    const handleStatusFilter = (status: string) => {
+        setStatusFilter(status)
+        setCurrentPage(1) // Reset to first page when filtering
+    }
+
+    const handleRoleFilter = (role: string) => {
+        setRoleFilter(role)
+        setCurrentPage(1) // Reset to first page when filtering
+    }
+
     if (isLoading) {
         return (
             <div className="flex flex-col w-full h-full gap-4">
@@ -203,9 +235,18 @@ export const StaffModule = () => {
     return (
         <>
             <StaffList
-                staffData={staffData?.users || []}
+                staffData={staffData?.data || []}
                 onCreateClick={() => setIsCreateModalOpen(true)}
                 onUserAction={handleUserAction}
+                currentPage={currentPage}
+                totalPages={staffData?.meta?.totalPages || 1}
+                onPageChange={handlePageChange}
+                onSearch={handleSearch}
+                onStatusFilter={handleStatusFilter}
+                onRoleFilter={handleRoleFilter}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                roleFilter={roleFilter}
             />
             <StaffModals
                 isCreateModalOpen={isCreateModalOpen}

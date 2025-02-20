@@ -69,7 +69,6 @@ export const ClaimDetailModal = ({
         if (!selectedClaim) return;
         try {
             await onUpdate(selectedClaim.uid, data);
-            toast.success('Claim updated successfully', toastStyle);
             setIsEditing(false);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to update claim';

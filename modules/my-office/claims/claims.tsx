@@ -168,12 +168,7 @@ export const ClaimsModule = () => {
                 onOpenChange={setIsClaimDetailModalOpen}
                 selectedClaim={selectedClaim}
                 onDelete={handleDeleteClaim}
-                onUpdate={(ref, data) =>
-                    updateClaimMutation.mutateAsync({
-                        ref,
-                        data,
-                    })
-                }
+                onUpdate={(ref, data) => updateClaimMutation.mutateAsync({ ref, data })}
                 isUpdating={updateClaimMutation.isPending}
                 isDeleting={deleteClaimMutation.isPending}
             />

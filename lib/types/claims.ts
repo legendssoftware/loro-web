@@ -1,6 +1,3 @@
-import { Branch } from './branch';
-import { User } from './users';
-
 export enum ClaimStatus {
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchClaims, updateClaim, deleteClaim } from '@/helpers/claims';
 import { useSessionStore } from '@/store/use-session-store';
 import { RequestConfig } from '@/lib/types/tasks';
-import { Claim, UpdateClaimDTO } from '@/lib/types/claims';
+import { Claim, UpdateClaimDTO, ClaimStatus } from '@/lib/types/claims';
 import toast from 'react-hot-toast';
 import { ClaimDetailModal } from './claim-detail-modal';
 import { PageLoader } from '@/components/page-loader';
@@ -127,21 +127,15 @@ export const ClaimsModule = () => {
                         <SelectItem value='ALL' className='text-[10px] font-normal uppercase font-body'>
                             All Statuses
                         </SelectItem>
-                        <SelectItem value='PENDING' className='text-[10px] font-normal uppercase font-body'>
-                            Pending
-                        </SelectItem>
-                        <SelectItem value='IN_REVIEW' className='text-[10px] font-normal uppercase font-body'>
-                            In Review
-                        </SelectItem>
-                        <SelectItem value='APPROVED' className='text-[10px] font-normal uppercase font-body'>
-                            Approved
-                        </SelectItem>
-                        <SelectItem value='REJECTED' className='text-[10px] font-normal uppercase font-body'>
-                            Rejected
-                        </SelectItem>
-                        <SelectItem value='VERIFIED' className='text-[10px] font-normal uppercase font-body'>
-                            Verified
-                        </SelectItem>
+                        {Object.values(ClaimStatus).map((status) => (
+                            <SelectItem
+                                key={status}
+                                value={status}
+                                className='text-[10px] font-normal uppercase font-body'
+                            >
+                                {status.replace('_', ' ')}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>

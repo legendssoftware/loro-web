@@ -14,7 +14,6 @@ import {
 import { Claim, UpdateClaimDTO } from '@/lib/types/claims';
 import { EditClaimForm } from './edit-claim-form';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency } from '@/lib/utils/format';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -90,8 +89,6 @@ export const ClaimDetailModal = ({
 
     if (!selectedClaim) return null;
 
-    console.log(selectedClaim);
-
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className='sm:max-w-[600px] max-h-[80vh] overflow-y-auto'>
@@ -135,6 +132,9 @@ export const ClaimDetailModal = ({
                     />
                 ) : (
                     <div className='flex flex-col gap-6'>
+                        <div className='flex items-center justify-center w-full h-40 gap-2 p-2 border rounded-lg cursor-not-allowed hover:border-[#8B5CF6]'>
+                            <p className='text-[10px] font-normal uppercase font-body text-white/50'>Click here to view claim attachment</p>
+                        </div>
                         <div className='flex flex-col gap-1'>
                             <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Amount</h4>
                             <p className='text-2xl font-medium font-heading'>{selectedClaim.amount}</p>
@@ -142,7 +142,9 @@ export const ClaimDetailModal = ({
 
                         {selectedClaim.documentUrl && (
                             <div className='flex flex-col gap-1'>
-                                <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Document</h4>
+                                <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>
+                                    Document
+                                </h4>
                                 <div className='relative w-full h-48 overflow-hidden rounded-lg'>
                                     <Image
                                         src={selectedClaim.documentUrl}

@@ -27,7 +27,7 @@ export const EditClaimForm = ({ claim, onSubmit, onCancel, isUpdating }: EditCla
         },
     });
 
-    const handleSubmit = (values: FormValues) => {
+    const handleSubmit = (values: FormValues): void => {
         // Only submit if the status has changed
         if (values.status !== claim.status) {
             onSubmit({ status: values.status });
@@ -52,7 +52,7 @@ export const EditClaimForm = ({ claim, onSubmit, onCancel, isUpdating }: EditCla
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {Object.values(ClaimStatus).map(status => (
+                                    {Object.values(ClaimStatus).map((status) => (
                                         <SelectItem
                                             key={status}
                                             value={status}

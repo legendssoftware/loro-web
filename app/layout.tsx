@@ -4,6 +4,7 @@ import '../styles/globals.css';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { LayoutProvider } from '@/providers/layout.provider';
 import { TopNav } from '@/components/navigation/top-nav';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { Toaster } from 'react-hot-toast';
 
 const unbounded = Unbounded({
@@ -66,7 +67,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang='en' suppressHydrationWarning>
-            <body className={`${unbounded.variable} font-unbounded antialiased bg-background`}>
+            <body className={`${unbounded.variable} font-unbounded antialiased bg-background relative`}>
                 <ThemeProvider attribute='class' disableTransitionOnChange>
                     <LayoutProvider>
                         <TopNav />
@@ -95,6 +96,7 @@ export default function RootLayout({
                         }}
                     />
                 </ThemeProvider>
+                <AlertBanner />
             </body>
         </html>
     );

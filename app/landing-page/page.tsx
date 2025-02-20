@@ -100,7 +100,7 @@ const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className='flex flex-col min-h-screen bg-background'>
+        <div className='relative flex flex-col min-h-screen bg-background'>
             {/* Navigation */}
             <nav className='relative flex items-center justify-between p-6'>
                 {/* Logo */}

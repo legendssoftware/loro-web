@@ -343,23 +343,38 @@ export const InventoryDetailModal = ({
                     <AlertDialogContent className="sm:max-w-[600px]">
                       <AlertDialogHeader>
                         <AlertDialogTitle className="text-[14px] font-body uppercase font-normal">
-                          Are you sure?
+                          Delete Product
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-[10px] uppercase text-card-foreground font-body font-normal">
-                          This action cannot be undone. This will permanently delete the
-                          product and remove it from our servers.
+                          Are you sure you want to delete this product? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <div className="grid w-full grid-cols-2 gap-4">
-                          <AlertDialogCancel className="w-full text-[10px] font-normal uppercase font-body">
+                          <AlertDialogCancel 
+                            className="w-full text-[10px] font-normal uppercase font-body"
+                            disabled={isDeleting}
+                          >
                             Cancel
                           </AlertDialogCancel>
                           <AlertDialogAction
                             className="w-full text-[10px] font-normal text-white uppercase font-body"
-                            onClick={() => onDelete(selectedProduct?.uid)}
+                            onClick={() => {
+                              if (selectedProduct && !isDeleting) {
+                                onDelete(selectedProduct.uid);
+                                onOpenChange(false);
+                              }
+                            }}
+                            disabled={isDeleting}
                           >
-                            {isDeleting ? "Deleting..." : "Delete"}
+                            {isDeleting ? (
+                              <div className="flex items-center gap-2">
+                                <span className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin" />
+                                <span>Deleting...</span>
+                              </div>
+                            ) : (
+                              "Yes, Delete"
+                            )}
                           </AlertDialogAction>
                         </div>
                       </AlertDialogFooter>

@@ -139,8 +139,8 @@ export const InventoryModule = () => {
                 currentPage={currentPage}
                 onDelete={handleDeleteProduct}
                 onUpdate={handleUpdateProduct}
-                isUpdating={updateProductMutation.isPending}
                 isDeleting={deleteProductMutation.isPending}
+                isUpdating={updateProductMutation.isPending}
             />
             <InventoryDetailModal
                 isOpen={isProductDetailModalOpen}

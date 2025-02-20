@@ -94,7 +94,7 @@ const TaskDetailModalComponent = ({
                 repetitionType: formData.repetitionType,
                 repetitionEndDate: formData.repetitionEndDate ? formData.repetitionEndDate : undefined,
                 attachments: formData.attachments || [],
-                targetCategory: formData.targetCategory,
+                targetCategory: formData.targetCategory || undefined,
                 subtasks:
                     formData.subtasks?.map(subtask => ({
                         title: subtask.title || '',

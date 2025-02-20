@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { ExistingTask } from '@/lib/types/tasks';
+import { ExistingTask, Task } from '@/lib/types/tasks';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -10,8 +10,8 @@ import { Priority } from '@/lib/enums/task.enums';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 
 interface TaskCardProps {
-    task: ExistingTask;
-    onClick: (task: ExistingTask) => void;
+    task: Task | ExistingTask;
+    onClick: () => void;
 }
 
 const itemVariants = {
@@ -35,10 +35,10 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
         <motion.div variants={itemVariants} layout>
             <Card
                 className='transition-colors shadow-none cursor-pointer bg-card hover:border-primary/40 border-border'
-                onClick={() => onClick(task)}
+                onClick={() => onClick()}
                 role='button'
                 tabIndex={0}
-                onKeyDown={e => e.key === 'Enter' && onClick(task)}
+                onKeyDown={e => e.key === 'Enter' && onClick()}
                 aria-label={`Task: ${task.description}`}
             >
                 <CardContent className='flex flex-col justify-between h-full gap-4 p-4'>

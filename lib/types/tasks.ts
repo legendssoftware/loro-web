@@ -48,10 +48,13 @@ export enum TaskRepetition {
 }
 
 export interface SubTask {
-    uid?: string;
+    uid?: number;
     title: string;
-    description?: string;
-    status: TaskStatus;
+    description: string;
+    createdAt?: string;
+    updatedAt?: string;
+    status: string;
+    isDeleted?: boolean;
 }
 
 export interface TaskFormData {
@@ -80,51 +83,36 @@ export interface TaskFormData {
     progress: number;
 }
 
-export interface Task extends Omit<TaskFormData, 'deadline' | 'repetitionEndDate'> {
-    uid?: number;
-    deadline?: string;
-    repetitionEndDate?: string;
-    createdAt?: string;
-    updatedAt?: string;
-    isDeleted?: boolean;
-    lastCompletedAt?: string;
-    owner?: User;
-    branch?: Branch;
-    clients?: Client[];
-}
-
-export interface ExistingTask {
+export interface Task {
     uid: number;
     title: string;
     description: string;
-    status: TaskStatus;
     taskType: TaskType;
     priority: Priority;
-    progress: number;
     deadline: string | null;
     repetitionType: RepetitionType;
     repetitionEndDate: string | null;
-    lastCompletedAt: string | null;
-    startDate: string | null;
     attachments: string[];
-    isDeleted: boolean;
-    isOverdue: boolean;
-    targetCategory: TargetCategory | null;
-    createdAt: string;
-    updatedAt: string;
-    createdBy: User;
     assignees: User[];
     clients: Client[];
-    subtasks: {
-        uid: number;
-        title: string;
-        description: string;
-        createdAt: string;
-        updatedAt: string;
-        status: string;
-        isDeleted: boolean;
-    }[];
+    targetCategory: TargetCategory | null;
+    subtasks: SubTask[];
+    status: TaskStatus;
+    comment: string;
+    notes: string;
+    progress: number;
+    createdAt: string;
+    updatedAt: string;
+    isDeleted: boolean;
+    lastCompletedAt: string | null;
+    startDate: string | null;
+    isOverdue: boolean;
+    createdBy: User;
+    owner: User | null;
+    branch: Branch | null;
 }
+
+export interface ExistingTask extends Task {}
 
 export type TaskFilterValue = string | number | boolean | Date | null | undefined;
 

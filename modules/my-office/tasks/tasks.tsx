@@ -4,7 +4,7 @@ import { deleteTask, fetchTasks, updateTask } from '@/helpers/tasks';
 import type { UpdateTaskDTO } from '@/helpers/tasks';
 import { useSessionStore } from '@/store/use-session-store';
 import { RequestConfig } from '@/lib/types/tasks';
-import { ExistingTask } from '@/lib/types/tasks';
+import { ExistingTask, Task } from '@/lib/types/tasks';
 import { TaskList } from '@/modules/my-office/tasks/task-list';
 import { TaskDetailModal } from '@/modules/my-office/tasks/task-detail-modal';
 import toast from 'react-hot-toast';

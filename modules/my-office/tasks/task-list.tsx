@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useMemo } from 'react';
-import { ExistingTask, User } from '@/lib/types/tasks';
+import { Task, ExistingTask, User, Client } from '@/lib/types/tasks';
 import { PageLoader } from '@/components/page-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NewTaskModal } from './new-task-modal';
@@ -18,10 +18,10 @@ import { motion } from 'framer-motion';
 import { TaskCard } from './task-card';
 
 interface TaskListProps {
-    tasks: ExistingTask[];
-    onTaskClick: (task: ExistingTask) => void;
+    tasks: Task[];
+    onTaskClick: (task: Task) => void;
     onCreateClick?: () => void;
-    isLoading?: boolean;
+    isLoading: boolean;
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
@@ -133,6 +133,10 @@ const TaskListComponent = ({
         [createTaskMutation],
     );
 
+    const handleTaskClick = (task: Task) => {
+        onTaskClick(task);
+    };
+
     // Filter tasks based on all criteria
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
@@ -154,7 +158,7 @@ const TaskListComponent = ({
             }
 
             // Period filter
-            if (periodFilter !== 'all') {
+            if (periodFilter !== 'all' && task.createdAt) {
                 const taskDate = new Date(task.createdAt);
                 const now = new Date();
                 const daysDiff = Math.floor((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -307,7 +311,7 @@ const TaskListComponent = ({
             >
                 {filteredTasks.map(task => (
                     <motion.div key={task?.uid} variants={itemVariants} layout>
-                        <TaskCard task={task as ExistingTask} onClick={() => onTaskClick(task as ExistingTask)} />
+                        <TaskCard task={task} onClick={() => onTaskClick(task)} />
                     </motion.div>
                 ))}
             </motion.div>

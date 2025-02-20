@@ -58,6 +58,7 @@ interface InventoryListProps {
     onDelete: (uid: number) => void;
     onUpdate: (ref: number, data: UpdateProductDTO) => void;
     isUpdating: boolean;
+    isDeleting: boolean;
 }
 
 const InventoryListComponent = ({

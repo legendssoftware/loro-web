@@ -8,7 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { productStatuses, productCategories } from '@/data/app-data';
 import { ProductStatus, UpdateProductDTO } from '@/lib/types/products';
 import { Product } from '@/lib/types/products';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+
+// Define the form schema type
+type FormSchema = z.infer<typeof formSchema>;
+
+// Define numeric fields for type safety
+const numericFields = ['price', 'salePrice', 'discount', 'packageQuantity', 'weight', 'reorderPoint'] as const;
+type NumericField = typeof numericFields[number];
+
+// Define date fields for type safety
+const dateFields = ['promotionStartDate', 'promotionEndDate'] as const;
+type DateField = typeof dateFields[number];
 
 const formSchema = z.object({
     name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -22,12 +33,10 @@ const formSchema = z.object({
     }),
     saleStart: z.string().optional(),
     saleEnd: z.string().optional(),
-    discount: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
-        message: 'Discount must be a non-negative number.',
+    discount: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100, {
+        message: 'Discount must be between 0 and 100.',
     }),
-    barcode: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
-        message: 'Barcode must be a non-negative number.',
-    }),
+    barcode: z.string(),
     packageQuantity: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
         message: 'Package quantity must be a non-negative number.',
     }),
@@ -48,48 +57,75 @@ const formSchema = z.object({
     ]),
     imageUrl: z.string().url().optional().or(z.literal('')),
     isOnPromotion: z.boolean().default(false),
+    promotionStartDate: z.string().optional(),
+    promotionEndDate: z.string().optional(),
+    warehouseLocation: z.string().optional(),
+    reorderPoint: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
+        message: 'Reorder point must be a non-negative number.',
+    }),
+    packageDetails: z.string().optional(),
 });
 
 interface EditInventoryFormProps {
     product: Product;
-    onSubmit: (data: UpdateProductDTO) => void;
+    onSubmit: (data: Partial<UpdateProductDTO>) => void;
 }
 
 export const EditInventoryForm = ({ product, onSubmit }: EditInventoryFormProps) => {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            name: product?.name ?? '',
-            description: product?.description ?? '',
-            category: product?.category ?? '',
-            price: product?.price?.toString() ?? '0',
-            salePrice: product?.salePrice?.toString() ?? '0',
-            discount: product?.discount?.toString() ?? '0',
-            barcode: product?.barcode?.toString() ?? '',
-            packageQuantity: product?.packageQuantity?.toString() ?? '0',
-            brand: product?.brand ?? '',
-            weight: product?.weight?.toString() ?? '0',
-            status: (product?.status as ProductStatus) ?? ('AVAILABLE' as ProductStatus),
-            imageUrl: product?.imageUrl ?? '',
-            isOnPromotion: product?.isOnPromotion ?? false,
-        },
+    const initialValues = useRef<FormSchema>({
+        name: product?.name ?? '',
+        description: product?.description ?? '',
+        category: product?.category ?? '',
+        price: product?.price?.toString() ?? '0',
+        salePrice: product?.salePrice?.toString() ?? '0',
+        discount: product?.discount?.toString() ?? '0',
+        barcode: product?.barcode ?? '',
+        packageQuantity: product?.packageQuantity?.toString() ?? '0',
+        brand: product?.brand ?? '',
+        weight: product?.weight?.toString() ?? '0',
+        status: (product?.status as ProductStatus) ?? ('active' as ProductStatus),
+        imageUrl: product?.imageUrl ?? '',
+        isOnPromotion: product?.isOnPromotion ?? false,
+        promotionStartDate: product?.promotionStartDate ? new Date(product.promotionStartDate).toISOString().split('T')[0] : '',
+        promotionEndDate: product?.promotionEndDate ? new Date(product.promotionEndDate).toISOString().split('T')[0] : '',
+        warehouseLocation: product?.warehouseLocation ?? '',
+        reorderPoint: product?.reorderPoint?.toString() ?? '0',
+        packageDetails: product?.packageDetails ?? '',
     });
 
-    // Expose form submission method to parent
+    const form = useForm<FormSchema>({
+        resolver: zodResolver(formSchema),
+        defaultValues: initialValues.current,
+    });
+
+    // Watch form changes and only submit modified fields
     useEffect(() => {
-        const subscription = form.watch(value => {
-            const isValid = form.formState.isValid;
-            if (isValid) {
-                const formData = {
-                    ...value,
-                    price: Number(value.price),
-                    salePrice: Number(value.salePrice),
-                    discount: Number(value.discount),
-                    barcode: value.barcode,
-                    packageQuantity: Number(value.packageQuantity),
-                    weight: Number(value.weight),
-                };
-                onSubmit(formData);
+        const subscription = form.watch((value, { name, type }) => {
+            if (!form.formState.isValid) return;
+
+            // Get changed fields
+            const changedFields = Object.entries(value).reduce<Partial<UpdateProductDTO>>((acc, [key, val]) => {
+                const initialVal = initialValues.current[key as keyof FormSchema];
+                if (val !== initialVal) {
+                    // Convert string numbers to actual numbers
+                    if (numericFields.includes(key as NumericField)) {
+                        (acc[key as keyof UpdateProductDTO] as number) = Number(val);
+                    }
+                    // Handle promotion dates
+                    else if (dateFields.includes(key as DateField)) {
+                        (acc[key as keyof UpdateProductDTO] as Date | null) = val ? new Date(val as string) : null;
+                    }
+                    // Handle other fields
+                    else {
+                        (acc[key as keyof UpdateProductDTO] as string | boolean) = val;
+                    }
+                }
+                return acc;
+            }, {});
+
+            // Only submit if there are changes
+            if (Object.keys(changedFields).length > 0) {
+                onSubmit(changedFields);
             }
         });
         return () => subscription.unsubscribe();
@@ -324,6 +360,46 @@ export const EditInventoryForm = ({ product, onSubmit }: EditInventoryFormProps)
                         </FormItem>
                     )}
                 />
+                <div className='grid grid-cols-2 gap-4'>
+                    <FormField
+                        control={form.control}
+                        name='promotionStartDate'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className='text-[10px] font-normal uppercase font-body'>
+                                    Promotion Start Date
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type='date'
+                                        {...field}
+                                        disabled={!form.getValues('isOnPromotion')}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name='promotionEndDate'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className='text-[10px] font-normal uppercase font-body'>
+                                    Promotion End Date
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type='date'
+                                        {...field}
+                                        disabled={!form.getValues('isOnPromotion')}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
             </form>
         </Form>
     );

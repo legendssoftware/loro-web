@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 
 interface LeadListProps {
     leads: Lead[];
+    isLoading: boolean;
     onLeadClick: (lead: Lead) => void;
     currentPage: number;
     totalPages: number;
@@ -46,6 +47,7 @@ const itemVariants = {
 
 const LeadListComponent = ({
     leads,
+    isLoading,
     onLeadClick,
     currentPage,
     totalPages,

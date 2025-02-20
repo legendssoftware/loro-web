@@ -100,9 +100,7 @@ export const ClaimsModule = () => {
                 currentPage={currentPage}
                 totalPages={claimsData?.meta?.totalPages || 1}
                 onPageChange={handlePageChange}
-                onSearch={handleSearch}
                 onStatusFilter={handleStatusFilter}
-                searchQuery={searchQuery}
                 statusFilter={statusFilter}
             />
 

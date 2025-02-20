@@ -5,25 +5,25 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { User, CreateUserDTO, UpdateUserDTO, AccountStatus, AccessLevel } from "@/helpers/users"
-import { StaffForm, FormSubmitData } from "./staff-form"
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { User, CreateUserDTO, UpdateUserDTO, AccountStatus, AccessLevel } from '@/helpers/users';
+import { StaffForm, FormSubmitData } from './staff-form';
 
 interface StaffModalsProps {
-    isCreateModalOpen: boolean
-    isEditModalOpen: boolean
-    isDeactivateModalOpen: boolean
-    selectedUser?: User
-    onCreateModalChange: (open: boolean) => void
-    onEditModalChange: (open: boolean) => void
-    onDeactivateModalChange: (open: boolean) => void
-    onCreateSubmit: (data: CreateUserDTO) => void
-    onEditSubmit: (data: UpdateUserDTO) => void
-    onDeactivate: (user: User) => void
-    isCreating?: boolean
-    isUpdating?: boolean
-    isDeactivating?: boolean
+    isCreateModalOpen: boolean;
+    isEditModalOpen: boolean;
+    isDeactivateModalOpen: boolean;
+    selectedUser?: User;
+    onCreateModalChange: (open: boolean) => void;
+    onEditModalChange: (open: boolean) => void;
+    onDeactivateModalChange: (open: boolean) => void;
+    onCreateSubmit: (data: CreateUserDTO) => void;
+    onEditSubmit: (data: UpdateUserDTO) => void;
+    onDeactivate: (user: User) => void;
+    isCreating?: boolean;
+    isUpdating?: boolean;
+    isDeactivating?: boolean;
 }
 
 export const StaffModals = ({
@@ -78,7 +78,7 @@ export const StaffModals = ({
             ...(data.password && { password: data.password }),
             ...(data.photoURL && { photoURL: data.photoURL }),
             ...(data.branch && { branch: { uid: data.branch.uid, name: 'Default Branch' } }),
-            ...(data.organisation && { 
+            ...(data.organisation && {
                 organisation: { uid: data.organisation.uid, name: 'Default Organisation' },
                 organisationRef: data.organisation.uid.toString(),
             }),
@@ -89,10 +89,12 @@ export const StaffModals = ({
     return (
         <>
             <Dialog open={isCreateModalOpen} onOpenChange={onCreateModalChange}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className='sm:max-w-[425px]'>
                     <DialogHeader>
-                        <DialogTitle className="text-[14px] font-body uppercase font-normal">Add New Staff Member</DialogTitle>
-                        <DialogDescription className="text-[10px] uppercase text-card-foreground font-body font-normal">
+                        <DialogTitle className='text-[14px] font-body uppercase font-normal'>
+                            Add New Staff Member
+                        </DialogTitle>
+                        <DialogDescription className='text-[10px] uppercase text-card-foreground font-body font-normal'>
                             Add a new staff member by filling out the form below.
                         </DialogDescription>
                     </DialogHeader>
@@ -105,10 +107,10 @@ export const StaffModals = ({
             </Dialog>
 
             <Dialog open={isEditModalOpen} onOpenChange={onEditModalChange}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className='sm:max-w-[425px]'>
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-medium uppercase font-body">Edit Staff Member</DialogTitle>
-                        <DialogDescription className="text-[10px] uppercase text-muted-foreground font-body">
+                        <DialogTitle className='text-lg font-medium uppercase font-body'>Edit Staff Member</DialogTitle>
+                        <DialogDescription className='text-[10px] uppercase text-muted-foreground font-body'>
                             Update the staff members information below.
                         </DialogDescription>
                     </DialogHeader>
@@ -124,31 +126,35 @@ export const StaffModals = ({
             </Dialog>
 
             <Dialog open={isDeactivateModalOpen} onOpenChange={onDeactivateModalChange}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className='sm:max-w-[425px]'>
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-medium uppercase font-body">Deactivate Staff Member</DialogTitle>
-                        <DialogDescription className="text-[10px] uppercase text-muted-foreground font-body">
+                        <DialogTitle className='text-lg font-medium uppercase font-body'>
+                            Deactivate Staff Member
+                        </DialogTitle>
+                        <DialogDescription className='text-[10px] uppercase text-muted-foreground font-body'>
                             Are you sure you want to deactivate this staff member?
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-[12px] font-normal font-body">
-                            This action will deactivate the staff member&apos;s account. They will no longer be able to access the system.
+                    <div className='py-4'>
+                        <p className='text-[12px] font-normal font-body'>
+                            This action will deactivate the staff member&apos;s account. They will no longer be able to
+                            access the system.
                         </p>
                     </div>
                     <DialogFooter>
                         <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="text-[10px] font-normal uppercase font-body"
+                            type='button'
+                            variant='destructive'
+                            size='sm'
+                            className='text-[10px] font-normal uppercase font-body'
                             onClick={() => selectedUser && onDeactivate(selectedUser)}
-                            disabled={isDeactivating}>
+                            disabled={isDeactivating}
+                        >
                             {isDeactivating ? 'Deactivating...' : 'Deactivate'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>
-    )
-} 
+    );
+};

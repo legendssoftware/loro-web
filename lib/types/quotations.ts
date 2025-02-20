@@ -20,7 +20,7 @@ export interface Quotation {
     quotationNumber: string;
     totalAmount: number;
     totalItems: number;
-    status: OrderStatus; 
+    status: OrderStatus;
     quotationDate: Date;
     placedBy: User;
     client: Client;
@@ -36,10 +36,10 @@ export interface Quotation {
     validUntil?: Date;
 }
 export enum OrderStatus {
-    PENDING = "Pending",
-    ACCEPTED = "Accepted",
-    REJECTED = "Rejected",
+    PENDING = 'Pending',
+    ACCEPTED = 'Accepted',
+    REJECTED = 'Rejected',
 }
 
 export type CreateQuotationDTO = Omit<Quotation, 'uid' | 'createdAt' | 'updatedAt'>;
-export type UpdateQuotationDTO = Partial<CreateQuotationDTO>; 
+export type UpdateQuotationDTO = Partial<CreateQuotationDTO>;

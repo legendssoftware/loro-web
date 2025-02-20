@@ -1,5 +1,5 @@
-import { Branch } from "./branch";
-import { TaskType, RepetitionType, Priority, TaskStatus, TargetCategory } from "../enums/task.enums";
+import { Branch } from './branch';
+import { TaskType, RepetitionType, Priority, TaskStatus, TargetCategory } from '../enums/task.enums';
 
 export type User = {
     uid: number;
@@ -37,14 +37,14 @@ export type Client = {
 export enum TaskPriority {
     HIGH = 'high',
     MEDIUM = 'medium',
-    LOW = 'low'
+    LOW = 'low',
 }
 
 export enum TaskRepetition {
     NONE = 'NONE',
     DAILY = 'DAILY',
     WEEKLY = 'WEEKLY',
-    MONTHLY = 'MONTHLY'
+    MONTHLY = 'MONTHLY',
 }
 
 export interface SubTask {

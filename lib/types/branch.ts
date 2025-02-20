@@ -1,4 +1,4 @@
-import { GeneralStatus } from "../enums/status.enums";
+import { GeneralStatus } from '../enums/status.enums';
 
 export interface Branch {
     uid: number;

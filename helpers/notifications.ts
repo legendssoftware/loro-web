@@ -21,17 +21,17 @@ export interface Notification {
 
 export const fetchUserNotifications = async (userId: number, config: RequestConfig) => {
     try {
-        const response = await axios.get<{ message: string, notification: Notification[] }>(
+        const response = await axios.get<{ message: string; notification: Notification[] }>(
             `${API_URL}/notifications/personal/${userId}`,
             {
                 headers: {
-                    'Authorization': `Bearer ${config?.headers?.token}`,
-                    'Content-Type': 'application/json'
-                }
-            }
+                    Authorization: `Bearer ${config?.headers?.token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
         );
         return response.data;
     } catch (error) {
         return { message: error, notification: [] };
     }
-}; 
+};

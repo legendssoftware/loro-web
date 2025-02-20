@@ -63,7 +63,7 @@ export const tokenValidator = (token: string): boolean => {
             duration: 5000,
             position: 'bottom-center',
             icon: '❌',
-        })
+        });
         return false;
     }
 };

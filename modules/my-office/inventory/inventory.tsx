@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { useSessionStore } from "@/store/use-session-store"
-import toast from 'react-hot-toast'
-import { Product, RequestConfig, UpdateProductDTO } from "@/lib/types/products"
-import { deleteProduct, fetchProducts, updateProduct } from "@/helpers/products"
-import { InventoryDetailModal } from "./inventory-detail-modal"
-import { InventoryList } from "./inventory-list"
+import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSessionStore } from '@/store/use-session-store';
+import toast from 'react-hot-toast';
+import { Product, RequestConfig, UpdateProductDTO } from '@/lib/types/products';
+import { deleteProduct, fetchProducts, updateProduct } from '@/helpers/products';
+import { InventoryDetailModal } from './inventory-detail-modal';
+import { InventoryList } from './inventory-list';
 
 const toastStyle = {
     style: {
@@ -20,112 +20,118 @@ const toastStyle = {
     },
     duration: 2000,
     position: 'bottom-center',
-} as const
+} as const;
 
 export const InventoryModule = () => {
-    const { accessToken } = useSessionStore()
-    const queryClient = useQueryClient()
-    const [isProductDetailModalOpen, setIsProductDetailModalOpen] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
-    const limit = 20
+    const { accessToken } = useSessionStore();
+    const queryClient = useQueryClient();
+    const [isProductDetailModalOpen, setIsProductDetailModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const limit = 20;
 
     const config: RequestConfig = {
         headers: {
             token: `${accessToken}`,
         },
-    }
+    };
 
     const { data: productsData, isLoading } = useQuery({
         queryKey: ['products', currentPage],
         queryFn: () => fetchProducts(config, currentPage, limit),
         enabled: !!accessToken,
-    })
+    });
 
     const updateProductMutation = useMutation({
         mutationFn: ({ ref, updatedProduct }: { ref: number; updatedProduct: UpdateProductDTO }) =>
-            updateProduct({ ref, updatedProduct, config }), 
+            updateProduct({ ref, updatedProduct, config }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['products'] });
             toast.success('Product updated successfully', {
                 ...toastStyle,
                 icon: '✅',
-            })
-            setIsProductDetailModalOpen(false)
+            });
+            setIsProductDetailModalOpen(false);
         },
         onError: (error: Error) => {
             toast.error('Failed to update product: ' + error.message, {
                 ...toastStyle,
                 duration: 5000,
                 icon: '❌',
-            })
-        }
-    })
+            });
+        },
+    });
 
     const deleteProductMutation = useMutation({
         mutationFn: (uid: number) => deleteProduct(uid, config),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['products'] });
             toast.success('Product deleted successfully', {
                 ...toastStyle,
                 icon: '✅',
-            })
-            setIsProductDetailModalOpen(false)
+            });
+            setIsProductDetailModalOpen(false);
         },
         onError: (error: Error) => {
             toast.error('Failed to delete product: ' + error.message, {
                 ...toastStyle,
                 duration: 5000,
                 icon: '❌',
-            })
-        }
-    })
+            });
+        },
+    });
 
     const handleProductClick = useCallback((product: Product) => {
-        setSelectedProduct(product)
-        setIsProductDetailModalOpen(true)
-    }, [])
+        setSelectedProduct(product);
+        setIsProductDetailModalOpen(true);
+    }, []);
 
-    const handleDeleteProduct = useCallback(async (uid: number) => {
-        try {
-            await deleteProductMutation.mutateAsync(uid)
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to delete product'
-            toast.error(errorMessage, {
-                ...toastStyle,
-                duration: 5000,
-                icon: '❌',
-            })
-        }
-    }, [deleteProductMutation])
+    const handleDeleteProduct = useCallback(
+        async (uid: number) => {
+            try {
+                await deleteProductMutation.mutateAsync(uid);
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete product';
+                toast.error(errorMessage, {
+                    ...toastStyle,
+                    duration: 5000,
+                    icon: '❌',
+                });
+            }
+        },
+        [deleteProductMutation],
+    );
 
-    const handleUpdateProduct = useCallback(async (ref: number, updatedProduct: UpdateProductDTO) => {
-        try {
-            await updateProductMutation.mutateAsync({ ref, updatedProduct })
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to update product'
-            toast.error(errorMessage, {
-                ...toastStyle,
-                duration: 5000,
-                icon: '❌',
-            })
-        }
-    }, [updateProductMutation])
+    const handleUpdateProduct = useCallback(
+        async (ref: number, updatedProduct: UpdateProductDTO) => {
+            try {
+                await updateProductMutation.mutateAsync({ ref, updatedProduct });
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to update product';
+                toast.error(errorMessage, {
+                    ...toastStyle,
+                    duration: 5000,
+                    icon: '❌',
+                });
+            }
+        },
+        [updateProductMutation],
+    );
 
     const handlePageChange = useCallback((page: number) => {
-        setCurrentPage(page)
-    }, [])
+        setCurrentPage(page);
+    }, []);
 
     return (
-        <div className="flex flex-col w-full h-full gap-4">
+        <div className='flex flex-col w-full h-full gap-4'>
             <InventoryList
                 products={{
                     data: productsData?.data || [],
                     meta: {
                         total: productsData?.meta?.total || 0,
                         page: currentPage,
-                        lastPage: productsData?.meta?.totalPages || 1
-                    }
+                        lastPage: productsData?.meta?.totalPages || 1,
+                    },
                 }}
                 onProductClick={handleProductClick}
                 isLoading={isLoading}
@@ -146,5 +152,5 @@ export const InventoryModule = () => {
                 isDeleting={deleteProductMutation.isPending}
             />
         </div>
-    )
-}
+    );
+};

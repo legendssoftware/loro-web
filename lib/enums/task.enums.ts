@@ -10,20 +10,20 @@ export enum TaskType {
     REPORT = 'REPORT',
     QUOTATION = 'QUOTATION',
     VISIT = 'VISIT',
-    OTHER = 'OTHER'
+    OTHER = 'OTHER',
 }
 
 export enum RepetitionType {
     NONE = 'NONE',
     DAILY = 'DAILY',
     WEEKLY = 'WEEKLY',
-    MONTHLY = 'MONTHLY'
+    MONTHLY = 'MONTHLY',
 }
 
 export enum Priority {
     LOW = 'LOW',
     MEDIUM = 'MEDIUM',
-    HIGH = 'HIGH'
+    HIGH = 'HIGH',
 }
 
 export enum TaskStatus {
@@ -33,11 +33,11 @@ export enum TaskStatus {
     CANCELLED = 'CANCELLED',
     OVERDUE = 'OVERDUE',
     POSTPONED = 'POSTPONED',
-    MISSED = 'MISSED'
+    MISSED = 'MISSED',
 }
 
 export enum TargetCategory {
     STANDARD = 'standard',
     PREMIUM = 'premium',
-    ENTERPRISE = 'enterprise'
-} 
+    ENTERPRISE = 'enterprise',
+}

@@ -3,7 +3,7 @@ export enum GeneralStatus {
     INACTIVE = 'inactive',
     PENDING = 'pending',
     COMPLETED = 'completed',
-    CANCELLED = 'cancelled'
+    CANCELLED = 'cancelled',
 }
 
 export enum TaskStatus {
@@ -12,11 +12,11 @@ export enum TaskStatus {
     COMPLETED = 'completed',
     CANCELLED = 'cancelled',
     PENDING = 'pending',
-    INPROGRESS = 'inprogress'
+    INPROGRESS = 'inprogress',
 }
 
 export enum SubTaskStatus {
     COMPLETED = 'completed',
     PENDING = 'pending',
-    INPROGRESS = 'inprogress'
-} 
+    INPROGRESS = 'inprogress',
+}

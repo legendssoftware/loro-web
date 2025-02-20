@@ -81,10 +81,10 @@ const authAPI = {
 // Create the store
 export const useSessionStore = create<SessionState & SessionActions>()(
     persist(
-        (set) => ({
+        set => ({
             ...initialState,
 
-            signIn: async (credentials) => {
+            signIn: async credentials => {
                 try {
                     set({ loading: true, error: null });
 
@@ -124,8 +124,8 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                 set(initialState);
             },
 
-            setSession: (session) => {
-                set((state) => {
+            setSession: session => {
+                set(state => {
                     // If we're setting a new access token, update axios headers
                     if (session.accessToken) {
                         api.defaults.headers.common['Authorization'] = `Bearer ${session.accessToken}`;
@@ -140,22 +140,22 @@ export const useSessionStore = create<SessionState & SessionActions>()(
                 set(initialState);
             },
 
-            setAccessToken: (token) => set({ accessToken: token }),
+            setAccessToken: token => set({ accessToken: token }),
 
-            setUser: (user) => set({ user }),
+            setUser: user => set({ user }),
         }),
         {
             name: 'session-storage',
             storage: createJSONStorage(() => sessionStorage),
-            partialize: (state) => ({
+            partialize: state => ({
                 isAuthenticated: state.isAuthenticated,
                 accessToken: state.accessToken,
                 refreshToken: state.refreshToken,
                 profileData: state.profileData,
                 user: state.user,
             }),
-        }
-    )
+        },
+    ),
 );
 
 interface SignInResponse {
@@ -168,7 +168,7 @@ interface SignInResponse {
 // Custom hook for sign-in mutation
 export const useSignInMutation = () => {
     return useMutation<SignInResponse, Error, { username: string; password: string }>({
-        mutationFn: async (credentials) => {
+        mutationFn: async credentials => {
             const response = await authAPI.signIn(credentials);
             if (response.profileData && response.accessToken && response.refreshToken) {
                 // Update axios default headers with the new token
@@ -190,8 +190,8 @@ export const useSignInMutation = () => {
 
 // Axios interceptor for token refresh
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
+    response => response,
+    async error => {
         const originalRequest = error.config;
 
         // If error is 401 and we haven't tried to refresh token yet
@@ -226,5 +226,5 @@ api.interceptors.response.use(
         }
 
         return Promise.reject(error);
-    }
-); 
+    },
+);

@@ -3,7 +3,7 @@ export enum ClaimStatus {
     APPROVED = 'approved',
     DECLINED = 'declined',
     PAID = 'paid',
-    DELETED = 'deleted'
+    DELETED = 'deleted',
 }
 
 export enum ClaimCategory {
@@ -19,5 +19,5 @@ export enum ClaimCategory {
     ACCOMMODATION = 'accommodation',
     MEALS = 'meals',
     TRANSPORTATION = 'transportation',
-    ENTERTAINMENT = 'entertainment'
-} 
+    ENTERTAINMENT = 'entertainment',
+}

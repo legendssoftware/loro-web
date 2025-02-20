@@ -30,4 +30,4 @@ export interface UpdateClientDTO {
     website?: string;
     industry?: string;
     description?: string;
-} 
+}

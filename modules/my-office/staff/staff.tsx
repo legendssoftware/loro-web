@@ -1,48 +1,49 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createUser, fetchUsers, updateUser, User, CreateUserDTO, UpdateUserDTO, AccountStatus } from "@/helpers/users"
-import { useSessionStore } from "@/store/use-session-store"
-import { RequestConfig } from "@/lib/types/tasks"
-import { PageLoader } from "@/components/page-loader"
-import toast from "react-hot-toast"
-import { StaffList } from "./staff-list"
-import { StaffModals } from "./staff-modals"
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createUser, fetchUsers, updateUser, User, CreateUserDTO, UpdateUserDTO, AccountStatus } from '@/helpers/users';
+import { useSessionStore } from '@/store/use-session-store';
+import { RequestConfig } from '@/lib/types/tasks';
+import { PageLoader } from '@/components/page-loader';
+import toast from 'react-hot-toast';
+import { StaffList } from './staff-list';
+import { StaffModals } from './staff-modals';
 
 export const StaffModule = () => {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-    const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false)
-    const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
-    const [currentPage, setCurrentPage] = useState(1)
-    const [statusFilter, setStatusFilter] = useState<string>("all")
-    const [roleFilter, setRoleFilter] = useState<string>("all")
-    const { accessToken } = useSessionStore()
-    const queryClient = useQueryClient()
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [roleFilter, setRoleFilter] = useState<string>('all');
+    const { accessToken } = useSessionStore();
+    const queryClient = useQueryClient();
 
     const config: RequestConfig = {
         headers: {
-            token: accessToken || ''
-        }
-    }
+            token: accessToken || '',
+        },
+    };
 
     const { data: staffData, isLoading } = useQuery({
         queryKey: ['users', currentPage, statusFilter, roleFilter],
-        queryFn: () => fetchUsers({
-            ...config,
-            page: currentPage,
-            limit: 20,
-            filters: {
-                ...(statusFilter !== 'all' && { status: statusFilter }),
-                ...(roleFilter !== 'all' && { accessLevel: roleFilter })
-            }
-        }),
-        enabled: !!accessToken
-    })
+        queryFn: () =>
+            fetchUsers({
+                ...config,
+                page: currentPage,
+                limit: 20,
+                filters: {
+                    ...(statusFilter !== 'all' && { status: statusFilter }),
+                    ...(roleFilter !== 'all' && { accessLevel: roleFilter }),
+                },
+            }),
+        enabled: !!accessToken,
+    });
 
     const createUserMutation = useMutation({
         mutationFn: (userData: CreateUserDTO) => createUser(userData, config),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] })
+            queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success('Staff member added successfully', {
                 style: {
                     borderRadius: '5px',
@@ -57,13 +58,14 @@ export const StaffModule = () => {
                 duration: 2000,
                 position: 'bottom-center',
                 icon: '✅',
-            })
-            setIsCreateModalOpen(false)
+            });
+            setIsCreateModalOpen(false);
         },
         onError: (error: Error) => {
-            const errorMessage = error.message === "item(s) not found"
-                ? "Unable to add staff member. Please try again."
-                : `Failed to add staff member: ${error.message}`
+            const errorMessage =
+                error.message === 'item(s) not found'
+                    ? 'Unable to add staff member. Please try again.'
+                    : `Failed to add staff member: ${error.message}`;
 
             toast.error(errorMessage, {
                 style: {
@@ -79,15 +81,14 @@ export const StaffModule = () => {
                 duration: 5000,
                 position: 'bottom-center',
                 icon: '❌',
-            })
-        }
-    })
+            });
+        },
+    });
 
     const updateUserMutation = useMutation({
-        mutationFn: ({ uid, userData }: { uid: number; userData: UpdateUserDTO }) =>
-            updateUser(uid, userData, config),
+        mutationFn: ({ uid, userData }: { uid: number; userData: UpdateUserDTO }) => updateUser(uid, userData, config),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] })
+            queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success('Staff member updated successfully', {
                 style: {
                     borderRadius: '5px',
@@ -102,14 +103,15 @@ export const StaffModule = () => {
                 duration: 2000,
                 position: 'bottom-center',
                 icon: '✅',
-            })
-            setIsEditModalOpen(false)
-            setSelectedUser(undefined)
+            });
+            setIsEditModalOpen(false);
+            setSelectedUser(undefined);
         },
         onError: (error: Error) => {
-            const errorMessage = error.message === "item(s) not found"
-                ? "Unable to update staff member. Please try again."
-                : `Failed to update staff member: ${error.message}`
+            const errorMessage =
+                error.message === 'item(s) not found'
+                    ? 'Unable to update staff member. Please try again.'
+                    : `Failed to update staff member: ${error.message}`;
 
             toast.error(errorMessage, {
                 style: {
@@ -125,15 +127,15 @@ export const StaffModule = () => {
                 duration: 5000,
                 position: 'bottom-center',
                 icon: '❌',
-            })
-        }
-    })
+            });
+        },
+    });
 
     const deactivateUserMutation = useMutation({
         mutationFn: ({ uid, userData }: { uid: number; userData: UpdateUserDTO }) =>
             updateUser(uid, { ...userData, status: AccountStatus.INACTIVE }, config),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] })
+            queryClient.invalidateQueries({ queryKey: ['users'] });
             toast.success('Staff member deactivated successfully', {
                 style: {
                     borderRadius: '5px',
@@ -148,14 +150,15 @@ export const StaffModule = () => {
                 duration: 2000,
                 position: 'bottom-center',
                 icon: '✅',
-            })
-            setIsDeactivateModalOpen(false)
-            setSelectedUser(undefined)
+            });
+            setIsDeactivateModalOpen(false);
+            setSelectedUser(undefined);
         },
         onError: (error: Error) => {
-            const errorMessage = error.message === "item(s) not found"
-                ? "Unable to deactivate staff member. Please try again."
-                : `Failed to deactivate staff member: ${error.message}`
+            const errorMessage =
+                error.message === 'item(s) not found'
+                    ? 'Unable to deactivate staff member. Please try again.'
+                    : `Failed to deactivate staff member: ${error.message}`;
 
             toast.error(errorMessage, {
                 style: {
@@ -171,64 +174,64 @@ export const StaffModule = () => {
                 duration: 5000,
                 position: 'bottom-center',
                 icon: '❌',
-            })
-        }
-    })
+            });
+        },
+    });
 
     const handleCreateSubmit = (formData: CreateUserDTO) => {
-        createUserMutation.mutate(formData)
-    }
+        createUserMutation.mutate(formData);
+    };
 
     const handleEditSubmit = (formData: UpdateUserDTO) => {
-        if (!selectedUser) return
-        updateUserMutation.mutate({ uid: selectedUser.uid, userData: formData })
-    }
+        if (!selectedUser) return;
+        updateUserMutation.mutate({ uid: selectedUser.uid, userData: formData });
+    };
 
     const handleDeactivate = () => {
-        if (!selectedUser) return
+        if (!selectedUser) return;
         deactivateUserMutation.mutate({
             uid: selectedUser.uid,
-            userData: { status: AccountStatus.INACTIVE }
-        })
-    }
+            userData: { status: AccountStatus.INACTIVE },
+        });
+    };
 
     const handleUserAction = (user: User, action: 'edit' | 'deactivate') => {
-        setSelectedUser(user)
+        setSelectedUser(user);
         if (action === 'edit') {
-            setIsEditModalOpen(true)
+            setIsEditModalOpen(true);
         } else {
-            setIsDeactivateModalOpen(true)
+            setIsDeactivateModalOpen(true);
         }
-    }
+    };
 
     const handlePageChange = (page: number) => {
-        setCurrentPage(page)
-    }
+        setCurrentPage(page);
+    };
 
     const handleStatusFilter = (status: string) => {
-        setStatusFilter(status)
-        setCurrentPage(1) // Reset to first page when filtering
-    }
+        setStatusFilter(status);
+        setCurrentPage(1); // Reset to first page when filtering
+    };
 
     const handleRoleFilter = (role: string) => {
-        setRoleFilter(role)
-        setCurrentPage(1) // Reset to first page when filtering
-    }
+        setRoleFilter(role);
+        setCurrentPage(1); // Reset to first page when filtering
+    };
 
     const handleModalClose = () => {
-        setSelectedUser(undefined)
-        setIsEditModalOpen(false)
-        setIsDeactivateModalOpen(false)
-    }
+        setSelectedUser(undefined);
+        setIsEditModalOpen(false);
+        setIsDeactivateModalOpen(false);
+    };
 
     if (isLoading) {
         return (
-            <div className="flex flex-col w-full h-full gap-4">
-                <div className="flex items-center justify-center w-full h-screen">
+            <div className='flex flex-col w-full h-full gap-4'>
+                <div className='flex items-center justify-center w-full h-screen'>
                     <PageLoader />
                 </div>
             </div>
-        )
+        );
     }
 
     return (
@@ -261,5 +264,5 @@ export const StaffModule = () => {
                 isDeactivating={deactivateUserMutation.isPending}
             />
         </>
-    )
-}
+    );
+};

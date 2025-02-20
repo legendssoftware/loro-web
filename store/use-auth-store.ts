@@ -69,4 +69,4 @@ export const useResetPasswordMutation = () => {
     return useMutation<AuthResponse, Error, { token: string; password: string }>({
         mutationFn: authAPI.resetPassword,
     });
-}; 
+};

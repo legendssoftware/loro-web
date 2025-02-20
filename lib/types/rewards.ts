@@ -4,7 +4,7 @@ export enum AchievementCategory {
     MONTHLY = 'monthly',
     SPECIAL = 'special',
     MILESTONE = 'milestone',
-    SEASONAL = 'seasonal'
+    SEASONAL = 'seasonal',
 }
 
 export enum ItemType {
@@ -13,14 +13,14 @@ export enum ItemType {
     THEME = 'theme',
     EMOJI = 'emoji',
     TITLE = 'title',
-    FEATURE = 'feature'
+    FEATURE = 'feature',
 }
 
 export enum ItemRarity {
     COMMON = 'common',
     RARE = 'rare',
     EPIC = 'epic',
-    LEGENDARY = 'legendary'
+    LEGENDARY = 'legendary',
 }
 
 export interface RewardSource {
@@ -44,4 +44,4 @@ export interface CreateRewardDTO {
     action: string;
     amount: number;
     source: RewardSource;
-} 
+}

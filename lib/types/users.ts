@@ -1,11 +1,11 @@
 export enum AccessLevel {
-    ADMIN = "admin",
-    MANAGER = "manager",
-    SUPERVISOR = "supervisor",
-    USER = "user",
-    OWNER = "owner",
-    SUPPORT = "support",
-    DEVELOPER = "developer"
+    ADMIN = 'admin',
+    MANAGER = 'manager',
+    SUPERVISOR = 'supervisor',
+    USER = 'user',
+    OWNER = 'owner',
+    SUPPORT = 'support',
+    DEVELOPER = 'developer',
 }
 
 export interface User {
@@ -24,4 +24,4 @@ export interface User {
     updatedAt: string;
     isDeleted: boolean;
     deletedAt?: string;
-} 
+}

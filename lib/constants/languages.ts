@@ -4,4 +4,4 @@ export const languages = [
     { code: 'ES', label: 'Spanish' },
     { code: 'DE', label: 'German' },
     { code: 'ZH', label: 'Chinese' },
-]
+];

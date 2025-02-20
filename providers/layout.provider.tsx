@@ -23,11 +23,7 @@ interface LayoutProviderProps {
 export function LayoutProvider({ children }: LayoutProviderProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="dark"
-                enableSystem
-                disableTransitionOnChange>
+            <ThemeProvider attribute='class' defaultTheme='dark' enableSystem disableTransitionOnChange>
                 <AuthProvider>
                     <LicenseProvider>
                         {children}

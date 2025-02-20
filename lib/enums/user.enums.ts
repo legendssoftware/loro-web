@@ -1,7 +1,7 @@
 export enum Gender {
     MALE = 'MALE',
     FEMALE = 'FEMALE',
-    OTHER = 'OTHER'
+    OTHER = 'OTHER',
 }
 
 export enum Department {
@@ -14,11 +14,11 @@ export enum Department {
     MANAGEMENT = 'MANAGEMENT',
     LEGAL = 'LEGAL',
     SUPPORT = 'SUPPORT',
-    OTHER = 'OTHER'
+    OTHER = 'OTHER',
 }
 
 export enum AccessLevel {
     USER = 'USER',
     ADMIN = 'ADMIN',
-    MANAGER = 'MANAGER'
-} 
+    MANAGER = 'MANAGER',
+}

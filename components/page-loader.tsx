@@ -1,6 +1,6 @@
 export const PageLoader = () => {
     return (
-        <div className="honeycomb">
+        <div className='honeycomb'>
             <div></div>
             <div></div>
             <div></div>
@@ -9,5 +9,5 @@ export const PageLoader = () => {
             <div></div>
             <div></div>
         </div>
-    )
-}
+    );
+};

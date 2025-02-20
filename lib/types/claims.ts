@@ -1,34 +1,34 @@
-import { Branch } from "./branch";
-import { User } from "./users";
+import { Branch } from './branch';
+import { User } from './users';
 
 export enum ClaimStatus {
-    PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    DECLINED = "DECLINED",
-    PAID = "PAID",
-    DELETED = "DELETED"
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    DECLINED = 'DECLINED',
+    PAID = 'PAID',
+    DELETED = 'DELETED',
 }
 
 export enum ClaimCategory {
-    GENERAL = "GENERAL",
-    PROMOTION = "PROMOTION",
-    EVENT = "EVENT",
-    ANNOUNCEMENT = "ANNOUNCEMENT",
-    OTHER = "OTHER",
-    HOTEL = "HOTEL",
-    TRAVEL = "TRAVEL",
-    TRANSPORT = "TRANSPORT",
-    OTHER_EXPENSES = "OTHER_EXPENSES",
-    ACCOMMODATION = "ACCOMMODATION",
-    MEALS = "MEALS",
-    TRANSPORTATION = "TRANSPORTATION",
-    ENTERTAINMENT = "ENTERTAINMENT"
+    GENERAL = 'GENERAL',
+    PROMOTION = 'PROMOTION',
+    EVENT = 'EVENT',
+    ANNOUNCEMENT = 'ANNOUNCEMENT',
+    OTHER = 'OTHER',
+    HOTEL = 'HOTEL',
+    TRAVEL = 'TRAVEL',
+    TRANSPORT = 'TRANSPORT',
+    OTHER_EXPENSES = 'OTHER_EXPENSES',
+    ACCOMMODATION = 'ACCOMMODATION',
+    MEALS = 'MEALS',
+    TRANSPORTATION = 'TRANSPORTATION',
+    ENTERTAINMENT = 'ENTERTAINMENT',
 }
 
 export enum MerchandiseStatus {
-    PENDING = "PENDING",
-    REVIEW = "REVIEW",
-    DELETED = "DELETED"
+    PENDING = 'PENDING',
+    REVIEW = 'REVIEW',
+    DELETED = 'DELETED',
 }
 
 export interface ClaimStats {
@@ -82,4 +82,4 @@ export interface ClaimResponse {
         totalPages: number;
     };
     message: string;
-} 
+}

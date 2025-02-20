@@ -1,12 +1,12 @@
-import { User } from "./users";
-import { Client } from "./clients";
-import { Branch } from "./branch";
+import { User } from './users';
+import { Client } from './clients';
+import { Branch } from './branch';
 
 export enum LeadStatus {
-    PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    REVIEW = "REVIEW",
-    DECLINED = "DECLINED"
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REVIEW = 'REVIEW',
+    DECLINED = 'DECLINED',
 }
 
 export interface Lead {
@@ -62,4 +62,4 @@ export interface LeadResponse {
         totalPages: number;
     };
     message: string;
-} 
+}

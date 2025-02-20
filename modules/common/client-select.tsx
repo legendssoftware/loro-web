@@ -100,8 +100,8 @@ export const ClientSelect = ({
     if (isLoading) {
         return (
             <div className="space-y-2">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="w-20 h-4" />
+                <Skeleton className="w-full h-10" />
             </div>
         )
     }

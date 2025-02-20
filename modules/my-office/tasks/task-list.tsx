@@ -25,6 +25,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import {
   PeriodFilter,
@@ -44,17 +45,39 @@ const containerVariants = {
   },
 };
 
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
 interface TaskListProps {
   tasks: ExistingTask[];
   onTaskClick: (task: ExistingTask) => void;
   onCreateClick?: () => void;
   isLoading?: boolean;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
 const TaskListComponent = ({
   tasks,
   onTaskClick,
   isLoading = false,
+  currentPage,
+  totalPages,
+  onPageChange,
 }: TaskListProps) => {
   const { accessToken } = useSessionStore();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
@@ -63,8 +86,6 @@ const TaskListComponent = ({
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const tasksPerPage = 20;
 
   const queryClient = useQueryClient();
 
@@ -138,6 +159,74 @@ const TaskListComponent = ({
     [createTaskMutation]
   );
 
+  // Filter tasks based on all criteria
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      // Search filter
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const matchesSearch = 
+          task.title?.toLowerCase().includes(searchLower) ||
+          task.description?.toLowerCase().includes(searchLower) ||
+          task.assignees?.some(
+            assignee => 
+              assignee.name?.toLowerCase().includes(searchLower) ||
+              assignee.surname?.toLowerCase().includes(searchLower)
+          ) ||
+          task.clients?.some(
+            client => client.name?.toLowerCase().includes(searchLower)
+          );
+        
+        if (!matchesSearch) return false;
+      }
+
+      // Status filter
+      if (statusFilter !== "all" && task.status !== statusFilter) {
+        return false;
+      }
+
+      // Client filter
+      if (clientFilter !== "all") {
+        const hasClient = task.clients?.some(
+          client => client.uid.toString() === clientFilter
+        );
+        if (!hasClient) return false;
+      }
+
+      // Assignee filter
+      if (assigneeFilter !== "all") {
+        const hasAssignee = task.assignees?.some(
+          assignee => assignee.uid.toString() === assigneeFilter
+        );
+        if (!hasAssignee) return false;
+      }
+
+      // Period filter
+      if (periodFilter !== "all") {
+        const taskDate = new Date(task.createdAt);
+        const now = new Date();
+        const daysDiff = Math.floor((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        switch (periodFilter) {
+          case "today":
+            if (daysDiff > 0) return false;
+            break;
+          case "yesterday":
+            if (daysDiff !== 1) return false;
+            break;
+          case "last_week":
+            if (daysDiff > 7 || daysDiff <= 0) return false;
+            break;
+          case "last_month":
+            if (daysDiff > 30 || daysDiff <= 0) return false;
+            break;
+        }
+      }
+
+      return true;
+    });
+  }, [tasks, searchQuery, statusFilter, clientFilter, assigneeFilter, periodFilter]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
@@ -145,20 +234,6 @@ const TaskListComponent = ({
       </div>
     );
   }
-
-  const totalPages = Math.ceil(tasks.length / tasksPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
 
   const Header = () => {
     return (
@@ -263,6 +338,13 @@ const TaskListComponent = ({
               ))}
             </SelectContent>
           </Select>
+          <Button
+            onClick={() => setIsNewTaskModalOpen(true)}
+            className="text-[10px] font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Add
+          </Button>
         </div>
         <NewTaskModal
           isOpen={isNewTaskModalOpen}
@@ -274,7 +356,7 @@ const TaskListComponent = ({
     );
   };
 
-  if (!tasks.length) {
+  if (!filteredTasks.length) {
     return (
       <div className="space-y-4">
         <Header />
@@ -300,20 +382,21 @@ const TaskListComponent = ({
         animate="show"
         className="grid grid-cols-1 gap-1 md:grid-cols-2 lg:grid-cols-4"
       >
-        {tasks.map((task) => (
-          <TaskCard
-            key={task?.uid}
-            task={task as ExistingTask}
-            onClick={() => onTaskClick(task as ExistingTask)}
-          />
+        {filteredTasks.map((task) => (
+          <motion.div key={task?.uid} variants={itemVariants} layout>
+            <TaskCard
+              task={task as ExistingTask}
+              onClick={() => onTaskClick(task as ExistingTask)}
+            />
+          </motion.div>
         ))}
       </motion.div>
-      {!!tasks.length && tasks.length > tasksPerPage && (
+      {totalPages > 1 && (
         <div className="fixed flex items-center gap-2 px-4 py-2 transform -translate-x-1/2 border rounded-full shadow-lg bottom-4 left-1/2 bg-card">
           <Button
             variant="ghost"
             size="icon"
-            onClick={handlePrevPage}
+            onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="w-8 h-8"
           >
@@ -325,7 +408,7 @@ const TaskListComponent = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleNextPage}
+            onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="w-8 h-8"
           >

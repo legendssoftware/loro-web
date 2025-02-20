@@ -14,6 +14,8 @@ export const TasksModule = () => {
     const queryClient = useQueryClient()
     const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false)
     const [selectedTask, setSelectedTask] = useState<ExistingTask | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 20
 
     const config: RequestConfig = {
         headers: {
@@ -22,8 +24,15 @@ export const TasksModule = () => {
     }
 
     const { data: tasksData, isLoading } = useQuery({
-        queryKey: ['tasks'],
-        queryFn: () => fetchTasks(config),
+        queryKey: ['tasks', currentPage],
+        queryFn: async () => {
+            const response = await fetchTasks({
+                ...config,
+                page: currentPage,
+                limit: itemsPerPage
+            })
+            return response
+        },
         enabled: !!accessToken,
     })
 
@@ -133,6 +142,12 @@ export const TasksModule = () => {
         }
     }, [deleteTaskMutation])
 
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page)
+    }, [])
+
+    const totalPages = Math.ceil((tasksData?.meta?.total || 0) / itemsPerPage)
+
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <TaskList
@@ -158,6 +173,9 @@ export const TasksModule = () => {
                 } as ExistingTask))}
                 onTaskClick={handleTaskClick}
                 isLoading={isLoading}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
             />
 
             <TaskDetailModal

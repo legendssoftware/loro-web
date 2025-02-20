@@ -98,21 +98,21 @@ export const NewInventoryForm = ({ onSubmit, isSubmitting }: NewInventoryFormPro
     const handleSubmit = (values: z.infer<typeof formSchema>) => {
         onSubmit({
             ...values,
-            price: Number(values.price),
-            salePrice: Number(values.salePrice),
-            discount: Number(values.discount),
-            barcode: values.barcode,
-            packageQuantity: Number(values.packageQuantity),
-            weight: Number(values.weight),
-            stockQuantity: Number(values.stockQuantity),
-            reorderPoint: Number(values.reorderPoint),
-            productRef: values.productReferenceCode,
+            price: Number(values?.price),
+            salePrice: Number(values?.salePrice),
+            discount: Number(values?.discount),
+            barcode: values?.barcode,
+            packageQuantity: Number(values?.packageQuantity),
+            weight: values?.weight,
+            stockQuantity: Number(values?.stockQuantity),
+            reorderPoint: Number(values?.reorderPoint),
+            productRef: values?.productReferenceCode,
             isDeleted: false,
-            promotionStartDate: values.saleStart ? new Date(values.saleStart) : null,
-            promotionEndDate: values.saleEnd ? new Date(values.saleEnd) : null,
+            promotionStartDate: values?.saleStart ? `${values?.saleStart}` : null,
+            promotionEndDate: values?.saleEnd ? `${values?.saleEnd}` : null,
             packageUnit: 'unit',
-            imageUrl: values.imageUrl || null,
-            packageDetails: values.packageDetails || '',
+            imageUrl: values?.imageUrl || null,
+            packageDetails: values?.packageDetails || '',
         });
     };
 
@@ -183,11 +183,11 @@ export const NewInventoryForm = ({ onSubmit, isSubmitting }: NewInventoryFormPro
                                     <SelectContent>
                                         {productCategories.map(category => (
                                             <SelectItem
-                                                key={category.value}
-                                                value={category.value}
+                                                key={category?.value}
+                                                value={category?.value}
                                                 className='text-[10px] font-normal uppercase font-body'
                                             >
-                                                {category.label}
+                                                {category?.label}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

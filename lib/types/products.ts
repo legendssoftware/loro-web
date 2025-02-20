@@ -9,34 +9,34 @@ export type ProductStatus =
     | 'hotdeals'
     | 'outofstock';
 
-export type Product = {
+export interface Product {
     uid: number;
     name: string;
     description: string;
     price: number | null;
     category: string;
-    status: string;
+    status: ProductStatus;
     imageUrl: string | null;
     sku: string;
     warehouseLocation: string | null;
     stockQuantity: number;
     productRef: string;
     reorderPoint: number;
+    salePrice: number | null;
+    discount: number | null;
+    barcode: string | null;
+    packageQuantity: number;
+    brand: string | null;
+    weight: string;
+    isOnPromotion: boolean;
+    packageDetails: string | null;
+    promotionStartDate: string | null;
+    promotionEndDate: string | null;
+    packageUnit: string;
     createdAt: string;
     updatedAt: string;
     isDeleted: boolean;
-    barcode: string;
-    brand: string;
-    weight: number;
-    packageDetails: string;
-    isOnPromotion: boolean;
-    salePrice: number | null;
-    promotionStartDate: Date | null;
-    promotionEndDate: Date | null;
-    discount: number | null;
-    packageQuantity: number;
-    packageUnit: string;
-};
+}
 
 export type UpdateProductDTO = Partial<Omit<Product, 'uid' | 'createdAt' | 'updatedAt'>>;
 

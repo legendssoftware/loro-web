@@ -204,7 +204,7 @@ const SignInPage = () => {
                     <Button
                         type='submit'
                         className={cn(
-                            'w-full bg-primary hover:bg-primary/90 p-5 text-base font-normal font-body uppercase',
+                            'w-full bg-primary hover:bg-primary/90 p-5 font-normal font-body uppercase text-xs',
                             isLoading && 'opacity-50',
                         )}
                         disabled={isLoading}

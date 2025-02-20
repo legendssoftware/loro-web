@@ -1,82 +1,61 @@
-import { memo } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Claim, ClaimStatus } from '@/lib/types/claims';
+import { claimStatuses, claimCategories } from '@/data/app-data';
+import { Claim, UpdateClaimDTO } from '@/lib/types/claims';
 
 const formSchema = z.object({
-    amount: z.string().min(1, 'Amount is required'),
-    category: z.string().min(1, 'Category is required'),
-    description: z.string().min(1, 'Description is required'),
-    notes: z.string().optional(),
-    status: z.nativeEnum(ClaimStatus),
-    attachments: z.array(z.string()).optional(),
+    amount: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
+        message: 'Amount must be a non-negative number.',
+    }),
+    status: z.string(),
+    category: z.string(),
 });
 
-export type FormData = z.infer<typeof formSchema>;
+type FormSchema = z.infer<typeof formSchema>;
 
 interface EditClaimFormProps {
     claim: Claim;
-    onSubmit: (data: FormData) => void;
+    onSubmit: (data: UpdateClaimDTO) => void;
 }
 
-const EditClaimFormComponent = ({ claim, onSubmit }: EditClaimFormProps) => {
-    const form = useForm<FormData>({
+export const EditClaimForm = ({ claim, onSubmit }: EditClaimFormProps) => {
+    const form = useForm<FormSchema>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            amount: claim.amount?.toString() || '',
-            category: claim.category || '',
-            description: claim.description || '',
-            notes: claim.notes || '',
-            status: claim.status || ClaimStatus.PENDING,
-            attachments: claim.attachments || [],
+            amount: claim.amount?.toString() || '0',
+            status: claim.status,
+            category: claim.category,
         },
     });
 
-    const handleSubmit = (data: FormData) => {
-        onSubmit(data);
+    const handleSubmit = (values: FormSchema) => {
+        onSubmit({
+            amount: Number(values.amount),
+            status: values.status,
+            category: values.category,
+        });
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-4'>
-                <div className='grid grid-cols-2 gap-4'>
-                    <FormField
-                        control={form.control}
-                        name='amount'
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className='text-[10px] font-normal uppercase font-body'>Amount</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        type='number'
-                                        className='h-8 text-[10px] font-normal uppercase font-body'
-                                    />
-                                </FormControl>
-                                <FormMessage className='text-[10px]' />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name='category'
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className='text-[10px] font-normal uppercase font-body'>Category</FormLabel>
-                                <FormControl>
-                                    <Input {...field} className='h-8 text-[10px] font-normal uppercase font-body' />
-                                </FormControl>
-                                <FormMessage className='text-[10px]' />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className='flex flex-col gap-4'>
+                <FormField
+                    control={form.control}
+                    name='amount'
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className='text-[10px] font-normal uppercase font-body'>Amount</FormLabel>
+                            <FormControl>
+                                <Input type='number' step='0.01' min='0' placeholder='0.00' {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <FormField
                     control={form.control}
@@ -86,51 +65,52 @@ const EditClaimFormComponent = ({ claim, onSubmit }: EditClaimFormProps) => {
                             <FormLabel className='text-[10px] font-normal uppercase font-body'>Status</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger className='h-8 text-[10px] font-normal uppercase font-body'>
+                                    <SelectTrigger>
                                         <SelectValue placeholder='Select status' />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {Object.values(ClaimStatus).map(status => (
+                                    {claimStatuses.map(status => (
                                         <SelectItem
-                                            key={status}
-                                            value={status}
+                                            key={status.value}
+                                            value={status.value}
                                             className='text-[10px] font-normal uppercase font-body'
                                         >
-                                            {status}
+                                            {status.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <FormMessage className='text-[10px]' />
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
 
                 <FormField
                     control={form.control}
-                    name='description'
+                    name='category'
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className='text-[10px] font-normal uppercase font-body'>Description</FormLabel>
-                            <FormControl>
-                                <Textarea {...field} className='min-h-[100px] text-[10px] font-normal font-body' />
-                            </FormControl>
-                            <FormMessage className='text-[10px]' />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name='notes'
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className='text-[10px] font-normal uppercase font-body'>Notes</FormLabel>
-                            <FormControl>
-                                <Textarea {...field} className='min-h-[100px] text-[10px] font-normal font-body' />
-                            </FormControl>
-                            <FormMessage className='text-[10px]' />
+                            <FormLabel className='text-[10px] font-normal uppercase font-body'>Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder='Select category' />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {claimCategories.map(category => (
+                                        <SelectItem
+                                            key={category.value}
+                                            value={category.value}
+                                            className='text-[10px] font-normal uppercase font-body'
+                                        >
+                                            {category.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -138,5 +118,3 @@ const EditClaimFormComponent = ({ claim, onSubmit }: EditClaimFormProps) => {
         </Form>
     );
 };
-
-export const EditClaimForm = memo(EditClaimFormComponent);

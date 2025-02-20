@@ -4,25 +4,16 @@ import { User } from './users';
 export enum ClaimStatus {
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',
-    DECLINED = 'DECLINED',
-    PAID = 'PAID',
-    DELETED = 'DELETED',
+    REJECTED = 'REJECTED',
+    IN_REVIEW = 'IN_REVIEW',
 }
 
 export enum ClaimCategory {
-    GENERAL = 'GENERAL',
-    PROMOTION = 'PROMOTION',
-    EVENT = 'EVENT',
-    ANNOUNCEMENT = 'ANNOUNCEMENT',
-    OTHER = 'OTHER',
-    HOTEL = 'HOTEL',
+    MEDICAL = 'MEDICAL',
     TRAVEL = 'TRAVEL',
-    TRANSPORT = 'TRANSPORT',
-    OTHER_EXPENSES = 'OTHER_EXPENSES',
-    ACCOMMODATION = 'ACCOMMODATION',
-    MEALS = 'MEALS',
-    TRANSPORTATION = 'TRANSPORTATION',
-    ENTERTAINMENT = 'ENTERTAINMENT',
+    EQUIPMENT = 'EQUIPMENT',
+    SUPPLIES = 'SUPPLIES',
+    OTHER = 'OTHER',
 }
 
 export enum MerchandiseStatus {
@@ -41,18 +32,16 @@ export interface ClaimStats {
 
 export interface Claim {
     uid: number;
-    owner: User;
-    branch?: Branch;
-    amount: string;
+    amount: number;
     category: ClaimCategory;
+    description: string;
+    notes: string | null;
     status: ClaimStatus;
-    description?: string;
-    notes?: string;
-    attachments?: string[];
+    attachments: string[];
     createdAt: string;
     updatedAt: string;
     isDeleted: boolean;
-    deletedAt?: string;
+    owner: User;
 }
 
 export interface CreateClaimDTO {
@@ -64,14 +53,11 @@ export interface CreateClaimDTO {
     owner: { uid: number };
 }
 
-export interface UpdateClaimDTO {
-    title?: string;
-    description?: string;
-    amount?: number;
-    documentUrl?: string;
-    category?: ClaimCategory;
-    status?: ClaimStatus;
-}
+export type UpdateClaimDTO = Partial<{
+    amount: number;
+    category: ClaimCategory;
+    status: ClaimStatus;
+}>;
 
 export interface ClaimResponse {
     data: Claim[];
@@ -82,4 +68,10 @@ export interface ClaimResponse {
         totalPages: number;
     };
     message: string;
+}
+
+export interface RequestConfig {
+    headers: {
+        token: string;
+    };
 }

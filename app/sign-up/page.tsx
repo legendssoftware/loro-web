@@ -129,7 +129,7 @@ const SignUpPage = () => {
                         type='submit'
                         disabled={isLoading}
                         className={cn(
-                            'w-full p-5 text-base font-normal uppercase bg-primary hover:bg-primary/90 font-body',
+                            'w-full p-5 text-xs font-normal uppercase bg-primary hover:bg-primary/90 font-body',
                             isLoading && 'opacity-50',
                         )}
                         aria-label='Claim Account'

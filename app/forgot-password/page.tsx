@@ -94,12 +94,14 @@ const ForgotPasswordPage = () => {
         >
             <div className='absolute inset-0 bg-black/50' />
             <div className='relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'>
-                <h1 className='text-2xl font-normal text-center text-white sm:text-3xl font-heading'>
-                    Forgot Password
-                </h1>
-                <p className='text-sm font-light text-center text-white/70'>
-                    Enter your email address and we&apos;ll send you a link to reset your password.
-                </p>
+                <div className='space-y-1'>
+                    <h1 className='text-2xl font-normal text-center text-white uppercase sm:text-3xl font-heading'>
+                        Forgot Password
+                    </h1>
+                    <p className='text-xs font-light text-center uppercase text-white/70 font-body'>
+                        Enter your email address and we&apos;ll send you a link to reset your password.
+                    </p>
+                </div>
                 <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
                     <div className='space-y-1'>
                         <label htmlFor='email' className='block text-xs font-light text-white uppercase font-body'>
@@ -126,7 +128,7 @@ const ForgotPasswordPage = () => {
                         type='submit'
                         disabled={isLoading}
                         className={cn(
-                            'w-full p-5 text-base font-normal uppercase bg-primary hover:bg-primary/90 font-body',
+                            'w-full p-5 text-xs font-normal uppercase bg-primary hover:bg-primary/90 font-body',
                             isLoading && 'opacity-50',
                         )}
                         aria-label='Send Reset Link'
@@ -137,7 +139,7 @@ const ForgotPasswordPage = () => {
                                 <Loader2 className='w-4 h-4 mr-2 text-white animate-spin' size={16} strokeWidth={1.5} />
                             </div>
                         ) : (
-                            <span className='font-normal text-white'>Send Reset Link</span>
+                            <span className='font-normal text-white'>Send Reset Instructions</span>
                         )}
                     </Button>
                 </form>

@@ -150,7 +150,7 @@ const ClaimListComponent = ({
             >
                 {paginatedClaims?.map(claim => (
                     <motion.div key={claim.uid} variants={itemVariants} layout>
-                        <ClaimCard claim={claim} onClick={onClaimClick} />
+                        <ClaimCard claim={claim} onClick={() => onClaimClick(claim)} />
                     </motion.div>
                 ))}
             </motion.div>

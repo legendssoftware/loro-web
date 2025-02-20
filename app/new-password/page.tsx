@@ -119,12 +119,14 @@ const NewPasswordPage = () => {
         >
             <div className='absolute inset-0 bg-black/50' />
             <div className='relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'>
-                <h1 className='text-2xl font-normal text-center text-white sm:text-3xl font-heading'>
-                    Create New Password
-                </h1>
-                <p className='text-sm font-light text-center text-white/70'>
-                    Your new password must be different from previously used passwords.
-                </p>
+                <div className='space-y-1'>
+                    <h1 className='text-2xl font-normal text-center text-white uppercase sm:text-3xl font-heading'>
+                        Create New Password
+                    </h1>
+                    <p className='text-xs font-light text-center uppercase text-white/70 font-body'>
+                        Your new password must be different from previously used passwords.
+                    </p>
+                </div>
                 <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
                     <div className='space-y-1'>
                         <label htmlFor='password' className='block text-xs font-light text-white uppercase font-body'>
@@ -213,7 +215,7 @@ const NewPasswordPage = () => {
                         type='submit'
                         disabled={isLoading}
                         className={cn(
-                            'w-full p-5 text-base font-normal uppercase bg-primary hover:bg-primary/90 font-body',
+                            'w-full p-5 text-xs font-normal uppercase bg-primary hover:bg-primary/90 font-body',
                             isLoading && 'opacity-50',
                         )}
                         aria-label='Reset Password'

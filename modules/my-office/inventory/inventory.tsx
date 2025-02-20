@@ -7,6 +7,21 @@ import { deleteProduct, fetchProducts, updateProduct } from "@/helpers/products"
 import { InventoryDetailModal } from "./inventory-detail-modal"
 import { InventoryList } from "./inventory-list"
 
+const toastStyle = {
+    style: {
+        borderRadius: '5px',
+        background: '#333',
+        color: '#fff',
+        fontFamily: 'var(--font-unbounded)',
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        fontWeight: '300',
+        padding: '16px',
+    },
+    duration: 2000,
+    position: 'bottom-center',
+} as const
+
 export const InventoryModule = () => {
     const { accessToken } = useSessionStore()
     const queryClient = useQueryClient()
@@ -33,36 +48,16 @@ export const InventoryModule = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] })
             toast.success('Product updated successfully', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
+                ...toastStyle,
                 icon: '✅',
             })
             setIsProductDetailModalOpen(false)
         },
         onError: (error: Error) => {
-            console.error('Update error:', error)
             toast.error('Failed to update product: ' + error.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
+                ...toastStyle,
                 duration: 5000,
+                icon: '❌',
             })
         }
     })
@@ -72,37 +67,15 @@ export const InventoryModule = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] })
             toast.success('Product deleted successfully', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
+                ...toastStyle,
                 icon: '✅',
             })
             setIsProductDetailModalOpen(false)
         },
         onError: (error: Error) => {
-            console.error('Delete error:', error)
             toast.error('Failed to delete product: ' + error.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
+                ...toastStyle,
                 duration: 5000,
-                position: 'bottom-center',
                 icon: '❌',
             })
         }
@@ -117,7 +90,12 @@ export const InventoryModule = () => {
         try {
             await deleteProductMutation.mutateAsync(uid)
         } catch (error) {
-            console.error('Failed to delete product:', error)
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete product'
+            toast.error(errorMessage, {
+                ...toastStyle,
+                duration: 5000,
+                icon: '❌',
+            })
         }
     }, [deleteProductMutation])
 
@@ -125,7 +103,12 @@ export const InventoryModule = () => {
         try {
             await updateProductMutation.mutateAsync({ ref, updatedProduct })
         } catch (error) {
-            console.error('Failed to update product:', error)
+            const errorMessage = error instanceof Error ? error.message : 'Failed to update product'
+            toast.error(errorMessage, {
+                ...toastStyle,
+                duration: 5000,
+                icon: '❌',
+            })
         }
     }, [updateProductMutation])
 

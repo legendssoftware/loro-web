@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { useSessionStore } from "@/store/use-session-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { showToast } from "@/lib/utils/toast";
 import { productCategories, productStatuses } from "@/data/app-data";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
@@ -29,6 +28,22 @@ import { createProduct } from "@/helpers/products";
 import { InventoryCard } from "./inventory-card";
 import { InventoryDetailModal } from "./inventory-detail-modal";
 import { NewInventoryModal } from "./new-inventory-modal";
+import toast from 'react-hot-toast';
+
+const toastStyle = {
+    style: {
+        borderRadius: '5px',
+        background: '#333',
+        color: '#fff',
+        fontFamily: 'var(--font-unbounded)',
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        fontWeight: '300',
+        padding: '16px',
+    },
+    duration: 2000,
+    position: 'bottom-center',
+} as const;
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -92,11 +107,18 @@ const InventoryListComponent = ({
     mutationFn: (data: CreateProductDTO) => createProduct(data, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      showToast.success("Product created successfully");
+      toast.success("Product created successfully", {
+        ...toastStyle,
+        icon: '✅',
+      });
       setIsNewProductModalOpen(false);
     },
-    onError: (error) => {
-      showToast.error("Failed to create product", error);
+    onError: (error: Error) => {
+      toast.error("Failed to create product: " + error.message, {
+        ...toastStyle,
+        duration: 5000,
+        icon: '❌',
+      });
     },
   });
 
@@ -105,7 +127,12 @@ const InventoryListComponent = ({
       try {
         await createProductMutation.mutateAsync(data);
       } catch (error) {
-        console.error("Failed to create product:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create product';
+        toast.error(errorMessage, {
+          ...toastStyle,
+          duration: 5000,
+          icon: '❌',
+        });
       }
     },
     [createProductMutation]

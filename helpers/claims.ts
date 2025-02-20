@@ -3,8 +3,22 @@ import { ClaimResponse, CreateClaimDTO, UpdateClaimDTO } from '@/lib/types/claim
 import { RequestConfig } from '@/lib/types/tasks';
 import { API_URL } from '@/lib/utils/endpoints';
 
+export interface ClaimsRequestConfig extends Omit<RequestConfig, 'headers'> {
+    page?: number;
+    limit?: number;
+    headers?: {
+        token?: string;
+        Authorization?: string;
+        'Content-Type'?: string;
+    };
+    filters?: {
+        status?: string;
+        search?: string;
+    };
+}
+
 // Fetch all claims
-export const fetchClaims = async (config: RequestConfig): Promise<ClaimResponse> => {
+export const fetchClaims = async (config: ClaimsRequestConfig): Promise<ClaimResponse> => {
     try {
         const { page = 1, limit = 20, headers, filters } = config;
         const queryParams = new URLSearchParams({

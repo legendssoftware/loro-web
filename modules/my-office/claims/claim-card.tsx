@@ -34,6 +34,8 @@ const ClaimCardComponent = ({ claim, onClick }: ClaimCardProps) => {
                                         ? 'destructive'
                                         : claim.status === 'IN_REVIEW'
                                         ? 'warning'
+                                        : claim.status === 'VERIFIED'
+                                        ? 'success'
                                         : 'outline'
                                 }
                                 className='text-[10px] font-normal uppercase font-body'
@@ -45,7 +47,7 @@ const ClaimCardComponent = ({ claim, onClick }: ClaimCardProps) => {
                             </Badge>
                         </div>
                         <div className='flex flex-col gap-1'>
-                            <p className='text-xl font-medium font-heading'>{claim?.amount}</p>
+                            <p className='font-medium text-md font-heading'>{claim.amount}</p>
                         </div>
                     </div>
                 </CardHeader>
@@ -53,24 +55,30 @@ const ClaimCardComponent = ({ claim, onClick }: ClaimCardProps) => {
                     <div className='flex flex-row justify-between gap-4'>
                         <div className='flex flex-row items-center gap-2'>
                             <Avatar className='w-6 h-6 ring-2 ring-primary'>
-                                {claim?.owner?.photoURL ? (
+                                {claim.owner.photoURL ? (
                                     <AvatarImage src={claim.owner.photoURL} alt={`${claim.owner.name}`} />
                                 ) : (
                                     <AvatarFallback className='text-[10px] font-body uppercase'>
-                                        {claim?.owner?.name?.charAt(0)}
+                                        {claim.owner.name.charAt(0)}
+                                        {claim.owner.surname.charAt(0)}
                                     </AvatarFallback>
                                 )}
                             </Avatar>
-                            <p className='text-[10px] font-thin uppercase font-body'>
-                                {claim?.owner?.name} {claim?.owner?.surname}
-                            </p>
+                            <div className='flex flex-col'>
+                                <p className='text-[10px] font-normal uppercase font-body'>
+                                    {claim.owner.name} {claim.owner.surname}
+                                </p>
+                                <p className='text-[9px] font-normal text-muted-foreground font-body'>
+                                    {claim.comments}
+                                </p>
+                            </div>
                         </div>
                         <div className='flex flex-col items-end gap-1'>
                             <h4 className='text-[10px] font-normal uppercase text-muted-foreground font-body'>
                                 Created
                             </h4>
-                            <p className='text-xs font-thin uppercase font-body'>
-                                {format(new Date(claim?.createdAt), 'MMM dd, yyyy')}
+                            <p className='text-xs font-normal uppercase font-body'>
+                                {format(new Date(claim.createdAt), 'MMM dd, yyyy')}
                             </p>
                         </div>
                     </div>

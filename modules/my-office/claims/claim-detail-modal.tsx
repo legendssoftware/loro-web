@@ -18,6 +18,8 @@ import { formatCurrency } from '@/lib/utils/format';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import Image from 'next/image';
 
 const toastStyle = {
     style: {
@@ -79,7 +81,6 @@ export const ClaimDetailModal = ({
         if (!selectedClaim || isDeleting) return;
         try {
             await onDelete(selectedClaim.uid);
-            toast.success('Claim deleted successfully', toastStyle);
             setIsDeleteAlertOpen(false);
             onOpenChange(false);
         } catch (error) {
@@ -90,13 +91,15 @@ export const ClaimDetailModal = ({
 
     if (!selectedClaim) return null;
 
+    console.log(selectedClaim);
+
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className='sm:max-w-[600px] max-h-[80vh] overflow-y-auto'>
                 <DialogHeader className='flex flex-row items-center justify-between pb-4 space-y-0'>
                     <div className='flex items-center justify-between w-full'>
                         <div className='flex items-center gap-2'>
-                            <DialogTitle className='text-lg font-medium font-heading line-clamp-1'>
+                            <DialogTitle className='text-lg font-normal uppercase line-clamp-1 font-body'>
                                 Claim Details
                             </DialogTitle>
                         </div>
@@ -109,6 +112,8 @@ export const ClaimDetailModal = ({
                                         ? 'destructive'
                                         : selectedClaim.status === 'IN_REVIEW'
                                         ? 'warning'
+                                        : selectedClaim.status === 'VERIFIED'
+                                        ? 'success'
                                         : 'outline'
                                 }
                                 className='text-[10px] font-normal uppercase font-body'
@@ -123,29 +128,37 @@ export const ClaimDetailModal = ({
                 </DialogHeader>
 
                 {isEditing ? (
-                    <EditClaimForm claim={selectedClaim} onSubmit={handleUpdate} />
+                    <EditClaimForm
+                        claim={selectedClaim}
+                        onSubmit={handleUpdate}
+                        onCancel={() => setIsEditing(false)}
+                        isUpdating={isUpdating}
+                    />
                 ) : (
                     <div className='flex flex-col gap-6'>
                         <div className='flex flex-col gap-1'>
                             <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Amount</h4>
-                            <p className='text-2xl font-medium font-heading'>
-                                {formatCurrency(selectedClaim.amount)}
-                            </p>
+                            <p className='text-2xl font-medium font-heading'>{selectedClaim.amount}</p>
                         </div>
 
-                        <div className='flex flex-col gap-1'>
-                            <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>
-                                Description
-                            </h4>
-                            <p className='text-sm font-body'>{selectedClaim.description}</p>
-                        </div>
-
-                        {selectedClaim.notes && (
+                        {selectedClaim.documentUrl && (
                             <div className='flex flex-col gap-1'>
-                                <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Notes</h4>
-                                <p className='text-sm font-body'>{selectedClaim.notes}</p>
+                                <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Document</h4>
+                                <div className='relative w-full h-48 overflow-hidden rounded-lg'>
+                                    <Image
+                                        src={selectedClaim.documentUrl}
+                                        alt='Claim Document'
+                                        fill
+                                        className='object-contain'
+                                    />
+                                </div>
                             </div>
                         )}
+
+                        <div className='flex flex-col gap-1'>
+                            <h4 className='text-xs font-normal uppercase text-muted-foreground font-body'>Comments</h4>
+                            <p className='text-sm font-body'>{selectedClaim.comments}</p>
+                        </div>
 
                         <div className='grid grid-cols-2 gap-x-6 gap-y-4'>
                             <div className='flex flex-col gap-1'>
@@ -153,13 +166,29 @@ export const ClaimDetailModal = ({
                                     Created By
                                 </h4>
                                 <div className='grid grid-cols-1 gap-2'>
-                                    <div>
-                                        <p className='text-[10px] text-muted-foreground font-body uppercase'>Name</p>
-                                        <p className='text-sm font-body'>{selectedClaim.owner.name}</p>
+                                    <div className='flex items-center gap-2'>
+                                        <Avatar className='w-8 h-8'>
+                                            {selectedClaim.owner.photoURL ? (
+                                                <AvatarImage src={selectedClaim.owner.photoURL} />
+                                            ) : (
+                                                <AvatarFallback>
+                                                    {selectedClaim.owner.name.charAt(0)}
+                                                    {selectedClaim.owner.surname.charAt(0)}
+                                                </AvatarFallback>
+                                            )}
+                                        </Avatar>
+                                        <div>
+                                            <p className='text-sm font-body'>
+                                                {selectedClaim.owner.name} {selectedClaim.owner.surname}
+                                            </p>
+                                            <p className='text-xs text-muted-foreground font-body'>
+                                                {selectedClaim.owner.email}
+                                            </p>
+                                        </div>
                                     </div>
                                     <div>
-                                        <p className='text-[10px] text-muted-foreground font-body uppercase'>Email</p>
-                                        <p className='text-sm font-body'>{selectedClaim.owner.email}</p>
+                                        <p className='text-[10px] text-muted-foreground font-body uppercase'>Phone</p>
+                                        <p className='text-sm font-body'>{selectedClaim.owner.phone}</p>
                                     </div>
                                 </div>
                             </div>
@@ -170,9 +199,7 @@ export const ClaimDetailModal = ({
                                 </h4>
                                 <div className='grid grid-cols-1 gap-2'>
                                     <div>
-                                        <p className='text-[10px] text-muted-foreground font-body uppercase'>
-                                            Created
-                                        </p>
+                                        <p className='text-[10px] text-muted-foreground font-body uppercase'>Created</p>
                                         <p className='text-sm font-body'>
                                             {format(new Date(selectedClaim.createdAt), 'MMM dd, yyyy')}
                                         </p>
@@ -185,6 +212,16 @@ export const ClaimDetailModal = ({
                                             {format(new Date(selectedClaim.updatedAt), 'MMM dd, yyyy')}
                                         </p>
                                     </div>
+                                    {selectedClaim.verifiedAt && (
+                                        <div>
+                                            <p className='text-[10px] text-muted-foreground font-body uppercase'>
+                                                Verified At
+                                            </p>
+                                            <p className='text-sm font-body'>
+                                                {format(new Date(selectedClaim.verifiedAt), 'MMM dd, yyyy')}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

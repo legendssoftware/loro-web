@@ -6,6 +6,9 @@ export enum ClaimStatus {
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
     IN_REVIEW = 'IN_REVIEW',
+    VERIFIED = 'VERIFIED',
+    PAID = 'PAID',
+    DECLINED = 'DECLINED',
 }
 
 export enum ClaimCategory {
@@ -13,6 +16,17 @@ export enum ClaimCategory {
     TRAVEL = 'TRAVEL',
     EQUIPMENT = 'EQUIPMENT',
     SUPPLIES = 'SUPPLIES',
+    MEALS = 'MEALS',
+    TRANSPORTATION = 'TRANSPORTATION',
+    ENTERTAINMENT = 'ENTERTAINMENT',
+    OTHER_EXPENSES = 'OTHER_EXPENSES',
+    ACCOMMODATION = 'ACCOMMODATION',
+    GENERAL = 'GENERAL',
+    PROMOTION = 'PROMOTION',
+    EVENT = 'EVENT',
+    ANNOUNCEMENT = 'ANNOUNCEMENT',
+    HOTEL = 'HOTEL',
+    TRANSPORT = 'TRANSPORT',
     OTHER = 'OTHER',
 }
 
@@ -32,16 +46,37 @@ export interface ClaimStats {
 
 export interface Claim {
     uid: number;
-    amount: number;
+    amount: string;
+    documentUrl: string | null;
+    verifiedBy: string | null;
+    verifiedAt: string | null;
     category: ClaimCategory;
     description: string;
-    notes: string | null;
+    comments: string;
     status: ClaimStatus;
-    attachments: string[];
     createdAt: string;
     updatedAt: string;
+    deletedAt: string | null;
     isDeleted: boolean;
-    owner: User;
+    owner: {
+        uid: number;
+        username: string;
+        name: string;
+        surname: string;
+        email: string;
+        phone: string;
+        photoURL: string | null;
+        accessLevel: string;
+        status: string;
+    };
+    branch?: {
+        uid: number;
+        name: string;
+        email: string;
+        phone: string;
+        contactPerson: string;
+        address: string;
+    };
 }
 
 export interface CreateClaimDTO {

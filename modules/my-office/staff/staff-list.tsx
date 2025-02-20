@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { FolderOpen, List, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -47,10 +46,8 @@ interface StaffListProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onSearch: (query: string) => void;
   onStatusFilter: (status: string) => void;
   onRoleFilter: (role: string) => void;
-  searchQuery: string;
   statusFilter: string;
   roleFilter: string;
 }
@@ -62,10 +59,8 @@ export const StaffList = ({
   currentPage,
   totalPages,
   onPageChange,
-  onSearch,
   onStatusFilter,
   onRoleFilter,
-  searchQuery,
   statusFilter,
   roleFilter,
 }: StaffListProps) => {
@@ -73,12 +68,6 @@ export const StaffList = ({
     return (
       <div className="flex flex-row items-center justify-end gap-2">
         <div className="flex flex-row items-center justify-center gap-2">
-          <Input
-            placeholder="search..."
-            className="w-[300px] shadow-none bg-card"
-            value={searchQuery}
-            onChange={(e) => onSearch(e.target.value)}
-          />
           <Select value={statusFilter} onValueChange={onStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />

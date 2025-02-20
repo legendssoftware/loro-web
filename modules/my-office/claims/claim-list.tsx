@@ -1,6 +1,5 @@
 import { memo, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
 import { Claim } from "@/lib/types/claims";
 import { ClaimCard } from "./claim-card";
@@ -23,9 +22,7 @@ interface ClaimListProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onSearch: (query: string) => void;
   onStatusFilter: (status: string) => void;
-  searchQuery: string;
   statusFilter: string;
 }
 
@@ -63,9 +60,7 @@ const ClaimListComponent = ({
   currentPage,
   totalPages,
   onPageChange,
-  onSearch,
   onStatusFilter,
-  searchQuery,
   statusFilter,
 }: ClaimListProps) => {
   const [categoryFilter] = useState<string>("all");
@@ -80,12 +75,6 @@ const ClaimListComponent = ({
         categoryFilter === "all" || claim.category === categoryFilter;
       const matchesUser =
         userFilter === "all" || claim.owner.uid.toString() === userFilter;
-      const matchesSearch =
-        claim.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        claim.owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        claim.owner.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        claim.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        claim.amount.toLowerCase().includes(searchQuery.toLowerCase());
 
       // Add period filtering
       const matchesPeriod = (() => {
@@ -95,9 +84,9 @@ const ClaimListComponent = ({
         return claimDate >= from && claimDate <= to;
       })();
 
-      return matchesStatus && matchesCategory && matchesUser && matchesSearch && matchesPeriod;
+      return matchesStatus && matchesCategory && matchesUser && matchesPeriod;
     });
-  }, [claims, statusFilter, categoryFilter, userFilter, searchQuery, periodFilter]);
+  }, [claims, statusFilter, categoryFilter, userFilter, periodFilter]);
 
   const paginatedClaims = useMemo(() => {
     const startIndex = (currentPage - 1) * 25;
@@ -109,12 +98,6 @@ const ClaimListComponent = ({
     return (
       <div className="flex flex-row items-center justify-end gap-2">
         <div className="flex flex-row items-center justify-center gap-2">
-          <Input
-            placeholder="search..."
-            className="w-[300px] shadow-none bg-card"
-            value={searchQuery}
-            onChange={(e) => onSearch(e.target.value)}
-          />
           <Select value={statusFilter} onValueChange={onStatusFilter}>
             <SelectTrigger className="w-[180px] shadow-none bg-card outline-none">
               <SelectValue placeholder="Filter by status" />

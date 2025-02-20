@@ -14,7 +14,6 @@ export const StaffModule = () => {
     const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
     const [currentPage, setCurrentPage] = useState(1)
-    const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [roleFilter, setRoleFilter] = useState<string>("all")
     const { accessToken } = useSessionStore()
@@ -27,15 +26,14 @@ export const StaffModule = () => {
     }
 
     const { data: staffData, isLoading } = useQuery({
-        queryKey: ['users', currentPage, statusFilter, roleFilter, searchQuery],
+        queryKey: ['users', currentPage, statusFilter, roleFilter],
         queryFn: () => fetchUsers({
             ...config,
             page: currentPage,
             limit: 20,
             filters: {
                 ...(statusFilter !== 'all' && { status: statusFilter }),
-                ...(roleFilter !== 'all' && { accessLevel: roleFilter }),
-                ...(searchQuery && { search: searchQuery })
+                ...(roleFilter !== 'all' && { accessLevel: roleFilter })
             }
         }),
         enabled: !!accessToken
@@ -207,11 +205,6 @@ export const StaffModule = () => {
         setCurrentPage(page)
     }
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query)
-        setCurrentPage(1) // Reset to first page when searching
-    }
-
     const handleStatusFilter = (status: string) => {
         setStatusFilter(status)
         setCurrentPage(1) // Reset to first page when filtering
@@ -247,10 +240,8 @@ export const StaffModule = () => {
                 currentPage={currentPage}
                 totalPages={staffData?.meta?.totalPages || 1}
                 onPageChange={handlePageChange}
-                onSearch={handleSearch}
                 onStatusFilter={handleStatusFilter}
                 onRoleFilter={handleRoleFilter}
-                searchQuery={searchQuery}
                 statusFilter={statusFilter}
                 roleFilter={roleFilter}
             />

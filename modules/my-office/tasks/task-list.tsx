@@ -1,5 +1,4 @@
 import { memo, useState, useCallback, useMemo } from "react";
-import { Input } from "@/components/ui/input";
 import { ExistingTask, User } from "@/lib/types/tasks";
 import { PageLoader } from "@/components/page-loader";
 import {
@@ -67,7 +66,6 @@ const TaskListComponent = ({
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -153,24 +151,6 @@ const TaskListComponent = ({
   // Filter tasks based on all criteria
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
-      // Search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch =
-          task.title?.toLowerCase().includes(searchLower) ||
-          task.description?.toLowerCase().includes(searchLower) ||
-          task.assignees?.some(
-            (assignee) =>
-              assignee.name?.toLowerCase().includes(searchLower) ||
-              assignee.surname?.toLowerCase().includes(searchLower)
-          ) ||
-          task.clients?.some((client) =>
-            client.name?.toLowerCase().includes(searchLower)
-          );
-
-        if (!matchesSearch) return false;
-      }
-
       // Status filter
       if (statusFilter !== "all" && task.status !== statusFilter) {
         return false;
@@ -218,14 +198,7 @@ const TaskListComponent = ({
 
       return true;
     });
-  }, [
-    tasks,
-    searchQuery,
-    statusFilter,
-    clientFilter,
-    assigneeFilter,
-    periodFilter,
-  ]);
+  }, [tasks, statusFilter, clientFilter, assigneeFilter, periodFilter]);
 
   if (isLoading) {
     return (
@@ -238,12 +211,6 @@ const TaskListComponent = ({
   const Header = () => {
     return (
       <div className="flex items-center justify-end gap-2">
-        <Input
-          placeholder="search..."
-          className="w-[300px] bg-card"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
         <div className="flex items-center gap-2">
           <PeriodFilter value={periodFilter} onValueChange={setPeriodFilter} />
           <Select value={clientFilter} onValueChange={setClientFilter}>
@@ -338,13 +305,6 @@ const TaskListComponent = ({
               ))}
             </SelectContent>
           </Select>
-          {/* <Button
-            onClick={() => setIsNewTaskModalOpen(true)}
-            className="text-[10px] font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add
-          </Button> */}
         </div>
         <NewTaskModal
           isOpen={isNewTaskModalOpen}

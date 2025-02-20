@@ -1,5 +1,4 @@
 import { memo, useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/page-loader";
 import { Quotation } from "@/lib/types/quotations";
 import {
@@ -56,7 +55,6 @@ const QuotationListComponent = ({
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>("all");
   const [valueSort, setValueSort] = useState<"none" | "asc" | "desc">("none");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuotations, setSelectedQuotations] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const quotationsPerPage = 15;
@@ -74,9 +72,6 @@ const QuotationListComponent = ({
       const matchesCategory =
         categoryFilter === "all" ||
         quotation.quotationItems?.some(item => item?.product?.sku === categoryFilter) || false;
-      const matchesSearch = quotation.quotationNumber
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
 
       const matchesPeriod = (() => {
         if (periodFilter === "all") return true;
@@ -90,7 +85,6 @@ const QuotationListComponent = ({
         matchesClient &&
         matchesUser &&
         matchesCategory &&
-        matchesSearch &&
         matchesPeriod
       );
     });
@@ -110,7 +104,6 @@ const QuotationListComponent = ({
     statusFilter,
     clientFilter,
     userFilter,
-    searchQuery,
     periodFilter,
     valueSort,
     categoryFilter,
@@ -152,12 +145,6 @@ const QuotationListComponent = ({
 
     return (
       <div className="flex items-center justify-end gap-2">
-        <Input
-          placeholder="search..."
-          className="w-[300px] bg-card"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
         <div className="flex items-center gap-2">
           <PeriodFilter value={periodFilter} onValueChange={setPeriodFilter} />
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>

@@ -15,7 +15,6 @@ const LeadsModule = () => {
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
     const config: RequestConfig = {
@@ -25,7 +24,7 @@ const LeadsModule = () => {
     };
 
     const { data: leadsData, isLoading } = useQuery({
-        queryKey: ["leads", currentPage, statusFilter, searchQuery],
+        queryKey: ["leads", currentPage, statusFilter],
         queryFn: () =>
             fetchLeads({
                 ...config,
@@ -33,7 +32,6 @@ const LeadsModule = () => {
                 limit: 20,
                 filters: {
                     ...(statusFilter !== "all" && { status: statusFilter }),
-                    ...(searchQuery && { search: searchQuery }),
                 },
             }),
         enabled: !!accessToken,
@@ -108,11 +106,6 @@ const LeadsModule = () => {
         setCurrentPage(page);
     };
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-        setCurrentPage(1); // Reset to first page when searching
-    };
-
     const handleStatusFilter = (status: string) => {
         setStatusFilter(status);
         setCurrentPage(1); // Reset to first page when filtering
@@ -135,9 +128,7 @@ const LeadsModule = () => {
                 currentPage={currentPage}
                 totalPages={leadsData?.meta?.totalPages || 1}
                 onPageChange={handlePageChange}
-                onSearch={handleSearch}
                 onStatusFilter={handleStatusFilter}
-                searchQuery={searchQuery}
                 statusFilter={statusFilter}
             />
             <LeadDetailModal

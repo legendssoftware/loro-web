@@ -51,7 +51,11 @@ interface TaskListProps {
   isLoading?: boolean;
 }
 
-const TaskListComponent = ({ tasks, onTaskClick, isLoading = false }: TaskListProps) => {
+const TaskListComponent = ({
+  tasks,
+  onTaskClick,
+  isLoading = false,
+}: TaskListProps) => {
   const { accessToken } = useSessionStore();
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");

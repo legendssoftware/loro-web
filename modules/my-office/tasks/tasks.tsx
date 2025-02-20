@@ -1,21 +1,19 @@
 import { useState, useCallback } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { deleteTask, fetchTasks, updateTask, createTask } from "@/helpers/tasks"
-import type { UpdateTaskDTO, CreateTaskDTO } from "@/helpers/tasks"
+import { deleteTask, fetchTasks, updateTask } from "@/helpers/tasks"
+import type { UpdateTaskDTO } from "@/helpers/tasks"
 import { useSessionStore } from "@/store/use-session-store"
 import { RequestConfig } from "@/lib/types/tasks"
 import { ExistingTask } from "@/lib/types/tasks"
 import { TaskList } from "@/modules/my-office/tasks/task-list"
 import { TaskDetailModal } from "@/modules/my-office/tasks/task-detail-modal"
 import toast from 'react-hot-toast'
-import { NewTaskModal } from "./new-task-modal"
 
 export const TasksModule = () => {
     const { accessToken } = useSessionStore()
     const queryClient = useQueryClient()
     const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false)
     const [selectedTask, setSelectedTask] = useState<ExistingTask | null>(null)
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
     const config: RequestConfig = {
         headers: {
@@ -107,18 +105,6 @@ export const TasksModule = () => {
         }
     })
 
-    const createTaskMutation = useMutation({
-        mutationFn: (data: CreateTaskDTO) => createTask(data, config),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['tasks'] })
-            toast.success('Task created successfully')
-            setIsCreateModalOpen(false)
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to create task: ${error.message}`)
-        }
-    })
-
     const handleTaskClick = useCallback((task: ExistingTask) => {
         setSelectedTask(task)
         setIsTaskDetailModalOpen(true)
@@ -147,10 +133,6 @@ export const TasksModule = () => {
         }
     }, [deleteTaskMutation])
 
-    const handleCreateTask = async (data: CreateTaskDTO): Promise<void> => {
-        await createTaskMutation.mutateAsync(data)
-    }
-
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <TaskList
@@ -176,7 +158,6 @@ export const TasksModule = () => {
                 } as ExistingTask))}
                 onTaskClick={handleTaskClick}
                 isLoading={isLoading}
-                onCreateClick={() => setIsCreateModalOpen(true)}
             />
 
             <TaskDetailModal
@@ -186,13 +167,6 @@ export const TasksModule = () => {
                 onDelete={handleDeleteTask}
                 isUpdating={updateTaskMutation.isPending}
                 isDeleting={deleteTaskMutation.isPending}
-            />
-
-            <NewTaskModal
-                isOpen={isCreateModalOpen}
-                onOpenChange={setIsCreateModalOpen}
-                onSubmit={handleCreateTask}
-                isSubmitting={createTaskMutation.isPending}
             />
         </div>
     )

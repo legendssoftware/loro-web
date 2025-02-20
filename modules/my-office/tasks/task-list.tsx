@@ -1,7 +1,5 @@
 import { memo, useState, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { TaskCard } from "./task-card";
 import { ExistingTask, User } from "@/lib/types/tasks";
 import { PageLoader } from "@/components/page-loader";
 import {
@@ -25,7 +23,6 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
-  Plus,
 } from "lucide-react";
 import {
   PeriodFilter,
@@ -33,33 +30,8 @@ import {
 } from "@/modules/common/period-filter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-  },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-};
+import { motion } from "framer-motion";
+import { TaskCard } from "./task-card";
 
 interface TaskListProps {
   tasks: ExistingTask[];
@@ -71,10 +43,20 @@ interface TaskListProps {
   onPageChange: (page: number) => void;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 },
+};
+
 const TaskListComponent = ({
   tasks,
+  isLoading = false,  
   onTaskClick,
-  isLoading = false,
   currentPage,
   totalPages,
   onPageChange,
@@ -108,7 +90,7 @@ const TaskListComponent = ({
           "surname" in assignee &&
           "email" in assignee
         ) {
-          assigneesSet.add(assignee.uid);
+          assigneesSet.add(assignee?.uid);
           assigneesList.push(assignee as User);
         }
       });
@@ -123,28 +105,34 @@ const TaskListComponent = ({
 
     tasks.forEach((task) => {
       task.clients?.forEach((client) => {
-        if (!clientsSet.has(client.uid)) {
-          clientsSet.add(client.uid);
+        if (!clientsSet.has(client?.uid)) {
+          clientsSet.add(client?.uid);
           clientsList.push({
-            uid: client.uid,
-            name: client.name || "Unknown Client",
+            uid: client?.uid,
+            name: client?.name || "Unknown Client",
           });
         }
       });
     });
 
-    return clientsList.sort((a, b) => a.name.localeCompare(b.name));
+    return clientsList.sort((a, b) => a?.name.localeCompare(b?.name));
   }, [tasks]);
 
   const createTaskMutation = useMutation({
     mutationFn: (data: CreateTaskDTO) => createTask(data, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      showToast.success("Task created successfully");
+      showToast.success("Task created successfully", {
+        duration: 4000,
+        position: "bottom-center",
+      });
       setIsNewTaskModalOpen(false);
     },
     onError: (error) => {
-      showToast.error("Failed to create task", error);
+      showToast.error("Failed to create task", error, {
+        duration: 4000,
+        position: "bottom-center",
+      });
     },
   });
 
@@ -153,7 +141,10 @@ const TaskListComponent = ({
       try {
         await createTaskMutation.mutateAsync(data);
       } catch (error) {
-        console.error("Failed to create task:", error);
+        showToast.error("Failed to create task", error as Error, {
+          duration: 4000,
+          position: "bottom-center",
+        });
       }
     },
     [createTaskMutation]
@@ -165,18 +156,18 @@ const TaskListComponent = ({
       // Search filter
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           task.title?.toLowerCase().includes(searchLower) ||
           task.description?.toLowerCase().includes(searchLower) ||
           task.assignees?.some(
-            assignee => 
+            (assignee) =>
               assignee.name?.toLowerCase().includes(searchLower) ||
               assignee.surname?.toLowerCase().includes(searchLower)
           ) ||
-          task.clients?.some(
-            client => client.name?.toLowerCase().includes(searchLower)
+          task.clients?.some((client) =>
+            client.name?.toLowerCase().includes(searchLower)
           );
-        
+
         if (!matchesSearch) return false;
       }
 
@@ -188,7 +179,7 @@ const TaskListComponent = ({
       // Client filter
       if (clientFilter !== "all") {
         const hasClient = task.clients?.some(
-          client => client.uid.toString() === clientFilter
+          (client) => client.uid.toString() === clientFilter
         );
         if (!hasClient) return false;
       }
@@ -196,7 +187,7 @@ const TaskListComponent = ({
       // Assignee filter
       if (assigneeFilter !== "all") {
         const hasAssignee = task.assignees?.some(
-          assignee => assignee.uid.toString() === assigneeFilter
+          (assignee) => assignee.uid.toString() === assigneeFilter
         );
         if (!hasAssignee) return false;
       }
@@ -205,7 +196,9 @@ const TaskListComponent = ({
       if (periodFilter !== "all") {
         const taskDate = new Date(task.createdAt);
         const now = new Date();
-        const daysDiff = Math.floor((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.floor(
+          (now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
         switch (periodFilter) {
           case "today":
@@ -225,7 +218,14 @@ const TaskListComponent = ({
 
       return true;
     });
-  }, [tasks, searchQuery, statusFilter, clientFilter, assigneeFilter, periodFilter]);
+  }, [
+    tasks,
+    searchQuery,
+    statusFilter,
+    clientFilter,
+    assigneeFilter,
+    periodFilter,
+  ]);
 
   if (isLoading) {
     return (
@@ -338,13 +338,13 @@ const TaskListComponent = ({
               ))}
             </SelectContent>
           </Select>
-          <Button
+          {/* <Button
             onClick={() => setIsNewTaskModalOpen(true)}
             className="text-[10px] font-normal text-white uppercase font-body bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-1" />
             Add
-          </Button>
+          </Button> */}
         </div>
         <NewTaskModal
           isOpen={isNewTaskModalOpen}

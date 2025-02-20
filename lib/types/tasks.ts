@@ -93,26 +93,35 @@ export interface Task extends Omit<TaskFormData, 'deadline' | 'repetitionEndDate
     clients?: Client[];
 }
 
-export interface ExistingTask extends Omit<TaskFormData, 'deadline' | 'repetitionEndDate'> {
+export interface ExistingTask {
     uid: number;
+    title: string;
+    description: string;
+    status: TaskStatus;
+    taskType: TaskType;
+    priority: Priority;
+    progress: number;
     deadline: string | null;
+    repetitionType: RepetitionType;
     repetitionEndDate: string | null;
-    startDate: string | null;
     lastCompletedAt: string | null;
+    startDate: string | null;
+    attachments: string[];
     isDeleted: boolean;
     isOverdue: boolean;
+    targetCategory: TargetCategory | null;
     createdAt: string;
     updatedAt: string;
-    createdBy: User | null;
+    createdBy: User;
     assignees: User[];
     clients: Client[];
     subtasks: {
-        uid: string;
+        uid: number;
         title: string;
         description: string;
         createdAt: string;
         updatedAt: string;
-        status: TaskStatus;
+        status: string;
         isDeleted: boolean;
     }[];
 }

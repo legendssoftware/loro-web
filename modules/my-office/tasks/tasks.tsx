@@ -9,6 +9,21 @@ import { TaskList } from "@/modules/my-office/tasks/task-list"
 import { TaskDetailModal } from "@/modules/my-office/tasks/task-detail-modal"
 import toast from 'react-hot-toast'
 
+const toastStyle = {
+    style: {
+        borderRadius: '5px',
+        background: '#333',
+        color: '#fff',
+        fontFamily: 'var(--font-unbounded)',
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        fontWeight: '300',
+        padding: '16px',
+    },
+    duration: 2000,
+    position: 'bottom-center',
+} as const
+
 export const TasksModule = () => {
     const { accessToken } = useSessionStore()
     const queryClient = useQueryClient()
@@ -42,34 +57,19 @@ export const TasksModule = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task updated successfully', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
+                style: toastStyle.style,
+                duration: toastStyle.duration,
+                position: toastStyle.position,
                 icon: '✅',
             })
             setIsTaskDetailModalOpen(false)
         },
         onError: (error: Error) => {
-            toast.error('Failed to update task: ' + error.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
+            toast.error(`Failed to update task: ${error.message}`, {
+                style: toastStyle.style,
+                duration: 5000,
+                position: toastStyle.position,
+                icon: '❌',
             })
         }
     })
@@ -79,36 +79,19 @@ export const TasksModule = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task deleted successfully', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
+                style: toastStyle.style,
+                duration: toastStyle.duration,
+                position: toastStyle.position,
                 icon: '✅',
             })
             setIsTaskDetailModalOpen(false)
         },
         onError: (error: Error) => {
-            toast.error('Failed to delete task: ' + error.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete task'
+            toast.error(errorMessage, {
+                style: toastStyle.style,
                 duration: 5000,
-                position: 'bottom-center',
+                position: toastStyle.position,
                 icon: '❌',
             })
         }
@@ -122,21 +105,12 @@ export const TasksModule = () => {
     const handleDeleteTask = useCallback(async (uid: number) => {
         try {
             await deleteTaskMutation.mutateAsync(uid)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            toast.error('Failed to delete task', {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete task'
+            toast.error(errorMessage, {
+                style: toastStyle.style,
                 duration: 5000,
-                position: 'bottom-center',
+                position: toastStyle.position,
                 icon: '❌',
             })
         }
@@ -151,26 +125,7 @@ export const TasksModule = () => {
     return (
         <div className="flex flex-col w-full h-full gap-4">
             <TaskList
-                tasks={(tasksData?.data || []).map(task => ({
-                    ...task,
-                    startDate: task.createdAt || null,
-                    isOverdue: new Date(task.deadline || '') > new Date(),
-                    createdBy: task.owner || null,
-                    deadline: task.deadline || null,
-                    repetitionEndDate: task.repetitionEndDate || null,
-                    lastCompletedAt: task.lastCompletedAt || null,
-                    isDeleted: task.isDeleted || false,
-                    assignees: task.assignees || [],
-                    clients: task.clients || [],
-                    subtasks: task.subtasks.map(subtask => ({
-                        ...subtask,
-                        uid: subtask.uid || '',
-                        description: subtask.description || '',
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        isDeleted: false
-                    }))
-                } as ExistingTask))}
+                tasks={tasksData?.data || []}
                 onTaskClick={handleTaskClick}
                 isLoading={isLoading}
                 currentPage={currentPage}

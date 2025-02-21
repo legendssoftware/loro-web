@@ -16,8 +16,25 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import { Package, Truck, CheckCircle, Clock, AlertTriangle, UserCheck, Scale, Calendar } from 'lucide-react';
+import {
+    Package,
+    Truck,
+    CheckCircle,
+    Clock,
+    AlertTriangle,
+    UserCheck,
+    Scale,
+    Calendar,
+    Send,
+    MapPin,
+    ChartSpline,
+    ShoppingBag,
+    Users,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 // Animation variants
 const containerVariants = {
@@ -213,16 +230,364 @@ const ClaimsReportCard = () => {
     );
 };
 
+// Add new types for products and orders
+type Product = {
+    name: string;
+    itemCode: string;
+    price: number;
+    image: string;
+};
+
+type OrderStatus = 'new' | 'preparing' | 'shipping';
+
+type OrderDelivery = {
+    sender: {
+        name: string;
+        address: string;
+    };
+    receiver: {
+        name: string;
+        address: string;
+    };
+    status: OrderStatus;
+};
+
+// Add sample data
+const popularProducts: Product[] = [
+    {
+        name: 'Apple iPhone 13',
+        itemCode: 'FXZ-4567',
+        price: 999.29,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+        name: 'Nike Air Jordan',
+        itemCode: 'FXZ-3456',
+        price: 72.4,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+        name: 'Beats Studio 2',
+        itemCode: 'FXZ-9485',
+        price: 99.9,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+        name: 'Apple Watch Series 7',
+        itemCode: 'FXZ-2345',
+        price: 249.99,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+        name: 'Amazon Echo Dot',
+        itemCode: 'FXZ-8959',
+        price: 79.4,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+        name: 'PlayStation Console',
+        itemCode: 'FXZ-7892',
+        price: 129.48,
+        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+];
+
+// Update deliveries data to include status
+const deliveries: OrderDelivery[] = [
+    {
+        sender: {
+            name: 'Micheal Hughes',
+            address: '101 Boulder, California (CA), 933130',
+        },
+        receiver: {
+            name: 'Daisy Coleman',
+            address: '939 Orange, California (CA), 910614',
+        },
+        status: 'new',
+    },
+    {
+        sender: {
+            name: 'Glenn Todd',
+            address: '1713 Garnet, California (CA), 939573',
+        },
+        receiver: {
+            name: 'Arthur West',
+            address: '156 Blaze, California (CA), 925878',
+        },
+        status: 'preparing',
+    },
+    {
+        sender: {
+            name: 'Sarah Johnson',
+            address: '456 Pine Street, California (CA), 945678',
+        },
+        receiver: {
+            name: 'Mark Wilson',
+            address: '789 Oak Avenue, California (CA), 923456',
+        },
+        status: 'shipping',
+    },
+];
+
+// Create components for Popular Products and Orders
+const PopularProductsCard = () => {
+    return (
+        <Card className='p-6 h-[520px] flex flex-col'>
+            <div className='flex items-center justify-between pb-6 border-b'>
+                <div>
+                    <h3 className='text-sm font-normal uppercase font-body'>Popular Products</h3>
+                    <span className='text-xs font-normal uppercase text-muted-foreground font-body'>Total 10.4k Visitors</span>
+                </div>
+            </div>
+            <div className='flex-1 pr-2 mt-6 overflow-y-auto transition-colors scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400'>
+                <div className='flex flex-col gap-6'>
+                    {popularProducts.map((product, index) => (
+                        <div key={index} className='flex items-center justify-between p-2 transition-colors rounded-lg cursor-pointer group hover:bg-muted/50'>
+                            <div className='flex items-center gap-4'>
+                                <div className='w-12 h-12 overflow-hidden rounded-lg bg-muted'>
+                                    <Image
+                                        src={product?.image}
+                                        alt={product?.name}
+                                        width={48}
+                                        height={48}
+                                        className='object-cover'
+                                    />
+                                </div>
+                                <div>
+                                    <h4 className='text-xs font-normal uppercase font-body'>{product.name}</h4>
+                                    <p className='text-[10px] text-muted-foreground font-body font-normal uppercase'>
+                                        Item: #{product.itemCode}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className='text-xs font-normal uppercase font-body'>R{product.price.toFixed(2)}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+const OrdersCard = () => {
+    const [activeTab, setActiveTab] = useState<OrderStatus>('new');
+
+    const filteredDeliveries = deliveries.filter(delivery => delivery.status === activeTab);
+
+    const tabs: { label: string; value: OrderStatus }[] = [
+        { label: 'New', value: 'new' },
+        { label: 'Preparing', value: 'preparing' },
+        { label: 'Shipping', value: 'shipping' },
+    ];
+
+    return (
+        <Card className='p-6'>
+            <div className='flex items-center justify-between pb-6 border-b'>
+                <div>
+                    <h3 className='text-sm font-normal uppercase font-body'>Quotations by Clients</h3>
+                    <span className='text-xs font-normal uppercase text-muted-foreground font-body'>62 quotations in progress</span>
+                </div>
+            </div>
+            <div className='flex gap-8 pb-6 mt-6'>
+                {tabs.map(tab => (
+                    <div
+                        key={tab.value}
+                        className={cn(
+                            'px-0 text-xs font-normal uppercase font-body w-32 text-center cursor-pointer pb-1',
+                            activeTab === tab.value
+                                ? 'text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground'
+                        )}
+                        onClick={() => setActiveTab(tab.value)}
+                    >
+                        {tab.label}
+                    </div>
+                ))}
+            </div>
+            <div className='flex flex-col gap-8 mt-6'>
+                {filteredDeliveries.map((delivery, index) => (
+                    <div key={index} className='flex flex-col gap-4'>
+                        <div className='flex items-start gap-4'>
+                            <Send className='w-4 h-4 mt-1 text-emerald-500' />
+                            <div>
+                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>SENDER</p>
+                                <p className='text-sm font-normal uppercase font-body'>{delivery.sender.name}</p>
+                                <p className='text-[10px] uppercase text-muted-foreground font-body text-wrap'>{delivery.sender.address}</p>
+                            </div>
+                        </div>
+                        <div className='flex items-start gap-4'>
+                            <MapPin className='w-4 h-4 mt-1 text-indigo-500' />
+                            <div>
+                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>RECEIVER</p>
+                                <p className='text-xs font-normal uppercase font-body'>{delivery.receiver.name}</p>
+                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>
+                                    {delivery.receiver.address}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                {filteredDeliveries.length === 0 && (
+                    <div className='flex flex-col items-center justify-center gap-2 py-8'>
+                        <Package className='w-8 h-8 text-muted-foreground' />
+                        <p className='text-sm font-normal text-muted-foreground font-body'>No orders found</p>
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
+
+// Update the Dashboard component to include these new sections
+const ProductsAndOrdersSection = () => {
+    return (
+        <motion.div variants={itemVariants}>
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                <PopularProductsCard />
+                <OrdersCard />
+            </div>
+        </motion.div>
+    );
+};
+
+// Add attendance data type and sample data
+type AttendanceData = {
+    day: string;
+    present: number;
+    absent: number;
+};
+
+const attendanceData: AttendanceData[] = [
+    { day: 'Mon', present: 85, absent: 15 },
+    { day: 'Tue', present: 92, absent: 8 },
+    { day: 'Wed', present: 78, absent: 22 },
+    { day: 'Thu', present: 88, absent: 12 },
+    { day: 'Fri', present: 90, absent: 10 },
+];
+
+const AttendanceCard = () => {
+    return (
+        <Card className='p-6 h-[520px]'>
+            <div className='flex flex-col items-start justify-between w-full pb-6 border-b'>
+                <h3 className='text-sm font-normal uppercase font-body'>Staff Attendance</h3>
+                <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
+                    Weekly Overview
+                </span>
+            </div>
+            <div className='h-[300px] mt-6'>
+                <ResponsiveContainer width='100%' height='100%'>
+                    <BarChart
+                        data={attendanceData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        barGap={8}
+                    >
+                        <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='hsl(var(--border))' />
+                        <XAxis
+                            dataKey='day'
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                                fontSize: 12,
+                                fontFamily: 'var(--font-body)',
+                                fill: 'hsl(var(--muted-foreground))',
+                            }}
+                            dy={10}
+                        />
+                        <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                                fontSize: 12,
+                                fontFamily: 'var(--font-body)',
+                                fill: 'hsl(var(--muted-foreground))',
+                            }}
+                            dx={-10}
+                        />
+                        <Tooltip
+                            cursor={{ fill: 'hsl(var(--muted))' }}
+                            contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                            }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    return (
+                                        <div className='flex flex-col gap-2 p-2 rounded bg-card'>
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <Calendar size={16} strokeWidth={1.5} />
+                                                <p className='text-xs font-normal uppercase font-body'>
+                                                    {payload[0].payload.day}
+                                                </p>
+                                            </div>
+                                            {payload.map((entry, index) => (
+                                                <p key={index} className='flex items-center justify-between gap-4'>
+                                                    <span className='text-[10px] font-normal uppercase font-body'>
+                                                        {entry.dataKey === 'present' ? 'Present:' : 'Absent:'}
+                                                    </span>
+                                                    <span className='text-sm font-normal font-body'>
+                                                        {entry.value}%
+                                                    </span>
+                                                </p>
+                                            ))}
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Bar
+                            dataKey='present'
+                            fill='#818CF8'
+                            radius={[4, 4, 4, 4]}
+                            maxBarSize={40}
+                        />
+                        <Bar
+                            dataKey='absent'
+                            fill='#FB923C'
+                            radius={[4, 4, 4, 4]}
+                            maxBarSize={40}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+
+            <div className='flex items-center justify-between pt-6 mt-6 border-t'>
+                <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-2'>
+                        <div className='w-3 h-3 rounded-full bg-[#818CF8]' />
+                        <span className='text-[10px] font-normal uppercase font-body'>Present</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                        <div className='w-3 h-3 rounded-full bg-[#FB923C]' />
+                        <span className='text-[10px] font-normal uppercase font-body'>Absent</span>
+                    </div>
+                </div>
+                <div className='flex flex-col items-end'>
+                    <p className='text-sm font-normal uppercase font-body'>Trending up by 5.2% this month</p>
+                    <span className='text-[10px] font-normal text-muted-foreground font-body uppercase'>
+                        Showing total visitors for the last 6 months
+                    </span>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
 export default function Dashboard() {
     return (
-        <motion.div initial='hidden' animate='show' variants={containerVariants} className='flex flex-col gap-2 p-6'>
-            {/* Overview Cards */}
+        <motion.div initial='hidden' animate='show' variants={containerVariants} className='flex flex-col gap-4 p-6'>
+            <div className='flex items-center gap-1'>
+                <ChartSpline size={24} strokeWidth={1.5} />
+                <p className='font-normal uppercase text-md font-body'>Overview</p>
+            </div>
             <div className='grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-4'>
                 {/* Average Daily Sales */}
                 <motion.div variants={itemVariants} transition={{ type: 'spring', stiffness: 300 }}>
                     <Card className='p-3 h-[280px] cursor-pointer transition-shadow'>
                         <div className='flex flex-col h-full'>
-                            <div className='flex flex-col items-start justify-between w-full pb-6 border-b'>
+                            <div className='flex flex-col items-start justify-between w-full pb-6 '>
                                 <h3 className='text-sm font-normal uppercase font-body'>Average Daily Sales</h3>
                                 <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
                                     monthly
@@ -256,7 +621,7 @@ export default function Dashboard() {
                 <motion.div variants={itemVariants} transition={{ type: 'spring', stiffness: 300 }}>
                     <Card className='p-3 h-[280px] cursor-pointer transition-shadow'>
                         <div className='flex flex-col h-full'>
-                            <div className='flex flex-row items-start justify-between w-full pb-6 border-b'>
+                            <div className='flex flex-row items-start justify-between w-full pb-6 '>
                                 <div className='flex flex-col gap-0'>
                                     <h3 className='text-sm font-normal uppercase font-body'>Sales Overview</h3>
                                     <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
@@ -285,7 +650,7 @@ export default function Dashboard() {
                                 <div className='flex flex-col gap-1'>
                                     <div className='flex items-center gap-2'>
                                         <UserCheck className='w-4 h-4 text-indigo-500' />
-                                        <span className='text-[10px] font-normal font-body uppercase'>Orders</span>
+                                        <span className='text-[10px] font-normal font-body uppercase'>Quotations</span>
                                     </div>
                                     <p className='text-lg font-normal font-body'>{conversionData.visits.value}%</p>
                                     <p className='text-xs font-normal text-muted-foreground font-body'>
@@ -301,7 +666,7 @@ export default function Dashboard() {
                 <motion.div variants={itemVariants} transition={{ type: 'spring', stiffness: 300 }}>
                     <Card className='p-3 h-[280px] cursor-pointer transition-shadow'>
                         <div className='flex flex-col h-full'>
-                            <div className='flex flex-col items-start justify-between w-full pb-6 border-b'>
+                            <div className='flex flex-col items-start justify-between w-full pb-6 '>
                                 <h3 className='text-sm font-normal uppercase font-body'>Generated Leads</h3>
                                 <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
                                     Monthly
@@ -316,15 +681,28 @@ export default function Dashboard() {
                                     <ResponsiveContainer width='100%' height='100%'>
                                         <PieChart>
                                             <Pie
-                                                data={[{ value: 184 }, { value: 100 - 184 }]}
-                                                innerRadius={35}
-                                                outerRadius={45}
-                                                startAngle={90}
-                                                endAngle={-270}
+                                                data={[
+                                                    { name: 'Managers', value: 25, color: '#818CF8' },
+                                                    { name: 'Developers', value: 45, color: '#34D399' },
+                                                    { name: 'Analysts', value: 15, color: '#F87171' },
+                                                    { name: 'Support', value: 15, color: '#FB923C' },
+                                                ]}
+                                                cx='50%'
+                                                cy='50%'
+                                                innerRadius={30}
+                                                outerRadius={40}
+                                                paddingAngle={2}
+                                                cornerRadius={2}
                                                 dataKey='value'
                                             >
-                                                <Cell fill='#34D399' />
-                                                <Cell fill='#E5E7EB' />
+                                                {[
+                                                    { name: 'Managers', value: 25, color: '#818CF8' },
+                                                    { name: 'Developers', value: 45, color: '#34D399' },
+                                                    { name: 'Analysts', value: 15, color: '#F87171' },
+                                                    { name: 'Support', value: 15, color: '#FB923C' },
+                                                ].map((entry, index) => (
+                                                    <Cell key={index} fill={entry.color} />
+                                                ))}
                                             </Pie>
                                         </PieChart>
                                     </ResponsiveContainer>
@@ -371,13 +749,14 @@ export default function Dashboard() {
                     </Card>
                 </motion.div>
             </div>
-
-            {/* Charts Row */}
+            <div className='flex items-center gap-1'>
+                <ShoppingBag size={24} strokeWidth={1.5} />
+                <p className='font-normal uppercase text-md font-body'>Quotations & Claims</p>
+            </div>
             <div className='grid grid-cols-1 gap-2 lg:grid-cols-2'>
-                {/* Monthly Conversions Chart */}
                 <motion.div variants={itemVariants}>
                     <Card className='p-3 h-[520px]'>
-                        <div className='flex flex-col items-start justify-between w-full pb-6 border-b'>
+                        <div className='flex flex-col items-start justify-between w-full pb-6 '>
                             <h3 className='text-sm font-normal uppercase font-body'>Monthly Conversions</h3>
                             <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
                                 Quotations to Orders Conversion Rate
@@ -501,12 +880,106 @@ export default function Dashboard() {
                         </div>
                     </Card>
                 </motion.div>
-
-                {/* Claims Report */}
                 <motion.div variants={itemVariants} className='h-[520px]'>
                     <ClaimsReportCard />
                 </motion.div>
             </div>
+            <div className='flex items-center gap-1'>
+                <Users size={24} strokeWidth={1.5} />
+                <p className='font-normal uppercase text-md font-body'>Staff</p>
+            </div>
+            <div className='grid grid-cols-1 gap-2 lg:grid-cols-2'>
+                <motion.div variants={itemVariants} className='h-[520px]'>
+                    <Card className='p-6 h-[520px]'>
+                        <div className='flex flex-col items-start justify-between w-full pb-6 '>
+                            <h3 className='text-sm font-normal uppercase font-body'>User Composition</h3>
+                            <span className='text-xs font-normal uppercase text-muted-foreground font-body'>
+                                Role Distribution
+                            </span>
+                        </div>
+                        <div className='flex flex-col items-center justify-center h-[300px] mt-6'>
+                            <ResponsiveContainer width='100%' height='100%'>
+                                <PieChart>
+                                    <Pie
+                                        data={[
+                                            { name: 'Managers', value: 25, color: '#818CF8' },
+                                            { name: 'Developers', value: 45, color: '#34D399' },
+                                            { name: 'Analysts', value: 15, color: '#F87171' },
+                                            { name: 'Support', value: 15, color: '#FB923C' },
+                                        ]}
+                                        cx='50%'
+                                        cy='50%'
+                                        innerRadius={65}
+                                        outerRadius={100}
+                                        paddingAngle={2}
+                                        cornerRadius={8}
+                                        dataKey='value'
+                                    >
+                                        {[
+                                            { name: 'Managers', value: 25, color: '#818CF8' },
+                                            { name: 'Developers', value: 45, color: '#34D399' },
+                                            { name: 'Analysts', value: 15, color: '#F87171' },
+                                            { name: 'Support', value: 15, color: '#FB923C' },
+                                        ].map((entry, index) => (
+                                            <Cell key={index} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'hsl(var(--card))',
+                                            border: '1px solid hsl(var(--border))',
+                                            borderRadius: '8px',
+                                            padding: '8px 12px',
+                                            fontFamily: 'var(--font-body)',
+                                            fontSize: '10px',
+                                            textTransform: 'uppercase',
+                                            fontWeight: 'normal',
+                                        }}
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                return (
+                                                    <div className='flex flex-col gap-2 p-2 rounded bg-card'>
+                                                        <p className='flex items-center justify-between gap-4'>
+                                                            <span className='text-[10px] font-normal uppercase font-body'>
+                                                                {payload[0].name}:
+                                                            </span>
+                                                            <span className='text-sm font-normal font-body'>
+                                                                {payload[0].value}%
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className='flex flex-wrap items-center justify-center gap-6 pt-6 mt-6 border-t'>
+                            {[
+                                { name: 'Managers', color: '#818CF8' },
+                                { name: 'Developers', color: '#34D399' },
+                                { name: 'Analysts', color: '#F87171' },
+                                { name: 'Support', color: '#FB923C' },
+                            ].map((role, index) => (
+                                <div key={index} className='flex items-center gap-2'>
+                                    <div className='w-3 h-3 rounded-full' style={{ backgroundColor: role.color }} />
+                                    <span className='text-[10px] font-normal uppercase font-body'>{role.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                </motion.div>
+                <motion.div variants={itemVariants} className='h-[520px]'>
+                    <AttendanceCard />
+                </motion.div>
+            </div>
+            <div className='flex items-center gap-1'>
+                <Package size={24} strokeWidth={1.5} />
+                <p className='font-normal uppercase text-md font-body'>Products</p>
+            </div>
+            <ProductsAndOrdersSection />
         </motion.div>
     );
 }

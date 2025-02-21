@@ -27,6 +27,89 @@ export interface Branch {
     ref: string;
 }
 
+export interface OrganisationSettings {
+    uid: number;
+    contact?: {
+        email: string;
+        phone: {
+            code: string;
+            number: string;
+        };
+        website: string;
+        address: string;
+    };
+    regional?: {
+        language: string;
+        timezone: string;
+        currency: string;
+        dateFormat: string;
+        timeFormat: string;
+    };
+    business?: {
+        name: string;
+        registrationNumber?: string;
+        taxId: string;
+        industry?: string;
+        size?: 'small' | 'medium' | 'large' | 'enterprise';
+    };
+    branding?: {
+        logo?: string;
+        logoAltText?: string;
+        favicon?: string;
+        primaryColor: string;
+        secondaryColor: string;
+        accentColor: string;
+    };
+    notifications?: {
+        email: boolean;
+        sms: boolean;
+        push: boolean;
+        whatsapp: boolean;
+    };
+    preferences?: {
+        defaultView: string;
+        itemsPerPage: number;
+        theme: 'light' | 'dark' | 'system';
+        menuCollapsed: boolean;
+    };
+    organisationUid: number;
+}
+
+export interface OrganisationAppearance {
+    uid: number;
+    branding: {
+        primaryColor: string;
+        secondaryColor: string;
+        accentColor: string;
+        logo?: string;
+        logoAltText?: string;
+        favicon?: string;
+    };
+    customCss?: Record<string, any>;
+    organisationUid: number;
+}
+
+export interface OrganisationHours {
+    uid: number;
+    openTime: string;
+    closeTime: string;
+    weeklySchedule: {
+        monday: boolean;
+        tuesday: boolean;
+        wednesday: boolean;
+        thursday: boolean;
+        friday: boolean;
+        saturday: boolean;
+        sunday: boolean;
+    };
+    specialHours?: {
+        date: string;
+        openTime: string;
+        closeTime: string;
+    }[];
+    organisationUid: number;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const fetchOrganizations = async (config: RequestConfig): Promise<Organization[]> => {
@@ -88,3 +171,43 @@ export const fetchBranches = async (orgRef: string | undefined, config: RequestC
         return [];
     }
 };
+
+export async function getOrganisationSettings(orgRef: string) {
+    const { data } = await axios.get(`/organisations/${orgRef}/settings`);
+    return data;
+}
+
+export async function updateOrganisationSettings(orgRef: string, settings: Partial<OrganisationSettings>) {
+    const { data } = await axios.put(`/organisations/${orgRef}/settings`, settings);
+    return data;
+}
+
+export async function getOrganisationAppearance(orgRef: string) {
+    const { data } = await axios.get(`/organisations/${orgRef}/appearance`);
+    return data;
+}
+
+export async function updateOrganisationAppearance(orgRef: string, appearance: Partial<OrganisationAppearance>) {
+    const { data } = await axios.put(`/organisations/${orgRef}/appearance`, appearance);
+    return data;
+}
+
+export async function getOrganisationHours(orgRef: string) {
+    const { data } = await axios.get(`/organisations/${orgRef}/hours`);
+    return data;
+}
+
+export async function updateOrganisationHours(orgRef: string, hours: Partial<OrganisationHours>) {
+    const { data } = await axios.put(`/organisations/${orgRef}/hours`, hours);
+    return data;
+}
+
+export async function createOrganisationHours(orgRef: string, hours: Partial<OrganisationHours>) {
+    const { data } = await axios.post(`/organisations/${orgRef}/hours`, hours);
+    return data;
+}
+
+export async function deleteOrganisationHours(orgRef: string, hoursRef: string) {
+    const { data } = await axios.delete(`/organisations/${orgRef}/hours/${hoursRef}`);
+    return data;
+}

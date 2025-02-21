@@ -1,0 +1,69 @@
+import axios, { AxiosError } from 'axios';
+import { toast } from 'sonner';
+import { UploadResponse } from '@/lib/types/settings';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const FALLBACK_LOGO = '/images/fallback-logo.png';
+const FALLBACK_FAVICON = '/images/fallback-favicon.png';
+
+export interface UploadFileOptions {
+    onSuccess?: (url: string) => void;
+    onError?: (error: Error) => void;
+    maxSize?: number; // in bytes
+    allowedTypes?: string[];
+}
+
+export async function uploadFile(
+    file: File,
+    type: 'logo' | 'favicon',
+    options: UploadFileOptions = {}
+): Promise<string> {
+    const {
+        onSuccess,
+        onError,
+        maxSize = 5 * 1024 * 1024, // 5MB default
+        allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp']
+    } = options;
+
+    try {
+        // Validate file type
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
+        }
+
+        // Validate file size
+        if (file.size > maxSize) {
+            throw new Error(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', type);
+
+        const { data } = await axios.post<UploadResponse>(`${API_URL}/upload`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            timeout: 30000, // 30 seconds timeout
+        });
+
+        onSuccess?.(data.url);
+        toast.success('File uploaded successfully');
+        return data.url;
+    } catch (error) {
+        const fallbackImage = type === 'logo' ? FALLBACK_LOGO : FALLBACK_FAVICON;
+
+        let errorMessage = 'Failed to upload file';
+        if (error instanceof AxiosError) {
+            errorMessage = error.response?.data?.message || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        onError?.(new Error(errorMessage));
+        toast.error(errorMessage);
+
+        // Return fallback image URL
+        return fallbackImage;
+    }
+}

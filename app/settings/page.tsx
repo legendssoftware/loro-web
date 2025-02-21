@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Settings, Palette, Clock} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GeneralModule } from '@/modules/settings/general/general';
-import { AppearanceModule } from '@/modules/settings/appearance/appearance';
 import { HoursModule } from '@/modules/settings/hours/hours';
 import { itemVariants, containerVariants } from '@/lib/utils/animations';
+import { SettingsForm } from '@/modules/settings/general/settings-form';
+import { AppearanceForm } from '@/modules/settings/appearance/appearance-form';
 
 export default function SettingsPage() {
     return (
@@ -39,12 +39,12 @@ export default function SettingsPage() {
                     </TabsList>
                     <TabsContent value='general' className='mt-4'>
                         <Card className='flex flex-col gap-2 border-0 shadow-none bg-card/20'>
-                            <GeneralModule />
+                            <SettingsForm />
                         </Card>
                     </TabsContent>
                     <TabsContent value='appearance' className='mt-4'>
                         <Card className='flex flex-col gap-2 border-0 shadow-none bg-card/20'>
-                            <AppearanceModule />
+                            <AppearanceForm />
                         </Card>
                     </TabsContent>
                     <TabsContent value='hours' className='mt-4'>

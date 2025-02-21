@@ -18,6 +18,7 @@ import { taskFormSchema } from '@/lib/schemas/tasks';
 import type { CreateTaskDTO } from '@/helpers/tasks';
 import type { z } from 'zod';
 import { useSessionStore } from '@/store/use-session-store';
+import { toast } from 'react-hot-toast';
 
 type TaskForm = z.infer<typeof taskFormSchema>;
 
@@ -126,18 +127,51 @@ export const NewTaskForm = ({ onSubmit, isSubmitting }: NewTaskFormProps) => {
             const payload = {
                 ...formData,
                 deadline: formData.deadline?.toISOString(),
-                repetitionEndDate: formData.repetitionEndDate?.toISOString(),
+                repetitionDeadline: formData.repetitionEndDate?.toISOString(),
                 subtasks: formData.subtasks.map(({ title, description }) => ({
                     title,
                     description,
                     status: TaskStatus.PENDING,
                 })),
-                createdBy: profileData?.uid,
+                client: formData.client?.uid ? [{
+                    uid: formData.client.uid,
+                    name: formData.client.name,
+                    email: formData.client.email,
+                    address: formData.client.address,
+                    phone: formData.client.phone,
+                    contactPerson: formData.client.contactPerson,
+                }] : [],
+                creators: [{ uid: profileData?.uid }],
+                createdBy: undefined,
             };
 
             await onSubmit(payload as unknown as CreateTaskDTO);
             setFormData(initialFormData);
         } catch (err) {
+            let errorMessage = 'Failed to create task';
+            if (err instanceof Error) {
+                const response = (err as any).response;
+                if (response?.message) {
+                    errorMessage = response.message;
+                } else if (err.message) {
+                    errorMessage = err.message;
+                }
+            }
+            toast.error(errorMessage, {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 5000,
+                position: 'bottom-center',
+                icon: '❌',
+            });
             console.error('Failed to create task:', err);
         }
     };

@@ -41,12 +41,12 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                 onKeyDown={e => e.key === 'Enter' && onClick()}
                 aria-label={`Task: ${task.description}`}
             >
-                <CardContent className='flex flex-col justify-between h-full gap-4 p-4'>
+                <CardContent className='flex flex-col justify-between h-full gap-2 p-4 duration-500 ease-in-out md:gap-4'>
                     <div className='flex items-center justify-between'>
                         <Badge
                             variant='secondary'
                             className={cn(
-                                'font-body text-[10px] uppercase',
+                                'font-body text-[8px] uppercase md:text-[10px]',
                                 task?.priority === Priority.HIGH && 'bg-red-100 text-red-600',
                                 task?.priority === Priority.MEDIUM && 'bg-yellow-100 text-yellow-600',
                                 task?.priority === Priority.LOW && 'bg-green-100 text-green-600',
@@ -57,7 +57,7 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                         <Badge
                             variant='outline'
                             className={cn(
-                                'font-body text-[10px] uppercase',
+                                'font-body text-[8px] uppercase md:text-[10px]',
                                 task?.status === 'PENDING' && 'bg-yellow-100 text-yellow-600 border-yellow-200',
                                 task?.status === 'IN_PROGRESS' && 'bg-blue-100 text-blue-600 border-blue-200',
                                 task?.status === 'COMPLETED' && 'bg-green-100 text-green-600 border-green-200',
@@ -67,10 +67,10 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                         </Badge>
                     </div>
                     <div className='space-y-2'>
-                        <h3 className='text-sm font-normal leading-tight uppercase font-body text-card-foreground'>
+                        <h3 className='text-xs font-normal leading-tight uppercase md:text-sm font-body text-card-foreground'>
                             {task?.title?.length > 20 ? task?.title?.slice(0, 20) + '...' : task?.title}
                         </h3>
-                        <p className='text-xs font-normal uppercase font-body text-muted-foreground'>
+                        <p className='text-[10px] font-normal uppercase md:text-xs font-body text-muted-foreground'>
                             {task?.clients?.length > 1
                                 ? `${task?.clients?.length} Clients - ${task?.targetCategory}`
                                 : task?.clients?.[0]?.name}

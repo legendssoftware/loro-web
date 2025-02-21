@@ -19,7 +19,7 @@ export const StaffCard = ({ user, onAction }: StaffCardProps) => {
         <Card className='p-4'>
             <div className='flex flex-col gap-2'>
                 <div className='flex items-start justify-between'>
-                    <div className='flex items-start gap-3'>
+                    <div className='flex flex-col items-start gap-3 md:flex-row'>
                         <Avatar className='w-8 h-8 ring-2 ring-primary'>
                             {user?.photoURL && <AvatarImage src={user.photoURL} alt={`${user.name} ${user.surname}`} />}
                             <AvatarFallback className='bg-black text-white text-[10px] font-body uppercase'>

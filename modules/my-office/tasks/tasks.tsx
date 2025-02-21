@@ -51,8 +51,6 @@ export const TasksModule = () => {
         enabled: !!accessToken,
     });
 
-    console.log(tasksData?.data?.length);
-
     const updateTaskMutation = useMutation({
         mutationFn: ({ ref, updatedTask }: { ref: number; updatedTask: UpdateTaskDTO }) =>
             updateTask({ ref, updatedTask, config }),

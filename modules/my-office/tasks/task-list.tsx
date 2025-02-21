@@ -1,7 +1,6 @@
 import { memo, useState, useCallback, useMemo } from 'react';
-import { Task, ExistingTask, User, Client } from '@/lib/types/tasks';
+import { Task, User } from '@/lib/types/tasks';
 import { PageLoader } from '@/components/page-loader';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NewTaskModal } from './new-task-modal';
 import { CreateTaskDTO } from '@/helpers/tasks';
 import { useSessionStore } from '@/store/use-session-store';
@@ -16,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { TaskCard } from './task-card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface TaskListProps {
     tasks: Task[];
@@ -132,10 +132,6 @@ const TaskListComponent = ({
         },
         [createTaskMutation],
     );
-
-    const handleTaskClick = (task: Task) => {
-        onTaskClick(task);
-    };
 
     // Filter tasks based on all criteria
     const filteredTasks = useMemo(() => {

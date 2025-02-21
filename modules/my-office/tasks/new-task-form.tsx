@@ -48,7 +48,6 @@ const initialFormData: TaskFormData = {
     subtasks: [],
     status: TaskStatus.PENDING,
     comment: '',
-    notes: '',
     progress: 0,
 };
 

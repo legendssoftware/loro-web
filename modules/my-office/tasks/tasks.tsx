@@ -30,7 +30,7 @@ export const TasksModule = () => {
     const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<ExistingTask | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 20;
+    const itemsPerPage = 20
 
     const config: RequestConfig = {
         headers: {
@@ -50,6 +50,8 @@ export const TasksModule = () => {
         },
         enabled: !!accessToken,
     });
+
+    console.log(tasksData?.data?.length);
 
     const updateTaskMutation = useMutation({
         mutationFn: ({ ref, updatedTask }: { ref: number; updatedTask: UpdateTaskDTO }) =>

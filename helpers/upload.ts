@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { toast } from 'sonner';
 import { UploadResponse } from '@/lib/types/settings';
 
@@ -40,7 +40,7 @@ export async function uploadFile(
         formData.append('file', file);
         formData.append('type', type);
 
-        const { data } = await axios.post<UploadResponse>(`${API_URL}/upload`, formData, {
+        const { data } = await axios.post<UploadResponse>(`${API_URL}/docs/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -54,9 +54,7 @@ export async function uploadFile(
         const fallbackImage = type === 'logo' ? FALLBACK_LOGO : FALLBACK_FAVICON;
 
         let errorMessage = 'Failed to upload file';
-        if (error instanceof AxiosError) {
-            errorMessage = error.response?.data?.message || error.message;
-        } else if (error instanceof Error) {
+        if (error instanceof Error) {
             errorMessage = error.message;
         }
 
@@ -65,5 +63,19 @@ export async function uploadFile(
 
         // Return fallback image URL
         return fallbackImage;
+    }
+}
+
+export async function deleteFile(filename: string): Promise<void> {
+    try {
+        await axios.delete(`${API_URL}/docs/remove/${filename}`);
+        toast.success('File deleted successfully');
+    } catch (error) {
+        let errorMessage = 'Failed to delete file';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
     }
 }

@@ -178,7 +178,7 @@ export async function getOrganisationSettings(orgRef: string) {
 }
 
 export async function updateOrganisationSettings(orgRef: string, settings: Partial<OrganisationSettings>) {
-    const { data } = await axios.put(`/organisations/${orgRef}/settings`, settings);
+    const { data } = await axios.patch(`/organisations/${orgRef}/settings`, settings);
     return data;
 }
 

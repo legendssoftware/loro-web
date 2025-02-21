@@ -1,6 +1,6 @@
 export interface OrganisationSettings {
     uid: number;
-    contact: {
+    contact?: {
         email: string;
         phone: {
             code: string;
@@ -9,14 +9,14 @@ export interface OrganisationSettings {
         website: string;
         address: string;
     };
-    regional: {
+    regional?: {
         language: string;
         timezone: string;
         currency: string;
         dateFormat: string;
         timeFormat: string;
     };
-    business: {
+    business?: {
         name: string;
         registrationNumber?: string;
         taxId: string;

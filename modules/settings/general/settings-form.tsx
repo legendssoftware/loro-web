@@ -12,6 +12,7 @@ import { Upload } from 'lucide-react';
 import { useSessionStore } from '@/store/use-session-store';
 import Image from 'next/image';
 import { PageLoader } from '@/components/page-loader';
+import { uploadFile } from '@/helpers/upload';
 
 const FALLBACK_LOGO = '/images/fallback-logo.png';
 
@@ -84,7 +85,7 @@ export function SettingsForm() {
             contact: {
                 email: settingsData?.settings?.contact?.email || '',
                 phone: {
-                    code: '+27',
+                    code: settingsData?.settings?.contact?.phone?.code || '+27',
                     number: settingsData?.settings?.contact?.phone?.number || '',
                 },
                 website: settingsData?.settings?.contact?.website || '',
@@ -104,18 +105,6 @@ export function SettingsForm() {
                 industry: settingsData?.settings?.business?.industry || '',
                 size: settingsData?.settings?.business?.size || 'small',
             },
-            notifications: settingsData?.settings?.notifications || {
-                email: true,
-                sms: false,
-                push: true,
-                whatsapp: false,
-            },
-            preferences: settingsData?.settings?.preferences || {
-                defaultView: 'grid',
-                itemsPerPage: 10,
-                theme: 'system',
-                menuCollapsed: false,
-            },
             branding: {
                 logo: settingsData?.settings?.branding?.logo,
                 logoAltText: settingsData?.settings?.branding?.logoAltText,
@@ -124,13 +113,55 @@ export function SettingsForm() {
                 secondaryColor: settingsData?.settings?.branding?.secondaryColor || '#2196F3',
                 accentColor: settingsData?.settings?.branding?.accentColor || '#4CAF50',
             },
+            notifications: {
+                email: settingsData?.settings?.notifications?.email ?? true,
+                sms: settingsData?.settings?.notifications?.sms ?? false,
+                push: settingsData?.settings?.notifications?.push ?? true,
+                whatsapp: settingsData?.settings?.notifications?.whatsapp ?? false,
+            },
+            preferences: {
+                defaultView: settingsData?.settings?.preferences?.defaultView || 'grid',
+                itemsPerPage: settingsData?.settings?.preferences?.itemsPerPage || 10,
+                theme: settingsData?.settings?.preferences?.theme || 'system',
+                menuCollapsed: settingsData?.settings?.preferences?.menuCollapsed ?? false,
+            },
         },
     });
 
     const mutation = useMutation({
         mutationFn: (values: SettingsFormValues) => {
             const settings: Partial<OrganisationSettings> = {
-                ...values,
+                contact: values.contact ? {
+                    email: values.contact.email,
+                    phone: {
+                        code: values.contact.phone.code || '+27',
+                        number: values.contact.phone.number,
+                    },
+                    website: values.contact.website,
+                    address: values.contact.address,
+                } : undefined,
+                regional: values.regional ? {
+                    language: values.regional.language || 'en',
+                    timezone: values.regional.timezone || 'SAST',
+                    currency: values.regional.currency || 'ZAR',
+                    dateFormat: values.regional.dateFormat || 'DD/MM/YYYY',
+                    timeFormat: values.regional.timeFormat || '24',
+                } : undefined,
+                business: values.business ? {
+                    name: values.business.name,
+                    registrationNumber: values.business.registrationNumber,
+                    taxId: values.business.taxId,
+                    industry: values.business.industry,
+                    size: values.business.size || 'small',
+                } : undefined,
+                branding: values.branding ? {
+                    logo: values.branding.logo,
+                    logoAltText: values.branding.logoAltText,
+                    favicon: values.branding.favicon,
+                    primaryColor: values.branding.primaryColor || '#FC4A4A',
+                    secondaryColor: values.branding.secondaryColor || '#2196F3',
+                    accentColor: values.branding.accentColor || '#4CAF50',
+                } : undefined,
                 notifications: {
                     email: values.notifications?.email ?? true,
                     sms: values.notifications?.sms ?? false,
@@ -143,12 +174,6 @@ export function SettingsForm() {
                     theme: values.preferences?.theme ?? 'system',
                     menuCollapsed: values.preferences?.menuCollapsed ?? false,
                 },
-                branding: values.branding ? {
-                    ...values.branding,
-                    primaryColor: values.branding.primaryColor ?? '#FC4A4A',
-                    secondaryColor: values.branding.secondaryColor ?? '#2196F3',
-                    accentColor: values.branding.accentColor ?? '#4CAF50',
-                } : undefined
             };
             return updateOrganisationSettings(profileData?.organisationRef as string, settings);
         },
@@ -173,21 +198,19 @@ export function SettingsForm() {
         if (!e.target.files || !e.target.files[0]) return;
 
         const file = e.target.files[0];
-        if (!file.type.includes('image')) {
-            toast.error('Please upload an image file');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('logo', file);
-
         try {
-            // TODO: Implement your file upload logic here
-            // const response = await uploadLogo(formData);
-            // form.setValue('branding.logo', response.url);
-            toast.success('Logo uploaded successfully');
+            const url = await uploadFile(file, 'logo', {
+                onSuccess: (url) => {
+                    form.setValue('branding.logo', url);
+                    toast.success('Logo uploaded successfully');
+                },
+                onError: (error) => {
+                    toast.error(error.message);
+                },
+            });
+            form.setValue('branding.logo', url);
         } catch (error) {
-            toast.error('Failed to upload logo');
+            console.error('Failed to upload logo:', error);
         }
     };
 
@@ -214,13 +237,22 @@ export function SettingsForm() {
                         <div className='space-y-4'>
                             <h3 className='text-sm font-normal uppercase font-body'>Logo</h3>
                             <div className='flex items-center gap-6'>
-                                <div className='relative w-32 h-32 overflow-hidden border rounded-lg bg-primary/10 border-primary/20'>
+                                <div
+                                    className='relative w-32 h-32 overflow-hidden border rounded-lg cursor-pointer bg-primary/10 border-primary/20'
+                                    onClick={() => {
+                                        const input = document.createElement('input');
+                                        input.type = 'file';
+                                        input.accept = 'image/*';
+                                        input.onchange = (e) => handleLogoUpload(e as any);
+                                        input.click();
+                                    }}
+                                >
                                     {form.watch('branding.logo') ? (
                                         <Image
                                             src={form.watch('branding.logo') || FALLBACK_LOGO}
                                             alt={form.watch('branding.logoAltText') || 'Company logo'}
                                             fill
-                                            className='object-cover'
+                                            className='object-cover transition-transform hover:scale-105'
                                         />
                                     ) : (
                                         <div className='flex items-center justify-center w-full h-full'>

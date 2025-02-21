@@ -121,7 +121,7 @@ export function GeneralModule() {
                         </div>
                     </div>
                 </div>
-                <Button className='w-fit text-[10px] font-normal text-white uppercase font-body bg-primary'>
+                <Button className='w-4/12 self-end text-[10px] font-normal text-white uppercase font-body bg-primary'>
                     Save Changes
                 </Button>
             </div>

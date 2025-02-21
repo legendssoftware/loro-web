@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { HexColorPicker } from 'react-colorful';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 
 export function AppearanceModule() {
     const [primaryColor, setPrimaryColor] = useState('#FCA4AA');
@@ -33,13 +34,20 @@ export function AppearanceModule() {
                         <div className='flex gap-2'>
                             <Popover>
                                 <PopoverTrigger>
-                                    <div className='w-6 h-6 rounded cursor-pointer' style={{ backgroundColor: primaryColor }} />
+                                    <div
+                                        className='w-6 h-6 rounded cursor-pointer'
+                                        style={{ backgroundColor: primaryColor }}
+                                    />
                                 </PopoverTrigger>
-                                <PopoverContent className="p-0 border-none">
+                                <PopoverContent className='p-0 border-none'>
                                     <HexColorPicker color={primaryColor} onChange={setPrimaryColor} />
                                 </PopoverContent>
                             </Popover>
-                            <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className='text-xs uppercase' />
+                            <Input
+                                value={primaryColor}
+                                onChange={e => setPrimaryColor(e.target.value)}
+                                className='text-xs uppercase'
+                            />
                         </div>
                     </div>
                     <div className='flex flex-col gap-2'>
@@ -47,13 +55,20 @@ export function AppearanceModule() {
                         <div className='flex gap-2'>
                             <Popover>
                                 <PopoverTrigger>
-                                    <div className='w-6 h-6 rounded cursor-pointer' style={{ backgroundColor: secondaryColor }} />
+                                    <div
+                                        className='w-6 h-6 rounded cursor-pointer'
+                                        style={{ backgroundColor: secondaryColor }}
+                                    />
                                 </PopoverTrigger>
-                                <PopoverContent className="p-0 border-none">
+                                <PopoverContent className='p-0 border-none'>
                                     <HexColorPicker color={secondaryColor} onChange={setSecondaryColor} />
                                 </PopoverContent>
                             </Popover>
-                            <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className='text-xs uppercase' />
+                            <Input
+                                value={secondaryColor}
+                                onChange={e => setSecondaryColor(e.target.value)}
+                                className='text-xs uppercase'
+                            />
                         </div>
                     </div>
                     <div className='flex flex-col gap-2'>
@@ -61,13 +76,20 @@ export function AppearanceModule() {
                         <div className='flex gap-2'>
                             <Popover>
                                 <PopoverTrigger>
-                                    <div className='w-6 h-6 rounded cursor-pointer' style={{ backgroundColor: accentColor }} />
+                                    <div
+                                        className='w-6 h-6 rounded cursor-pointer'
+                                        style={{ backgroundColor: accentColor }}
+                                    />
                                 </PopoverTrigger>
-                                <PopoverContent className="p-0 border-none">
+                                <PopoverContent className='p-0 border-none'>
                                     <HexColorPicker color={accentColor} onChange={setAccentColor} />
                                 </PopoverContent>
                             </Popover>
-                            <Input value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className='text-xs uppercase' />
+                            <Input
+                                value={accentColor}
+                                onChange={e => setAccentColor(e.target.value)}
+                                className='text-xs uppercase'
+                            />
                         </div>
                     </div>
                 </div>
@@ -81,7 +103,9 @@ export function AppearanceModule() {
                                 <SelectValue placeholder='Select theme' />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value='default' className='text-xs font-normal uppercase font-body'>Default (shadcn/ui)</SelectItem>
+                                <SelectItem value='default' className='text-xs font-normal uppercase font-body'>
+                                    Default (shadcn/ui)
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -92,7 +116,9 @@ export function AppearanceModule() {
                                 <SelectValue placeholder='Select mode' />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value='system' className='text-xs font-normal uppercase font-body'>System</SelectItem>
+                                <SelectItem value='system' className='text-xs font-normal uppercase font-body'>
+                                    System
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -107,7 +133,9 @@ export function AppearanceModule() {
                                 <SelectValue placeholder='Select font' />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value='inter' className='text-xs font-normal uppercase font-body'>Inter</SelectItem>
+                                <SelectItem value='inter' className='text-xs font-normal uppercase font-body'>
+                                    Inter
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -121,11 +149,14 @@ export function AppearanceModule() {
                                     min={12}
                                     step={1}
                                     className='flex-1'
-                                    onValueChange={(value) => setFontSize(value[0])}
+                                    onValueChange={value => setFontSize(value[0])}
                                 />
                                 <span className='text-xs font-normal uppercase font-body'>{fontSize}px</span>
                             </div>
-                            <p style={{ fontSize: `${fontSize}px` }} className='text-xs font-normal uppercase font-body'>
+                            <p
+                                style={{ fontSize: `${fontSize}px` }}
+                                className='text-xs font-normal uppercase font-body'
+                            >
                                 Trying awesome loro
                             </p>
                         </div>
@@ -141,7 +172,9 @@ export function AppearanceModule() {
                                 <SelectValue placeholder='Select weight' />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value='regular' className='text-xs font-normal uppercase font-body'>Regular</SelectItem>
+                                <SelectItem value='regular' className='text-xs font-normal uppercase font-body'>
+                                    Regular
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -150,13 +183,20 @@ export function AppearanceModule() {
                         <div className='flex gap-2'>
                             <Popover>
                                 <PopoverTrigger>
-                                    <div className='w-6 h-6 rounded cursor-pointer' style={{ backgroundColor: errorColor }} />
+                                    <div
+                                        className='w-6 h-6 rounded cursor-pointer'
+                                        style={{ backgroundColor: errorColor }}
+                                    />
                                 </PopoverTrigger>
-                                <PopoverContent className="p-0 border-none">
+                                <PopoverContent className='p-0 border-none'>
                                     <HexColorPicker color={errorColor} onChange={setErrorColor} />
                                 </PopoverContent>
                             </Popover>
-                            <Input value={errorColor} onChange={(e) => setErrorColor(e.target.value)} className='text-xs uppercase' />
+                            <Input
+                                value={errorColor}
+                                onChange={e => setErrorColor(e.target.value)}
+                                className='text-xs uppercase'
+                            />
                         </div>
                     </div>
                     <div className='flex flex-col gap-2'>
@@ -164,16 +204,26 @@ export function AppearanceModule() {
                         <div className='flex gap-2'>
                             <Popover>
                                 <PopoverTrigger>
-                                    <div className='w-6 h-6 rounded cursor-pointer' style={{ backgroundColor: successColor }} />
+                                    <div
+                                        className='w-6 h-6 rounded cursor-pointer'
+                                        style={{ backgroundColor: successColor }}
+                                    />
                                 </PopoverTrigger>
-                                <PopoverContent className="p-0 border-none">
+                                <PopoverContent className='p-0 border-none'>
                                     <HexColorPicker color={successColor} onChange={setSuccessColor} />
                                 </PopoverContent>
                             </Popover>
-                            <Input value={successColor} onChange={(e) => setSuccessColor(e.target.value)} className='text-xs uppercase' />
+                            <Input
+                                value={successColor}
+                                onChange={e => setSuccessColor(e.target.value)}
+                                className='text-xs uppercase'
+                            />
                         </div>
                     </div>
                 </div>
+                <Button className='w-4/12 self-end text-[10px] font-normal text-white uppercase font-body bg-primary'>
+                    Save Changes
+                </Button>
             </div>
         </div>
     );

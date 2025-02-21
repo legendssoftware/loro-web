@@ -2,12 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Settings, Palette, Clock, Plug } from 'lucide-react';
+import { Settings, Palette, Clock} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeneralModule } from '@/modules/settings/general/general';
 import { AppearanceModule } from '@/modules/settings/appearance/appearance';
 import { HoursModule } from '@/modules/settings/hours/hours';
-import { IntegrationsModule } from '@/modules/settings/integrations/integrations';
 import { itemVariants, containerVariants } from '@/lib/utils/animations';
 
 export default function SettingsPage() {

@@ -32,23 +32,23 @@ function TimeInput({ value, onChange }: TimeInputProps) {
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
-                    className='w-[100px] text-xs font-normal uppercase font-body flex items-center justify-between bg-background rounded-md shadow-sm'
+                    className='w-[100px] h-9 px-3 text-xs font-normal font-body bg-background hover:bg-accent hover:text-accent-foreground rounded-md flex items-center justify-between gap-2'
                 >
                     <span className='text-foreground'>{value}</span>
                     <Clock className='w-4 h-4 text-muted-foreground' />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className='p-0 w-fit' align="start">
-                <div className='flex bg-popover'>
+            <PopoverContent className='p-0 border rounded-lg shadow-md w-fit' align="start">
+                <div className='flex divide-x rounded-lg bg-background divide-border'>
                     {/* Hours Column */}
-                    <div className='flex flex-col border-r w-[60px] max-h-[200px] overflow-y-auto scrollbar-thin'>
+                    <div className='w-[120px] h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent'>
                         {hours.map(hour => (
                             <Button
                                 key={hour}
                                 variant='ghost'
                                 className={cn(
-                                    'rounded-none h-8 text-xs font-normal font-body hover:bg-accent hover:text-accent-foreground',
-                                    selectedHour === hour ? 'bg-primary text-primary-foreground' : 'text-foreground'
+                                    'w-full rounded-none h-10 text-xs font-normal font-body hover:bg-accent hover:text-accent-foreground',
+                                    selectedHour === hour && 'bg-primary text-primary-foreground'
                                 )}
                                 onClick={() => handleTimeChange(hour, selectedMinute)}
                             >
@@ -57,14 +57,14 @@ function TimeInput({ value, onChange }: TimeInputProps) {
                         ))}
                     </div>
                     {/* Minutes Column */}
-                    <div className='flex flex-col w-[60px] max-h-[200px] overflow-y-auto scrollbar-thin'>
+                    <div className='w-[120px] h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent'>
                         {minutes.map(minute => (
                             <Button
                                 key={minute}
                                 variant='ghost'
                                 className={cn(
-                                    'rounded-none h-8 text-xs font-normal font-body hover:bg-accent hover:text-accent-foreground',
-                                    selectedMinute === minute ? 'bg-primary text-primary-foreground' : 'text-foreground'
+                                    'w-full rounded-none h-10 text-xs font-normal font-body hover:bg-accent hover:text-accent-foreground',
+                                    selectedMinute === minute && 'bg-primary text-primary-foreground'
                                 )}
                                 onClick={() => handleTimeChange(selectedHour, minute)}
                             >
@@ -119,7 +119,7 @@ export function HoursModule() {
                                     value={times.start}
                                     onChange={(value) => updateTime(day, 'start', value)}
                                 />
-                                <span className='text-xs font-normal uppercase font-body'>to</span>
+                                <span className='text-[10px] font-normal uppercase font-body'>to</span>
                                 <TimeInput
                                     value={times.end}
                                     onChange={(value) => updateTime(day, 'end', value)}
@@ -143,6 +143,9 @@ export function HoursModule() {
                         />
                     </div>
                 </div>
+                <Button className='w-4/12 self-end text-[10px] font-normal text-white uppercase font-body bg-primary'>
+                    Save Changes
+                </Button>
             </div>
         </div>
     );

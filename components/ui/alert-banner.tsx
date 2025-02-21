@@ -6,7 +6,7 @@ export function AlertBanner() {
             <div className="container px-2 py-2 mx-auto">
                 <div className="flex items-center justify-center gap-2 text-xs text-amber-50">
                     <AlertTriangle className="w-3 h-3" />
-                    <p className="text-sm font-normal">We are having issues with task creation. We will notify you once everything is in order.</p>
+                    <p className="text-sm font-normal">Services suspended for now. Please try again later.</p>
                 </div>
             </div>
         </div>

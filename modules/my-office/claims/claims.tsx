@@ -11,6 +11,8 @@ import { ClaimCard } from './claim-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/lib/hooks/use-debounce';
+import { FolderOpen, List } from 'lucide-react';
+import { claimStatuses } from '@/data/app-data';
 
 const toastStyle = {
     style: {
@@ -97,10 +99,10 @@ export const ClaimsModule = () => {
             setIsClaimDetailModalOpen(false);
             setSelectedClaim(null);
         },
-        onError: (error) => {
+        onError: error => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete claim';
             toast.error(errorMessage, { ...toastStyle, duration: 5000 });
-        }
+        },
     });
 
     const handleClaimClick = (claim: Claim) => {
@@ -125,15 +127,21 @@ export const ClaimsModule = () => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value='ALL' className='text-[10px] font-normal uppercase font-body'>
-                            All Statuses
+                            <div className='flex flex-row items-center gap-2'>
+                                <List size={17} strokeWidth={1.5} />
+                                <span>All Statuses</span>
+                            </div>
                         </SelectItem>
-                        {Object.values(ClaimStatus).map((status) => (
+                        {claimStatuses?.map(status => (
                             <SelectItem
-                                key={status}
-                                value={status}
-                                className='text-[10px] font-normal uppercase font-body'
+                                key={status?.value}
+                                value={status?.value}
+                                className='text-[10px] font-normal font-body uppercase'
                             >
-                                {status.replace('_', ' ')}
+                                <div className='flex items-center gap-2'>
+                                    {status?.icon && <status.icon size={17} strokeWidth={1.5} />}
+                                    <span>{status?.label?.replace('_', ' ')}</span>
+                                </div>
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -153,8 +161,13 @@ export const ClaimsModule = () => {
                     ))}
                 </div>
             ) : (
-                <div className='flex flex-col items-center justify-center gap-4 p-8'>
-                    <p className='text-sm font-normal text-center text-muted-foreground font-body'>No claims found</p>
+                <div className='space-y-4'>
+                    <div className='flex flex-col items-center justify-center w-full gap-2 h-96'>
+                        <FolderOpen className='w-8 h-8 text-muted-foreground' strokeWidth={1.5} />
+                        <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>
+                            No claims found
+                        </p>
+                    </div>
                 </div>
             )}
             <ClaimDetailModal

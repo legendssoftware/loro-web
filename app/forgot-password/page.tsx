@@ -10,7 +10,8 @@ import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { forgotPasswordSchema } from '@/lib/schemas/auth';
 import { useForgotPasswordMutation } from '@/store/use-auth-store';
-
+import { containerVariants } from '@/lib/utils/animations';
+import { motion } from 'framer-motion';
 type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPasswordPage = () => {
@@ -82,7 +83,10 @@ const ForgotPasswordPage = () => {
     };
 
     return (
-        <div
+        <motion.div
+            initial='hidden'
+            animate='show'
+            variants={containerVariants}
             className='relative flex items-center justify-center min-h-screen p-4'
             style={{
                 backgroundImage:
@@ -159,7 +163,7 @@ const ForgotPasswordPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

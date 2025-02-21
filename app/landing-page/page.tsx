@@ -16,85 +16,13 @@ import {
     Check,
     CreditCard,
     Building2,
-    Building,
     Menu,
 } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import router from 'next/router';
 import { useState } from 'react';
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: {
-        opacity: 0,
-        y: 20,
-    },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            type: 'spring',
-            stiffness: 300,
-            damping: 24,
-        },
-    },
-};
-
-interface PricingPlan {
-    icon: React.ReactNode;
-    name: string;
-    description: string;
-    price: string;
-    isPopular?: boolean;
-    features: string[];
-    buttonText: string;
-}
-
-const pricingPlans: PricingPlan[] = [
-    {
-        icon: <Users className='w-6 h-6 text-primary' />,
-        name: 'Starter',
-        description: 'For small teams',
-        price: 'R99',
-        features: ['Up to 5 Users', '1 Branch', '5GB Storage', '10K API Calls', '2 Integrations'],
-        buttonText: 'Get Started',
-    },
-    {
-        icon: <Store className='w-6 h-6 text-primary' />,
-        name: 'Professional',
-        description: 'For growing teams',
-        price: 'R199',
-        isPopular: true,
-        features: ['Up to 20 Users', '3 Branches', '20GB Storage', '500K API Calls', '5 Integrations'],
-        buttonText: 'Get Started',
-    },
-    {
-        icon: <Building2 className='w-6 h-6 text-primary' />,
-        name: 'Business',
-        description: 'For larger organizations',
-        price: 'R499',
-        features: ['Up to 50 Users', '10 Branches', '100GB Storage', '2M API Calls', '15 Integrations'],
-        buttonText: 'Get Started',
-    },
-    {
-        icon: <Building className='w-6 h-6 text-primary' />,
-        name: 'Enterprise',
-        description: 'Custom solutions',
-        price: 'R999',
-        features: ['Unlimited Users', 'Unlimited Branches', '1TB Storage', '10M API Calls', 'Unlimited Integrations'],
-        buttonText: 'Contact Sales',
-    },
-];
+import { itemVariants, containerVariants } from '@/lib/utils/animations';
+import { pricingPlans } from '@/data/app-data';
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -669,7 +597,9 @@ const LandingPage: React.FunctionComponent = () => {
                                     </div>
                                 )}
                                 <div className='flex flex-col items-center gap-6'>
-                                    <div className='flex items-center justify-center w-10 h-10'>{plan.icon}</div>
+                                    <div className='flex items-center justify-center w-10 h-10'>
+                                        <plan.icon className='w-6 h-6 text-primary' />
+                                    </div>
                                     <div>
                                         <h3 className='text-lg font-normal uppercase font-body'>{plan.name}</h3>
                                         <p className='mt-1 text-xs uppercase text-muted-foreground font-body'>

@@ -1,6 +1,7 @@
 import { TaskStatus } from '@/lib/enums/task.enums';
 import { ClaimStatus, ClaimCategory, MerchandiseStatus } from '@/lib/types/claims';
 import { LeadStatus } from '@/lib/types/leads';
+import { PricingPlan } from '@/lib/types/pricing';
 import {
     CheckCircle2,
     XCircle,
@@ -36,6 +37,8 @@ import {
     ShoppingBag,
     Search,
     User,
+    Building,
+    Store,
 } from 'lucide-react';
 
 export const status = [
@@ -201,3 +204,39 @@ export const productCategories = [
     { value: 'POWER_TOOLS', label: 'Power Tools' },
     { value: 'OTHER', label: 'Other' },
 ] as const;
+
+export const pricingPlans: PricingPlan[] = [
+    {
+        icon: Users,
+        name: 'Starter',
+        description: 'For small teams',
+        price: 'R99',
+        features: ['Up to 5 Users', '1 Branch', '5GB Storage', '10K API Calls', '2 Integrations'],
+        buttonText: 'Get Started',
+    },
+    {
+        icon: Store,
+        name: 'Professional',
+        description: 'For growing teams',
+        price: 'R199',
+        isPopular: true,
+        features: ['Up to 20 Users', '3 Branches', '20GB Storage', '500K API Calls', '5 Integrations'],
+        buttonText: 'Get Started',
+    },
+    {
+        icon: Building2,
+        name: 'Business',
+        description: 'For larger organizations',
+        price: 'R499',
+        features: ['Up to 50 Users', '10 Branches', '100GB Storage', '2M API Calls', '15 Integrations'],
+        buttonText: 'Get Started',
+    },
+    {
+        icon: Building,
+        name: 'Enterprise',
+        description: 'Custom solutions',
+        price: 'R999',
+        features: ['Unlimited Users', 'Unlimited Branches', '1TB Storage', '10M API Calls', 'Unlimited Integrations'],
+        buttonText: 'Contact Sales',
+    },
+];

@@ -4,10 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { containerVariants } from '@/lib/utils/animations';
 
 const VerifyOTPPage = () => {
     return (
-        <div
+        <motion.div
+            initial='hidden'
+            animate='show'
+            variants={containerVariants}
+        >
+            <div
             className='relative flex items-center justify-center min-h-screen p-4'
             style={{
                 backgroundImage:
@@ -57,9 +64,10 @@ const VerifyOTPPage = () => {
                             Resend OTP
                         </Link>
                     </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

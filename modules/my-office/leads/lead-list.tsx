@@ -95,7 +95,7 @@ const LeadListComponent = ({
                 <Header />
                 <div className='flex flex-col items-center justify-center w-full gap-2 h-96'>
                     <FolderOpen className='w-8 h-8 text-muted-foreground' strokeWidth={1.5} />
-                    <p className='text-xs font-normal uppercase text-muted-foreground font-body'>No leads found</p>
+                    <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>No leads found</p>
                 </div>
             </div>
         );

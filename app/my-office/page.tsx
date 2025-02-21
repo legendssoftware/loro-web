@@ -10,33 +10,7 @@ import { TasksModule } from '@/modules/my-office/tasks/tasks';
 import { StaffModule } from '@/modules/my-office/staff/staff';
 import LeadsModule from '@/modules/my-office/leads/leads';
 import { InventoryModule } from '@/modules/my-office/inventory/inventory';
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.3,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: {
-        opacity: 0,
-        y: 20,
-    },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            type: 'spring',
-            stiffness: 300,
-            damping: 24,
-        },
-    },
-};
+import { itemVariants, containerVariants } from '@/lib/utils/animations';
 
 export default function MyOfficePage() {
     return (

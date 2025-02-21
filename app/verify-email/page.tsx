@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { containerVariants } from '@/lib/utils/animations';
 
 const VerifyEmailPage = () => {
     const router = useRouter();
@@ -92,7 +94,10 @@ const VerifyEmailPage = () => {
     }, [token, router]);
 
     return (
-        <div
+        <motion.div
+            initial='hidden'
+            animate='show'
+            variants={containerVariants}
             className='relative flex items-center justify-center min-h-screen p-4'
             style={{
                 backgroundImage:
@@ -112,7 +117,7 @@ const VerifyEmailPage = () => {
                     <p className='text-xs text-white uppercase font-body'>Please wait while we verify your email...</p>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

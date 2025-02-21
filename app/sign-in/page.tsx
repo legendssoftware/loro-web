@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import { signInSchema } from '@/lib/schemas/auth';
 import { useSignInMutation } from '@/store/use-session-store';
 import toast from 'react-hot-toast';
+import { containerVariants } from '@/lib/utils/animations';
+import { motion } from 'framer-motion';
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
@@ -115,7 +117,10 @@ const SignInPage = () => {
     };
 
     return (
-        <div
+        <motion.div
+            initial='hidden'
+            animate='show'
+            variants={containerVariants}
             className='relative flex items-center justify-center min-h-screen p-4'
             style={{
                 backgroundImage:
@@ -236,7 +241,7 @@ const SignInPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

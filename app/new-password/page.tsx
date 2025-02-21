@@ -11,6 +11,8 @@ import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { newPasswordSchema } from '@/lib/schemas/auth';
 import { useSetPasswordMutation, useResetPasswordMutation } from '@/store/use-auth-store';
+import { motion } from 'framer-motion';
+import { containerVariants } from '@/lib/utils/animations';
 
 type NewPasswordSchema = z.infer<typeof newPasswordSchema>;
 
@@ -107,7 +109,10 @@ const NewPasswordPage = () => {
     };
 
     return (
-        <div
+        <motion.div
+            initial='hidden'
+            animate='show'
+            variants={containerVariants}
             className='relative flex items-center justify-center min-h-screen p-4'
             style={{
                 backgroundImage:
@@ -246,7 +251,7 @@ const NewPasswordPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

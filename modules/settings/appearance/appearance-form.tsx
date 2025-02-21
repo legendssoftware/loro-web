@@ -227,9 +227,9 @@ export function AppearanceForm() {
                                                     <SelectValue placeholder='Select theme' />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value='default'>Default (shadcn/ui)</SelectItem>
-                                                    <SelectItem value='modern'>Modern</SelectItem>
-                                                    <SelectItem value='classic'>Classic</SelectItem>
+                                                    <SelectItem value='default' className='text-[10px] font-normal uppercase font-body cursor-pointer'>Default (shadcn/ui)</SelectItem>
+                                                    <SelectItem value='modern' className='text-[10px] font-normal uppercase font-body cursor-pointer'>Modern</SelectItem>
+                                                    <SelectItem value='classic' className='text-[10px] font-normal uppercase font-body cursor-pointer'>Classic</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </FormItem>
@@ -247,12 +247,12 @@ export function AppearanceForm() {
                                                 value={field.value}
                                             >
                                                 <SelectTrigger className='bg-card'>
-                                                    <SelectValue placeholder='Select mode' />
+                                                    <SelectValue placeholder='Select mode' className='text-[10px] font-normal uppercase font-body cursor-pointer' />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value='system'>System</SelectItem>
-                                                    <SelectItem value='light'>Light</SelectItem>
-                                                    <SelectItem value='dark'>Dark</SelectItem>
+                                                    <SelectItem value='system' className='text-[10px] font-normal uppercase font-body cursor-pointer'>System</SelectItem>
+                                                    <SelectItem value='light' className='text-[10px] font-normal uppercase font-body cursor-pointer'>Light</SelectItem>
+                                                    <SelectItem value='dark' className='text-[10px] font-normal uppercase font-body cursor-pointer'>Dark</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </FormItem>
@@ -279,12 +279,12 @@ export function AppearanceForm() {
                                                 value={field.value}
                                             >
                                                 <SelectTrigger className='bg-card'>
-                                                    <SelectValue placeholder='Select font' />
+                                                    <SelectValue placeholder='Select font' className='text-[10px] font-normal uppercase font-body cursor-pointer' />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value='inter'>Inter</SelectItem>
-                                                    <SelectItem value='roboto'>Roboto</SelectItem>
-                                                    <SelectItem value='poppins'>Poppins</SelectItem>
+                                                    <SelectItem value='inter' className='text-[10px] font-normal uppercase font-body'>Inter</SelectItem>
+                                                    <SelectItem value='roboto' className='text-[10px] font-normal uppercase font-body'>Roboto</SelectItem>
+                                                    <SelectItem value='poppins' className='text-[10px] font-normal uppercase font-body'>Poppins</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </FormItem>
@@ -310,11 +310,11 @@ export function AppearanceForm() {
                                                         step={1}
                                                         className='bg-card'
                                                     />
-                                                    <span className='text-xs'>{field.value}px</span>
+                                                    <span className='text-xs font-normal uppercase text-muted-foreground font-body'>{field.value}px</span>
                                                 </div>
                                                 <p
                                                     style={{ fontSize: `${field.value}px` }}
-                                                    className='text-muted-foreground'
+                                                    className='font-normal uppercase text-muted-foreground font-body'
                                                 >
                                                     Testing awesome loro
                                                 </p>

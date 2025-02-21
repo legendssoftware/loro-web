@@ -214,7 +214,7 @@ export function SettingsForm() {
                         <div className='space-y-4'>
                             <h3 className='text-sm font-normal uppercase font-body'>Logo</h3>
                             <div className='flex items-center gap-6'>
-                                <div className='relative w-32 h-32 overflow-hidden rounded-lg bg-muted'>
+                                <div className='relative w-32 h-32 overflow-hidden border rounded-lg bg-primary/10 border-primary/20'>
                                     {form.watch('branding.logo') ? (
                                         <Image
                                             src={form.watch('branding.logo') || FALLBACK_LOGO}
@@ -243,7 +243,7 @@ export function SettingsForm() {
                                                         accept='image/*'
                                                         disabled={!isAdmin}
                                                         onChange={handleLogoUpload}
-                                                        className='text-xs'
+                                                        className='text-[10px] font-normal uppercase text-muted-foreground font-body placeholder:text-[10px]'
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -263,7 +263,7 @@ export function SettingsForm() {
                                                         {...field}
                                                         disabled={!isAdmin}
                                                         placeholder='Company logo'
-                                                        className='text-xs'
+                                                        className='text-[10px] placeholder:text-[10px] font-normal uppercase text-muted-foreground font-body'
                                                     />
                                                 </FormControl>
                                                 <FormMessage />

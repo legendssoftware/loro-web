@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Building2, ChartSpline, Power, Settings } from 'lucide-react';
+import { Building2, ChartSpline, Power } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -24,12 +24,7 @@ const navigationItems = [
         title: 'MY OFFICE',
         icon: <Building2 size={18} strokeWidth={1.5} />,
         href: '/my-office',
-    },
-    {
-        title: 'Settings',
-        icon: <Settings size={18} strokeWidth={1.5} />,
-        href: '/settings',
-    },
+    }
 ];
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
@@ -163,7 +158,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                 {profileData?.licenseInfo && <LicenseInfo />}
                 <div className='p-6 mt-auto border-t border-border/10'>
                     <p className='text-[10px] font-body uppercase text-center text-card-foreground font-normal'>
-                        POWERED BY LORO CRM
+                        POWERED BY LORO
                     </p>
                 </div>
             </SheetContent>

@@ -30,11 +30,11 @@ import {
     ChartSpline,
     ShoppingBag,
     Users,
+    AlertOctagon,
+    X,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 // Animation variants
 const containerVariants = {
@@ -230,226 +230,6 @@ const ClaimsReportCard = () => {
     );
 };
 
-// Add new types for products and orders
-type Product = {
-    name: string;
-    itemCode: string;
-    price: number;
-    image: string;
-};
-
-type OrderStatus = 'new' | 'preparing' | 'shipping';
-
-type OrderDelivery = {
-    sender: {
-        name: string;
-        address: string;
-    };
-    receiver: {
-        name: string;
-        address: string;
-    };
-    status: OrderStatus;
-};
-
-// Add sample data
-const popularProducts: Product[] = [
-    {
-        name: 'Apple iPhone 13',
-        itemCode: 'FXZ-4567',
-        price: 999.29,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-    {
-        name: 'Nike Air Jordan',
-        itemCode: 'FXZ-3456',
-        price: 72.4,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-    {
-        name: 'Beats Studio 2',
-        itemCode: 'FXZ-9485',
-        price: 99.9,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-    {
-        name: 'Apple Watch Series 7',
-        itemCode: 'FXZ-2345',
-        price: 249.99,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-    {
-        name: 'Amazon Echo Dot',
-        itemCode: 'FXZ-8959',
-        price: 79.4,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-    {
-        name: 'PlayStation Console',
-        itemCode: 'FXZ-7892',
-        price: 129.48,
-        image: 'https://images.pexels.com/photos/19090/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    },
-];
-
-// Update deliveries data to include status
-const deliveries: OrderDelivery[] = [
-    {
-        sender: {
-            name: 'Micheal Hughes',
-            address: '101 Boulder, California (CA), 933130',
-        },
-        receiver: {
-            name: 'Daisy Coleman',
-            address: '939 Orange, California (CA), 910614',
-        },
-        status: 'new',
-    },
-    {
-        sender: {
-            name: 'Glenn Todd',
-            address: '1713 Garnet, California (CA), 939573',
-        },
-        receiver: {
-            name: 'Arthur West',
-            address: '156 Blaze, California (CA), 925878',
-        },
-        status: 'preparing',
-    },
-    {
-        sender: {
-            name: 'Sarah Johnson',
-            address: '456 Pine Street, California (CA), 945678',
-        },
-        receiver: {
-            name: 'Mark Wilson',
-            address: '789 Oak Avenue, California (CA), 923456',
-        },
-        status: 'shipping',
-    },
-];
-
-// Create components for Popular Products and Orders
-const PopularProductsCard = () => {
-    return (
-        <Card className='p-6 h-[520px] flex flex-col'>
-            <div className='flex items-center justify-between pb-6 border-b'>
-                <div>
-                    <h3 className='text-sm font-normal uppercase font-body'>Popular Products</h3>
-                    <span className='text-xs font-normal uppercase text-muted-foreground font-body'>Total 10.4k Visitors</span>
-                </div>
-            </div>
-            <div className='flex-1 pr-2 mt-6 overflow-y-auto transition-colors scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400'>
-                <div className='flex flex-col gap-6'>
-                    {popularProducts.map((product, index) => (
-                        <div key={index} className='flex items-center justify-between p-2 transition-colors rounded-lg cursor-pointer group hover:bg-muted/50'>
-                            <div className='flex items-center gap-4'>
-                                <div className='w-12 h-12 overflow-hidden rounded-lg bg-muted'>
-                                    <Image
-                                        src={product?.image}
-                                        alt={product?.name}
-                                        width={48}
-                                        height={48}
-                                        className='object-cover'
-                                    />
-                                </div>
-                                <div>
-                                    <h4 className='text-xs font-normal uppercase font-body'>{product.name}</h4>
-                                    <p className='text-[10px] text-muted-foreground font-body font-normal uppercase'>
-                                        Item: #{product.itemCode}
-                                    </p>
-                                </div>
-                            </div>
-                            <p className='text-xs font-normal uppercase font-body'>R{product.price.toFixed(2)}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </Card>
-    );
-};
-
-const OrdersCard = () => {
-    const [activeTab, setActiveTab] = useState<OrderStatus>('new');
-
-    const filteredDeliveries = deliveries.filter(delivery => delivery.status === activeTab);
-
-    const tabs: { label: string; value: OrderStatus }[] = [
-        { label: 'New', value: 'new' },
-        { label: 'Preparing', value: 'preparing' },
-        { label: 'Shipping', value: 'shipping' },
-    ];
-
-    return (
-        <Card className='p-6'>
-            <div className='flex items-center justify-between pb-6 border-b'>
-                <div>
-                    <h3 className='text-sm font-normal uppercase font-body'>Quotations by Clients</h3>
-                    <span className='text-xs font-normal uppercase text-muted-foreground font-body'>62 quotations in progress</span>
-                </div>
-            </div>
-            <div className='flex gap-8 pb-6 mt-6'>
-                {tabs.map(tab => (
-                    <div
-                        key={tab.value}
-                        className={cn(
-                            'px-0 text-xs font-normal uppercase font-body w-32 text-center cursor-pointer pb-1',
-                            activeTab === tab.value
-                                ? 'text-primary border-b-2 border-primary'
-                                : 'text-muted-foreground'
-                        )}
-                        onClick={() => setActiveTab(tab.value)}
-                    >
-                        {tab.label}
-                    </div>
-                ))}
-            </div>
-            <div className='flex flex-col gap-8 mt-6'>
-                {filteredDeliveries.map((delivery, index) => (
-                    <div key={index} className='flex flex-col gap-4'>
-                        <div className='flex items-start gap-4'>
-                            <Send className='w-4 h-4 mt-1 text-emerald-500' />
-                            <div>
-                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>SENDER</p>
-                                <p className='text-sm font-normal uppercase font-body'>{delivery.sender.name}</p>
-                                <p className='text-[10px] uppercase text-muted-foreground font-body text-wrap'>{delivery.sender.address}</p>
-                            </div>
-                        </div>
-                        <div className='flex items-start gap-4'>
-                            <MapPin className='w-4 h-4 mt-1 text-indigo-500' />
-                            <div>
-                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>RECEIVER</p>
-                                <p className='text-xs font-normal uppercase font-body'>{delivery.receiver.name}</p>
-                                <p className='text-[10px] font-normal uppercase text-muted-foreground font-body'>
-                                    {delivery.receiver.address}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-                {filteredDeliveries.length === 0 && (
-                    <div className='flex flex-col items-center justify-center gap-2 py-8'>
-                        <Package className='w-8 h-8 text-muted-foreground' />
-                        <p className='text-sm font-normal text-muted-foreground font-body'>No orders found</p>
-                    </div>
-                )}
-            </div>
-        </Card>
-    );
-};
-
-// Update the Dashboard component to include these new sections
-const ProductsAndOrdersSection = () => {
-    return (
-        <motion.div variants={itemVariants}>
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-                <PopularProductsCard />
-                <OrdersCard />
-            </div>
-        </motion.div>
-    );
-};
-
 // Add attendance data type and sample data
 type AttendanceData = {
     day: string;
@@ -576,8 +356,41 @@ const AttendanceCard = () => {
 };
 
 export default function Dashboard() {
+    const [showDisruptionAlert, setShowDisruptionAlert] = useState(true);
+
+    useEffect(() => {
+        // Show the alert when component mounts or page refreshes
+        setShowDisruptionAlert(true);
+    }, []);
+
     return (
         <motion.div initial='hidden' animate='show' variants={containerVariants} className='flex flex-col gap-4 p-6'>
+            {/* Service Disruption Alert */}
+            {showDisruptionAlert && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="relative w-full p-4 mb-4 border rounded-lg bg-destructive/10 border-destructive/20"
+                >
+                    <div className="flex items-start gap-4">
+                        <AlertOctagon className="w-5 h-5 mt-1 text-destructive" />
+                        <div className="flex-1">
+                            <h3 className="text-sm font-normal uppercase font-body text-destructive">Service Disruption Alert</h3>
+                            <p className="mt-1 text-xs font-normal uppercase text-muted-foreground font-body">
+                                Reporting functionality is currently unavailable. Our team is working to restore service. We apologize for any inconvenience.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowDisruptionAlert(false)}
+                            className="p-1 transition-colors rounded-md hover:bg-destructive/20"
+                        >
+                            <X className="w-4 h-4 text-destructive" />
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+
             <div className='flex items-center gap-1'>
                 <ChartSpline size={24} strokeWidth={1.5} />
                 <p className='font-normal uppercase text-md font-body'>Overview</p>
@@ -975,11 +788,6 @@ export default function Dashboard() {
                     <AttendanceCard />
                 </motion.div>
             </div>
-            <div className='flex items-center gap-1'>
-                <Package size={24} strokeWidth={1.5} />
-                <p className='font-normal uppercase text-md font-body'>Products</p>
-            </div>
-            <ProductsAndOrdersSection />
         </motion.div>
     );
 }

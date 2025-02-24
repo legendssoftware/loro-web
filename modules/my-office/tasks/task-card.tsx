@@ -85,14 +85,21 @@ export const TaskCard = memo(({ task, onClick }: TaskCardProps) => {
                                 </span>
                             </div>
                         </div>
-                        <div>
-                            {task?.assignees?.map(assignee => (
-                                <Avatar key={assignee?.uid} className='w-8 h-8 ring-2 ring-primary'>
-                                    {assignee?.photoURL && (
-                                        <AvatarImage src={assignee?.photoURL} alt={`${assignee?.name}`} />
+                        <div className="flex items-center">
+                            {task?.assignees && task?.assignees?.length > 0 && (
+                                <>
+                                    <Avatar key={task.assignees[0].uid} className='w-8 h-8 ring-2 ring-primary'>
+                                        {task.assignees[0].photoURL && (
+                                            <AvatarImage src={task.assignees[0].photoURL} alt={`${task.assignees[0].name}`} />
+                                        )}
+                                    </Avatar>
+                                    {task.assignees.length > 1 && (
+                                        <span className="ml-2 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            +{task.assignees.length - 1} more
+                                        </span>
                                     )}
-                                </Avatar>
-                            ))}
+                                </>
+                            )}
                         </div>
                     </div>
                 </CardContent>

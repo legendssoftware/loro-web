@@ -1,36 +1,320 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LORO Admin Dashboard 🚀
 
-## Getting Started
+A modern Next.js 14 dashboard for managing location tracking, geofencing, and business operations. Built with TypeScript and Tailwind CSS.
 
-First, run the development server:
+## 🎯 Demo Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 1. Location Management 📍
+- **Real-time Tracking**
+  - Live location updates on map
+  - Historical tracking data
+  - Battery and network status
+  - Device information
+
+- **Geofence Management**
+  - Visual geofence creation
+  - Entry/exit notifications
+  - Area analytics
+  - Compliance reporting
+
+- **Stop Analysis**
+  - Stop detection visualization
+  - Duration analytics
+  - Address verification
+  - Pattern recognition
+
+### 2. Business Intelligence 📊
+- **Analytics Dashboard**
+  - Real-time metrics
+  - Performance tracking
+  - Resource utilization
+  - Custom reports
+
+- **Team Management**
+  - Employee tracking
+  - Task assignment
+  - Performance metrics
+  - Attendance tracking
+
+### 3. System Administration 🔧
+- Role-based access control
+- Organization settings
+- API key management
+- Audit logging
+
+## 🚀 Quick Demo Guide
+
+1. **Setup (2 minutes)**
+   ```bash
+   git clone <repository-url>
+   cd dashboard
+   yarn install
+   ```
+
+2. **Environment Setup (1 minute)**
+   ```bash
+   cp .env.example .env.local
+   # Update:
+   NEXT_PUBLIC_API_URL=http://localhost:4400
+   ```
+
+3. **Start Development (1 minute)**
+   ```bash
+   yarn dev
+   ```
+
+4. **Demo Flow (15 minutes)**
+
+   a. **Authentication**
+   - Visit http://localhost:3000
+   - Login with demo credentials:
+     - Email: admin@loro.com
+     - Password: admin123
+
+   b. **Location Tracking Demo**
+   - Navigate to "Tracking" section
+   - View real-time location updates
+   - Filter by date/employee
+   - Export tracking data
+
+   c. **Geofence Management**
+   - Go to "Geofences" section
+   - Create new geofence area
+   - Set rules and notifications
+   - View entry/exit events
+
+   d. **Analytics Review**
+   - Open "Dashboard" section
+   - Review key metrics
+   - Generate custom reports
+   - Export analytics data
+
+## 📱 Key Pages for Demo
+
+1. **Location Management**
+   - /tracking
+   - /geofences
+   - /stops
+
+2. **Analytics**
+   - /dashboard
+   - /reports
+   - /analytics
+
+3. **Administration**
+   - /settings
+   - /users
+   - /roles
+
+## 🎨 UI Components
+
+Built with Shadcn UI, featuring:
+- Interactive maps
+- Data tables
+- Charts and graphs
+- Form components
+- Modal dialogs
+
+## 📊 Demo Data
+
+Test accounts available:
+- Admin: admin@loro.com / admin123
+- Manager: manager@loro.com / manager123
+- Viewer: viewer@loro.com / viewer123
+
+## 🔧 Environment Variables
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4400
+NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_key
+NEXT_PUBLIC_MAPBOX_TOKEN=your_token
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Support
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Need help with the demo?
+Contact: support@loro.com
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Features
 
-## Learn More
+- **🔐 Authentication & User Management**
+  - Secure login system
+  - Password reset functionality
+  - Email verification
+  - OTP verification
+  - User profile management
+  - Role-based access control
 
-To learn more about Next.js, take a look at the following resources:
+- **📊 Business Intelligence**
+  - Interactive dashboards
+  - Real-time analytics
+  - Performance metrics
+  - Sales reporting
+  - Resource utilization
+  - KPI tracking
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **👥 Client Management**
+  - Client profiles
+  - Communication history
+  - Document management
+  - Service history
+  - Relationship tracking
+  - Client analytics
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **📝 Task Management**
+  - Task creation and assignment
+  - Priority management
+  - Deadline tracking
+  - Progress monitoring
+  - Team collaboration
+  - Task automation
 
-## Deploy on Vercel
+- **🏢 Office Management**
+  - Resource scheduling
+  - Meeting management
+  - Equipment tracking
+  - Visitor management
+  - Office announcements
+  - Space utilization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **💼 Document Management**
+  - Document upload
+  - Version control
+  - Secure sharing
+  - Template management
+  - Document generation
+  - Search and retrieval
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **State Management**: 
+  - [Zustand](https://github.com/pmndrs/zustand)
+  - React Context
+- **API Management**: [React Query](https://tanstack.com/query)
+- **Authentication**: JWT token-based auth
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+- **Linting**: ESLint with custom configuration
+- **Formatting**: Prettier with consistent rules
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18.x or later
+- Yarn package manager
+- Access to the backend API endpoints
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/your-username/loro-dashboard.git
+cd dashboard
+```
+
+2. Install dependencies
+```bash
+yarn install
+```
+
+3. Create environment variables
+```bash
+cp .env.example .env.local
+# Update the .env.local file with your configuration
+```
+
+4. Start the development server
+```bash
+yarn dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## 📂 Project Structure
+
+```
+dashboard/
+├── app/                  # Next.js App Router pages
+│   ├── sign-in/          # Authentication pages
+│   ├── sign-up/
+│   ├── forgot-password/
+│   ├── new-password/
+│   ├── verify-email/
+│   ├── verify-otp/
+│   ├── my-office/        # Main application pages
+│   ├── landing-page/     # Public landing page
+│   ├── layout.tsx        # Root layout
+│   └── page.tsx          # Root page
+├── components/           # Reusable UI components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions
+├── modules/              # Feature modules
+├── public/               # Static assets
+├── providers/            # Context providers
+├── store/                # State management
+├── styles/               # Global styles
+│── data/                 # Static data and mocks
+├── types/                # TypeScript types
+├── .env                  # Environment variables
+├── next.config.ts        # Next.js configuration
+├── tailwind.config.ts    # Tailwind configuration
+└── package.json          # Dependencies and scripts
+```
+
+## 🧪 Development
+
+### Available Scripts
+
+```bash
+# Development server
+yarn dev
+
+# Build for production
+yarn build
+
+# Start production server
+yarn start
+
+# Lint code
+yarn lint
+
+# Format code
+yarn format
+```
+
+### Code Style
+
+We follow strict TypeScript best practices and maintain consistent code style using ESLint and Prettier. The configuration is defined in:
+
+- `.eslint.config.mjs`
+- `.prettierrc`
+- `.editorconfig`
+
+## 🚢 Deployment
+
+The application can be deployed to any hosting platform that supports Next.js applications:
+
+- [Vercel](https://vercel.com/) (recommended)
+- [Netlify](https://www.netlify.com/)
+- [AWS Amplify](https://aws.amazon.com/amplify/)
+- Self-hosted with Docker
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👨‍💻 Author
+
+[@Brandon-Online01](https://github.com/Brandon-Online01)

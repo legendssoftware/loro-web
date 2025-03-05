@@ -1,77 +1,71 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, ReactNode, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useSessionStore, type ProfileData } from '@/store/use-session-store';
-import { tokenValidator } from '@/lib/tools/tokenValidator';
+import { createContext, useContext, useEffect, useMemo, ReactNode } from 'react';
+import { useAuthStore } from '@/store/auth-store';
+import { authService, ProfileData } from '@/lib/services/auth-service';
 import { AppLoader } from '@/components/loaders/page-loader';
 
 interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     user: ProfileData | null;
-    signIn: (credentials: { username: string; password: string }) => Promise<void>;
-    signOut: () => void;
     error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const router = useRouter();
-    const pathname = usePathname();
     const {
         isAuthenticated,
-        loading: isLoading,
+        isLoading,
         profileData: user,
         error,
-        signIn,
-        signOut,
         accessToken,
-    } = useSessionStore();
+        refreshToken,
+        setAuthState
+    } = useAuthStore();
 
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
-
+    // On mount, load tokens from store and set them in the auth service
     useEffect(() => {
-        const timer = setTimeout(async () => {
-            const publicPaths = [
-                '/sign-in',
-                '/sign-up',
-                '/forgot-password',
-                '/new-password',
-                '/landing-page',
-                'download',
-            ];
-            const isPublicPath = publicPaths.includes(pathname);
-
-            if (!isPublicPath) {
-                if (!accessToken || !tokenValidator(accessToken)) {
-                    signOut();
-                    router.push('/landing-page');
-                }
+        if (accessToken && refreshToken) {
+            if (authService.validateToken(accessToken)) {
+                authService.setTokens(accessToken, refreshToken);
+            } else {
+                // Token is invalid, try to refresh it
+                authService.refreshAccessToken(refreshToken)
+                    .then(tokens => {
+                        if (tokens) {
+                            setAuthState({
+                                accessToken: tokens.accessToken,
+                                refreshToken: tokens.refreshToken,
+                            });
+                        } else {
+                            // Refresh failed, clear auth state
+                            useAuthStore.getState().signOut();
+                        }
+                    })
+                    .catch(() => {
+                        // Refresh failed, clear auth state
+                        useAuthStore.getState().signOut();
+                    });
             }
+        }
+    }, [accessToken, refreshToken, setAuthState]);
 
-            setIsInitialLoading(false);
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [accessToken, signOut, router, pathname]);
-
-    const contextValue = useMemo(
+    const contextValue = useMemo<AuthContextType>(
         () => ({
             isAuthenticated,
             isLoading,
             user,
             error,
-            signIn,
-            signOut,
         }),
-        [isAuthenticated, isLoading, user, error, signIn, signOut],
+        [isAuthenticated, isLoading, user, error],
     );
 
-    if (isInitialLoading) {
+    // Show loading indicator only on initial load
+    if (isLoading && !user && !error) {
         return (
-            <div className='flex items-center justify-center w-full h-screen'>
+            <div className="flex items-center justify-center w-full h-screen">
                 <AppLoader />
             </div>
         );

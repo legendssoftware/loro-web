@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -15,13 +16,15 @@ const containerVariants = {
 
 export default function Dashboard() {
     return (
-        <motion.div
-            className='flex flex-col items-center justify-center h-screen gap-3 p-4'
-            initial='hidden'
-            animate='show'
-            variants={containerVariants}
-        >
-            <p className='text-sm uppercase font-body'>Dashboard</p>
-        </motion.div>
+        <ProtectedRoute>
+            <motion.div
+                className='flex flex-col items-center justify-center h-screen gap-3 p-4'
+                initial='hidden'
+                animate='show'
+                variants={containerVariants}
+            >
+                <p className='text-sm uppercase font-body'>Dashboard</p>
+            </motion.div>
+        </ProtectedRoute>
     );
 }

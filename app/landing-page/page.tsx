@@ -5,13 +5,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
+import { Menu, LogIn, User } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
-import router from 'next/router';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth-store';
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isAuthenticated, profileData } = useAuthStore();
+    const router = useRouter();
+
+    // Handle account button click - directs to dashboard if logged in, sign-in if not
+    const handleAccountClick = () => {
+        if (isAuthenticated) {
+            router.push('/');
+        } else {
+            router.push('/sign-in');
+        }
+    };
 
     return (
         <div className='relative flex flex-col min-h-screen bg-background'>
@@ -27,11 +39,22 @@ const LandingPage: React.FunctionComponent = () => {
                 {/* Desktop Navigation - Hidden on mobile */}
                 <div className='items-center hidden space-x-6 md:flex'>
                     <ThemeToggler />
-                    <Link href='/sign-in'>
-                        <Button className='text-xs font-normal text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80'>
-                            <span>My Account</span>
-                        </Button>
-                    </Link>
+                    <Button
+                        className='text-xs font-normal text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80'
+                        onClick={handleAccountClick}
+                    >
+                        {isAuthenticated ? (
+                            <>
+                                <User className='w-4 h-4 mr-2' />
+                                <span>Dashboard</span>
+                            </>
+                        ) : (
+                            <>
+                                <LogIn className='w-4 h-4 mr-2' />
+                                <span>Sign In</span>
+                            </>
+                        )}
+                    </Button>
                 </div>
 
                 {/* Mobile Menu Button - Visible only on mobile */}
@@ -60,11 +83,25 @@ const LandingPage: React.FunctionComponent = () => {
                         <div className='fixed inset-0 z-50 flex items-center justify-center'>
                             <div className='w-full max-w-sm p-6 mx-4 shadow-lg bg-card rounded-xl'>
                                 <div className='flex flex-col items-center space-y-6'>
-                                    <Link href='/sign-in' onClick={() => setIsMenuOpen(false)} className='w-full'>
-                                        <Button className='w-full text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80'>
-                                            <span>My Account</span>
-                                        </Button>
-                                    </Link>
+                                    <Button
+                                        className='w-full text-xs text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80'
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            handleAccountClick();
+                                        }}
+                                    >
+                                        {isAuthenticated ? (
+                                            <>
+                                                <User className='w-4 h-4 mr-2' />
+                                                <span>Dashboard</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LogIn className='w-4 h-4 mr-2' />
+                                                <span>Sign In</span>
+                                            </>
+                                        )}
+                                    </Button>
                                 </div>
                             </div>
                         </div>

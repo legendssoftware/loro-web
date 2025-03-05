@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname, useRouter } from 'next/navigation';
 import { SideDrawer } from './side-drawer';
 import { useAppStore } from '@/store/use-app-store';
-import { useSessionStore } from '@/store/use-session-store';
+import { useAuthStore } from '@/store/auth-store';
 import { isAuthRoute } from '@/lib/utils';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import toast from 'react-hot-toast';
@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 export function TopNav() {
     const pathname = usePathname();
     const router = useRouter();
-    const { signOut, profileData } = useSessionStore();
+    const { signOut, profileData } = useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
 
     // Get user initials for avatar fallback
@@ -22,7 +22,7 @@ export function TopNav() {
 
     const handleSignOut = async () => {
         try {
-            await signOut();
+            signOut(); // This is now synchronous
             const toastId = toast.success('Session Ended', {
                 style: {
                     borderRadius: '5px',
@@ -41,7 +41,8 @@ export function TopNav() {
 
             await new Promise(resolve => setTimeout(resolve, 2000));
             toast.remove(toastId);
-            router.push('/landing-page');
+            // Use window.location for a full page refresh to ensure clean state
+            window.location.href = '/landing-page';
         } catch {
             toast.error('Failed to sign out', {
                 style: {

@@ -20,7 +20,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSessionStore } from '@/store/use-session-store';
+import { useAuthStore } from '@/store/auth-store';
 import toast from 'react-hot-toast';
 
 interface SideDrawerProps {
@@ -99,12 +99,12 @@ const navigationItems = [
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const pathname = usePathname();
-    const { profileData, signOut } = useSessionStore();
+    const { profileData, signOut } = useAuthStore();
     const router = useRouter();
 
     const handleSignOut = async () => {
         try {
-            await signOut();
+            signOut();
             const toastId = toast.success('Session Ended', {
                 style: {
                     borderRadius: '5px',
@@ -123,7 +123,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
 
             await new Promise(resolve => setTimeout(resolve, 2000));
             toast.remove(toastId);
-            router.push('/landing-page');
+            window.location.href = '/landing-page';
         } catch {
             toast.error('Failed to sign out', {
                 style: {

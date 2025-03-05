@@ -161,9 +161,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                         />
                     </div>
                     <div className='absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md font-body whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0'>
-                        <p className='text-[10px] font-medium text-card-foreground uppercase'>
-                            License Info
-                        </p>
+                        <p className='text-[10px] font-medium text-card-foreground uppercase'>License Info</p>
                         <p className='text-[8px] text-muted-foreground uppercase'>Current plan: {plan}</p>
                         <p className='text-[8px] text-muted-foreground uppercase'>
                             Status: <span className={cn(isActive ? 'text-emerald-500' : 'text-red-500')}>{status}</span>
@@ -199,19 +197,17 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                             variant='ghost'
                                             className={cn(
                                                 'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-12 rounded-xl',
-                                                'hover:bg-accent hover:text-accent-foreground',
-                                                'dark:hover:bg-accent/50 dark:hover:text-accent-foreground',
-                                                isActive && 'bg-background',
-                                                isActive && 'dark:bg-background',
+                                                'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
+                                                isActive && 'border-primary/30 border',
                                             )}
                                         >
                                             {item.icon}
                                         </Button>
                                         <div className='absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0'>
-                                            <p className='text-[10px] font-medium text-card-foreground uppercase'>
+                                            <p className='text-sm font-medium uppercase text-card-foreground'>
                                                 {item.title}
                                             </p>
-                                            <p className='text-[8px] text-muted-foreground'>{item.description}</p>
+                                            <p className='text-[11px] text-muted-foreground'>{item.description}</p>
                                         </div>
                                     </div>
                                 </Link>
@@ -230,9 +226,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                             <Power className='w-5 h-5' />
                         </Button>
                         <div className='absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0 text-red-500'>
-                            <p className='text-[10px] font-medium text-red-500 uppercase'>
-                                Sign out
-                            </p>
+                            <p className='text-[10px] font-medium text-red-500 uppercase'>Sign out</p>
                             <p className='text-[8px] text-muted-foreground'>End your current session</p>
                         </div>
                     </div>

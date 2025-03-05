@@ -1,45 +1,73 @@
 'use client';
 
-import { motion, MotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
-import { pageTransitionVariants, slideUpVariants, fadeVariants } from '@/lib/utils/animations';
 
-type TransitionType = 'default' | 'slide-up' | 'fade';
+const pageVariants = {
+  initial: {
+    opacity: 0,
+  },
+  animate: {
+    opacity: 1,
+    transition: {
+      duration: 0.3,
+      ease: 'easeInOut',
+    }
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: 'easeInOut',
+    }
+  }
+};
 
-interface PageTransitionProps extends Omit<MotionProps, 'variants'> {
-    children: ReactNode;
-    className?: string;
-    type?: TransitionType;
+const slideUpVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: 'easeOut',
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: 20,
+    transition: {
+      duration: 0.3,
+      ease: 'easeIn',
+    }
+  }
+};
+
+interface PageTransitionProps {
+  children: ReactNode;
+  type?: 'fade' | 'slide-up';
 }
 
 /**
  * Component for applying consistent page transition animations.
  * @param children The page content to be animated
- * @param className Optional additional classes to apply to the wrapper
- * @param type The type of animation to use ('default', 'slide-up', or 'fade')
+ * @param type The type of animation to use ('fade' or 'slide-up')
  */
-export function PageTransition({ children, className = '', type = 'default', ...motionProps }: PageTransitionProps) {
-    const getVariants = () => {
-        switch (type) {
-            case 'slide-up':
-                return slideUpVariants;
-            case 'fade':
-                return fadeVariants;
-            default:
-                return pageTransitionVariants;
-        }
-    };
+export function PageTransition({ children, type = 'fade' }: PageTransitionProps) {
+  const variants = type === 'slide-up' ? slideUpVariants : pageVariants;
 
-    return (
-        <motion.div
-            initial='hidden'
-            animate='show'
-            exit='exit'
-            variants={getVariants()}
-            className={className}
-            {...motionProps}
-        >
-            {children}
-        </motion.div>
-    );
+  return (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={variants}
+      className="w-full h-full overflow-hidden"
+    >
+      {children}
+    </motion.div>
+  );
 }

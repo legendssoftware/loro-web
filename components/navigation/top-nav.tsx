@@ -76,10 +76,9 @@ export function TopNav() {
                             className='cursor-pointer'
                             onClick={() => setDrawerOpen(true)}
                         >
-                            <LayoutDashboardIcon strokeWidth={1.5} size={50} />
+                            <LayoutDashboardIcon strokeWidth={1.5} size={23} />
                         </Button>
-                        <span className='text-xl font-bold uppercase font-body'>LORO</span>
-                        <span className='hidden text-xl font-bold uppercase font-body md:block'>CRM</span>
+                        <span className='font-normal uppercase text-md font-body'>{profileData?.branch?.name}</span>
                     </div>
                     <div className='items-center hidden gap-4 md:flex'>
                         <Button
@@ -96,8 +95,8 @@ export function TopNav() {
                             <Avatar className='w-8 h-8 ring-2 ring-primary'>
                                 {profileData?.photoURL && (
                                     <AvatarImage
-                                        src={profileData.photoURL}
-                                        alt={`${profileData.name} ${profileData.surname}`}
+                                        src={profileData?.photoURL}
+                                        alt={`${profileData?.name} ${profileData?.surname}`}
                                     />
                                 )}
                                 <AvatarFallback className='bg-black text-white text-[10px] font-body uppercase'>

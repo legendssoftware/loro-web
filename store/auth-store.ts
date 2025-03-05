@@ -1,11 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import {
-    authService,
-    ProfileData,
-    SignInCredentials,
-    AuthResponse,
-} from '@/lib/services/auth-service';
+import { authService, ProfileData, SignInCredentials, AuthResponse } from '@/lib/services/auth-service';
 
 interface AuthState {
     isAuthenticated: boolean;

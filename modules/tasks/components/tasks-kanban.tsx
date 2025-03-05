@@ -1,0 +1,75 @@
+'use client';
+
+import { Task, TaskStatus, StatusColors } from '@/lib/types/task';
+import { useCallback } from 'react';
+import { TaskCard } from './task-card';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface TasksKanbanProps {
+    tasksByStatus: Record<TaskStatus, Task[]>;
+    onUpdateTaskStatus: (taskId: number, newStatus: string) => void;
+    onDeleteTask: (taskId: number) => void;
+    onAddTask?: () => void;
+}
+
+export function TasksKanban({ tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask }: TasksKanbanProps) {
+    const renderColumn = useCallback(
+        (status: TaskStatus, title: string, count: number) => {
+            const tasks = tasksByStatus[status] || [];
+            const colors = StatusColors[status];
+
+            return (
+                <div className='flex-1 min-w-[280px] max-w-[320px] flex flex-col'>
+                    <div className='flex items-center justify-between mb-2'>
+                        <div
+                            className={cn(
+                                'px-2 py-0.5 rounded text-[10px] font-normal flex items-center flex-row justify-between',
+                                colors.bg,
+                                colors.text,
+                            )}
+                        >
+                            <span className='uppercase font-body'>{title}</span>
+                            <span className='ml-2 px-1.5 py-0.5 bg-background/30 rounded-full font-body uppercase text-xl'>
+                                {count}
+                            </span>
+                        </div>
+                        <Button variant='ghost' size='icon' className='w-6 h-6' onClick={() => onAddTask?.()}>
+                            <Plus className='w-3.5 h-3.5' />
+                            <span className='text-[10px] uppercase sr-only font-body'>Add {title}</span>
+                        </Button>
+                    </div>
+                    <div className='space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-2'>
+                        {tasks.map(task => (
+                            <TaskCard
+                                key={task.uid}
+                                task={task}
+                                onUpdateStatus={onUpdateTaskStatus}
+                                onDelete={onDeleteTask}
+                            />
+                        ))}
+                        {tasks.length === 0 && (
+                            <div className='flex items-center justify-center h-24 text-[10px] font-normal uppercase border border-dashed rounded-md border-border text-muted-foreground font-body'>
+                                No tasks in this column
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        },
+        [tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask],
+    );
+
+    return (
+        <div className='flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden'>
+            {renderColumn(TaskStatus.PENDING, 'Pending', tasksByStatus[TaskStatus.PENDING]?.length || 0)}
+            {renderColumn(TaskStatus.IN_PROGRESS, 'In Progress', tasksByStatus[TaskStatus.IN_PROGRESS]?.length || 0)}
+            {renderColumn(TaskStatus.COMPLETED, 'Completed', tasksByStatus[TaskStatus.COMPLETED]?.length || 0)}
+            {renderColumn(TaskStatus.CANCELLED, 'Cancelled', tasksByStatus[TaskStatus.CANCELLED]?.length || 0)}
+            {renderColumn(TaskStatus.OVERDUE, 'Overdue', tasksByStatus[TaskStatus.OVERDUE]?.length || 0)}
+            {renderColumn(TaskStatus.POSTPONED, 'Postponed', tasksByStatus[TaskStatus.POSTPONED]?.length || 0)}
+            {renderColumn(TaskStatus.MISSED, 'Missed', tasksByStatus[TaskStatus.MISSED]?.length || 0)}
+        </div>
+    );
+}

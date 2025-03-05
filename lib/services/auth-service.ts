@@ -32,6 +32,10 @@ export interface ProfileData {
   phone: string;
   photoURL: string;
   userref: string;
+  branch: {
+    name: string;
+    uid: string;
+  };
 }
 
 export interface AuthResponse {

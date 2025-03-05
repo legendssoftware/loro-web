@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { forgotPasswordSchema } from '@/lib/schemas/auth';
+import { forgotPasswordSchema } from '@/lib/schema/auth';
 import { useForgotPasswordMutation } from '@/store/use-auth-store';
 import { containerVariants } from '@/lib/utils/animations';
 import { motion } from 'framer-motion';

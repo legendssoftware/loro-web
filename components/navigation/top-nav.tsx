@@ -5,19 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname, useRouter } from 'next/navigation';
 import { SideDrawer } from './side-drawer';
-import { ChatDialog } from '@/components/chat/chat-dialog';
 import { useAppStore } from '@/store/use-app-store';
 import { useSessionStore } from '@/store/use-session-store';
 import { isAuthRoute } from '@/lib/utils';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import toast from 'react-hot-toast';
-import { AlertBanner } from '../ui/alert-banner';
 
 export function TopNav() {
     const pathname = usePathname();
     const router = useRouter();
     const { signOut, profileData } = useSessionStore();
-    const { isDrawerOpen, isChatOpen, setDrawerOpen, setChatOpen } = useAppStore();
+    const { isDrawerOpen, setDrawerOpen } = useAppStore();
 
     // Get user initials for avatar fallback
     const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU';
@@ -113,7 +111,6 @@ export function TopNav() {
             </div>
             <div className='h-16' />
             <SideDrawer isOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} />
-            <ChatDialog open={isChatOpen} onOpenChange={setChatOpen} />
         </>
     );
 }

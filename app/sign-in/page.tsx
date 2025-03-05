@@ -8,7 +8,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import * as z from 'zod';
 import { cn } from '@/lib/utils';
-import { signInSchema } from '@/lib/schemas/auth';
+import { signInSchema } from '@/lib/schema/auth';
 import { useSignInMutation } from '@/store/use-session-store';
 import toast from 'react-hot-toast';
 import { containerVariants } from '@/lib/utils/animations';

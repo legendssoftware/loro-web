@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { newPasswordSchema } from '@/lib/schemas/auth';
+import { newPasswordSchema } from '@/lib/schema/auth';
 import { useSetPasswordMutation, useResetPasswordMutation } from '@/store/use-auth-store';
 import { motion } from 'framer-motion';
 import { containerVariants } from '@/lib/utils/animations';

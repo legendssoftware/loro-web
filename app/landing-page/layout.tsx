@@ -1,21 +1,21 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'LORO CRM | Enterprise-Grade Business Management Solution',
+    title: 'LORO CRM | Comprehensive Enterprise Resource Planning & CRM System',
     description:
-        'LORO CRM - Your all-in-one business command center. Manage tasks, staff, quotations, claims, leads, and inventory with real-time updates and seamless integration.',
+        'LORO CRM is a unified platform for managing customers, operations, sales, and resources across web and mobile interfaces. Work seamlessly online and offline with our modern, enterprise-grade solution designed for maximum flexibility.',
     keywords:
-        'CRM, business management, task management, staff management, quotations, claims management, lead tracking, inventory management, real-time updates',
+        'CRM, enterprise resource planning, ERP, business management, offline-first, mobile CRM, field operations, task management, route optimization, location tracking, client management, sales pipeline, lead tracking, inventory management, multi-tenant',
     openGraph: {
-        title: 'LORO CRM - Enterprise Business Command Center',
-        description: 'Streamline your business operations with our comprehensive mobile-first platform',
+        title: 'LORO CRM - Unified Enterprise Management System',
+        description: 'The comprehensive business platform that works seamlessly online and offline for field and office staff',
         type: 'website',
         images: ['/og-image.png'],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'LORO CRM - Business Management Solution',
-        description: 'Complete control over your business operations with real-time updates',
+        title: 'LORO CRM - Online & Offline Business Management',
+        description: 'Comprehensive CRM system with web dashboard and mobile app for modern businesses',
         images: ['/twitter-image.png'],
     },
 };

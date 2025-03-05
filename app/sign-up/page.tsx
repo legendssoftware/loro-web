@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { signUpSchema } from '@/lib/schemas/auth';
+import { signUpSchema } from '@/lib/schema/auth';
 import { useRouter } from 'next/navigation';
 import { useSignUpMutation } from '@/store/use-auth-store';
 import { motion } from 'framer-motion';

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, ReactNode, useState } fr
 import { usePathname, useRouter } from 'next/navigation';
 import { useSessionStore, type ProfileData } from '@/store/use-session-store';
 import { tokenValidator } from '@/lib/tools/tokenValidator';
-import { PageLoader } from '@/components/page-loader';
+import { AppLoader } from '@/components/loaders/page-loader';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isInitialLoading) {
         return (
             <div className='flex items-center justify-center w-full h-screen'>
-                <PageLoader />
+                <AppLoader />
             </div>
         );
     }

@@ -6,6 +6,7 @@ import { AuthProvider } from './auth.provider';
 import { LicenseProvider } from './license.provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -31,6 +32,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
                     </LicenseProvider>
                 </AuthProvider>
             </ThemeProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );
 }

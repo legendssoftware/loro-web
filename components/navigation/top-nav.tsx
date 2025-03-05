@@ -3,7 +3,7 @@
 import { LayoutDashboardIcon, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { SideDrawer } from './side-drawer';
 import { useAppStore } from '@/store/use-app-store';
 import { useAuthStore } from '@/store/auth-store';
@@ -13,7 +13,6 @@ import toast from 'react-hot-toast';
 
 export function TopNav() {
     const pathname = usePathname();
-    const router = useRouter();
     const { signOut, profileData } = useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
 

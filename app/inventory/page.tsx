@@ -1,16 +1,20 @@
 'use client';
 
+import { PageTransition } from '@/components/animations/page-transition';
 import { motion } from 'framer-motion';
+import { itemVariants } from '@/lib/utils/animations';
 
 export default function InventoryPage() {
     return (
-        <motion.div
-            className='flex flex-col items-center justify-center h-screen gap-3 p-4'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-        >
-            <p className='text-sm uppercase font-body'>Inventory Page</p>
-        </motion.div>
+        <PageTransition>
+            <div className='flex flex-col items-center justify-center h-screen gap-3 p-4'>
+                <motion.p
+                    className='text-sm uppercase font-body'
+                    variants={itemVariants}
+                >
+                    Inventory Page
+                </motion.p>
+            </div>
+        </PageTransition>
     );
 }

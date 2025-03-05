@@ -240,7 +240,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                 {profileData?.licenseInfo && <LicenseInfo />}
                 <div className='p-6 mt-auto border-t border-border/10'>
                     <p className='text-[8px] font-body uppercase text-center text-card-foreground font-normal'>
-                        Legend Systems
+                        orrbit
                     </p>
                 </div>
             </SheetContent>

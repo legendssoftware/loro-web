@@ -59,7 +59,11 @@ const AlertDialogTitle = React.forwardRef<
     React.ElementRef<typeof AlertDialogPrimitive.Title>,
     React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
-    <AlertDialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold', className)} {...props} />
+    <AlertDialogPrimitive.Title
+        ref={ref}
+        className={cn('text-lg font-normal font-body uppercase', className)}
+        {...props}
+    />
 ));
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
@@ -67,7 +71,11 @@ const AlertDialogDescription = React.forwardRef<
     React.ElementRef<typeof AlertDialogPrimitive.Description>,
     React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-    <AlertDialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+    <AlertDialogPrimitive.Description
+        ref={ref}
+        className={cn('text-xs text-muted-foreground font-body font-normal', className)}
+        {...props}
+    />
 ));
 AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName;
 
@@ -75,7 +83,15 @@ const AlertDialogAction = React.forwardRef<
     React.ElementRef<typeof AlertDialogPrimitive.Action>,
     React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
 >(({ className, ...props }, ref) => (
-    <AlertDialogPrimitive.Action ref={ref} className={cn(buttonVariants(), className)} {...props} />
+    <AlertDialogPrimitive.Action
+        ref={ref}
+        className={cn(
+            buttonVariants(),
+            'bg-primary w-full text-white font-body uppercase text-xs font-normal',
+            className,
+        )}
+        {...props}
+    />
 ));
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
@@ -85,7 +101,11 @@ const AlertDialogCancel = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <AlertDialogPrimitive.Cancel
         ref={ref}
-        className={cn(buttonVariants({ variant: 'outline' }), 'mt-2 sm:mt-0', className)}
+        className={cn(
+            buttonVariants({ variant: 'outline' }),
+            'mt-2 w-full sm:mt-0 bg-red-500 text-white font-body uppercase text-xs font-normal',
+            className,
+        )}
         {...props}
     />
 ));

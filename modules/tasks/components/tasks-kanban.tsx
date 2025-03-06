@@ -1,7 +1,7 @@
 'use client';
 
 import { Task, TaskStatus, StatusColors } from '@/lib/types/task';
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 import { TaskCard } from './task-card';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,16 @@ interface TasksKanbanProps {
     onDeleteTask: (taskId: number) => void;
     onAddTask?: () => void;
 }
+
+// Memoized task card to prevent unnecessary re-renders
+const MemoizedTaskCard = memo(TaskCard);
+
+// Memoized empty state component
+const EmptyColumn = memo(() => (
+    <div className='flex items-center justify-center h-24 text-[10px] font-normal uppercase border border-dashed rounded-md border-border text-muted-foreground font-body animate-fade-in'>
+        No tasks in this column
+    </div>
+));
 
 export function TasksKanban({ tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask }: TasksKanbanProps) {
     const renderColumn = useCallback(
@@ -37,23 +47,19 @@ export function TasksKanban({ tasksByStatus, onUpdateTaskStatus, onDeleteTask, o
                         </div>
                         <Button variant='ghost' size='icon' className='w-6 h-6' onClick={() => onAddTask?.()}>
                             <Plus className='w-3.5 h-3.5' />
-                            <span className='text-[10px] uppercase sr-only font-body'>Add {title}</span>
                         </Button>
                     </div>
-                    <div className='space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-2'>
-                        {tasks.map(task => (
-                            <TaskCard
-                                key={task.uid}
+                    <div className='space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2'>
+                        {tasks.map((task, index) => (
+                            <MemoizedTaskCard
+                                key={task?.uid}
                                 task={task}
                                 onUpdateStatus={onUpdateTaskStatus}
                                 onDelete={onDeleteTask}
+                                index={index}
                             />
                         ))}
-                        {tasks.length === 0 && (
-                            <div className='flex items-center justify-center h-24 text-[10px] font-normal uppercase border border-dashed rounded-md border-border text-muted-foreground font-body'>
-                                No tasks in this column
-                            </div>
-                        )}
+                        {tasks?.length === 0 && <EmptyColumn />}
                     </div>
                 </div>
             );

@@ -1,9 +1,9 @@
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Task, TaskStatus } from '@/lib/types/task';
-import { AlertCircle, Calendar, Clock, BarChart3, CheckCircle2 } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { AlertCircle, Calendar, Clock, CheckCircle2, ChartSpline } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef, memo } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -13,10 +13,17 @@ interface TaskCardProps {
     task: Task;
     onUpdateStatus?: (taskId: number, newStatus: string) => void;
     onDelete?: (taskId: number) => void;
+    index?: number;
 }
 
-export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
+// Create the TaskCard as a standard component
+function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Use CSS variables for animation delay
+    const cardStyle = {
+        '--task-delay': `${Math.min(index * 50, 500)}ms`,
+    } as React.CSSProperties;
 
     const handleStatusChange = useCallback(
         (taskId: number, newStatus: string) => {
@@ -77,28 +84,33 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
         }
     };
 
-    const openModal = () => {
+    const openModal = useCallback(() => {
         setIsModalOpen(true);
-    };
+    }, []);
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setIsModalOpen(false);
-    };
+    }, []);
 
     return (
         <>
             <div
-                className='p-3 overflow-hidden transition-shadow border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md'
+                className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
+                style={cardStyle}
                 onClick={openModal}
             >
                 <div className='flex items-center justify-between mb-2'>
                     {/* Task Title & Status Badge */}
                     <div className='flex-1 min-w-0'>
-                        <h3 className='text-sm font-medium uppercase truncate text-card-foreground font-body'>{task.title}</h3>
+                        <h3 className='text-sm font-medium uppercase truncate text-card-foreground font-body'>
+                            {task.title}
+                        </h3>
                         <div className='flex items-center gap-2 mt-1'>
                             <Badge
                                 variant='outline'
-                                className={`text-[10px] px-4 py-1 border-0 ${getStatusBadgeColor(task?.status)}`}
+                                className={`text-[9px] font-normal uppercase font-body px-4 py-1 border-0 ${getStatusBadgeColor(
+                                    task?.status,
+                                )}`}
                             >
                                 {task?.status?.replace('_', ' ')}
                             </Badge>
@@ -123,7 +135,7 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
                     <div className='mb-2'>
                         <div className='flex items-center justify-between text-[10px] mb-1'>
                             <div className='flex items-center'>
-                                <BarChart3 className='w-4 h-4 mr-1' />
+                                <ChartSpline className='w-4 h-4 mr-1' strokeWidth={1.5} />
                                 <span className='font-normal uppercase font-body text-[10px]'>Progress</span>
                             </div>
                             <span className='font-normal uppercase font-body text-[12px]'>{task?.progress}%</span>
@@ -137,14 +149,14 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
                         <div className='flex items-center'>
                             <AlertCircle className={`w-4 h-4 mr-1 ${getPriorityColor()}`} />
                             <span className={`text-[12px] font-normal uppercase font-body ${getPriorityColor()}`}>
-                                {task.priority}
+                                {task?.priority}
                             </span>
                         </div>
 
                         {/* Type */}
                         <div className='flex items-center'>
                             <span className='text-[10px] font-normal uppercase font-body'>
-                                {task.taskType.replace(/_/g, ' ')}
+                                {task?.taskType?.replace(/_/g, ' ')}
                             </span>
                         </div>
 
@@ -153,7 +165,7 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
                             <div className='flex items-center col-span-2'>
                                 <Calendar className='w-3 h-3 mr-1' />
                                 <span className='text-[10px] font-normal uppercase font-body'>
-                                    Due: {formatDate(task.deadline)}
+                                    Due: {formatDate(task?.deadline)}
                                 </span>
                             </div>
                         )}
@@ -162,40 +174,44 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
                         <div className='flex items-center col-span-2'>
                             <Clock className='w-3 h-3 mr-1' />
                             <span className='text-[10px] font-normal uppercase font-body'>
-                                Created: {formatDate(task.createdAt)}
+                                Created: {formatDate(task?.createdAt)}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 {/* Subtasks Count */}
-                {task.subtasks && task.subtasks.length > 0 && (
+                {task?.subtasks && task?.subtasks?.length > 0 && (
                     <div className='flex items-center pt-2 mt-2 text-xs border-t border-border/20 text-muted-foreground'>
                         <CheckCircle2 className='w-3.5 h-3.5 mr-1.5' />
                         <span className='font-normal uppercase font-body text-[10px]'>
-                            {task?.subtasks?.filter(st => !st.isDeleted && st.status === 'COMPLETED').length} /{' '}
-                            {task?.subtasks?.filter(st => !st.isDeleted).length} subtasks
+                            {task?.subtasks?.filter(st => !st?.isDeleted && st?.status === 'COMPLETED').length} /{' '}
+                            {task?.subtasks?.filter(st => !st?.isDeleted).length} subtasks
                         </span>
                     </div>
                 )}
 
                 {/* Assignees */}
-                {task.assignees && task.assignees.length > 0 && (
-                    <div className='flex items-center justify-between pt-2 mt-2 border-t border-border/20'>
+                {task?.assignees && task?.assignees?.length > 0 && (
+                    <div className='flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20'>
                         <div className='flex -space-x-2'>
-                            {task.assignees.slice(0, 3).map((assignee, index) => (
-                                <Avatar key={index} className='w-8 h-8 border border-primary/20'>
+                            {task?.assignees?.slice(0, 3).map((assignee, index) => (
+                                <Avatar key={index} className='border w-7 h-7 border-primary'>
+                                    <AvatarImage src={assignee?.photoURL} alt={assignee?.name} />
                                     <AvatarFallback className='text-[7px] font-normal uppercase font-body'>
-                                        {`${assignee?.uid}`}
+                                        {`${assignee?.name?.charAt(0)} ${assignee?.surname?.charAt(0)}`}
                                     </AvatarFallback>
                                 </Avatar>
                             ))}
-                            {task.assignees.length > 3 && (
-                                <div className='w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] border-2 border-background'>
-                                    +{task.assignees.length - 2}
-                                </div>
-                            )}
                         </div>
+                        {task?.assignees?.length > 3 && (
+                            <div className=' flex items-center justify-center text-[10px]'>
+                                <span className='text-[10px] font-normal font-body text-muted-foreground'>
+                                    {' '}
+                                    +{task?.assignees?.length - 2} more
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -213,3 +229,6 @@ export function TaskCard({ task, onUpdateStatus, onDelete }: TaskCardProps) {
         </>
     );
 }
+
+// Export a memoized version to prevent unnecessary re-renders
+export const TaskCard = memo(TaskCardComponent);

@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import { PublicOnlyRoute } from '@/components/auth/public-only-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import { itemVariants } from '@/lib/utils/animations';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
@@ -41,21 +42,7 @@ const SignInPage = () => {
     // Show toast for auth errors
     useEffect(() => {
         if (error) {
-            toast.error(error, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '❌',
-            });
+            showErrorToast(error, toast);
             clearAuthError();
         }
     }, [error, clearAuthError]);
@@ -66,14 +53,11 @@ const SignInPage = () => {
         const result = signInSchema.safeParse(form);
 
         if (!result.success) {
-            const formattedErrors = result.error.issues.reduce(
-                (acc, issue) => {
-                    const path = issue.path[0] as keyof SignInSchema;
-                    acc[path] = issue.message;
-                    return acc;
-                },
-                {} as { [K in keyof SignInSchema]?: string },
-            );
+            const formattedErrors = result.error.issues.reduce((acc, issue) => {
+                const path = issue.path[0] as keyof SignInSchema;
+                acc[path] = issue.message;
+                return acc;
+            }, {} as { [K in keyof SignInSchema]?: string });
 
             setErrors(formattedErrors);
             return;
@@ -87,25 +71,10 @@ const SignInPage = () => {
                 password: form.password.trim(),
             });
 
-            const toastId = toast.success(response.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
-                icon: '👋',
-            });
+            showSuccessToast(response.message, toast);
 
             // Wait for toast to finish
             await new Promise(resolve => setTimeout(resolve, 2000));
-            toast.remove(toastId);
 
             // Redirect to callback URL if set, otherwise to home
             router.push(decodeURIComponent(callbackUrl));
@@ -120,7 +89,7 @@ const SignInPage = () => {
 
     return (
         <PublicOnlyRoute>
-            <PageTransition type="fade">
+            <PageTransition type='fade'>
                 <div
                     className='relative flex items-center justify-center min-h-screen p-4'
                     style={{
@@ -136,10 +105,15 @@ const SignInPage = () => {
                         className='relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'
                         variants={itemVariants}
                     >
-                        <h1 className='text-2xl font-normal text-center text-white sm:text-3xl font-heading'>LORO CRM</h1>
+                        <h1 className='text-2xl font-normal text-center text-white sm:text-3xl font-heading'>
+                            LORO CRM
+                        </h1>
                         <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
                             <div className='space-y-1'>
-                                <label htmlFor='username' className='block text-xs font-light text-white uppercase font-body'>
+                                <label
+                                    htmlFor='username'
+                                    className='block text-xs font-light text-white uppercase font-body'
+                                >
                                     Username
                                 </label>
                                 <Input
@@ -222,7 +196,11 @@ const SignInPage = () => {
                                 {isLoading ? (
                                     <div className='flex items-center justify-center space-x-1'>
                                         <p className='font-normal text-white uppercase'>Signing In</p>
-                                        <Loader2 className='w-4 h-4 mr-2 text-white animate-spin' size={16} strokeWidth={1.5} />
+                                        <Loader2
+                                            className='w-4 h-4 mr-2 text-white animate-spin'
+                                            size={16}
+                                            strokeWidth={1.5}
+                                        />
                                     </div>
                                 ) : (
                                     <span className='font-normal text-white'>Sign In</span>
@@ -231,7 +209,9 @@ const SignInPage = () => {
                         </form>
                         <div className='space-y-2 text-center'>
                             <div className='text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center'>
-                                <p className='font-body uppercase text-[10px] text-white'>Don&apos;t have an account?</p>
+                                <p className='font-body uppercase text-[10px] text-white'>
+                                    Don&apos;t have an account?
+                                </p>
                                 <Link
                                     href='/sign-up'
                                     className={cn(

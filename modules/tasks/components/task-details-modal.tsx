@@ -7,7 +7,6 @@ import {
     Calendar,
     Clock,
     AlertCircle,
-    BarChart3,
     CheckCircle2,
     Building,
     Briefcase,
@@ -21,7 +20,12 @@ import {
     MapPin,
     CreditCard,
     Edit,
-    Trash,
+    Globe,
+    User,
+    Map,
+    Building2,
+    Plus,
+    CheckCheck,
 } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +33,16 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -38,9 +52,43 @@ interface TaskDetailsModalProps {
     onDelete: (taskId: number) => void;
 }
 
+interface ExtendedCreator {
+    uid: number;
+    name: string;
+    surname?: string;
+    email: string;
+    phone?: string;
+    photoURL?: string;
+    avatarUrl?: string;
+    accessLevel?: string;
+    role?: string;
+    userref?: string;
+}
+
+interface ExtendedTask extends Task {
+    routes?: Array<{
+        uid?: number;
+        name?: string;
+    }>;
+    creator?: ExtendedCreator;
+    assignees?: Array<{
+        uid: number;
+        name: string;
+        surname: string;
+        email: string;
+        phone: string;
+        photoURL: string;
+        accessLevel: string;
+    }>;
+}
+
 export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDelete }: TaskDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<TaskStatus>(task.status);
     const [activeTab, setActiveTab] = useState<string>('details');
+    const extendedTask = task as ExtendedTask;
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
+    const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] = useState<boolean>(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState<TaskStatus | null>(null);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -77,33 +125,22 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
         if (status === currentStatus) {
             switch (status) {
                 case TaskStatus.PENDING:
-                    return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+                    return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800/50';
                 case TaskStatus.IN_PROGRESS:
-                    return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+                    return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50';
                 case TaskStatus.COMPLETED:
-                    return 'bg-green-100 text-green-800 hover:bg-green-200';
+                    return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-800/50';
                 case TaskStatus.CANCELLED:
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/60';
+                case TaskStatus.POSTPONED:
+                    return 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50';
+                case TaskStatus.MISSED:
+                    return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-800/50';
                 default:
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/60';
             }
         }
-        return 'bg-white hover:bg-gray-100';
-    };
-
-    const getPriorityColor = () => {
-        switch (task.priority) {
-            case TaskPriority.LOW:
-                return 'text-gray-500';
-            case TaskPriority.MEDIUM:
-                return 'text-blue-500';
-            case TaskPriority.HIGH:
-                return 'text-orange-500';
-            case TaskPriority.URGENT:
-                return 'text-red-500';
-            default:
-                return 'text-gray-500';
-        }
+        return 'bg-white hover:bg-gray-100 dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700';
     };
 
     const getPriorityBadgeColor = () => {
@@ -147,13 +184,27 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     };
 
     const handleStatusChange = (newStatus: TaskStatus) => {
-        setCurrentStatus(newStatus);
-        onUpdateStatus(task.uid, newStatus);
-        onClose();
+        if (newStatus === currentStatus) return;
+        setPendingStatusChange(newStatus);
+        setConfirmStatusChangeOpen(true);
+    };
+
+    const confirmStatusChange = () => {
+        if (pendingStatusChange) {
+            setCurrentStatus(pendingStatusChange);
+            setConfirmStatusChangeOpen(false);
+            onClose();
+            onUpdateStatus(task.uid, pendingStatusChange);
+        }
     };
 
     const handleDelete = () => {
+        setConfirmDeleteOpen(true);
+    };
+
+    const confirmDelete = () => {
         onDelete(task.uid);
+        setConfirmDeleteOpen(false);
         onClose();
     };
 
@@ -167,36 +218,48 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
         { id: 'details', label: 'Details' },
         { id: 'people', label: 'People & Org' },
         { id: 'activity', label: 'Activity' },
+        { id: 'routes', label: 'Routes' },
     ];
+
+    const formatAddress = (address?: any) => {
+        if (!address) return 'No address provided';
+
+        const parts = [];
+        if (address?.street) parts.push(address.street);
+        if (address?.suburb) parts.push(address.suburb);
+        if (address.city) parts.push(address.city);
+        if (address.state) parts.push(address.state);
+        if (address.postalCode) parts.push(address.postalCode);
+        if (address.country) parts.push(address.country);
+
+        return parts.join(', ') || 'No address details provided';
+    };
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'details':
                 return (
                     <div className='space-y-6'>
-                        {/* Description section */}
-                        <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
+                        <div className='p-4 rounded-lg bg-card'>
                             <h3 className='mb-2 text-xs font-normal uppercase font-body'>Description</h3>
-                            <p className='text-xs font-normal font-body'>
+                            <p className='text-xs font-thin font-body'>
                                 {task.description || 'No description provided'}
                             </p>
                         </div>
 
-                        {/* Progress section */}
                         <div>
                             <h3 className='mb-2 text-xs font-normal uppercase font-body'>Stage</h3>
                             <div className='flex flex-col gap-1 mb-2'>
                                 <div className='flex items-center justify-between mb-1 text-xs'>
                                     <div className='flex items-center'>
-                                        <span className='text-[10px] font-normal uppercase font-body'>Progress</span>
+                                        <span className='text-[10px] font-thin uppercase font-body'>Progress</span>
                                     </div>
-                                    <span className='text-xs font-normal uppercase font-body'>{task?.progress}%</span>
+                                    <span className='text-sm font-medium uppercase font-body'>{task?.progress}%</span>
                                 </div>
                                 <Progress value={task?.progress} className='h-2' />
                             </div>
                         </div>
 
-                        {/* Task Details section */}
                         <div className='grid grid-cols-2 gap-4'>
                             <div>
                                 <h3 className='mb-2 text-xs font-normal uppercase font-body'>Priority</h3>
@@ -218,7 +281,9 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 <div className='flex items-center'>
                                     <Badge variant='outline' className='px-4 py-1 text-xs font-normal border'>
                                         {getTaskTypeIcon()}
-                                        {task?.taskType?.replace(/_/g, ' ')}
+                                        <span className='text-xs font-normal uppercase font-body'>
+                                            {task?.taskType?.replace(/_/g, ' ')}
+                                        </span>
                                     </Badge>
                                 </div>
                             </div>
@@ -226,8 +291,8 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             <div>
                                 <h3 className='mb-2 text-xs font-normal uppercase font-body'>Repetition</h3>
                                 <div className='flex items-center'>
-                                    <Repeat className='w-4 h-4 mr-1 text-gray-500' />
-                                    <span className='text-xs font-normal uppercase font-body'>
+                                    <Repeat className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                    <span className='text-xs font-thin uppercase font-body'>
                                         {task?.repetitionType}
                                     </span>
                                 </div>
@@ -236,24 +301,23 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             <div>
                                 <h3 className='mb-2 text-xs font-normal uppercase font-body'>Category</h3>
                                 <div className='flex items-center'>
-                                    <Tag className='w-4 h-4 mr-1 text-gray-500' />
-                                    <span className='text-xs font-normal uppercase font-body'>
+                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                    <span className='text-xs font-thin uppercase font-body'>
                                         {task?.targetCategory || 'Not categorized'}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Dates section */}
                         <div>
                             <h3 className='mb-2 text-xs font-normal uppercase font-body'>Timeline</h3>
-                            <div className='p-4 space-y-3 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
+                            <div className='p-4 space-y-3 rounded-lg bg-card'>
                                 <div className='flex items-center justify-between'>
                                     <div className='flex items-center'>
-                                        <Clock className='w-4 h-4 mr-2 text-gray-500' />
-                                        <span className='text-xs font-normal uppercase font-body'>Created</span>
+                                        <Clock className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                        <span className='text-[10px] font-thin uppercase font-body'>Created</span>
                                     </div>
-                                    <span className='text-xs font-normal font-body'>
+                                    <span className='text-xs font-thin font-body'>
                                         {formatDate(task?.createdAt)} {formatTime(task?.createdAt)}
                                     </span>
                                 </div>
@@ -261,10 +325,10 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 {task.deadline && (
                                     <div className='flex items-center justify-between'>
                                         <div className='flex items-center'>
-                                            <Calendar className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-xs font-normal uppercase font-body'>Deadline</span>
+                                            <Calendar className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                            <span className='text-[10px] font-thin uppercase font-body'>Deadline</span>
                                         </div>
-                                        <span className='text-xs font-normal font-body'>
+                                        <span className='text-xs font-thin font-body'>
                                             {formatDate(task?.deadline)} {formatTime(task?.deadline)}
                                         </span>
                                     </div>
@@ -274,9 +338,9 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                     <div className='flex items-center justify-between'>
                                         <div className='flex items-center'>
                                             <CheckCircle2 className='w-4 h-4 mr-2 text-green-500' />
-                                            <span className='text-xs font-normal uppercase font-body'>Completed</span>
+                                            <span className='text-xs font-thin uppercase font-body'>Completed</span>
                                         </div>
-                                        <span className='text-xs font-normal font-body'>
+                                        <span className='text-xs font-thin font-body'>
                                             {formatDate(task?.completionDate)} {formatTime(task?.completionDate)}
                                         </span>
                                     </div>
@@ -285,12 +349,10 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 {task?.repetitionDeadline && (
                                     <div className='flex items-center justify-between'>
                                         <div className='flex items-center'>
-                                            <Repeat className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-xs font-normal uppercase font-body'>
-                                                Repeats Until
-                                            </span>
+                                            <Repeat className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                            <span className='text-xs font-thin uppercase font-body'>Repeats Until</span>
                                         </div>
-                                        <span className='text-xs font-normal font-body'>
+                                        <span className='text-xs font-thin font-body'>
                                             {formatDate(task?.repetitionDeadline)}
                                         </span>
                                     </div>
@@ -298,17 +360,32 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             </div>
                         </div>
 
-                        {/* Subtasks section */}
+                        {extendedTask?.routes && extendedTask?.routes?.length > 0 && (
+                            <div>
+                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Routes</h3>
+                                <div className='p-4 space-y-2 rounded-lg bg-card'>
+                                    {extendedTask.routes.map((route, index) => (
+                                        <div key={index} className='flex items-center p-2 border bg-card'>
+                                            <Map className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                            <span className='text-xs font-thin font-body'>
+                                                {route?.name || `Route #${route?.uid || index + 1}`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {task?.subtasks && task?.subtasks?.length > 0 && (
                             <div>
                                 <h3 className='mb-2 text-xs font-normal uppercase font-body'>Subtasks</h3>
-                                <div className='p-4 space-y-2 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
+                                <div className='p-4 space-y-2 rounded-lg bg-card'>
                                     {task?.subtasks
                                         ?.filter(st => !st.isDeleted)
                                         .map(subtask => (
                                             <div
                                                 key={subtask?.uid}
-                                                className='flex items-center justify-between p-2 bg-white border rounded dark:bg-gray-800'
+                                                className='flex items-center justify-between p-2 border bg-card'
                                             >
                                                 <div className='flex items-center'>
                                                     <div
@@ -318,7 +395,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                                                 : 'bg-yellow-500'
                                                         }`}
                                                     ></div>
-                                                    <span className='text-xs font-normal font-body'>
+                                                    <span className='text-xs font-thin font-body'>
                                                         {subtask?.title}
                                                     </span>
                                                 </div>
@@ -342,135 +419,367 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
             case 'people':
                 return (
                     <div className='space-y-6'>
-                        {/* Assignees section */}
                         <div>
                             <h3 className='mb-2 text-xs font-normal uppercase font-body'>Assignees</h3>
-                            <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
-                                {task?.assignees && task?.assignees?.length > 0 ? (
+                            <div className='p-4 rounded-lg bg-card'>
+                                {extendedTask?.assignees && extendedTask?.assignees?.length > 0 ? (
                                     <div className='space-y-2'>
-                                        {task?.assignees?.map((assignee, index) => (
-                                            <div
-                                                key={index}
-                                                className='flex items-center p-2 bg-white border rounded dark:bg-gray-800'
-                                            >
-                                                <Avatar className='w-8 h-8 mr-3'>
-                                                    <AvatarFallback className='text-xs bg-primary/10 text-primary'>
-                                                        {`U${assignee?.uid || index + 1}`}
-                                                    </AvatarFallback>
+                                        {extendedTask?.assignees?.map((assignee, index) => (
+                                            <div key={index} className='flex items-center p-2 border bg-card'>
+                                                <Avatar className='w-12 h-12 mr-3 border border-primary'>
+                                                    {assignee?.photoURL ? (
+                                                        <AvatarImage
+                                                            src={assignee?.photoURL}
+                                                            alt={assignee?.name || ''}
+                                                        />
+                                                    ) : (
+                                                        <AvatarFallback className='text-xs font-normal uppercase bg-primary/10 text-primary font-body'>
+                                                            {assignee?.name && assignee?.surname
+                                                                ? `${assignee?.name[0]}${assignee?.surname[0]}`
+                                                                : `U${assignee?.uid || index + 1}`}
+                                                        </AvatarFallback>
+                                                    )}
                                                 </Avatar>
-                                                <div>
-                                                    <p className='text-xs font-normal uppercase font-body'>
-                                                        User ID: {assignee?.uid}
+                                                <div className='flex flex-col'>
+                                                    <p className='text-xs font-medium uppercase font-body'>
+                                                        {assignee?.name} {assignee?.surname}
                                                     </p>
+                                                    <div className='flex flex-col space-y-1 text-xs text-card-foreground/60'>
+                                                        {assignee?.email && assignee?.phone && (
+                                                            <div className='flex items-center'>
+                                                                <Mail className='w-4 h-4 mr-1' />
+                                                                <span className='text-xs font-thin font-body'>
+                                                                    {assignee?.email} - {assignee?.phone}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className='text-xs italic text-gray-500 uppercase font-body'>
+                                    <p className='text-xs italic uppercase text-card-f6reground/50 font-body'>
                                         No assignees for this task
                                     </p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Clients section */}
                         <div>
                             <h3 className='mb-2 text-xs font-normal uppercase font-body'>Clients</h3>
-                            <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
+                            <div className='p-4 rounded-lg bg-card'>
                                 {task.clients && task.clients.length > 0 ? (
                                     <div className='space-y-2'>
-                                        {task.clients.map((client, index) => (
+                                        {task.clients.map((client: any, index) => (
                                             <div
                                                 key={index}
-                                                className='flex items-center p-2 bg-white border rounded dark:bg-gray-800'
+                                                className='flex flex-col justify-start gap-1 p-2 border bg-card'
                                             >
-                                                <Avatar className='w-8 h-8 mr-3'>
-                                                    <AvatarFallback className='text-xs text-blue-800 bg-blue-100'>
-                                                        {`C${client.uid || index + 1}`}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className='text-sm font-medium'>Client ID: {client.uid}</p>
+                                                <div className='flex items-center mb-2'>
+                                                    <Avatar className='w-12 h-12 mr-3 border border-primary'>
+                                                        {client?.logo ? (
+                                                            <AvatarImage src={client?.logo} alt={client?.name} />
+                                                        ) : (
+                                                            <AvatarFallback className='text-xs text-blue-800 bg-blue-100'>
+                                                                {client?.name?.slice(0, 2).toUpperCase() ||
+                                                                    `C${client?.uid || index + 1}`}
+                                                            </AvatarFallback>
+                                                        )}
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className='text-sm font-medium uppercase font-body'>
+                                                            {client?.name}
+                                                        </p>
+                                                        <p className='text-xs font-normal text-card-foreground/60 font-body'>
+                                                            {client?.category}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                                    {client?.contactPerson && (
+                                                        <div className='flex items-center text-xs'>
+                                                            <User className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {client?.contactPerson}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {client?.email && (
+                                                        <div className='flex items-center text-xs'>
+                                                            <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {client?.email}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {client?.phone && (
+                                                        <div className='flex items-center text-xs'>
+                                                            <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {client?.phone}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {client?.alternativePhone && (
+                                                        <div className='flex items-center text-xs'>
+                                                            <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {client?.alternativePhone}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {client?.website && (
+                                                        <div className='flex items-center text-xs'>
+                                                            <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {client?.website}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {client?.address && (
+                                                        <div className='flex items-start col-span-2 text-xs'>
+                                                            <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
+                                                            <span className='text-xs font-thin font-body'>
+                                                                {formatAddress(client?.address)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className='text-xs italic text-gray-500 uppercase font-body'>
+                                    <p className='text-xs italic uppercase text-card-f6reground/50 font-body'>
                                         No clients associated with this task
                                     </p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Creator section */}
                         {task.creator && (
                             <div>
                                 <h3 className='mb-2 text-xs font-normal uppercase font-body'>Created By</h3>
-                                <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
-                                    <div className='flex items-center p-2 bg-white border rounded dark:bg-gray-800'>
-                                        <Avatar className='w-8 h-8 mr-3'>
-                                            {task?.creator?.avatarUrl ? (
-                                                <AvatarImage src={task?.creator?.avatarUrl} alt={task?.creator?.name} />
-                                            ) : (
-                                                <AvatarFallback className='text-green-800 bg-green-100'>
-                                                    {task?.creator?.name
-                                                        .split(' ')
-                                                        .map(n => n[0])
-                                                        .join('')
-                                                        .toUpperCase()}
-                                                </AvatarFallback>
+                                <div className='p-4 rounded-lg bg-card'>
+                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
+                                        <div className='flex items-center mb-2'>
+                                            <Avatar className='w-12 h-12 mr-3 border border-primary'>
+                                                {task?.creator?.photoURL || task?.creator?.avatarUrl ? (
+                                                    <AvatarImage
+                                                        src={task?.creator?.photoURL || task?.creator?.avatarUrl || ''}
+                                                        alt={task?.creator?.name}
+                                                    />
+                                                ) : (
+                                                    <AvatarFallback className='text-green-800 bg-green-100'>
+                                                        {task?.creator?.name && task?.creator?.surname
+                                                            ? `${task?.creator?.name[0]}${task?.creator?.surname[0]}`
+                                                            : `${
+                                                                  task?.creator?.name?.slice(0, 2).toUpperCase() || 'U'
+                                                              }`}
+                                                    </AvatarFallback>
+                                                )}
+                                            </Avatar>
+                                            <div>
+                                                <p className='text-xs font-normal font-body'>
+                                                    {task?.creator.name} {task?.creator.surname}
+                                                </p>
+                                                <p className='text-xs font-normal text-card-foreground/60 font-body'>
+                                                    {task?.creator.accessLevel && (
+                                                        <span className='capitalize'>{task?.creator.accessLevel}</span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                            {task?.creator?.email && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.creator?.email}
+                                                    </span>
+                                                </div>
                                             )}
-                                        </Avatar>
-                                        <div>
-                                            <p className='text-xs font-normal uppercase font-body'>
-                                                {task?.creator?.name}
-                                            </p>
-                                            <p className='text-xs text-gray-500 font-body'>{task?.creator?.email}</p>
+                                            {task?.creator?.phone && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.creator?.phone}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.creator?.userref && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.creator?.userref}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.creator?.accessLevel && (
+                                                <div className='flex items-center text-xs'>
+                                                    <User className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.creator?.accessLevel?.charAt(0).toUpperCase() +
+                                                            task?.creator?.accessLevel?.slice(1)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        {/* Organization section */}
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Organization & Branch</h3>
-                            <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
-                                <div className='flex flex-col space-y-2'>
-                                    {task.organisation ? (
-                                        <div className='flex items-center'>
-                                            <Building className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-sm font-normal'>
-                                                Organization: {task.organisation.name}
-                                            </span>
+                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Organization</h3>
+                            <div className='p-4 rounded-lg bg-card'>
+                                {task?.organisation ? (
+                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
+                                        <div className='flex items-center mb-2'>
+                                            <Avatar className='w-12 h-12 mr-3 border border-primary'>
+                                                {task?.organisation?.logo ? (
+                                                    <AvatarImage
+                                                        src={task?.organisation?.logo}
+                                                        alt={task?.organisation?.name}
+                                                    />
+                                                ) : (
+                                                    <AvatarFallback className='text-orange-800 bg-orange-100'>
+                                                        {task?.organisation?.name?.slice(0, 2).toUpperCase() ||
+                                                            `O${task?.organisation?.uid}`}
+                                                    </AvatarFallback>
+                                                )}
+                                            </Avatar>
+                                            <div>
+                                                <p className='text-sm font-medium uppercase font-body'>
+                                                    {task?.organisation?.name}
+                                                </p>
+                                                <p className='flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body'>
+                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.organisation?.ref}
+                                                    </span>
+                                                </p>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className='flex items-center'>
-                                            <Building className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-xs italic font-normal text-gray-500 uppercase font-body'>
-                                                No organization specified
-                                            </span>
-                                        </div>
-                                    )}
 
-                                    {task.branch ? (
-                                        <div className='flex items-center'>
-                                            <Briefcase className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-xs font-normal uppercase font-body'>
-                                                Branch: {task?.branch?.name}
-                                            </span>
+                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                            {task?.organisation?.email && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.organisation?.email}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.organisation?.phone && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.organisation?.phone}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.organisation?.website && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.organisation?.website}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.organisation?.address && (
+                                                <div className='flex items-start col-span-2 text-xs'>
+                                                    <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {formatAddress(task?.organisation?.address)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <div className='flex items-center'>
-                                            <Briefcase className='w-4 h-4 mr-2 text-gray-500' />
-                                            <span className='text-xs italic font-normal text-gray-500 uppercase font-body'>
-                                                No branch specified
-                                            </span>
+                                    </div>
+                                ) : (
+                                    <div className='flex items-center'>
+                                        <Building className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                        <span className='text-xs italic font-normal uppercase text-card-f6reground/50 font-body'>
+                                            No organization specified
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Branch</h3>
+                            <div className='p-4 rounded-lg bg-card'>
+                                {task?.branch ? (
+                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
+                                        <div className='flex items-center mb-2'>
+                                            <Building2 className='w-5 h-5 mr-2 text-card-foreground/60' />
+                                            <div>
+                                                <p className='text-sm font-medium uppercase font-body'>
+                                                    {task?.branch?.name}
+                                                </p>
+                                                <p className='flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body'>
+                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.branch?.ref}
+                                                    </span>
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
+
+                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                            {task?.branch?.contactPerson && (
+                                                <div className='flex items-center text-xs'>
+                                                    <User className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.branch?.contactPerson}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.branch?.email && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.branch?.email}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.branch?.phone && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.branch?.phone}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.branch?.website && (
+                                                <div className='flex items-center text-xs'>
+                                                    <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {task?.branch?.website}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {task?.branch?.address && (
+                                                <div className='flex items-start col-span-2 text-xs'>
+                                                    <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
+                                                    <span className='text-xs font-thin font-body'>
+                                                        {formatAddress(task?.branch?.address)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className='flex items-center'>
+                                        <Briefcase className='w-4 h-4 mr-2 text-card-foreground/60' />
+                                        <span className='text-xs italic font-normal uppercase text-card-f6reground/50 font-body'>
+                                            No branch specified
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -478,56 +787,90 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
             case 'activity':
                 return (
                     <div className='space-y-6'>
-                        <div className='p-4 rounded-lg bg-gray-50 dark:bg-gray-900/30'>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Activity Timeline</h3>
-                            <div className='relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-200'>
-                                {/* Creation event */}
+                        <div className='p-4 rounded-lg bg-card'>
+                            <h3 className='mb-4 text-xs font-thin uppercase font-body'>Activity Timeline</h3>
+                            <div className='relative pl-8 space-y-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-green-500 dark:before:bg-green-600'>
                                 <div className='relative'>
-                                    <div className='absolute left-[-24px] top-0 w-4 h-4 rounded-full bg-blue-500'></div>
+                                    <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white'>
+                                        <Plus className='w-4 h-4' />
+                                    </div>
                                     <div className='flex flex-col'>
-                                        <p className='font-normal font-body'>
-                                            <span className='text-sm font-medium'>
-                                                {task?.creator?.name || 'System'}
-                                            </span>{' '}
-                                            <span className='text-xs font-normal font-body'>created this task</span>
-                                        </p>
-                                        <p className='text-xs text-gray-500 font-body'>
+                                        <p className='text-xs font-normal uppercase font-body'>Task created</p>
+                                        <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
                                             {formatDate(task.createdAt)} {formatTime(task.createdAt)}
+                                        </p>
+                                        <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
+                                            Created by {task?.creator?.name || 'System'}
                                         </p>
                                     </div>
                                 </div>
+                                {task?.updatedAt &&
+                                    formatDate(task?.updatedAt) !== formatDate(task?.createdAt) &&
+                                    !task?.completionDate && (
+                                        <div className='relative'>
+                                            <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white'>
+                                                <Edit className='w-4 h-4' />
+                                            </div>
+                                            <div className='flex flex-col'>
+                                                <p className='text-xs font-normal uppercase font-body'>Task updated</p>
+                                                <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
+                                                    {formatDate(task?.updatedAt)} {formatTime(task?.updatedAt)}
+                                                </p>
+                                                <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
+                                                    Status: {task?.status}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {/* Completion event */}
-                                {task?.completionDate && (
+                                {task?.deadline && (
                                     <div className='relative'>
-                                        <div className='absolute left-[-24px] top-0 w-4 h-4 rounded-full bg-green-500'></div>
+                                        <div
+                                            className={`absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full ${
+                                                task?.isOverdue
+                                                    ? 'bg-red-500 dark:bg-red-600'
+                                                    : 'bg-orange-500 dark:bg-orange-600'
+                                            } text-white`}
+                                        >
+                                            <Calendar className='w-4 h-4' />
+                                        </div>
                                         <div className='flex flex-col'>
                                             <p className='text-xs font-normal uppercase font-body'>
-                                                Task marked as{' '}
-                                                <span className='text-xs font-normal uppercase font-body'>
-                                                    COMPLETED
-                                                </span>
+                                                {task?.isOverdue ? 'Deadline passed' : 'Upcoming deadline'}
                                             </p>
-                                            <p className='text-xs text-gray-500 font-body'>
+                                            <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
+                                                {formatDate(task?.deadline)} {formatTime(task?.deadline)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {task?.completionDate && (
+                                    <div className='relative'>
+                                        <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white'>
+                                            <CheckCheck className='w-4 h-4' />
+                                        </div>
+                                        <div className='flex flex-col'>
+                                            <p className='text-xs font-normal uppercase font-body'>Task completed</p>
+                                            <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
                                                 {formatDate(task?.completionDate)} {formatTime(task?.completionDate)}
                                             </p>
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Last update event */}
-                                {task.updatedAt && task.updatedAt !== task.createdAt && !task.completionDate && (
-                                    <div className='relative'>
-                                        <div className='absolute left-[-24px] top-0 w-4 h-4 rounded-full bg-gray-500'></div>
-                                        <div className='flex flex-col'>
-                                            <p className='text-sm font-normal uppercase font-body'>Task was updated</p>
-                                            <p className='text-xs text-gray-500 font-body'>
-                                                {formatDate(task.updatedAt)} {formatTime(task.updatedAt)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
+                        </div>
+                    </div>
+                );
+            case 'routes':
+                return (
+                    <div className='space-y-6'>
+                        <div className='flex flex-col items-center justify-center p-4 text-center rounded-lg bg-card'>
+                            <Map className='w-12 h-12 mb-2 text-primary/50' />
+                            <p className='text-xs font-thin uppercase font-body'>Coming Soon</p>
+                            <p className='mt-2 text-xs font-thin uppercase text-card-foreground/60 font-body'>
+                                Route planning and management will be available in a future update.
+                            </p>
                         </div>
                     </div>
                 );
@@ -537,112 +880,174 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={() => onClose()}>
-            <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto'>
-                <DialogHeader className='flex flex-row items-start justify-between'>
-                    <div>
-                        <DialogTitle className='text-xl font-semibold uppercase font-body'>{task.title}</DialogTitle>
-                        <div className='flex items-center gap-2 mt-2'>
-                            <Badge
-                                variant='outline'
-                                className={`text-[10px] px-4 py-1 border-0 ${getStatusBadgeColor(task?.status)}`}
-                            >
-                                {task?.status?.replace(/_/g, ' ')}
-                            </Badge>
-                            {task.isOverdue && (
+        <>
+            <Dialog open={isOpen} onOpenChange={() => onClose()}>
+                <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto bg-card'>
+                    <DialogHeader className='flex flex-row items-start justify-between'>
+                        <div>
+                            <DialogTitle className='text-xl font-semibold uppercase font-body'>
+                                {task?.title}
+                            </DialogTitle>
+                            <div className='flex items-center gap-2 mt-2'>
                                 <Badge
                                     variant='outline'
-                                    className='text-[10px] px-4 py-1 border-0 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    className={`text-[10px] px-4 py-1 font-body border-0 ${getStatusBadgeColor(
+                                        task?.status,
+                                    )}`}
                                 >
-                                    OVERDUE
+                                    {task?.status?.replace(/_/g, ' ')}
                                 </Badge>
-                            )}
-                        </div>
-                    </div>
-                    <Button variant='ghost' size='icon' className='w-8 h-8' onClick={onClose}>
-                        <X className='w-4 h-4' />
-                    </Button>
-                </DialogHeader>
-
-                <div className='mt-4'>
-                    {/* Custom Tab Navigation matching TasksTabGroup */}
-                    <div className='flex items-center mb-6 overflow-x-auto border-b border-border/10'>
-                        {tabs.map(tab => (
-                            <div
-                                key={tab.id}
-                                className='relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28'
-                            >
-                                <div
-                                    className={`mb-3 font-body px-0 font-normal ${
-                                        activeTab === tab.id
-                                            ? 'text-primary dark:text-primary'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                    onClick={() => handleTabChange(tab.id)}
-                                >
-                                    <span className='text-xs font-normal uppercase font-body'>{tab.label}</span>
-                                </div>
-                                {activeTab === tab.id && (
-                                    <div className='absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary' />
+                                {task.isOverdue && (
+                                    <Badge
+                                        variant='outline'
+                                        className='text-[10px] px-4 py-1 font-body border-0 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    >
+                                        OVERDUE
+                                    </Badge>
                                 )}
                             </div>
-                        ))}
+                        </div>
+                        <Button variant='ghost' size='icon' className='w-8 h-8' onClick={onClose}>
+                            <X className='w-4 h-4' />
+                        </Button>
+                    </DialogHeader>
+                    <div className='mt-4'>
+                        <div className='flex items-center mb-6 overflow-x-auto border-b border-border/10'>
+                            {tabs.map(tab => (
+                                <div
+                                    key={tab?.id}
+                                    className='relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28'
+                                >
+                                    <div
+                                        className={`mb-3 font-body px-0 font-normal ${
+                                            activeTab === tab.id
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
+                                        }`}
+                                        onClick={() => handleTabChange(tab?.id)}
+                                    >
+                                        <span className='text-xs font-thin uppercase font-body'>{tab?.label}</span>
+                                    </div>
+                                    {activeTab === tab?.id && (
+                                        <div className='absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary' />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {renderTabContent()}
                     </div>
-
-                    {/* Tab Content */}
-                    {renderTabContent()}
-                </div>
-
-                <DialogFooter className='flex flex-wrap gap-2 pt-4 mt-6 border-t'>
-                    <div className='flex justify-center w-full gap-2 sm:justify-start'>
-                        <div className='w-1/5'>
+                    <DialogFooter className='flex flex-wrap gap-2 pt-4 mt-6 border-t dark:border-gray-700'>
+                        <div className='grid w-full grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7'>
                             <Button
                                 variant='outline'
                                 size='sm'
                                 className={`w-full ${getStatusButtonVariant(TaskStatus.PENDING)}`}
                                 onClick={() => handleStatusChange(TaskStatus.PENDING)}
                             >
-                                <span className='text-xs font-normal uppercase font-body'>Pending</span>
+                                <span className='text-[10px] font-thin uppercase font-body'>Pending</span>
                             </Button>
-                        </div>
-                        <div className='w-1/5'>
                             <Button
                                 variant='outline'
                                 size='sm'
                                 className={`w-full ${getStatusButtonVariant(TaskStatus.IN_PROGRESS)}`}
                                 onClick={() => handleStatusChange(TaskStatus.IN_PROGRESS)}
                             >
-                                <span className='text-xs font-normal uppercase font-body'>In Progress</span>
+                                <span className='text-[10px] font-thin uppercase font-body'>In Progress</span>
                             </Button>
-                        </div>
-                        <div className='w-1/5'>
                             <Button
                                 variant='outline'
                                 size='sm'
                                 className={`w-full ${getStatusButtonVariant(TaskStatus.COMPLETED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.COMPLETED)}
                             >
-                                <span className='text-xs font-normal uppercase font-body'>Completed</span>
+                                <span className='text-[10px] font-thin uppercase font-body'>Completed</span>
                             </Button>
-                        </div>
-                        <div className='w-1/5'>
                             <Button
                                 variant='outline'
                                 size='sm'
                                 className={`w-full ${getStatusButtonVariant(TaskStatus.CANCELLED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.CANCELLED)}
                             >
-                                <span className='text-xs font-normal uppercase font-body'>Cancelled</span>
+                                <span className='text-[10px] font-thin uppercase font-body'>Cancelled</span>
+                            </Button>
+                            <Button
+                                variant='outline'
+                                size='sm'
+                                className={`w-full ${getStatusButtonVariant(TaskStatus.POSTPONED)}`}
+                                onClick={() => handleStatusChange(TaskStatus.POSTPONED)}
+                            >
+                                <span className='text-[10px] font-thin uppercase font-body'>Postponed</span>
+                            </Button>
+                            <Button
+                                variant='outline'
+                                size='sm'
+                                className={`w-full ${getStatusButtonVariant(TaskStatus.MISSED)}`}
+                                onClick={() => handleStatusChange(TaskStatus.MISSED)}
+                            >
+                                <span className='text-[10px] font-thin uppercase font-body'>Missed</span>
+                            </Button>
+                            <Button
+                                variant='destructive'
+                                className='w-full dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none'
+                                onClick={handleDelete}
+                            >
+                                <span className='text-[10px] font-thin uppercase font-body'>Delete Task</span>
                             </Button>
                         </div>
-                        <div className='w-1/5'>
-                            <Button variant='destructive' className='w-full' onClick={handleDelete}>
-                                <span className='text-xs font-normal uppercase font-body'>Delete Task</span>
-                            </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <AlertDialog open={confirmStatusChangeOpen} onOpenChange={setConfirmStatusChangeOpen}>
+                <AlertDialogContent className='bg-card'>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to change the task status to {pendingStatusChange}? This action cannot
+                            be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className='flex flex-row justify-between w-full'>
+                        <div className='w-1/2'>
+                            <AlertDialogCancel className='w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700'>
+                                Cancel
+                            </AlertDialogCancel>
                         </div>
-                    </div>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                        <div className='w-1/2'>
+                            <AlertDialogAction
+                                onClick={confirmStatusChange}
+                                className='w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90'
+                            >
+                                Confirm
+                            </AlertDialogAction>
+                        </div>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                <AlertDialogContent className='bg-card'>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this task? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <div className='w-1/2'>
+                            <AlertDialogCancel className='w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700'>
+                                Cancel
+                            </AlertDialogCancel>
+                        </div>
+                        <div className='w-1/2'>
+                            <AlertDialogAction
+                                onClick={confirmDelete}
+                                className='w-full bg-destructive hover:bg-destructive/90 dark:bg-red-900/80 dark:hover:bg-red-900 dark:border-none'
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </div>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 }

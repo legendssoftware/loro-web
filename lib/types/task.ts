@@ -5,14 +5,14 @@ export enum TaskStatus {
     CANCELLED = 'CANCELLED',
     OVERDUE = 'OVERDUE',
     POSTPONED = 'POSTPONED',
-    MISSED = 'MISSED'
+    MISSED = 'MISSED',
 }
 
 export enum TaskPriority {
     LOW = 'LOW',
     MEDIUM = 'MEDIUM',
     HIGH = 'HIGH',
-    URGENT = 'URGENT'
+    URGENT = 'URGENT',
 }
 
 export enum RepetitionType {
@@ -20,7 +20,7 @@ export enum RepetitionType {
     DAILY = 'DAILY',
     WEEKLY = 'WEEKLY',
     MONTHLY = 'MONTHLY',
-    YEARLY = 'YEARLY'
+    YEARLY = 'YEARLY',
 }
 
 export enum TaskType {
@@ -35,7 +35,7 @@ export enum TaskType {
     REPORT = 'REPORT',
     QUOTATION = 'QUOTATION',
     VISIT = 'VISIT',
-    OTHER = 'OTHER'
+    OTHER = 'OTHER',
 }
 
 export interface StatusColorConfig {
@@ -104,8 +104,23 @@ export interface Task {
         name: string;
         email: string;
         avatarUrl?: string;
+        surname?: string;
+        phone?: string;
+        accessLevel?: string;
+        userref?: string;
+        photoURL?: string;
     };
-    assignees?: { uid: number }[];
+    assignees?: {
+        uid: number;
+        name: string;
+        email: string;
+        avatarUrl?: string;
+        surname?: string;
+        phone?: string;
+        accessLevel?: string;
+        userref?: string;
+        photoURL?: string;
+    }[];
     clients?: { uid: number }[];
     subtasks?: {
         uid: number;
@@ -116,10 +131,43 @@ export interface Task {
     organisation?: {
         uid: number;
         name: string;
+        address: {
+            city: string;
+            state: string;
+            street: string;
+            country: string;
+            postalCode: string;
+        };
+        email: string;
+        phone: string;
+        website: string;
+        logo: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        isDeleted: boolean;
+        ref: string;
     };
     branch?: {
         uid: number;
         name: string;
+        email: string;
+        phone: string;
+        contactPerson: string;
+        ref: string;
+        address: {
+            city: string;
+            state: string;
+            street: string;
+            suburb: string;
+            country: string;
+            postalCode: string;
+        };
+        website: string;
+        status: string;
+        isDeleted: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     };
 }
 
@@ -140,6 +188,9 @@ export interface TaskFilterParams {
     endDate?: Date;
     page?: number;
     limit?: number;
+    assigneeId?: number;
+    clientId?: number;
+    isOverdue?: boolean;
 }
 
 export interface TaskStats {

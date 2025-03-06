@@ -1,27 +1,27 @@
 'use client';
 
-import { LayoutDashboardIcon, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname } from 'next/navigation';
 import { SideDrawer } from './side-drawer';
-import { useAppStore } from '@/store/use-app-store';
-import { useAuthStore } from '@/store/auth-store';
 import { isAuthRoute } from '@/lib/utils';
-import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/auth-store';
+import { useAppStore } from '@/store/use-app-store';
+import { LayoutDashboardIcon, Power } from 'lucide-react';
+import { ThemeToggler } from '@/modules/navigation/theme.toggler';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function TopNav() {
     const pathname = usePathname();
     const { signOut, profileData } = useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
 
-    // Get user initials for avatar fallback
     const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU';
 
     const handleSignOut = async () => {
         try {
-            signOut(); // This is now synchronous
+            signOut();
+
             const toastId = toast.success('Session Ended', {
                 style: {
                     borderRadius: '5px',
@@ -40,7 +40,7 @@ export function TopNav() {
 
             await new Promise(resolve => setTimeout(resolve, 2000));
             toast.remove(toastId);
-            // Use window.location for a full page refresh to ensure clean state
+
             window.location.href = '/landing-page';
         } catch {
             toast.error('Failed to sign out', {
@@ -78,7 +78,7 @@ export function TopNav() {
                         >
                             <LayoutDashboardIcon strokeWidth={1.5} size={23} />
                         </Button>
-                        <span className='font-normal uppercase text-md font-body'>{profileData?.branch?.name}</span>
+                        <span className='text-xs font-normal uppercase font-body'>{profileData?.branch?.name}</span>
                     </div>
                     <div className='items-center hidden gap-4 md:flex'>
                         <Button

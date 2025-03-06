@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -19,7 +19,8 @@ import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
-const SignInPage = () => {
+// Sign in form component that uses useSearchParams
+const SignInForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -228,6 +229,27 @@ const SignInPage = () => {
                 </div>
             </PageTransition>
         </PublicOnlyRoute>
+    );
+};
+
+// Loading fallback for suspense
+const SignInFallback = () => {
+    return (
+        <div className='flex items-center justify-center min-h-screen p-4 bg-gray-900'>
+            <div className='flex flex-col items-center space-y-4'>
+                <Loader2 className='w-10 h-10 text-primary animate-spin' />
+                <p className='text-sm text-white'>Loading...</p>
+            </div>
+        </div>
+    );
+};
+
+// Main page component with Suspense boundary
+const SignInPage = () => {
+    return (
+        <Suspense fallback={<SignInFallback />}>
+            <SignInForm />
+        </Suspense>
     );
 };
 

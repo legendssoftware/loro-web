@@ -959,7 +959,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.PENDING)}
                                 title='Set as Pending'
                             >
-                                <CalendarClock stroke-width={1.2} className='text-yellow-600 w-7 h-7 dark:text-yellow-400' />
+                                <CalendarClock strokeWidth={1.2} className='text-yellow-600 w-7 h-7 dark:text-yellow-400' />
                             </Button>
                             <Button
                                 variant='outline'
@@ -968,7 +968,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.IN_PROGRESS)}
                                 title='Set as In Progress'
                             >
-                                <CalendarCog stroke-width={1.2} className='text-blue-600 w-7 h-7 dark:text-blue-400' />
+                                <CalendarCog strokeWidth={1.2} className='text-blue-600 w-7 h-7 dark:text-blue-400' />
                             </Button>
                             <Button
                                 variant='outline'
@@ -977,7 +977,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.COMPLETED)}
                                 title='Set as Completed'
                             >
-                                <CalendarCheck2 stroke-width={1.2} className='text-green-600 w-7 h-7 dark:text-green-400' />
+                                <CalendarCheck2 strokeWidth={1.2} className='text-green-600 w-7 h-7 dark:text-green-400' />
                             </Button>
                             <Button
                                 variant='outline'
@@ -986,7 +986,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.CANCELLED)}
                                 title='Set as Cancelled'
                             >
-                                <CalendarX2 stroke-width={1.2} className='text-gray-600 w-7 h-7 dark:text-gray-400' />
+                                <CalendarX2 strokeWidth={1.2} className='text-gray-600 w-7 h-7 dark:text-gray-400' />
                             </Button>
                             <Button
                                 variant='outline'
@@ -995,7 +995,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.POSTPONED)}
                                 title='Set as Postponed'
                             >
-                                <CalendarRange stroke-width={1.2} className='text-purple-600 w-7 h-7 dark:text-purple-400' />
+                                <CalendarRange strokeWidth={1.2} className='text-purple-600 w-7 h-7 dark:text-purple-400' />
                             </Button>
                             <Button
                                 variant='outline'
@@ -1004,7 +1004,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={() => handleStatusChange(TaskStatus.MISSED)}
                                 title='Set as Missed'
                             >
-                                <CalendarFold stroke-width={1.2} className='text-orange-600 w-7 h-7 dark:text-orange-400' />
+                                <CalendarFold strokeWidth={1.2} className='text-orange-600 w-7 h-7 dark:text-orange-400' />
                             </Button>
                             <Button
                                 variant='destructive'
@@ -1013,7 +1013,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 onClick={handleDelete}
                                 title='Delete Task'
                             >
-                                <Trash2 className='w-7 h-7' stroke-width={1.5} />
+                                <Trash2 className='w-7 h-7' strokeWidth={1.5} />
                             </Button>
                         </div>
                     </DialogFooter>

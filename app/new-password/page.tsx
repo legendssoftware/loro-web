@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -17,7 +17,8 @@ import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 type NewPasswordSchema = z.infer<typeof newPasswordSchema>;
 
-const NewPasswordPage = () => {
+// New password form component that uses useSearchParams
+const NewPasswordForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -225,6 +226,27 @@ const NewPasswordPage = () => {
                 </div>
             </div>
         </motion.div>
+    );
+};
+
+// Loading fallback for suspense
+const NewPasswordFallback = () => {
+    return (
+        <div className='flex items-center justify-center min-h-screen p-4 bg-gray-900'>
+            <div className='flex flex-col items-center space-y-4'>
+                <Loader2 className='w-10 h-10 text-primary animate-spin' />
+                <p className='text-sm text-white'>Loading...</p>
+            </div>
+        </div>
+    );
+};
+
+// Main page component with Suspense boundary
+const NewPasswordPage = () => {
+    return (
+        <Suspense fallback={<NewPasswordFallback />}>
+            <NewPasswordForm />
+        </Suspense>
     );
 };
 

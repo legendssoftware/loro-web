@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { newPasswordSchema } from '@/lib/schema/auth';
-import { useSetPasswordMutation, useResetPasswordMutation } from '@/store/use-auth-store';
 import { motion } from 'framer-motion';
 import { containerVariants } from '@/lib/utils/animations';
+import { useResetPasswordMutation, useSetPasswordMutation } from '@/hooks/use-auth-mutations';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 type NewPasswordSchema = z.infer<typeof newPasswordSchema>;
 
@@ -68,42 +69,14 @@ const NewPasswordPage = () => {
                 password: form.password.trim(),
             });
 
-            toast.success(response.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '🔒',
-            });
+            showSuccessToast(response.message, toast);
 
             // Wait for toast to finish
             await new Promise(resolve => setTimeout(resolve, 2000));
             router.push('/sign-in');
         } catch (error) {
             if (error instanceof Error) {
-                toast.error(error.message, {
-                    style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
-                    },
-                    duration: 5000,
-                    position: 'bottom-center',
-                    icon: '❌',
-                });
+                showErrorToast(error.message, toast);
             }
         }
     };

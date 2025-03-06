@@ -9,9 +9,11 @@ import { Loader2 } from 'lucide-react';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { forgotPasswordSchema } from '@/lib/schema/auth';
-import { useForgotPasswordMutation } from '@/store/use-auth-store';
 import { containerVariants } from '@/lib/utils/animations';
 import { motion } from 'framer-motion';
+import { useForgotPasswordMutation } from '@/hooks/use-auth-mutations';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+
 type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPasswordPage = () => {
@@ -46,38 +48,10 @@ const ForgotPasswordPage = () => {
                 email: form.email.trim(),
             });
 
-            toast.success(response.message, {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 5000,
-                position: 'bottom-center',
-                icon: '📧',
-            });
+            showSuccessToast(response.message, toast);
         } catch (error) {
             if (error instanceof Error) {
-                toast.error(error.message, {
-                    style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
-                    },
-                    duration: 5000,
-                    position: 'bottom-center',
-                    icon: '❌',
-                });
+                showErrorToast(error.message, toast);
             }
         }
     };

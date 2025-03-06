@@ -26,6 +26,15 @@ import {
     Building2,
     Plus,
     CheckCheck,
+    Trash,
+    CalendarCheck2,
+    CalendarX2,
+    CalendarSync,
+    CalendarClock,
+    CalendarCog,
+    CalendarRange,
+    CalendarFold,
+    Trash2,
 } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
@@ -122,25 +131,22 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     };
 
     const getStatusButtonVariant = (status: TaskStatus) => {
-        if (status === currentStatus) {
-            switch (status) {
-                case TaskStatus.PENDING:
-                    return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800/50';
-                case TaskStatus.IN_PROGRESS:
-                    return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50';
-                case TaskStatus.COMPLETED:
-                    return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-800/50';
-                case TaskStatus.CANCELLED:
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/60';
-                case TaskStatus.POSTPONED:
-                    return 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50';
-                case TaskStatus.MISSED:
-                    return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:hover:bg-orange-800/50';
-                default:
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/60';
-            }
+        switch (status) {
+            case TaskStatus.PENDING:
+                return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${currentStatus === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
+            case TaskStatus.IN_PROGRESS:
+                return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${currentStatus === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
+            case TaskStatus.COMPLETED:
+                return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${currentStatus === status ? 'bg-green-100 dark:bg-green-900/30' : ''}`;
+            case TaskStatus.CANCELLED:
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
+            case TaskStatus.POSTPONED:
+                return `text-purple-800 border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30 ${currentStatus === status ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`;
+            case TaskStatus.MISSED:
+                return `text-orange-800 border-orange-200 hover:bg-orange-50 hover:border-orange-300 dark:text-orange-300 dark:hover:bg-orange-900/20 dark:border-orange-900/30 ${currentStatus === status ? 'bg-orange-100 dark:bg-orange-900/30' : ''}`;
+            default:
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
         }
-        return 'bg-white hover:bg-gray-100 dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700';
     };
 
     const getPriorityBadgeColor = () => {
@@ -907,9 +913,14 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 )}
                             </div>
                         </div>
-                        <Button variant='ghost' size='icon' className='w-8 h-8' onClick={onClose}>
-                            <X className='w-4 h-4' />
-                        </Button>
+                        <div className='flex items-center gap-2'>
+                            <Button variant='ghost' size='icon' className='w-9 h-9' onClick={onClose}>
+                                <X className='w-5 h-5' />
+                            </Button>
+                            <Button variant='ghost' size='icon' className='w-9 h-9'>
+                                <Edit className='w-5 h-5' />
+                            </Button>
+                        </div>
                     </DialogHeader>
                     <div className='mt-4'>
                         <div className='flex items-center mb-6 overflow-x-auto border-b border-border/10'>
@@ -936,62 +947,73 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                         </div>
                         {renderTabContent()}
                     </div>
-                    <DialogFooter className='flex flex-wrap gap-2 pt-4 mt-6 border-t dark:border-gray-700'>
-                        <div className='grid w-full grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7'>
+                    <DialogFooter className='flex flex-col flex-wrap gap-2 pt-4 mt-6 border-t dark:border-gray-700'>
+                        <div className='flex flex-col items-center justify-center w-full'>
+                            <p className='text-xs font-thin uppercase font-body'>Manage this task</p>
+                        </div>
+                        <div className='flex flex-wrap justify-center w-full gap-3'>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.PENDING)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.PENDING)}`}
                                 onClick={() => handleStatusChange(TaskStatus.PENDING)}
+                                title='Set as Pending'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Pending</span>
+                                <CalendarClock stroke-width={1.2} className='text-yellow-600 w-7 h-7 dark:text-yellow-400' />
                             </Button>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.IN_PROGRESS)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.IN_PROGRESS)}`}
                                 onClick={() => handleStatusChange(TaskStatus.IN_PROGRESS)}
+                                title='Set as In Progress'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>In Progress</span>
+                                <CalendarCog stroke-width={1.2} className='text-blue-600 w-7 h-7 dark:text-blue-400' />
                             </Button>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.COMPLETED)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.COMPLETED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.COMPLETED)}
+                                title='Set as Completed'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Completed</span>
+                                <CalendarCheck2 stroke-width={1.2} className='text-green-600 w-7 h-7 dark:text-green-400' />
                             </Button>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.CANCELLED)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.CANCELLED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.CANCELLED)}
+                                title='Set as Cancelled'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Cancelled</span>
+                                <CalendarX2 stroke-width={1.2} className='text-gray-600 w-7 h-7 dark:text-gray-400' />
                             </Button>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.POSTPONED)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.POSTPONED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.POSTPONED)}
+                                title='Set as Postponed'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Postponed</span>
+                                <CalendarRange stroke-width={1.2} className='text-purple-600 w-7 h-7 dark:text-purple-400' />
                             </Button>
                             <Button
                                 variant='outline'
-                                size='sm'
-                                className={`w-full ${getStatusButtonVariant(TaskStatus.MISSED)}`}
+                                size='icon'
+                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.MISSED)}`}
                                 onClick={() => handleStatusChange(TaskStatus.MISSED)}
+                                title='Set as Missed'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Missed</span>
+                                <CalendarFold stroke-width={1.2} className='text-orange-600 w-7 h-7 dark:text-orange-400' />
                             </Button>
                             <Button
                                 variant='destructive'
-                                className='w-full dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none'
+                                size='icon'
+                                className='rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none'
                                 onClick={handleDelete}
+                                title='Delete Task'
                             >
-                                <span className='text-[10px] font-thin uppercase font-body'>Delete Task</span>
+                                <Trash2 className='w-7 h-7' stroke-width={1.5} />
                             </Button>
                         </div>
                     </DialogFooter>

@@ -39,7 +39,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,7 +56,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { EditTaskForm } from './edit-task-form';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -1034,15 +1039,13 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
 
             {/* Edit Task Modal */}
             <Dialog open={isEditModalOpen} onOpenChange={() => setIsEditModalOpen(false)}>
-                <DialogContent className='max-w-lg max-h-[90vh] overflow-y-auto bg-card'>
+                <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto bg-card'>
                     <DialogHeader>
                         <DialogTitle className='text-xl font-semibold uppercase font-body'>Edit Task</DialogTitle>
                     </DialogHeader>
-                    <EditTaskForm
-                        task={task}
-                        onClose={() => setIsEditModalOpen(false)}
-                        onSubmit={handleEditFormSubmit}
-                    />
+                    <div className="flex items-center justify-center h-64">
+                        <h2 className="text-xs font-thin uppercase font-body">Coming Soon</h2>
+                    </div>
                 </DialogContent>
             </Dialog>
 

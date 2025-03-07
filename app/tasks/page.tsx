@@ -9,8 +9,7 @@ import { useRouter } from 'next/navigation';
 import { TasksTabGroup } from '@/modules/tasks/components/tasks-tab-group';
 import { TasksTabContent } from '@/modules/tasks/components/tasks-tab-content';
 import { TasksHeader } from '@/modules/tasks/components/tasks-header';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CreateTaskForm } from '@/modules/tasks/components/create-task-form';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 // Tab configuration
 const tabs = [
@@ -20,21 +19,23 @@ const tabs = [
 ];
 
 // Create Task Modal Component
-function CreateTaskModal({ isOpen, onClose, onCreateTask }: { isOpen: boolean; onClose: () => void; onCreateTask?: (taskData: any) => void }) {
-    const handleSubmit = (taskData: any) => {
-        if (onCreateTask) {
-            onCreateTask(taskData);
-        }
-        onClose();
-    };
-
+function CreateTaskModal({
+    isOpen,
+    onClose,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onCreateTask?: (taskData: any) => void;
+}) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className='max-w-lg max-h-[90vh] overflow-y-auto bg-card'>
-                <DialogHeader>
-                    <DialogTitle className='text-xl font-semibold uppercase font-body'>Create Task</DialogTitle>
-                </DialogHeader>
-                <CreateTaskForm onClose={onClose} onSubmit={handleSubmit} />
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogTitle className="sr-only">Create New Task</DialogTitle>
+                <div className="flex items-center justify-center h-64">
+                    <h2 className="text-xs font-thin uppercase font-body">
+                        Coming Soon
+                    </h2>
+                </div>
             </DialogContent>
         </Dialog>
     );
@@ -166,14 +167,14 @@ export default function TasksPage() {
                         />
                     </div>
                 </div>
-
-                {/* Create Task Modal */}
-                <CreateTaskModal
-                    isOpen={isCreateDialogOpen}
-                    onClose={() => setIsCreateDialogOpen(false)}
-                    onCreateTask={handleSubmitCreateTask}
-                />
             </div>
+
+            {/* Render the CreateTaskModal */}
+            <CreateTaskModal
+                isOpen={isCreateDialogOpen}
+                onClose={() => setIsCreateDialogOpen(false)}
+                onCreateTask={handleSubmitCreateTask}
+            />
         </PageTransition>
     );
 }

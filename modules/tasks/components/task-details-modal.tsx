@@ -26,10 +26,8 @@ import {
     Building2,
     Plus,
     CheckCheck,
-    Trash,
     CalendarCheck2,
     CalendarX2,
-    CalendarSync,
     CalendarClock,
     CalendarCog,
     CalendarRange,
@@ -52,6 +50,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { EditTaskForm } from './edit-task-form';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -98,6 +97,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
     const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] = useState<boolean>(false);
     const [pendingStatusChange, setPendingStatusChange] = useState<TaskStatus | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -885,6 +885,18 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
         }
     };
 
+    const handleEditFormSubmit = (taskId: number, taskData: Partial<Task>) => {
+        // Update the task status if it changed
+        if (taskData.status && taskData.status !== task.status) {
+            onUpdateStatus(taskId, taskData.status);
+        }
+
+        // Close the edit modal
+        setIsEditModalOpen(false);
+
+        // You could add more functionality here to handle other field updates
+    };
+
     return (
         <>
             <Dialog open={isOpen} onOpenChange={() => onClose()}>
@@ -917,7 +929,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             <Button variant='ghost' size='icon' className='w-9 h-9' onClick={onClose}>
                                 <X className='w-5 h-5' />
                             </Button>
-                            <Button variant='ghost' size='icon' className='w-9 h-9'>
+                            <Button variant='ghost' size='icon' className='w-9 h-9' onClick={() => setIsEditModalOpen(true)}>
                                 <Edit className='w-5 h-5' />
                             </Button>
                         </div>
@@ -947,7 +959,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                         </div>
                         {renderTabContent()}
                     </div>
-                    <DialogFooter className='flex flex-col flex-wrap gap-2 pt-4 mt-6 border-t dark:border-gray-700'>
+                    <DialogFooter className='flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700'>
                         <div className='flex flex-col items-center justify-center w-full'>
                             <p className='text-xs font-thin uppercase font-body'>Manage this task</p>
                         </div>
@@ -1019,6 +1031,22 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Edit Task Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={() => setIsEditModalOpen(false)}>
+                <DialogContent className='max-w-lg max-h-[90vh] overflow-y-auto bg-card'>
+                    <DialogHeader>
+                        <DialogTitle className='text-xl font-semibold uppercase font-body'>Edit Task</DialogTitle>
+                    </DialogHeader>
+                    <EditTaskForm
+                        task={task}
+                        onClose={() => setIsEditModalOpen(false)}
+                        onSubmit={handleEditFormSubmit}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Status Change Confirmation Dialog */}
             <AlertDialog open={confirmStatusChangeOpen} onOpenChange={setConfirmStatusChangeOpen}>
                 <AlertDialogContent className='bg-card'>
                     <AlertDialogHeader>
@@ -1045,6 +1073,8 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Delete Confirmation Dialog */}
             <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
                 <AlertDialogContent className='bg-card'>
                     <AlertDialogHeader>

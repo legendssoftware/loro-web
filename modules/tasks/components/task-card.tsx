@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Task, TaskStatus } from '@/lib/types/task';
 import { AlertCircle, Calendar, Clock, CheckCircle2, ChartSpline } from 'lucide-react';
-import { useState, useCallback, useEffect, useRef, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -95,7 +95,7 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCa
     return (
         <>
             <div
-                className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
+                className='p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear'
                 style={cardStyle}
                 onClick={openModal}
             >

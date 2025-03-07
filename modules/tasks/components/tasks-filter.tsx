@@ -72,7 +72,6 @@ export function TasksFilter({ onApplyFilters, onClearFilters, tasks = [] }: Task
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
     const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset | undefined>(undefined);
-    const [showCustomDatePicker, setShowCustomDatePicker] = useState<boolean>(false);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     const handleApplyFilters = useCallback(() => {
@@ -139,35 +138,29 @@ export function TasksFilter({ onApplyFilters, onClearFilters, tasks = [] }: Task
                 case DateRangePreset.TODAY:
                     setStartDate(today);
                     setEndDate(today);
-                    setShowCustomDatePicker(false);
                     break;
                 case DateRangePreset.YESTERDAY:
                     const yesterday = subDays(today, 1);
                     setStartDate(yesterday);
                     setEndDate(yesterday);
-                    setShowCustomDatePicker(false);
                     break;
                 case DateRangePreset.LAST_WEEK:
                     const lastWeekStart = startOfWeek(subDays(today, 7));
                     const lastWeekEnd = endOfWeek(subDays(today, 7));
                     setStartDate(lastWeekStart);
                     setEndDate(lastWeekEnd);
-                    setShowCustomDatePicker(false);
                     break;
                 case DateRangePreset.LAST_MONTH:
                     const lastMonthStart = startOfMonth(subDays(today, 30));
                     const lastMonthEnd = endOfMonth(subDays(today, 30));
                     setStartDate(lastMonthStart);
                     setEndDate(lastMonthEnd);
-                    setShowCustomDatePicker(false);
                     break;
                 case DateRangePreset.CUSTOM:
-                    setShowCustomDatePicker(true);
                     break;
                 default:
                     setStartDate(undefined);
                     setEndDate(undefined);
-                    setShowCustomDatePicker(false);
             }
 
             setDateRangePreset(preset);

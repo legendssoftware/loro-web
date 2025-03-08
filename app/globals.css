@@ -1,0 +1,16 @@
+/* Adding the claim card animation to match the task card animation */
+@keyframes claim-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-claim-appear {
+  animation: claim-appear 0.3s ease-out forwards;
+  animation-delay: var(--claim-delay, 0ms);
+}

@@ -38,7 +38,7 @@ import {
     Clock,
     CalendarX2,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, memo } from 'react';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React from 'react';
@@ -63,7 +63,7 @@ interface ClaimsFilterProps {
     claims?: Claim[];
 }
 
-export function ClaimsFilter({ onApplyFilters, onClearFilters, claims = [] }: ClaimsFilterProps) {
+function ClaimsFilterComponent({ onApplyFilters, onClearFilters, claims = [] }: ClaimsFilterProps) {
     const [search, setSearch] = useState<string>('');
     const [status, setStatus] = useState<ClaimStatus | undefined>(undefined);
     const [category, setCategory] = useState<ClaimCategory | undefined>(undefined);
@@ -598,3 +598,5 @@ export function ClaimsFilter({ onApplyFilters, onClearFilters, claims = [] }: Cl
         </div>
     );
 }
+
+export const ClaimsFilter = memo(ClaimsFilterComponent);

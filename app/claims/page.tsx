@@ -128,7 +128,7 @@ export default function ClaimsPage() {
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {activeTab === 'claims' && (
-                        <div className="flex items-center p-4 border-b border-border">
+                        <div className="flex items-center p-4">
                             <ClaimsFilter
                                 onApplyFilters={handleApplyFilters}
                                 onClearFilters={handleClearFilters}
@@ -144,7 +144,7 @@ export default function ClaimsPage() {
                             </Button>
                         </div>
                     )}
-                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
+                    <div className="flex items-center justify-start flex-1 px-2 overflow-hidden">
                         <ClaimsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}

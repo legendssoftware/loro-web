@@ -35,9 +35,9 @@ function ClaimsTabGroupComponent({ tabs, activeTab, onTabChange }: ClaimsTabGrou
                         }`}
                         onClick={() => handleTabChange(tab.id)}
                     >
-                        <span className='text-sm font-normal uppercase font-body'>{tab.label}</span>
+                        <span className='text-xs font-thin uppercase font-body'>{tab?.label}</span>
                     </div>
-                    {activeTab === tab.id && (
+                    {activeTab === tab?.id && (
                         <div className='absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary' />
                     )}
                 </div>

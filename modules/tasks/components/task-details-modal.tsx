@@ -95,13 +95,21 @@ interface ExtendedTask extends Task {
     }>;
 }
 
-export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDelete }: TaskDetailsModalProps) {
+export function TaskDetailsModal({
+    task,
+    isOpen,
+    onClose,
+    onUpdateStatus,
+    onDelete,
+}: TaskDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<TaskStatus>(task.status);
     const [activeTab, setActiveTab] = useState<string>('details');
     const extendedTask = task as ExtendedTask;
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
-    const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] = useState<boolean>(false);
-    const [pendingStatusChange, setPendingStatusChange] = useState<TaskStatus | null>(null);
+    const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] =
+        useState<boolean>(false);
+    const [pendingStatusChange, setPendingStatusChange] =
+        useState<TaskStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
     const formatDate = (date?: Date) => {
@@ -172,25 +180,25 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     const getTaskTypeIcon = () => {
         switch (task.taskType) {
             case TaskType.CALL:
-                return <Phone className='w-4 h-4 mr-2' />;
+                return <Phone className="w-4 h-4 mr-2" />;
             case TaskType.EMAIL:
-                return <Mail className='w-4 h-4 mr-2' />;
+                return <Mail className="w-4 h-4 mr-2" />;
             case TaskType.IN_PERSON_MEETING:
-                return <Users className='w-4 h-4 mr-2' />;
+                return <Users className="w-4 h-4 mr-2" />;
             case TaskType.VIRTUAL_MEETING:
-                return <Users className='w-4 h-4 mr-2' />;
+                return <Users className="w-4 h-4 mr-2" />;
             case TaskType.FOLLOW_UP:
-                return <MessageSquare className='w-4 h-4 mr-2' />;
+                return <MessageSquare className="w-4 h-4 mr-2" />;
             case TaskType.PROPOSAL:
-                return <FileText className='w-4 h-4 mr-2' />;
+                return <FileText className="w-4 h-4 mr-2" />;
             case TaskType.REPORT:
-                return <FileText className='w-4 h-4 mr-2' />;
+                return <FileText className="w-4 h-4 mr-2" />;
             case TaskType.QUOTATION:
-                return <CreditCard className='w-4 h-4 mr-2' />;
+                return <CreditCard className="w-4 h-4 mr-2" />;
             case TaskType.VISIT:
-                return <MapPin className='w-4 h-4 mr-2' />;
+                return <MapPin className="w-4 h-4 mr-2" />;
             default:
-                return <Edit className='w-4 h-4 mr-2' />;
+                return <Edit className="w-4 h-4 mr-2" />;
         }
     };
 
@@ -250,37 +258,52 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
         switch (activeTab) {
             case 'details':
                 return (
-                    <div className='space-y-6'>
-                        <div className='p-4 rounded-lg bg-card'>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Description</h3>
-                            <p className='text-xs font-thin font-body'>
+                    <div className="space-y-6">
+                        <div className="p-4 rounded-lg bg-card">
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Description
+                            </h3>
+                            <p className="text-xs font-thin font-body">
                                 {task.description || 'No description provided'}
                             </p>
                         </div>
 
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Stage</h3>
-                            <div className='flex flex-col gap-1 mb-2'>
-                                <div className='flex items-center justify-between mb-1 text-xs'>
-                                    <div className='flex items-center'>
-                                        <span className='text-[10px] font-thin uppercase font-body'>Progress</span>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Stage
+                            </h3>
+                            <div className="flex flex-col gap-1 mb-2">
+                                <div className="flex items-center justify-between mb-1 text-xs">
+                                    <div className="flex items-center">
+                                        <span className="text-[10px] font-thin uppercase font-body">
+                                            Progress
+                                        </span>
                                     </div>
-                                    <span className='text-sm font-medium uppercase font-body'>{task?.progress}%</span>
+                                    <span className="text-sm font-medium uppercase font-body">
+                                        {task?.progress}%
+                                    </span>
                                 </div>
-                                <Progress value={task?.progress} className='h-2' />
+                                <Progress
+                                    value={task?.progress}
+                                    className="h-2"
+                                />
                             </div>
                         </div>
 
-                        <div className='grid grid-cols-2 gap-4'>
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Priority</h3>
-                                <div className='flex items-center'>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Priority
+                                </h3>
+                                <div className="flex items-center">
                                     <Badge
-                                        variant='outline'
+                                        variant="outline"
                                         className={`text-[10px] px-4 py-1 border-0 ${getPriorityBadgeColor()}`}
                                     >
-                                        <AlertCircle className={`w-5 h-5 mr-1`} />
-                                        <span className='text-xs font-normal uppercase font-body'>
+                                        <AlertCircle
+                                            className={`w-5 h-5 mr-1`}
+                                        />
+                                        <span className="text-xs font-normal uppercase font-body">
                                             {task?.priority}
                                         </span>
                                     </Badge>
@@ -288,11 +311,16 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             </div>
 
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Type</h3>
-                                <div className='flex items-center'>
-                                    <Badge variant='outline' className='px-4 py-1 text-xs font-normal border'>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Type
+                                </h3>
+                                <div className="flex items-center">
+                                    <Badge
+                                        variant="outline"
+                                        className="px-4 py-1 text-xs font-normal border"
+                                    >
                                         {getTaskTypeIcon()}
-                                        <span className='text-xs font-normal uppercase font-body'>
+                                        <span className="text-xs font-normal uppercase font-body">
                                             {task?.taskType?.replace(/_/g, ' ')}
                                         </span>
                                     </Badge>
@@ -300,120 +328,153 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             </div>
 
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Repetition</h3>
-                                <div className='flex items-center'>
-                                    <Repeat className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                    <span className='text-xs font-thin uppercase font-body'>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Repetition
+                                </h3>
+                                <div className="flex items-center">
+                                    <Repeat className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                    <span className="text-xs font-thin uppercase font-body">
                                         {task?.repetitionType}
                                     </span>
                                 </div>
                             </div>
 
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Category</h3>
-                                <div className='flex items-center'>
-                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                    <span className='text-xs font-thin uppercase font-body'>
-                                        {task?.targetCategory || 'Not categorized'}
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Category
+                                </h3>
+                                <div className="flex items-center">
+                                    <Tag className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                    <span className="text-xs font-thin uppercase font-body">
+                                        {task?.targetCategory ||
+                                            'Not categorized'}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Timeline</h3>
-                            <div className='p-4 space-y-3 rounded-lg bg-card'>
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center'>
-                                        <Clock className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                        <span className='text-[10px] font-thin uppercase font-body'>Created</span>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Timeline
+                            </h3>
+                            <div className="p-4 space-y-3 rounded-lg bg-card">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <Clock className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <span className="text-[10px] font-thin uppercase font-body">
+                                            Created
+                                        </span>
                                     </div>
-                                    <span className='text-xs font-thin font-body'>
-                                        {formatDate(task?.createdAt)} {formatTime(task?.createdAt)}
+                                    <span className="text-xs font-thin font-body">
+                                        {formatDate(task?.createdAt)}{' '}
+                                        {formatTime(task?.createdAt)}
                                     </span>
                                 </div>
 
                                 {task.deadline && (
-                                    <div className='flex items-center justify-between'>
-                                        <div className='flex items-center'>
-                                            <Calendar className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                            <span className='text-[10px] font-thin uppercase font-body'>Deadline</span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <Calendar className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                            <span className="text-[10px] font-thin uppercase font-body">
+                                                Deadline
+                                            </span>
                                         </div>
-                                        <span className='text-xs font-thin font-body'>
-                                            {formatDate(task?.deadline)} {formatTime(task?.deadline)}
+                                        <span className="text-xs font-thin font-body">
+                                            {formatDate(task?.deadline)}{' '}
+                                            {formatTime(task?.deadline)}
                                         </span>
                                     </div>
                                 )}
 
                                 {task?.completionDate && (
-                                    <div className='flex items-center justify-between'>
-                                        <div className='flex items-center'>
-                                            <CheckCircle2 className='w-4 h-4 mr-2 text-green-500' />
-                                            <span className='text-xs font-thin uppercase font-body'>Completed</span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                Completed
+                                            </span>
                                         </div>
-                                        <span className='text-xs font-thin font-body'>
-                                            {formatDate(task?.completionDate)} {formatTime(task?.completionDate)}
+                                        <span className="text-xs font-thin font-body">
+                                            {formatDate(task?.completionDate)}{' '}
+                                            {formatTime(task?.completionDate)}
                                         </span>
                                     </div>
                                 )}
 
                                 {task?.repetitionDeadline && (
-                                    <div className='flex items-center justify-between'>
-                                        <div className='flex items-center'>
-                                            <Repeat className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                            <span className='text-xs font-thin uppercase font-body'>Repeats Until</span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <Repeat className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                Repeats Until
+                                            </span>
                                         </div>
-                                        <span className='text-xs font-thin font-body'>
-                                            {formatDate(task?.repetitionDeadline)}
+                                        <span className="text-xs font-thin font-body">
+                                            {formatDate(
+                                                task?.repetitionDeadline,
+                                            )}
                                         </span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {extendedTask?.routes && extendedTask?.routes?.length > 0 && (
-                            <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Routes</h3>
-                                <div className='p-4 space-y-2 rounded-lg bg-card'>
-                                    {extendedTask.routes.map((route, index) => (
-                                        <div key={index} className='flex items-center p-2 border bg-card'>
-                                            <Map className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                            <span className='text-xs font-thin font-body'>
-                                                {route?.name || `Route #${route?.uid || index + 1}`}
-                                            </span>
-                                        </div>
-                                    ))}
+                        {extendedTask?.routes &&
+                            extendedTask?.routes?.length > 0 && (
+                                <div>
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Routes
+                                    </h3>
+                                    <div className="p-4 space-y-2 rounded-lg bg-card">
+                                        {extendedTask.routes.map(
+                                            (route, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center p-2 border bg-card"
+                                                >
+                                                    <Map className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {route?.name ||
+                                                            `Route #${route?.uid || index + 1}`}
+                                                    </span>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
                         {task?.subtasks && task?.subtasks?.length > 0 && (
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Subtasks</h3>
-                                <div className='p-4 space-y-2 rounded-lg bg-card'>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Subtasks
+                                </h3>
+                                <div className="p-4 space-y-2 rounded-lg bg-card">
                                     {task?.subtasks
-                                        ?.filter(st => !st.isDeleted)
-                                        .map(subtask => (
+                                        ?.filter((st) => !st.isDeleted)
+                                        .map((subtask) => (
                                             <div
                                                 key={subtask?.uid}
-                                                className='flex items-center justify-between p-2 border bg-card'
+                                                className="flex items-center justify-between p-2 border bg-card"
                                             >
-                                                <div className='flex items-center'>
+                                                <div className="flex items-center">
                                                     <div
                                                         className={`w-2 h-2 rounded-full mr-2 ${
-                                                            subtask.status === 'COMPLETED'
+                                                            subtask.status ===
+                                                            'COMPLETED'
                                                                 ? 'bg-green-500'
                                                                 : 'bg-yellow-500'
                                                         }`}
                                                     ></div>
-                                                    <span className='text-xs font-thin font-body'>
+                                                    <span className="text-xs font-thin font-body">
                                                         {subtask?.title}
                                                     </span>
                                                 </div>
                                                 <Badge
-                                                    variant='outline'
+                                                    variant="outline"
                                                     className={`text-[10px] px-2 py-0.5 border-0 ${
-                                                        subtask.status === 'COMPLETED'
+                                                        subtask.status ===
+                                                        'COMPLETED'
                                                             ? 'bg-green-100 text-green-800'
                                                             : 'bg-yellow-100 text-yellow-800'
                                                     }`}
@@ -429,48 +490,70 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                 );
             case 'people':
                 return (
-                    <div className='space-y-6'>
+                    <div className="space-y-6">
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Assignees</h3>
-                            <div className='p-4 rounded-lg bg-card'>
-                                {extendedTask?.assignees && extendedTask?.assignees?.length > 0 ? (
-                                    <div className='space-y-2'>
-                                        {extendedTask?.assignees?.map((assignee, index) => (
-                                            <div key={index} className='flex items-center p-2 border bg-card'>
-                                                <Avatar className='w-12 h-12 mr-3 border border-primary'>
-                                                    {assignee?.photoURL ? (
-                                                        <AvatarImage
-                                                            src={assignee?.photoURL}
-                                                            alt={assignee?.name || ''}
-                                                        />
-                                                    ) : (
-                                                        <AvatarFallback className='text-xs font-normal uppercase bg-primary/10 text-primary font-body'>
-                                                            {assignee?.name && assignee?.surname
-                                                                ? `${assignee?.name[0]}${assignee?.surname[0]}`
-                                                                : `U${assignee?.uid || index + 1}`}
-                                                        </AvatarFallback>
-                                                    )}
-                                                </Avatar>
-                                                <div className='flex flex-col'>
-                                                    <p className='text-xs font-medium uppercase font-body'>
-                                                        {assignee?.name} {assignee?.surname}
-                                                    </p>
-                                                    <div className='flex flex-col space-y-1 text-xs text-card-foreground/60'>
-                                                        {assignee?.email && assignee?.phone && (
-                                                            <div className='flex items-center'>
-                                                                <Mail className='w-4 h-4 mr-1' />
-                                                                <span className='text-xs font-thin font-body'>
-                                                                    {assignee?.email} - {assignee?.phone}
-                                                                </span>
-                                                            </div>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Assignees
+                            </h3>
+                            <div className="p-4 rounded-lg bg-card">
+                                {extendedTask?.assignees &&
+                                extendedTask?.assignees?.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {extendedTask?.assignees?.map(
+                                            (assignee, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center p-2 border bg-card"
+                                                >
+                                                    <Avatar className="w-12 h-12 mr-3 border border-primary">
+                                                        {assignee?.photoURL ? (
+                                                            <AvatarImage
+                                                                src={
+                                                                    assignee?.photoURL
+                                                                }
+                                                                alt={
+                                                                    assignee?.name ||
+                                                                    ''
+                                                                }
+                                                            />
+                                                        ) : (
+                                                            <AvatarFallback className="text-xs font-normal uppercase bg-primary/10 text-primary font-body">
+                                                                {assignee?.name &&
+                                                                assignee?.surname
+                                                                    ? `${assignee?.name[0]}${assignee?.surname[0]}`
+                                                                    : `U${assignee?.uid || index + 1}`}
+                                                            </AvatarFallback>
                                                         )}
+                                                    </Avatar>
+                                                    <div className="flex flex-col">
+                                                        <p className="text-xs font-medium uppercase font-body">
+                                                            {assignee?.name}{' '}
+                                                            {assignee?.surname}
+                                                        </p>
+                                                        <div className="flex flex-col space-y-1 text-xs text-card-foreground/60">
+                                                            {assignee?.email &&
+                                                                assignee?.phone && (
+                                                                    <div className="flex items-center">
+                                                                        <Mail className="w-4 h-4 mr-1" />
+                                                                        <span className="text-xs font-thin font-body">
+                                                                            {
+                                                                                assignee?.email
+                                                                            }{' '}
+                                                                            -{' '}
+                                                                            {
+                                                                                assignee?.phone
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ),
+                                        )}
                                     </div>
                                 ) : (
-                                    <p className='text-xs italic uppercase text-card-f6reground/50 font-body'>
+                                    <p className="text-xs italic uppercase text-card-f6reground/50 font-body">
                                         No assignees for this task
                                     </p>
                                 )}
@@ -478,91 +561,121 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                         </div>
 
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Clients</h3>
-                            <div className='p-4 rounded-lg bg-card'>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Clients
+                            </h3>
+                            <div className="p-4 rounded-lg bg-card">
                                 {task.clients && task.clients.length > 0 ? (
-                                    <div className='space-y-2'>
-                                        {task.clients.map((client: any, index) => (
-                                            <div
-                                                key={index}
-                                                className='flex flex-col justify-start gap-1 p-2 border bg-card'
-                                            >
-                                                <div className='flex items-center mb-2'>
-                                                    <Avatar className='w-12 h-12 mr-3 border border-primary'>
-                                                        {client?.logo ? (
-                                                            <AvatarImage src={client?.logo} alt={client?.name} />
-                                                        ) : (
-                                                            <AvatarFallback className='text-xs text-blue-800 bg-blue-100'>
-                                                                {client?.name?.slice(0, 2).toUpperCase() ||
-                                                                    `C${client?.uid || index + 1}`}
-                                                            </AvatarFallback>
+                                    <div className="space-y-2">
+                                        {task.clients.map(
+                                            (client: any, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-col justify-start gap-1 p-2 border bg-card"
+                                                >
+                                                    <div className="flex items-center mb-2">
+                                                        <Avatar className="w-12 h-12 mr-3 border border-primary">
+                                                            {client?.logo ? (
+                                                                <AvatarImage
+                                                                    src={
+                                                                        client?.logo
+                                                                    }
+                                                                    alt={
+                                                                        client?.name
+                                                                    }
+                                                                />
+                                                            ) : (
+                                                                <AvatarFallback className="text-xs text-blue-800 bg-blue-100">
+                                                                    {client?.name
+                                                                        ?.slice(
+                                                                            0,
+                                                                            2,
+                                                                        )
+                                                                        .toUpperCase() ||
+                                                                        `C${client?.uid || index + 1}`}
+                                                                </AvatarFallback>
+                                                            )}
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="text-sm font-medium uppercase font-body">
+                                                                {client?.name}
+                                                            </p>
+                                                            <p className="text-xs font-normal text-card-foreground/60 font-body">
+                                                                {
+                                                                    client?.category
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
+                                                        {client?.contactPerson && (
+                                                            <div className="flex items-center text-xs">
+                                                                <User className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {
+                                                                        client?.contactPerson
+                                                                    }
+                                                                </span>
+                                                            </div>
                                                         )}
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className='text-sm font-medium uppercase font-body'>
-                                                            {client?.name}
-                                                        </p>
-                                                        <p className='text-xs font-normal text-card-foreground/60 font-body'>
-                                                            {client?.category}
-                                                        </p>
+                                                        {client?.email && (
+                                                            <div className="flex items-center text-xs">
+                                                                <Mail className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {
+                                                                        client?.email
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {client?.phone && (
+                                                            <div className="flex items-center text-xs">
+                                                                <Phone className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {
+                                                                        client?.phone
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {client?.alternativePhone && (
+                                                            <div className="flex items-center text-xs">
+                                                                <Phone className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {
+                                                                        client?.alternativePhone
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {client?.website && (
+                                                            <div className="flex items-center text-xs">
+                                                                <Globe className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {
+                                                                        client?.website
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {client?.address && (
+                                                            <div className="flex items-start col-span-2 text-xs">
+                                                                <MapPin className="w-4 h-4 mr-1 mt-0.5 text-card-foreground/60" />
+                                                                <span className="text-xs font-thin font-body">
+                                                                    {formatAddress(
+                                                                        client?.address,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-
-                                                <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
-                                                    {client?.contactPerson && (
-                                                        <div className='flex items-center text-xs'>
-                                                            <User className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {client?.contactPerson}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {client?.email && (
-                                                        <div className='flex items-center text-xs'>
-                                                            <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {client?.email}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {client?.phone && (
-                                                        <div className='flex items-center text-xs'>
-                                                            <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {client?.phone}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {client?.alternativePhone && (
-                                                        <div className='flex items-center text-xs'>
-                                                            <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {client?.alternativePhone}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {client?.website && (
-                                                        <div className='flex items-center text-xs'>
-                                                            <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {client?.website}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {client?.address && (
-                                                        <div className='flex items-start col-span-2 text-xs'>
-                                                            <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
-                                                            <span className='text-xs font-thin font-body'>
-                                                                {formatAddress(client?.address)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ),
+                                        )}
                                     </div>
                                 ) : (
-                                    <p className='text-xs italic uppercase text-card-f6reground/50 font-body'>
+                                    <p className="text-xs italic uppercase text-card-f6reground/50 font-body">
                                         No clients associated with this task
                                     </p>
                                 )}
@@ -571,69 +684,98 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
 
                         {task.creator && (
                             <div>
-                                <h3 className='mb-2 text-xs font-normal uppercase font-body'>Created By</h3>
-                                <div className='p-4 rounded-lg bg-card'>
-                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
-                                        <div className='flex items-center mb-2'>
-                                            <Avatar className='w-12 h-12 mr-3 border border-primary'>
-                                                {task?.creator?.photoURL || task?.creator?.avatarUrl ? (
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Created By
+                                </h3>
+                                <div className="p-4 rounded-lg bg-card">
+                                    <div className="flex flex-col justify-start gap-1 p-2 border bg-card">
+                                        <div className="flex items-center mb-2">
+                                            <Avatar className="w-12 h-12 mr-3 border border-primary">
+                                                {task?.creator?.photoURL ||
+                                                task?.creator?.avatarUrl ? (
                                                     <AvatarImage
-                                                        src={task?.creator?.photoURL || task?.creator?.avatarUrl || ''}
-                                                        alt={task?.creator?.name}
+                                                        src={
+                                                            task?.creator
+                                                                ?.photoURL ||
+                                                            task?.creator
+                                                                ?.avatarUrl ||
+                                                            ''
+                                                        }
+                                                        alt={
+                                                            task?.creator?.name
+                                                        }
                                                     />
                                                 ) : (
-                                                    <AvatarFallback className='text-green-800 bg-green-100'>
-                                                        {task?.creator?.name && task?.creator?.surname
+                                                    <AvatarFallback className="text-green-800 bg-green-100">
+                                                        {task?.creator?.name &&
+                                                        task?.creator?.surname
                                                             ? `${task?.creator?.name[0]}${task?.creator?.surname[0]}`
                                                             : `${
-                                                                  task?.creator?.name?.slice(0, 2).toUpperCase() || 'U'
+                                                                  task?.creator?.name
+                                                                      ?.slice(
+                                                                          0,
+                                                                          2,
+                                                                      )
+                                                                      .toUpperCase() ||
+                                                                  'U'
                                                               }`}
                                                     </AvatarFallback>
                                                 )}
                                             </Avatar>
                                             <div>
-                                                <p className='text-xs font-normal font-body'>
-                                                    {task?.creator.name} {task?.creator.surname}
+                                                <p className="text-xs font-normal font-body">
+                                                    {task?.creator.name}{' '}
+                                                    {task?.creator.surname}
                                                 </p>
-                                                <p className='text-xs font-normal text-card-foreground/60 font-body'>
-                                                    {task?.creator.accessLevel && (
-                                                        <span className='capitalize'>{task?.creator.accessLevel}</span>
+                                                <p className="text-xs font-normal text-card-foreground/60 font-body">
+                                                    {task?.creator
+                                                        .accessLevel && (
+                                                        <span className="capitalize">
+                                                            {
+                                                                task?.creator
+                                                                    .accessLevel
+                                                            }
+                                                        </span>
                                                     )}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                        <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
                                             {task?.creator?.email && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Mail className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.creator?.email}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.creator?.phone && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Phone className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.creator?.phone}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.creator?.userref && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Tag className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.creator?.userref}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.creator?.accessLevel && (
-                                                <div className='flex items-center text-xs'>
-                                                    <User className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.creator?.accessLevel?.charAt(0).toUpperCase() +
-                                                            task?.creator?.accessLevel?.slice(1)}
+                                                <div className="flex items-center text-xs">
+                                                    <User className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {task?.creator?.accessLevel
+                                                            ?.charAt(0)
+                                                            .toUpperCase() +
+                                                            task?.creator?.accessLevel?.slice(
+                                                                1,
+                                                            )}
                                                     </span>
                                                 </div>
                                             )}
@@ -643,76 +785,101 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                             </div>
                         )}
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Organization</h3>
-                            <div className='p-4 rounded-lg bg-card'>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Organization
+                            </h3>
+                            <div className="p-4 rounded-lg bg-card">
                                 {task?.organisation ? (
-                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
-                                        <div className='flex items-center mb-2'>
-                                            <Avatar className='w-12 h-12 mr-3 border border-primary'>
+                                    <div className="flex flex-col justify-start gap-1 p-2 border bg-card">
+                                        <div className="flex items-center mb-2">
+                                            <Avatar className="w-12 h-12 mr-3 border border-primary">
                                                 {task?.organisation?.logo ? (
                                                     <AvatarImage
-                                                        src={task?.organisation?.logo}
-                                                        alt={task?.organisation?.name}
+                                                        src={
+                                                            task?.organisation
+                                                                ?.logo
+                                                        }
+                                                        alt={
+                                                            task?.organisation
+                                                                ?.name
+                                                        }
                                                     />
                                                 ) : (
-                                                    <AvatarFallback className='text-orange-800 bg-orange-100'>
-                                                        {task?.organisation?.name?.slice(0, 2).toUpperCase() ||
+                                                    <AvatarFallback className="text-orange-800 bg-orange-100">
+                                                        {task?.organisation?.name
+                                                            ?.slice(0, 2)
+                                                            .toUpperCase() ||
                                                             `O${task?.organisation?.uid}`}
                                                     </AvatarFallback>
                                                 )}
                                             </Avatar>
                                             <div>
-                                                <p className='text-sm font-medium uppercase font-body'>
+                                                <p className="text-sm font-medium uppercase font-body">
                                                     {task?.organisation?.name}
                                                 </p>
-                                                <p className='flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body'>
-                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.organisation?.ref}
+                                                <p className="flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body">
+                                                    <Tag className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {
+                                                            task?.organisation
+                                                                ?.ref
+                                                        }
                                                     </span>
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                        <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
                                             {task?.organisation?.email && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.organisation?.email}
+                                                <div className="flex items-center text-xs">
+                                                    <Mail className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {
+                                                            task?.organisation
+                                                                ?.email
+                                                        }
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.organisation?.phone && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.organisation?.phone}
+                                                <div className="flex items-center text-xs">
+                                                    <Phone className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {
+                                                            task?.organisation
+                                                                ?.phone
+                                                        }
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.organisation?.website && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.organisation?.website}
+                                                <div className="flex items-center text-xs">
+                                                    <Globe className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {
+                                                            task?.organisation
+                                                                ?.website
+                                                        }
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.organisation?.address && (
-                                                <div className='flex items-start col-span-2 text-xs'>
-                                                    <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {formatAddress(task?.organisation?.address)}
+                                                <div className="flex items-start col-span-2 text-xs">
+                                                    <MapPin className="w-4 h-4 mr-1 mt-0.5 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {formatAddress(
+                                                            task?.organisation
+                                                                ?.address,
+                                                        )}
                                                     </span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className='flex items-center'>
-                                        <Building className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                        <span className='text-xs italic font-normal uppercase text-card-f6reground/50 font-body'>
+                                    <div className="flex items-center">
+                                        <Building className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <span className="text-xs italic font-normal uppercase text-card-f6reground/50 font-body">
                                             No organization specified
                                         </span>
                                     </div>
@@ -721,72 +888,80 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                         </div>
 
                         <div>
-                            <h3 className='mb-2 text-xs font-normal uppercase font-body'>Branch</h3>
-                            <div className='p-4 rounded-lg bg-card'>
+                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                Branch
+                            </h3>
+                            <div className="p-4 rounded-lg bg-card">
                                 {task?.branch ? (
-                                    <div className='flex flex-col justify-start gap-1 p-2 border bg-card'>
-                                        <div className='flex items-center mb-2'>
-                                            <Building2 className='w-5 h-5 mr-2 text-card-foreground/60' />
+                                    <div className="flex flex-col justify-start gap-1 p-2 border bg-card">
+                                        <div className="flex items-center mb-2">
+                                            <Building2 className="w-5 h-5 mr-2 text-card-foreground/60" />
                                             <div>
-                                                <p className='text-sm font-medium uppercase font-body'>
+                                                <p className="text-sm font-medium uppercase font-body">
                                                     {task?.branch?.name}
                                                 </p>
-                                                <p className='flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body'>
-                                                    <Tag className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <p className="flex flex-row items-center gap-1 text-xs text-card-foreground/60 font-body">
+                                                    <Tag className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.branch?.ref}
                                                     </span>
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className='grid grid-cols-1 gap-2 mt-2 md:grid-cols-2'>
+                                        <div className="grid grid-cols-1 gap-2 mt-2 md:grid-cols-2">
                                             {task?.branch?.contactPerson && (
-                                                <div className='flex items-center text-xs'>
-                                                    <User className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {task?.branch?.contactPerson}
+                                                <div className="flex items-center text-xs">
+                                                    <User className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {
+                                                            task?.branch
+                                                                ?.contactPerson
+                                                        }
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.branch?.email && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Mail className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Mail className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.branch?.email}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.branch?.phone && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Phone className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Phone className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.branch?.phone}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.branch?.website && (
-                                                <div className='flex items-center text-xs'>
-                                                    <Globe className='w-4 h-4 mr-1 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
+                                                <div className="flex items-center text-xs">
+                                                    <Globe className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
                                                         {task?.branch?.website}
                                                     </span>
                                                 </div>
                                             )}
                                             {task?.branch?.address && (
-                                                <div className='flex items-start col-span-2 text-xs'>
-                                                    <MapPin className='w-4 h-4 mr-1 mt-0.5 text-card-foreground/60' />
-                                                    <span className='text-xs font-thin font-body'>
-                                                        {formatAddress(task?.branch?.address)}
+                                                <div className="flex items-start col-span-2 text-xs">
+                                                    <MapPin className="w-4 h-4 mr-1 mt-0.5 text-card-foreground/60" />
+                                                    <span className="text-xs font-thin font-body">
+                                                        {formatAddress(
+                                                            task?.branch
+                                                                ?.address,
+                                                        )}
                                                     </span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className='flex items-center'>
-                                        <Briefcase className='w-4 h-4 mr-2 text-card-foreground/60' />
-                                        <span className='text-xs italic font-normal uppercase text-card-f6reground/50 font-body'>
+                                    <div className="flex items-center">
+                                        <Briefcase className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <span className="text-xs italic font-normal uppercase text-card-f6reground/50 font-body">
                                             No branch specified
                                         </span>
                                     </div>
@@ -797,37 +972,51 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                 );
             case 'activity':
                 return (
-                    <div className='space-y-6'>
-                        <div className='p-4 rounded-lg bg-card'>
-                            <h3 className='mb-4 text-xs font-thin uppercase font-body'>Activity Timeline</h3>
-                            <div className='relative pl-8 space-y-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-green-500 dark:before:bg-green-600'>
-                                <div className='relative'>
-                                    <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white'>
-                                        <Plus className='w-4 h-4' />
+                    <div className="space-y-6">
+                        <div className="p-4 rounded-lg bg-card">
+                            <h3 className="mb-4 text-xs font-thin uppercase font-body">
+                                Activity Timeline
+                            </h3>
+                            <div className="relative pl-8 space-y-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-green-500 dark:before:bg-green-600">
+                                <div className="relative">
+                                    <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white">
+                                        <Plus className="w-4 h-4" />
                                     </div>
-                                    <div className='flex flex-col'>
-                                        <p className='text-xs font-normal uppercase font-body'>Task created</p>
-                                        <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
-                                            {formatDate(task.createdAt)} {formatTime(task.createdAt)}
+                                    <div className="flex flex-col">
+                                        <p className="text-xs font-normal uppercase font-body">
+                                            Task created
                                         </p>
-                                        <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
-                                            Created by {task?.creator?.name || 'System'}
+                                        <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
+                                            {formatDate(task.createdAt)}{' '}
+                                            {formatTime(task.createdAt)}
+                                        </p>
+                                        <p className="text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body">
+                                            Created by{' '}
+                                            {task?.creator?.name || 'System'}
                                         </p>
                                     </div>
                                 </div>
                                 {task?.updatedAt &&
-                                    formatDate(task?.updatedAt) !== formatDate(task?.createdAt) &&
+                                    formatDate(task?.updatedAt) !==
+                                        formatDate(task?.createdAt) &&
                                     !task?.completionDate && (
-                                        <div className='relative'>
-                                            <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white'>
-                                                <Edit className='w-4 h-4' />
+                                        <div className="relative">
+                                            <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white">
+                                                <Edit className="w-4 h-4" />
                                             </div>
-                                            <div className='flex flex-col'>
-                                                <p className='text-xs font-normal uppercase font-body'>Task updated</p>
-                                                <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
-                                                    {formatDate(task?.updatedAt)} {formatTime(task?.updatedAt)}
+                                            <div className="flex flex-col">
+                                                <p className="text-xs font-normal uppercase font-body">
+                                                    Task updated
                                                 </p>
-                                                <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
+                                                <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
+                                                    {formatDate(
+                                                        task?.updatedAt,
+                                                    )}{' '}
+                                                    {formatTime(
+                                                        task?.updatedAt,
+                                                    )}
+                                                </p>
+                                                <p className="text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body">
                                                     Status: {task?.status}
                                                 </p>
                                             </div>
@@ -835,7 +1024,7 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                     )}
 
                                 {task?.deadline && (
-                                    <div className='relative'>
+                                    <div className="relative">
                                         <div
                                             className={`absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full ${
                                                 task?.isOverdue
@@ -843,28 +1032,38 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                                     : 'bg-orange-500 dark:bg-orange-600'
                                             } text-white`}
                                         >
-                                            <Calendar className='w-4 h-4' />
+                                            <Calendar className="w-4 h-4" />
                                         </div>
-                                        <div className='flex flex-col'>
-                                            <p className='text-xs font-normal uppercase font-body'>
-                                                {task?.isOverdue ? 'Deadline passed' : 'Upcoming deadline'}
+                                        <div className="flex flex-col">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {task?.isOverdue
+                                                    ? 'Deadline passed'
+                                                    : 'Upcoming deadline'}
                                             </p>
-                                            <p className='text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body'>
-                                                {formatDate(task?.deadline)} {formatTime(task?.deadline)}
+                                            <p className="text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body">
+                                                {formatDate(task?.deadline)}{' '}
+                                                {formatTime(task?.deadline)}
                                             </p>
                                         </div>
                                     </div>
                                 )}
 
                                 {task?.completionDate && (
-                                    <div className='relative'>
-                                        <div className='absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white'>
-                                            <CheckCheck className='w-4 h-4' />
+                                    <div className="relative">
+                                        <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white">
+                                            <CheckCheck className="w-4 h-4" />
                                         </div>
-                                        <div className='flex flex-col'>
-                                            <p className='text-xs font-normal uppercase font-body'>Task completed</p>
-                                            <p className='text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body'>
-                                                {formatDate(task?.completionDate)} {formatTime(task?.completionDate)}
+                                        <div className="flex flex-col">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                Task completed
+                                            </p>
+                                            <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
+                                                {formatDate(
+                                                    task?.completionDate,
+                                                )}{' '}
+                                                {formatTime(
+                                                    task?.completionDate,
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -875,12 +1074,15 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                 );
             case 'routes':
                 return (
-                    <div className='space-y-6'>
-                        <div className='flex flex-col items-center justify-center p-4 text-center rounded-lg bg-card'>
-                            <Map className='w-12 h-12 mb-2 text-primary/50' />
-                            <p className='text-xs font-thin uppercase font-body'>Coming Soon</p>
-                            <p className='mt-2 text-xs font-thin uppercase text-card-foreground/60 font-body'>
-                                Route planning and management will be available in a future update.
+                    <div className="space-y-6">
+                        <div className="flex flex-col items-center justify-center p-4 text-center rounded-lg bg-card">
+                            <Map className="w-12 h-12 mb-2 text-primary/50" />
+                            <p className="text-xs font-thin uppercase font-body">
+                                Coming Soon
+                            </p>
+                            <p className="mt-2 text-xs font-thin uppercase text-card-foreground/60 font-body">
+                                Route planning and management will be available
+                                in a future update.
                             </p>
                         </div>
                     </div>
@@ -905,15 +1107,15 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
     return (
         <>
             <Dialog open={isOpen} onOpenChange={() => onClose()}>
-                <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto bg-card'>
-                    <DialogHeader className='flex flex-row items-start justify-between'>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
-                            <DialogTitle className='text-xl font-semibold uppercase font-body'>
+                            <DialogTitle className="text-xl font-semibold uppercase font-body">
                                 {task?.title}
                             </DialogTitle>
-                            <div className='flex items-center gap-2 mt-2'>
+                            <div className="flex items-center gap-2 mt-2">
                                 <Badge
-                                    variant='outline'
+                                    variant="outline"
                                     className={`text-[10px] px-4 py-1 font-body border-0 ${getStatusBadgeColor(
                                         task?.status,
                                     )}`}
@@ -922,29 +1124,39 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                 </Badge>
                                 {task.isOverdue && (
                                     <Badge
-                                        variant='outline'
-                                        className='text-[10px] px-4 py-1 font-body border-0 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                        variant="outline"
+                                        className="text-[10px] px-4 py-1 font-body border-0 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                                     >
                                         OVERDUE
                                     </Badge>
                                 )}
                             </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                            <Button variant='ghost' size='icon' className='w-9 h-9' onClick={onClose}>
-                                <X className='w-5 h-5' />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-9 h-9"
+                                onClick={onClose}
+                            >
+                                <X className="w-5 h-5" />
                             </Button>
-                            <Button variant='ghost' size='icon' className='w-9 h-9' onClick={() => setIsEditModalOpen(true)}>
-                                <Edit className='w-5 h-5' />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-9 h-9"
+                                onClick={() => setIsEditModalOpen(true)}
+                            >
+                                <Edit className="w-5 h-5" />
                             </Button>
                         </div>
                     </DialogHeader>
-                    <div className='mt-4'>
-                        <div className='flex items-center mb-6 overflow-x-auto border-b border-border/10'>
-                            {tabs.map(tab => (
+                    <div className="mt-4">
+                        <div className="flex items-center mb-6 overflow-x-auto border-b border-border/10">
+                            {tabs.map((tab) => (
                                 <div
                                     key={tab?.id}
-                                    className='relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28'
+                                    className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
                                 >
                                     <div
                                         className={`mb-3 font-body px-0 font-normal ${
@@ -954,83 +1166,117 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
                                         }`}
                                         onClick={() => handleTabChange(tab?.id)}
                                     >
-                                        <span className='text-xs font-thin uppercase font-body'>{tab?.label}</span>
+                                        <span className="text-xs font-thin uppercase font-body">
+                                            {tab?.label}
+                                        </span>
                                     </div>
                                     {activeTab === tab?.id && (
-                                        <div className='absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary' />
+                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary" />
                                     )}
                                 </div>
                             ))}
                         </div>
                         {renderTabContent()}
                     </div>
-                    <DialogFooter className='flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700'>
-                        <div className='flex flex-col items-center justify-center w-full'>
-                            <p className='text-xs font-thin uppercase font-body'>Manage this task</p>
+                    <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700">
+                        <div className="flex flex-col items-center justify-center w-full">
+                            <p className="text-xs font-thin uppercase font-body">
+                                Manage this task
+                            </p>
                         </div>
-                        <div className='flex flex-wrap justify-center w-full gap-3'>
+                        <div className="flex flex-wrap justify-center w-full gap-3">
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.PENDING)}`}
-                                onClick={() => handleStatusChange(TaskStatus.PENDING)}
-                                title='Set as Pending'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.PENDING)
+                                }
+                                title="Set as Pending"
                             >
-                                <CalendarClock strokeWidth={1.2} className='text-yellow-600 w-7 h-7 dark:text-yellow-400' />
+                                <CalendarClock
+                                    strokeWidth={1.2}
+                                    className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                />
                             </Button>
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.IN_PROGRESS)}`}
-                                onClick={() => handleStatusChange(TaskStatus.IN_PROGRESS)}
-                                title='Set as In Progress'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.IN_PROGRESS)
+                                }
+                                title="Set as In Progress"
                             >
-                                <CalendarCog strokeWidth={1.2} className='text-blue-600 w-7 h-7 dark:text-blue-400' />
+                                <CalendarCog
+                                    strokeWidth={1.2}
+                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                />
                             </Button>
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.COMPLETED)}`}
-                                onClick={() => handleStatusChange(TaskStatus.COMPLETED)}
-                                title='Set as Completed'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.COMPLETED)
+                                }
+                                title="Set as Completed"
                             >
-                                <CalendarCheck2 strokeWidth={1.2} className='text-green-600 w-7 h-7 dark:text-green-400' />
+                                <CalendarCheck2
+                                    strokeWidth={1.2}
+                                    className="text-green-600 w-7 h-7 dark:text-green-400"
+                                />
                             </Button>
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.CANCELLED)}`}
-                                onClick={() => handleStatusChange(TaskStatus.CANCELLED)}
-                                title='Set as Cancelled'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.CANCELLED)
+                                }
+                                title="Set as Cancelled"
                             >
-                                <CalendarX2 strokeWidth={1.2} className='text-gray-600 w-7 h-7 dark:text-gray-400' />
+                                <CalendarX2
+                                    strokeWidth={1.2}
+                                    className="text-gray-600 w-7 h-7 dark:text-gray-400"
+                                />
                             </Button>
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.POSTPONED)}`}
-                                onClick={() => handleStatusChange(TaskStatus.POSTPONED)}
-                                title='Set as Postponed'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.POSTPONED)
+                                }
+                                title="Set as Postponed"
                             >
-                                <CalendarRange strokeWidth={1.2} className='text-purple-600 w-7 h-7 dark:text-purple-400' />
+                                <CalendarRange
+                                    strokeWidth={1.2}
+                                    className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                />
                             </Button>
                             <Button
-                                variant='outline'
-                                size='icon'
+                                variant="outline"
+                                size="icon"
                                 className={`w-14 h-14 rounded-full ${getStatusButtonVariant(TaskStatus.MISSED)}`}
-                                onClick={() => handleStatusChange(TaskStatus.MISSED)}
-                                title='Set as Missed'
+                                onClick={() =>
+                                    handleStatusChange(TaskStatus.MISSED)
+                                }
+                                title="Set as Missed"
                             >
-                                <CalendarFold strokeWidth={1.2} className='text-orange-600 w-7 h-7 dark:text-orange-400' />
+                                <CalendarFold
+                                    strokeWidth={1.2}
+                                    className="text-orange-600 w-7 h-7 dark:text-orange-400"
+                                />
                             </Button>
                             <Button
-                                variant='destructive'
-                                size='icon'
-                                className='rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none'
+                                variant="destructive"
+                                size="icon"
+                                className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
                                 onClick={handleDelete}
-                                title='Delete Task'
+                                title="Delete Task"
                             >
-                                <Trash2 className='w-7 h-7' strokeWidth={1.5} />
+                                <Trash2 className="w-7 h-7" strokeWidth={1.5} />
                             </Button>
                         </div>
                     </DialogFooter>
@@ -1038,37 +1284,49 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
             </Dialog>
 
             {/* Edit Task Modal */}
-            <Dialog open={isEditModalOpen} onOpenChange={() => setIsEditModalOpen(false)}>
-                <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto bg-card'>
+            <Dialog
+                open={isEditModalOpen}
+                onOpenChange={() => setIsEditModalOpen(false)}
+            >
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className='text-xl font-semibold uppercase font-body'>Edit Task</DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            Editing this Task
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
-                        <h2 className="text-xs font-thin uppercase font-body">Coming Soon</h2>
+                        <h2 className="text-xs font-thin uppercase font-body">
+                            Activating Soon
+                        </h2>
                     </div>
                 </DialogContent>
             </Dialog>
 
             {/* Status Change Confirmation Dialog */}
-            <AlertDialog open={confirmStatusChangeOpen} onOpenChange={setConfirmStatusChangeOpen}>
-                <AlertDialogContent className='bg-card'>
+            <AlertDialog
+                open={confirmStatusChangeOpen}
+                onOpenChange={setConfirmStatusChangeOpen}
+            >
+                <AlertDialogContent className="bg-card">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Confirm Status Change
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to change the task status to {pendingStatusChange}? This action cannot
-                            be undone.
+                            Are you sure you want to change the task status to{' '}
+                            {pendingStatusChange}? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className='flex flex-row justify-between w-full'>
-                        <div className='w-1/2'>
-                            <AlertDialogCancel className='w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700'>
+                    <AlertDialogFooter className="flex flex-row justify-between w-full">
+                        <div className="w-1/2">
+                            <AlertDialogCancel className="w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700">
                                 Cancel
                             </AlertDialogCancel>
                         </div>
-                        <div className='w-1/2'>
+                        <div className="w-1/2">
                             <AlertDialogAction
                                 onClick={confirmStatusChange}
-                                className='w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90'
+                                className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90"
                             >
                                 Confirm
                             </AlertDialogAction>
@@ -1078,24 +1336,28 @@ export function TaskDetailsModal({ task, isOpen, onClose, onUpdateStatus, onDele
             </AlertDialog>
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-                <AlertDialogContent className='bg-card'>
+            <AlertDialog
+                open={confirmDeleteOpen}
+                onOpenChange={setConfirmDeleteOpen}
+            >
+                <AlertDialogContent className="bg-card">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this task? This action cannot be undone.
+                            Are you sure you want to delete this task? This
+                            action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <div className='w-1/2'>
-                            <AlertDialogCancel className='w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700'>
+                        <div className="w-1/2">
+                            <AlertDialogCancel className="w-full dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700">
                                 Cancel
                             </AlertDialogCancel>
                         </div>
-                        <div className='w-1/2'>
+                        <div className="w-1/2">
                             <AlertDialogAction
                                 onClick={confirmDelete}
-                                className='w-full bg-destructive hover:bg-destructive/90 dark:bg-red-900/80 dark:hover:bg-red-900 dark:border-none'
+                                className="w-full bg-destructive hover:bg-destructive/90 dark:bg-red-900/80 dark:hover:bg-red-900 dark:border-none"
                             >
                                 Delete
                             </AlertDialogAction>

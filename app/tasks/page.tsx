@@ -33,7 +33,7 @@ function CreateTaskModal({
                 <DialogTitle className="sr-only">Create New Task</DialogTitle>
                 <div className="flex items-center justify-center h-64">
                     <h2 className="text-xs font-thin uppercase font-body">
-                        Coming Soon
+                        Activating Soon
                     </h2>
                 </div>
             </DialogContent>

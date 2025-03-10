@@ -28,6 +28,7 @@ import {
     AlertCircle,
     Mail,
     Clock,
+    Edit,
 } from 'lucide-react';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 import { cn } from '@/lib/utils';
@@ -50,11 +51,16 @@ interface QuotationDetailsModalProps {
         newStatus: OrderStatus,
     ) => Promise<void>;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
+    onEditQuotation?: (
+        quotationId: number,
+        quotationData: Partial<Quotation>,
+    ) => Promise<void>;
 }
 
 export function QuotationDetailsModal({
     onUpdateStatus,
     onDeleteQuotation,
+    onEditQuotation,
 }: QuotationDetailsModalProps) {
     const { isOpen, onClose, data } = useQuotationDetailsModal();
     const [activeTab, setActiveTab] = useState<string>('details');
@@ -64,6 +70,7 @@ export function QuotationDetailsModal({
         useState(false);
     const [pendingStatusChange, setPendingStatusChange] =
         useState<OrderStatus | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
     const quotation = data as Quotation;
 
@@ -122,6 +129,20 @@ export function QuotationDetailsModal({
         }
     };
 
+    const handleEdit = () => {
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditFormSubmit = (
+        quotationId: number,
+        quotationData: Partial<Quotation>,
+    ) => {
+        if (onEditQuotation) {
+            onEditQuotation(quotationId, quotationData);
+        }
+        setIsEditModalOpen(false);
+    };
+
     // Get status button variant
     const getStatusButtonVariant = (status: OrderStatus) => {
         switch (status) {
@@ -178,14 +199,24 @@ export function QuotationDetailsModal({
                                     {quotation.status}
                                 </Badge>
                             </DialogTitle>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={onClose}
-                                className="w-8 h-8 rounded-full"
-                            >
-                                <X className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleEdit}
+                                    className="w-8 h-8 rounded-full"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={onClose}
+                                    className="w-8 h-8 rounded-full"
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex items-center gap-2 mt-2 text-xs font-thin font-body">
                             <Calendar className="w-3 h-3" />
@@ -234,10 +265,16 @@ export function QuotationDetailsModal({
                         {activeTab === 'details' && (
                             <div className="space-y-6">
                                 <div className="p-4 rounded-lg bg-card/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    <h3
+                                        className="mb-2 text-xs font-normal uppercase cursor-pointer font-body hover:text-primary"
+                                        onClick={handleEdit}
+                                    >
                                         Quotation Summary
                                     </h3>
-                                    <p className="text-xs font-thin font-body">
+                                    <p
+                                        className="text-xs font-thin cursor-pointer font-body hover:text-primary"
+                                        onClick={handleEdit}
+                                    >
                                         {quotation.notes ||
                                             'No notes provided for this quotation.'}
                                     </p>
@@ -781,7 +818,8 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.PENDING)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.PENDING &&
+                                        quotation.status !==
+                                            OrderStatus.PENDING &&
                                         handleStatusChange(OrderStatus.PENDING)
                                     }
                                     title="Set as Pending"
@@ -798,8 +836,11 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.INPROGRESS)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.INPROGRESS &&
-                                        handleStatusChange(OrderStatus.INPROGRESS)
+                                        quotation.status !==
+                                            OrderStatus.INPROGRESS &&
+                                        handleStatusChange(
+                                            OrderStatus.INPROGRESS,
+                                        )
                                     }
                                     title="Set as In Progress"
                                 >
@@ -815,7 +856,8 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.APPROVED)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.APPROVED &&
+                                        quotation.status !==
+                                            OrderStatus.APPROVED &&
                                         handleStatusChange(OrderStatus.APPROVED)
                                     }
                                     title="Set as Approved"
@@ -832,7 +874,8 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.REJECTED)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.REJECTED &&
+                                        quotation.status !==
+                                            OrderStatus.REJECTED &&
                                         handleStatusChange(OrderStatus.REJECTED)
                                     }
                                     title="Set as Rejected"
@@ -849,8 +892,11 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.COMPLETED)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.COMPLETED &&
-                                        handleStatusChange(OrderStatus.COMPLETED)
+                                        quotation.status !==
+                                            OrderStatus.COMPLETED &&
+                                        handleStatusChange(
+                                            OrderStatus.COMPLETED,
+                                        )
                                     }
                                     title="Set as Completed"
                                 >
@@ -866,8 +912,11 @@ export function QuotationDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.CANCELLED)}`}
                                     onClick={() =>
-                                        quotation.status !== OrderStatus.CANCELLED &&
-                                        handleStatusChange(OrderStatus.CANCELLED)
+                                        quotation.status !==
+                                            OrderStatus.CANCELLED &&
+                                        handleStatusChange(
+                                            OrderStatus.CANCELLED,
+                                        )
                                     }
                                     title="Set as Cancelled"
                                 >
@@ -885,13 +934,41 @@ export function QuotationDetailsModal({
                                     onClick={handleDelete}
                                     title="Delete Quotation"
                                 >
-                                    <Trash2 className="w-7 h-7" strokeWidth={1.5} />
+                                    <Trash2
+                                        className="w-7 h-7"
+                                        strokeWidth={1.5}
+                                    />
                                 </Button>
                             </div>
                         </div>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Edit Modal */}
+            {quotation && (
+                <Dialog
+                    open={isEditModalOpen}
+                    onOpenChange={(open) => setIsEditModalOpen(open)}
+                >
+                    <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
+                        <DialogHeader>
+                            <DialogTitle className="flex flex-row items-center justify-center text-xl font-body">
+                                <p className="text-lg font-thin uppercase font-body">
+                                    Editing this Quotation
+                                </p>
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="w-full h-full overflow-hidden">
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                    Activating soon
+                                </p>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* Status Change Confirmation Dialog */}
             <AlertDialog

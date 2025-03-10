@@ -74,11 +74,18 @@ const SignInForm = () => {
 
             showSuccessToast(response.message, toast);
 
-            // Wait for toast to finish
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Simplified callback URL handling - decode it once and sanitize
+            const decodedCallbackUrl = decodeURIComponent(callbackUrl);
+            // Make sure callback URL is to our domain and valid
+            const finalRedirectUrl = decodedCallbackUrl.startsWith('/') ?
+                decodedCallbackUrl :
+                '/'; // Default to home page if invalid
 
-            // Redirect to callback URL if set, otherwise to home
-            router.push(decodeURIComponent(callbackUrl));
+            // Shorter wait time before redirect
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Push to the sanitized URL
+            router.push(finalRedirectUrl);
         } catch (error) {
             // Error handling is done in the useEffect above
         }
@@ -89,7 +96,7 @@ const SignInForm = () => {
     };
 
     return (
-        <PublicOnlyRoute>
+        <PublicOnlyRoute redirectTo={callbackUrl.startsWith('/') ? callbackUrl : '/'}>
             <PageTransition type='fade'>
                 <div
                     className='relative flex items-center justify-center min-h-screen p-4'

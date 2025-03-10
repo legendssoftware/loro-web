@@ -102,13 +102,33 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             }),
             onRehydrateStorage: () => state => {
                 // After rehydration, validate token and setup auth service
-                if (state?.accessToken && state?.refreshToken) {
-                    if (authService.validateToken(state.accessToken)) {
-                        authService.setTokens(state.accessToken, state.refreshToken);
-                    } else {
-                        // Token is invalid, try to refresh or sign out
+                if (!state) return; // Early return if state is undefined
+
+                if (state.accessToken && state.refreshToken) {
+                    try {
+                        // Optimized token validation - basic validation only
+                        const isValid = authService.validateToken(state.accessToken);
+
+                        if (isValid) {
+                            // Set tokens immediately without extra validation
+                            authService.setTokens(state.accessToken, state.refreshToken);
+
+                            // Ensure authentication state is set to avoid flickering
+                            state.setAuthState({
+                                isAuthenticated: true,
+                                isLoading: false
+                            });
+                        } else {
+                            // Token is invalid, sign out without additional attempts
+                            state.signOut();
+                        }
+                    } catch (error) {
+                        // If any error occurs during validation, sign out
                         state.signOut();
                     }
+                } else {
+                    // No tokens found, ensure we're not in a loading state
+                    state.setAuthState({ isLoading: false });
                 }
             },
         },

@@ -24,11 +24,17 @@ export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteP
 
         // If authenticated, redirect to the specified path
         if (isAuthenticated) {
-            router.push(redirectTo);
+            // Sanitize and validate the redirect URL
+            const sanitizedRedirect = typeof redirectTo === 'string' && redirectTo.startsWith('/')
+                ? redirectTo
+                : '/';
+
+            // Use replace instead of push for faster redirection without adding to history
+            router.replace(sanitizedRedirect);
         }
     }, [isAuthenticated, isLoading, router, redirectTo]);
 
-    // Show loader while checking authentication
+    // Reduce loading time by not showing loader for too long
     if (isLoading) {
         return (
             <div className='flex items-center justify-center w-full h-screen'>
@@ -37,12 +43,12 @@ export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteP
         );
     }
 
-    // If not authenticated, render children
-    if (!isLoading && !isAuthenticated) {
+    // If not authenticated, render children immediately
+    if (!isAuthenticated) {
         return <>{children}</>;
     }
 
-    // Otherwise, render nothing (will be redirected by the useEffect)
+    // Return minimal loading state for authenticated users being redirected
     return (
         <div className='flex items-center justify-center w-full h-screen'>
             <AppLoader />

@@ -1288,7 +1288,7 @@ export function TaskDetailsModal({
                 open={isEditModalOpen}
                 onOpenChange={() => setIsEditModalOpen(false)}
             >
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-thin uppercase font-body">
                             Editing this Task

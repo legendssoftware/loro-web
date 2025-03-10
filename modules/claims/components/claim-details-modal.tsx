@@ -575,7 +575,7 @@ export function ClaimDetailsModal({
     // Edit Modal
     const EditModal = () => (
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+            <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-thin uppercase font-body">
                         Editing this Claim
@@ -766,7 +766,10 @@ export function ClaimDetailsModal({
                                 onClick={handleDelete}
                                 title="Delete Claim"
                             >
-                                <Trash2 className="w-7 h-7 dark:text-red-400" strokeWidth={1.5} />
+                                <Trash2
+                                    className="w-7 h-7 dark:text-white"
+                                    strokeWidth={1.5}
+                                />
                             </Button>
                         </div>
                     </DialogFooter>

@@ -1,12 +1,10 @@
 export enum LeadStatus {
-    NEW = 'New',
-    CONTACTED = 'Contacted',
-    CLOSED_WON = 'Closed-Won',
-    CLOSED_LOST = 'Closed-Lost',
-    ARCHIVED = 'Archived',
-    PENDING = 'Pending',
-    IN_REVIEW = 'In Review',
-    DECLINED = 'Declined',
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REVIEW = 'REVIEW',
+    DECLINED = 'DECLINED',
+    CONVERTED = 'CONVERTED',
+    CANCELLED = 'CANCELLED',
 }
 
 export interface StatusColorConfig {
@@ -16,45 +14,35 @@ export interface StatusColorConfig {
 }
 
 export const StatusColors: Record<LeadStatus, StatusColorConfig> = {
-    [LeadStatus.NEW]: {
-        bg: 'bg-blue-100 dark:bg-blue-950/50',
-        text: 'text-blue-800 dark:text-blue-300',
-        border: 'border-blue-200 dark:border-blue-800',
-    },
-    [LeadStatus.CONTACTED]: {
-        bg: 'bg-green-100 dark:bg-green-950/50',
-        text: 'text-green-800 dark:text-green-300',
-        border: 'border-green-200 dark:border-green-800',
-    },
-    [LeadStatus.CLOSED_WON]: {
-        bg: 'bg-purple-100 dark:bg-purple-950/50',
-        text: 'text-purple-800 dark:text-purple-300',
-        border: 'border-purple-200 dark:border-purple-800',
-    },
-    [LeadStatus.CLOSED_LOST]: {
-        bg: 'bg-red-100 dark:bg-red-950/50',
-        text: 'text-red-800 dark:text-red-300',
-        border: 'border-red-200 dark:border-red-800',
-    },
-    [LeadStatus.ARCHIVED]: {
-        bg: 'bg-gray-100 dark:bg-gray-950/50',
-        text: 'text-gray-800 dark:text-gray-300',
-        border: 'border-gray-200 dark:border-gray-800',
-    },
     [LeadStatus.PENDING]: {
         bg: 'bg-yellow-100 dark:bg-yellow-950/50',
         text: 'text-yellow-800 dark:text-yellow-300',
         border: 'border-yellow-200 dark:border-yellow-800',
     },
-    [LeadStatus.IN_REVIEW]: {
-        bg: 'bg-orange-100 dark:bg-orange-950/50',
-        text: 'text-orange-800 dark:text-orange-300',
-        border: 'border-orange-200 dark:border-orange-800',
+    [LeadStatus.APPROVED]: {
+        bg: 'bg-green-100 dark:bg-green-950/50',
+        text: 'text-green-800 dark:text-green-300',
+        border: 'border-green-200 dark:border-green-800',
+    },
+    [LeadStatus.REVIEW]: {
+        bg: 'bg-blue-100 dark:bg-blue-950/50',
+        text: 'text-blue-800 dark:text-blue-300',
+        border: 'border-blue-200 dark:border-blue-800',
     },
     [LeadStatus.DECLINED]: {
         bg: 'bg-red-100 dark:bg-red-950/50',
         text: 'text-red-800 dark:text-red-300',
         border: 'border-red-200 dark:border-red-800',
+    },
+    [LeadStatus.CONVERTED]: {
+        bg: 'bg-purple-100 dark:bg-purple-950/50',
+        text: 'text-purple-800 dark:text-purple-300',
+        border: 'border-purple-200 dark:border-purple-800',
+    },
+    [LeadStatus.CANCELLED]: {
+        bg: 'bg-gray-100 dark:bg-gray-950/50',
+        text: 'text-gray-800 dark:text-gray-300',
+        border: 'border-gray-200 dark:border-gray-800',
     },
 };
 
@@ -63,20 +51,48 @@ export interface Lead {
     name: string;
     email: string;
     phone: string;
-    companyName: string; // Company name shown in the UI
     notes?: string;
     status: LeadStatus;
     isDeleted: boolean;
     createdAt: Date;
     updatedAt: Date;
-    ownerUid?: number;
-    branchUid?: number;
-    initials?: string; // First and last name initials
     owner?: {
         uid: number;
         name: string;
         email: string;
         avatarUrl?: string;
+        surname?: string;
+        phone?: string;
+        accessLevel?: string;
+        userref?: string;
+        photoURL?: string;
+    };
+    branch?: {
+        uid: number;
+        name: string;
+        email: string;
+        phone: string;
+        contactPerson: string;
+        ref: string;
+        address: {
+            city: string;
+            state: string;
+            street: string;
+            suburb: string;
+            country: string;
+            postalCode: string;
+        };
+        website: string;
+        status: string;
+        isDeleted: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+    client?: {
+        uid: number;
+        name: string;
+        email: string;
+        phone: string;
     };
 }
 
@@ -95,19 +111,26 @@ export interface LeadFilterParams {
     endDate?: Date;
     page?: number;
     limit?: number;
+    ownerUid?: number;
+    branchUid?: number;
+    clientUid?: number;
 }
 
 export interface LeadStats {
     total: number;
     pending: number;
     approved: number;
-    inReview: number;
+    review: number;
     declined: number;
+    converted: number;
+    cancelled: number;
 }
 
 export interface LeadsByStatus {
-    [LeadStatus.NEW]: Lead[];
-    [LeadStatus.CONTACTED]: Lead[];
-    [LeadStatus.CLOSED_WON]: Lead[];
-    [LeadStatus.CLOSED_LOST]: Lead[];
+    [LeadStatus.PENDING]: Lead[];
+    [LeadStatus.APPROVED]: Lead[];
+    [LeadStatus.REVIEW]: Lead[];
+    [LeadStatus.DECLINED]: Lead[];
+    [LeadStatus.CONVERTED]: Lead[];
+    [LeadStatus.CANCELLED]: Lead[];
 }

@@ -1,81 +1,204 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+    User,
+    UserStatus,
+    UserFilterParams,
+    UsersByStatus,
+} from '@/lib/types/user';
+import toast from 'react-hot-toast';
+import { useUserApi } from './use-user-api';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
-interface User {
-    uid: number;
-    name: string;
-    surname: string;
-    email: string;
-    photoURL?: string;
-    accessLevel?: string;
-    status?: string;
-}
+const USERS_QUERY_KEY = 'users';
 
-interface UsersQueryResult {
-    users: User[];
-    loading: boolean;
-    error: string | null;
-    refetch: () => Promise<void>;
-}
+export function useUsersQuery(filters: UserFilterParams = {}) {
+    const queryClient = useQueryClient();
+    const userApi = useUserApi();
 
-interface UsersQueryOptions {
-    limit?: number;
-    page?: number;
-    status?: string;
-    accessLevel?: string;
-    search?: string;
-    branchId?: number;
-    organisationId?: number;
-}
+    // Ensure we always use a limit of 500
+    const enhancedFilters = useMemo(
+        () => ({
+            ...filters,
+            limit: 500,
+        }),
+        [filters],
+    );
 
-/**
- * Hook for fetching users from the API
- * @param options Query options for filtering users
- * @returns Users data, loading state, error state, and refetch function
- */
-export function useUsersQuery(options: UsersQueryOptions = {}): UsersQueryResult {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    // Fetch users with React Query
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: [USERS_QUERY_KEY, enhancedFilters],
+        queryFn: () => userApi.getUsers(enhancedFilters),
+        placeholderData: (previousData) => previousData,
+        staleTime: 1000 * 60, // 1 minute
+        // Add retry and error handling
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        enabled:
+            Object.keys(enhancedFilters)?.length > 0 ||
+            !enhancedFilters?.hasOwnProperty('page'),
+    });
 
-    const buildQueryString = useCallback(() => {
-        const params = new URLSearchParams();
+    // Group users by status
+    const usersByStatus = useMemo<UsersByStatus>(() => {
+        const statusGroups = {
+            [UserStatus.ACTIVE]: [],
+            [UserStatus.INACTIVE]: [],
+            [UserStatus.SUSPENDED]: [],
+            [UserStatus.PENDING]: [],
+            [UserStatus.DELETED]: [],
+        } as UsersByStatus;
 
-        if (options.limit) params.append('limit', options.limit.toString());
-        if (options.page) params.append('page', options.page.toString());
-        if (options.status) params.append('status', options.status);
-        if (options.accessLevel) params.append('accessLevel', options.accessLevel);
-        if (options.search) params.append('search', options.search);
-        if (options.branchId) params.append('branchId', options.branchId.toString());
-        if (options.organisationId) params.append('organisationId', options.organisationId.toString());
-
-        const queryString = params.toString();
-        return queryString ? `?${queryString}` : '';
-    }, [options]);
-
-    const fetchUsers = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const queryString = buildQueryString();
-            const response = await fetch(`/api/user${queryString}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch users');
-            }
-
-            const data = await response.json();
-            setUsers(data.data || []);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load users');
-        } finally {
-            setLoading(false);
+        if (data?.items) {
+            // Group users by status
+            data.items.forEach((user) => {
+                if (!user.isDeleted || user.status === UserStatus.DELETED) {
+                    statusGroups[user.status].push(user);
+                }
+            });
         }
-    }, [buildQueryString]);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        return statusGroups;
+    }, [data?.items]);
 
-    return { users, loading, error, refetch: fetchUsers };
+    // Create user mutation
+    const createUserMutation = useMutation({
+        mutationFn: async (userData: Partial<User>) => {
+            try {
+                const result = await userApi.createUser(userData);
+                showSuccessToast('User created successfully.', toast);
+                return result;
+            } catch (error) {
+                showErrorToast(
+                    'Failed to create user. Please try again.',
+                    toast,
+                );
+                console.error('Create user error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate users query to trigger a refetch, but don't show another toast
+            queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+        },
+    });
+
+    // Update user mutation
+    const updateUserMutation = useMutation({
+        mutationFn: async ({
+            userId,
+            updates,
+        }: {
+            userId: number;
+            updates: Partial<User>;
+        }) => {
+            try {
+                await userApi.updateUser(userId, updates);
+                showSuccessToast('User updated successfully.', toast);
+                return { success: true };
+            } catch (error) {
+                showErrorToast(
+                    'Failed to update user. Please try again.',
+                    toast,
+                );
+                console.error('Update user error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate users query to trigger a refetch, but don't show another toast
+            queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+        },
+    });
+
+    // Delete user mutation
+    const deleteUserMutation = useMutation({
+        mutationFn: async (userId: number) => {
+            try {
+                await userApi.deleteUser(userId);
+                showSuccessToast('User deleted successfully.', toast);
+                return { success: true };
+            } catch (error) {
+                showErrorToast(
+                    'Failed to delete user. Please try again.',
+                    toast,
+                );
+                console.error('Delete user error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate users query to trigger a refetch, but don't show another toast
+            queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+        },
+    });
+
+    // Create user wrapper function
+    const createUser = useCallback(
+        async (userData: Partial<User>) => {
+            return createUserMutation.mutate(userData);
+        },
+        [createUserMutation],
+    );
+
+    // Update user wrapper function
+    const updateUser = useCallback(
+        async (userId: number, updates: Partial<User>) => {
+            return updateUserMutation.mutate({ userId, updates });
+        },
+        [updateUserMutation],
+    );
+
+    // Delete user wrapper function
+    const deleteUser = useCallback(
+        async (userId: number) => {
+            return deleteUserMutation.mutate(userId);
+        },
+        [deleteUserMutation],
+    );
+
+    // Update user status wrapper function
+    const updateUserStatus = useCallback(
+        async (userId: number, newStatus: UserStatus) => {
+            return updateUserMutation.mutate({
+                userId,
+                updates: { status: newStatus },
+            });
+        },
+        [updateUserMutation],
+    );
+
+    // Apply filters
+    const applyFilters = useCallback((newFilters: UserFilterParams) => {
+        // This doesn't directly modify state as the hook will be called with new filters
+        return newFilters;
+    }, []);
+
+    // Clear filters
+    const clearFilters = useCallback(() => {
+        // Returns empty object to clear filters
+        return {};
+    }, []);
+
+    // Return pagination data along with users
+    return {
+        users: data?.items || [],
+        usersByStatus,
+        isLoading,
+        error: error as Error | null,
+        createUser,
+        updateUser,
+        deleteUser,
+        updateUserStatus,
+        applyFilters,
+        clearFilters,
+        refetch,
+        // Include pagination data - ensure minimum values
+        pagination: {
+            currentPage: data?.page || 1,
+            totalPages: Math.max(1, data?.totalPages || 1),
+            total: data?.total || 0,
+            limit: data?.limit || 5,
+        },
+    };
 }

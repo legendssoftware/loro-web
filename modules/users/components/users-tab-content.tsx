@@ -1,34 +1,45 @@
+'use client';
+
 import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
-import { LeadsKanban } from './leads-kanban';
-import { Lead, LeadStatus } from '@/lib/types/lead';
+import { UsersGrid } from './users-grid';
+import { User, UserStatus } from '@/lib/types/user';
 
-interface LeadsTabContentProps {
+interface UsersTabContentProps {
     activeTab: string;
     isLoading: boolean;
     error: Error | null;
-    leadsByStatus: Record<LeadStatus, Lead[]>;
-    onUpdateLeadStatus: (leadId: number, newStatus: string) => void;
-    onDeleteLead: (leadId: number) => void;
-    onAddLead: () => void;
+    users: User[];
+    onUpdateUserStatus: (userId: number, newStatus: UserStatus) => void;
+    onDeleteUser: (userId: number) => void;
+    onAddUser: () => void;
+    pagination?: {
+        currentPage: number;
+        totalPages: number;
+        onPageChange: (page: number) => void;
+    };
 }
 
-// Main Leads tab content component
-const LeadsContent = memo(
+// Main Users tab content component
+const UsersContent = memo(
     ({
-        leadsByStatus,
-        onUpdateLeadStatus,
-        onDeleteLead,
-        onAddLead,
-    }: Omit<LeadsTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
+        users,
+        onUpdateUserStatus,
+        onDeleteUser,
+        onAddUser,
+        pagination,
+    }: Omit<UsersTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
         return (
             <div className="flex flex-col w-full h-full overflow-hidden">
                 <div className="flex-1 w-full overflow-hidden">
-                    <LeadsKanban
-                        leadsByStatus={leadsByStatus}
-                        onUpdateLeadStatus={onUpdateLeadStatus}
-                        onDeleteLead={onDeleteLead}
-                        onAddLead={onAddLead}
+                    <UsersGrid
+                        users={users}
+                        onUpdateUserStatus={onUpdateUserStatus}
+                        onDeleteUser={onDeleteUser}
+                        onAddUser={onAddUser}
+                        currentPage={pagination?.currentPage}
+                        totalPages={pagination?.totalPages}
+                        onPageChange={pagination?.onPageChange}
                     />
                 </div>
             </div>
@@ -36,7 +47,7 @@ const LeadsContent = memo(
     },
 );
 
-LeadsContent.displayName = 'LeadsContent';
+UsersContent.displayName = 'UsersContent';
 
 // Reports tab content
 const ReportsContent = memo(() => {
@@ -44,10 +55,10 @@ const ReportsContent = memo(() => {
         <div className="h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-lg font-thin uppercase font-body">
-                    Lead Reports
+                    User Reports
                 </p>
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Lead reports functionality activating soon
+                    User reports functionality activating soon
                 </p>
             </div>
         </div>
@@ -62,10 +73,10 @@ const AnalyticsContent = memo(() => {
         <div className="w-full h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center w-full h-full">
                 <p className="text-lg font-thin uppercase font-body">
-                    Lead Analytics
+                    User Analytics
                 </p>
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Lead analytics functionality activating soon
+                    User analytics functionality activating soon
                 </p>
             </div>
         </div>
@@ -90,7 +101,7 @@ const ErrorContent = memo(() => {
     return (
         <div className="py-12 text-center">
             <p className="text-xs font-normal uppercase text-destructive font-body">
-                Failed to load leads. Please try again.
+                Failed to load users. Please try again.
             </p>
         </div>
     );
@@ -99,15 +110,16 @@ const ErrorContent = memo(() => {
 ErrorContent.displayName = 'ErrorContent';
 
 // Main component that switches between tab contents
-function LeadsTabContentComponent({
+function UsersTabContentComponent({
     activeTab,
     isLoading,
     error,
-    leadsByStatus,
-    onUpdateLeadStatus,
-    onDeleteLead,
-    onAddLead,
-}: LeadsTabContentProps) {
+    users,
+    onUpdateUserStatus,
+    onDeleteUser,
+    onAddUser,
+    pagination,
+}: UsersTabContentProps) {
     if (isLoading) {
         return <LoadingContent />;
     }
@@ -117,13 +129,14 @@ function LeadsTabContentComponent({
     }
 
     switch (activeTab) {
-        case 'leads':
+        case 'users':
             return (
-                <LeadsContent
-                    leadsByStatus={leadsByStatus}
-                    onUpdateLeadStatus={onUpdateLeadStatus}
-                    onDeleteLead={onDeleteLead}
-                    onAddLead={onAddLead}
+                <UsersContent
+                    users={users}
+                    onUpdateUserStatus={onUpdateUserStatus}
+                    onDeleteUser={onDeleteUser}
+                    onAddUser={onAddUser}
+                    pagination={pagination}
                 />
             );
         case 'reports':
@@ -135,4 +148,4 @@ function LeadsTabContentComponent({
     }
 }
 
-export const LeadsTabContent = memo(LeadsTabContentComponent);
+export const UsersTabContent = memo(UsersTabContentComponent);

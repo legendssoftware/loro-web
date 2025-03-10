@@ -1,3 +1,37 @@
+import { Branch } from "./branch";
+import { Organisation } from "./organisation";
+
+export enum UserStatus {
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+    SUSPENDED = 'suspended',
+    PENDING = 'pending',
+    DELETED = 'deleted'
+}
+
+export enum AccessLevel {
+    ADMIN = 'admin',
+    MANAGER = 'manager',
+    SUPPORT = 'support',
+    DEVELOPER = 'developer',
+    USER = 'user'
+}
+
+export interface UserProfile {
+    id: number;
+    height?: string;
+    weight?: string;
+    gender?: string;
+    dob?: Date;
+}
+
+export interface UserEmploymentProfile {
+    id: number;
+    position?: string;
+    department?: string;
+    startDate?: Date;
+}
+
 export interface UserAddress {
     street?: string;
     city?: string;
@@ -8,24 +42,52 @@ export interface UserAddress {
 
 export interface User {
     uid: number;
+    username: string;
     name: string;
+    surname: string;
     email: string;
-    surname?: string;
     phone?: string;
-    avatarUrl?: string;
     photoURL?: string;
-    address?: UserAddress;
-    accessLevel?: string;
-    status?: string;
-    userref?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    isDeleted?: boolean;
     role?: string;
-    branch?: string;
-    department?: string;
-    position?: string;
-    notes?: string;
+    status: UserStatus;
+    departmentId?: number;
+    createdAt: Date;
+    updatedAt: Date;
+    accessLevel: AccessLevel;
+    userref?: string;
+    organisation?: Organisation;
+    organisationRef?: string;
+    userProfile?: UserProfile;
+    userEmploymentProfile?: UserEmploymentProfile;
+    branch?: Branch;
+    isDeleted: boolean;
+    address?: UserAddress;
+    avatarUrl?: string;
     photo?: string;
+}
 
+export interface UsersByStatus {
+    [UserStatus.ACTIVE]: User[];
+    [UserStatus.INACTIVE]: User[];
+    [UserStatus.SUSPENDED]: User[];
+    [UserStatus.PENDING]: User[];
+    [UserStatus.DELETED]: User[];
+}
+
+export interface UserFilterParams {
+    page?: number;
+    limit?: number;
+    status?: UserStatus;
+    accessLevel?: AccessLevel;
+    search?: string;
+    branchId?: number;
+    organisationId?: number;
+}
+
+export interface PaginatedUsersResponse {
+    items: User[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
 }

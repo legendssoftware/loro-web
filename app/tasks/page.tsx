@@ -58,7 +58,7 @@ export default function TasksPage() {
     const [activeTab, setActiveTab] = useState<string>('tasks');
     const [filterParams, setFilterParams] = useState<TaskFilterParams>({
         page: 1,
-        limit: 20,
+        limit: 500,
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -115,26 +115,16 @@ export default function TasksPage() {
         setFilterParams((prev) => ({
             ...prev,
             ...newFilters,
-            page: 1, // Reset to first page when applying new filters
+            limit: 500, // Always keep the limit at 500
         }));
     }, []);
 
     // Clear filters handler
     const handleClearFilters = useCallback(() => {
-        console.log('Clearing filters');
         setFilterParams({
             page: 1,
-            limit: 20,
+            limit: 500,
         });
-    }, []);
-
-    // Handle page change
-    const handlePageChange = useCallback((page: number) => {
-        console.log('Changing to page:', page);
-        setFilterParams((prev) => ({
-            ...prev,
-            page,
-        }));
     }, []);
 
     return (
@@ -159,11 +149,9 @@ export default function TasksPage() {
                             isLoading={isLoading}
                             error={error}
                             tasksByStatus={tasksByStatus}
-                            pagination={pagination}
                             onUpdateTaskStatus={handleUpdateTaskStatus}
                             onDeleteTask={handleDeleteTask}
                             onAddTask={handleCreateTask}
-                            onPageChange={handlePageChange}
                         />
                     </div>
                 </div>

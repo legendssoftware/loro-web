@@ -12,16 +12,22 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     const queryClient = useQueryClient();
     const quotationApi = useQuotationApi();
 
+    // Ensure we always use a limit of 500
+    const enhancedFilters = useMemo(() => ({
+        ...filters,
+        limit: 500,
+    }), [filters]);
+
     // Fetch quotations with React Query
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: [QUOTATIONS_QUERY_KEY, filters],
-        queryFn: () => quotationApi.getQuotations(filters),
+        queryKey: [QUOTATIONS_QUERY_KEY, enhancedFilters],
+        queryFn: () => quotationApi.getQuotations(enhancedFilters),
         placeholderData: previousData => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling
         retry: 2,
         retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: Object.keys(filters)?.length > 0 || !filters?.hasOwnProperty('page'),
+        enabled: Object.keys(enhancedFilters)?.length > 0 || !enhancedFilters?.hasOwnProperty('page'),
     });
 
     // Group quotations by status
@@ -124,12 +130,6 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
         quotationsByStatus,
         isLoading,
         error: error as Error | null,
-        pagination: {
-            page: data?.page || 1,
-            limit: data?.limit || 10,
-            total: data?.total || 0,
-            totalPages: data?.totalPages || 1,
-        },
         createQuotation,
         updateQuotationStatus,
         applyFilters,

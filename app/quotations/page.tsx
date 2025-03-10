@@ -11,6 +11,7 @@ import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-t
 import { QuotationsTabContent } from '@/modules/quotations/components/quotations-tab-content';
 import { QuotationsFilter } from '@/modules/quotations/components/quotations-filter';
 import { QuotationDetailsModal } from '@/modules/quotations/components/quotation-details-modal';
+import { QuotationsHeader } from '@/modules/quotations/components/quotations-header';
 
 // Tab configuration
 const tabs = [
@@ -36,7 +37,7 @@ export default function QuotationsPage() {
     const [activeTab, setActiveTab] = useState<string>('quotations');
     const [filterParams, setFilterParams] = useState<QuotationFilterParams>({
         page: 1,
-        limit: 20,
+        limit: 500,
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -75,21 +76,27 @@ export default function QuotationsPage() {
         setIsCreateDialogOpen(true);
     }, []);
 
-    const handleApplyFilters = useCallback(
-        (newFilters: QuotationFilterParams) => {
-            const updatedFilters = applyFilters(newFilters);
-            setFilterParams(updatedFilters);
-        },
-        [applyFilters],
-    );
+    const handleApplyFilters = useCallback((newFilters: QuotationFilterParams) => {
+        setFilterParams((prev) => ({
+            ...prev,
+            ...newFilters,
+            limit: 500, // Always keep the limit at 500
+        }));
+    }, []);
 
     const handleClearFilters = useCallback(() => {
-        const defaultFilters = clearFilters();
-        setFilterParams(defaultFilters);
-    }, [clearFilters]);
+        setFilterParams({
+            page: 1,
+            limit: 500,
+        });
+    }, []);
 
-    const handlePageChange = useCallback((page: number) => {
-        setFilterParams((prev) => ({ ...prev, page }));
+    const handleDeleteQuotation = useCallback(async (id: number) => {
+        /* Implement delete functionality */
+    }, []);
+
+    const handleSubmitCreateQuotation = useCallback((quotation: any) => {
+        // Implement the logic to submit a new quotation
     }, []);
 
     return (
@@ -102,36 +109,32 @@ export default function QuotationsPage() {
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {activeTab === 'quotations' && (
-                        <div className="flex items-center p-4">
-                            <QuotationsFilter
+                        <QuotationsHeader
                                 onApplyFilters={handleApplyFilters}
                                 onClearFilters={handleClearFilters}
-                                quotations={quotations || []}
+                            onAddQuotation={handleCreateQuotation}
                             />
-                        </div>
                     )}
-                    <div className="flex items-center justify-start flex-1 px-2 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
                         <QuotationsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
                             error={error}
                             quotationsByStatus={quotationsByStatus}
-                            pagination={pagination}
-                            onUpdateQuotationStatus={
-                                handleUpdateQuotationStatus
-                            }
-                            onDeleteQuotation={async (id) => {
-                                /* Implement delete functionality */
-                            }}
-                            onPageChange={handlePageChange}
+                            onUpdateQuotationStatus={handleUpdateQuotationStatus}
+                            onDeleteQuotation={handleDeleteQuotation}
                             onAddQuotation={handleCreateQuotation}
                         />
                     </div>
                 </div>
-                <QuotationDetailsModal
-                    onUpdateStatus={handleUpdateQuotationStatus}
-                />
             </div>
+
+            {/* Render the CreateQuotationModal */}
+            <QuotationDetailsModal
+                isOpen={isCreateDialogOpen}
+                onClose={() => setIsCreateDialogOpen(false)}
+                onSave={handleSubmitCreateQuotation}
+            />
         </PageTransition>
     );
 }

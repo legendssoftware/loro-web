@@ -1,0 +1,31 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { UserFilterParams } from '@/lib/types/user';
+import { UsersFilter } from './users-filter';
+import { UserPlus } from 'lucide-react';
+
+interface UsersHeaderProps {
+    onApplyFilters: (filters: UserFilterParams) => void;
+    onClearFilters: () => void;
+    onAddUser: () => void;
+}
+
+export function UsersHeader({
+    onApplyFilters,
+    onClearFilters,
+    onAddUser,
+}: UsersHeaderProps) {
+    return (
+        <div className="flex items-center justify-between">
+            <UsersFilter
+                onApplyFilters={onApplyFilters}
+                onClearFilters={onClearFilters}
+            />
+            <Button onClick={onAddUser} className="ml-4">
+                <UserPlus className="w-4 h-4 mr-2" />
+                <span className="text-[10px] font-normal uppercase font-body">Add User</span>
+            </Button>
+        </div>
+    );
+}

@@ -11,16 +11,22 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
     const queryClient = useQueryClient();
     const leadApi = useLeadApi();
 
+    // Ensure we always use a limit of 500
+    const enhancedFilters = useMemo(() => ({
+        ...filters,
+        limit: 500,
+    }), [filters]);
+
     // Fetch leads with React Query
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: [LEADS_QUERY_KEY, filters],
-        queryFn: () => leadApi.getLeads(filters),
+        queryKey: [LEADS_QUERY_KEY, enhancedFilters],
+        queryFn: () => leadApi.getLeads(enhancedFilters),
         placeholderData: previousData => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling
         retry: 2,
         retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: Object.keys(filters)?.length > 0 || !filters?.hasOwnProperty('page'),
+        enabled: Object.keys(enhancedFilters)?.length > 0 || !enhancedFilters?.hasOwnProperty('page'),
     });
 
     // Group leads by status
@@ -155,12 +161,6 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
         leadsByStatus,
         isLoading,
         error: error as Error | null,
-        pagination: {
-            page: data?.page || 1,
-            limit: data?.limit || 10,
-            total: data?.total || 0,
-            totalPages: data?.totalPages || 1,
-        },
         createLead,
         updateLead,
         deleteLead,

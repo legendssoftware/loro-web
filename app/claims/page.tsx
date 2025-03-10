@@ -8,8 +8,8 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
 import { ClaimsTabContent } from '@/modules/claims/components/claims-tab-content';
-import { ClaimsFilter } from '@/modules/claims/components/claims-filter';
 import { ClaimDetailsModal } from '@/modules/claims/components/claim-details-modal';
+import { ClaimsHeader } from '@/modules/claims/components/claims-header';
 
 // Tab configuration
 const tabs = [
@@ -35,7 +35,7 @@ export default function ClaimsPage() {
     const [activeTab, setActiveTab] = useState<string>('claims');
     const [filterParams, setFilterParams] = useState<ClaimFilterParams>({
         page: 1,
-        limit: 20,
+        limit: 500,
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -50,9 +50,7 @@ export default function ClaimsPage() {
         updateClaim,
         deleteClaim,
         createClaim,
-        pagination,
         refetch,
-        claims,
     } = useClaimsQuery(isAuthenticated ? currentFilters : {});
 
     // Refetch data when authentication changes
@@ -94,26 +92,16 @@ export default function ClaimsPage() {
         setFilterParams((prev) => ({
             ...prev,
             ...newFilters,
-            page: 1, // Reset to first page when applying new filters
+            limit: 500, // Always keep the limit at 500
         }));
     }, []);
 
     // Clear filters handler
     const handleClearFilters = useCallback(() => {
-        console.log('Clearing filters');
         setFilterParams({
             page: 1,
-            limit: 20,
+            limit: 500,
         });
-    }, []);
-
-    // Handle page change
-    const handlePageChange = useCallback((page: number) => {
-        console.log('Changing to page:', page);
-        setFilterParams((prev) => ({
-            ...prev,
-            page,
-        }));
     }, []);
 
     return (
@@ -126,31 +114,27 @@ export default function ClaimsPage() {
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {activeTab === 'claims' && (
-                        <div className="flex items-center p-4">
-                            <ClaimsFilter
-                                onApplyFilters={handleApplyFilters}
-                                onClearFilters={handleClearFilters}
-                                claims={claims || []}
-                            />
-                        </div>
+                        <ClaimsHeader
+                            onApplyFilters={handleApplyFilters}
+                            onClearFilters={handleClearFilters}
+                            onAddClaim={handleCreateClaim}
+                        />
                     )}
-                    <div className="flex items-center justify-start flex-1 px-2 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
                         <ClaimsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
                             error={error}
                             claimsByStatus={claimsByStatus}
-                            pagination={pagination}
                             onUpdateClaimStatus={handleUpdateClaimStatus}
                             onDeleteClaim={handleDeleteClaim}
                             onAddClaim={handleCreateClaim}
-                            onPageChange={handlePageChange}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Render the CreateClaimModal */}
+            {/* Render the Claim Modal */}
             <ClaimDetailsModal
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}

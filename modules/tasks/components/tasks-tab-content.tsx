@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { TasksKanban } from './tasks-kanban';
-import { TaskPagination } from '@/components/ui/pagination';
 import { Task, TaskStatus } from '@/lib/types/task';
 
 interface TasksTabContentProps {
@@ -9,25 +8,18 @@ interface TasksTabContentProps {
     isLoading: boolean;
     error: Error | null;
     tasksByStatus: Record<TaskStatus, Task[]>;
-    pagination: {
-        page: number;
-        totalPages: number;
-    };
     onUpdateTaskStatus: (taskId: number, newStatus: string) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask: () => void;
-    onPageChange: (page: number) => void;
 }
 
 // Main Tasks tab content component
 const TasksContent = memo(
     ({
         tasksByStatus,
-        pagination,
         onUpdateTaskStatus,
         onDeleteTask,
         onAddTask,
-        onPageChange,
     }: Omit<TasksTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
         return (
             <div className='flex flex-col h-full overflow-hidden'>
@@ -37,13 +29,6 @@ const TasksContent = memo(
                         onUpdateTaskStatus={onUpdateTaskStatus}
                         onDeleteTask={onDeleteTask}
                         onAddTask={onAddTask}
-                    />
-                </div>
-                <div className='px-4 py-3'>
-                    <TaskPagination
-                        currentPage={pagination.page}
-                        totalPages={pagination.totalPages}
-                        onPageChange={onPageChange}
                     />
                 </div>
             </div>
@@ -115,11 +100,9 @@ function TasksTabContentComponent({
     isLoading,
     error,
     tasksByStatus,
-    pagination,
     onUpdateTaskStatus,
     onDeleteTask,
     onAddTask,
-    onPageChange,
 }: TasksTabContentProps) {
     if (isLoading) {
         return <LoadingContent />;
@@ -134,11 +117,9 @@ function TasksTabContentComponent({
             return (
                 <TasksContent
                     tasksByStatus={tasksByStatus}
-                    pagination={pagination}
                     onUpdateTaskStatus={onUpdateTaskStatus}
                     onDeleteTask={onDeleteTask}
                     onAddTask={onAddTask}
-                    onPageChange={onPageChange}
                 />
             );
         case 'reports':

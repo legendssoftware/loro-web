@@ -11,16 +11,22 @@ export function useClaimsQuery(filters: ClaimFilterParams = {}) {
     const queryClient = useQueryClient();
     const claimApi = useClaimApi();
 
+    // Ensure we always use a limit of 500
+    const enhancedFilters = useMemo(() => ({
+        ...filters,
+        limit: 500,
+    }), [filters]);
+
     // Fetch claims with React Query
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: [CLAIMS_QUERY_KEY, filters],
-        queryFn: () => claimApi.getClaims(filters),
+        queryKey: [CLAIMS_QUERY_KEY, enhancedFilters],
+        queryFn: () => claimApi.getClaims(enhancedFilters),
         placeholderData: previousData => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling
         retry: 2,
         retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: Object.keys(filters)?.length > 0 || !filters?.hasOwnProperty('page'),
+        enabled: Object.keys(enhancedFilters)?.length > 0 || !enhancedFilters?.hasOwnProperty('page'),
     });
 
     // Group claims by status
@@ -145,12 +151,6 @@ export function useClaimsQuery(filters: ClaimFilterParams = {}) {
         claimsByStatus,
         isLoading,
         error: error as Error | null,
-        pagination: {
-            page: data?.page || 1,
-            limit: data?.limit || 10,
-            total: data?.total || 0,
-            totalPages: data?.totalPages || 1,
-        },
         createClaim,
         updateClaim,
         deleteClaim,

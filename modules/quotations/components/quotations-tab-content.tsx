@@ -1,6 +1,5 @@
 'use client';
 
-import { CustomPagination } from '@/components/ui/custom-pagination';
 import { QuotationsByStatus } from '@/lib/types/quotation';
 import { OrderStatus } from '@/lib/enums/status.enums';
 import { QuotationsKanban } from './quotations-kanban';
@@ -12,18 +11,11 @@ interface QuotationsTabContentProps {
     isLoading: boolean;
     error: Error | null;
     quotationsByStatus: QuotationsByStatus;
-    pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-    };
     onUpdateQuotationStatus: (
         quotationId: number,
         newStatus: OrderStatus,
     ) => Promise<void>;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
-    onPageChange: (page: number) => void;
     onAddQuotation: () => void;
 }
 
@@ -32,10 +24,8 @@ function QuotationsTabContentComponent({
     isLoading,
     error,
     quotationsByStatus,
-    pagination,
     onUpdateQuotationStatus,
     onDeleteQuotation,
-    onPageChange,
     onAddQuotation,
 }: QuotationsTabContentProps) {
     if (isLoading) {
@@ -60,24 +50,15 @@ function QuotationsTabContentComponent({
     }
 
     return (
-        <div className="flex flex-col w-full h-full">
+        <div className="flex flex-col w-full h-full overflow-hidden">
             {activeTab === 'quotations' && (
-                <div className="flex flex-col flex-1 pb-4 overflow-hidden">
+                <div className="flex-1 w-full overflow-hidden">
                     <QuotationsKanban
                         quotationsByStatus={quotationsByStatus}
                         onUpdateStatus={onUpdateQuotationStatus}
                         onDeleteQuotation={onDeleteQuotation}
                         onAddNewQuotation={onAddQuotation}
                     />
-                    {pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center mt-4">
-                            <CustomPagination
-                                currentPage={pagination.page}
-                                totalPages={pagination.totalPages}
-                                onPageChange={onPageChange}
-                            />
-                        </div>
-                    )}
                 </div>
             )}
 

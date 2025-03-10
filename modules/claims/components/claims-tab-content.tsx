@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { ClaimsKanban } from './claims-kanban';
-import { TaskPagination } from '@/components/ui/pagination';
 import { Claim, ClaimStatus } from '@/lib/types/claim';
 
 interface ClaimsTabContentProps {
@@ -9,41 +8,27 @@ interface ClaimsTabContentProps {
     isLoading: boolean;
     error: Error | null;
     claimsByStatus: Record<ClaimStatus, Claim[]>;
-    pagination: {
-        page: number;
-        totalPages: number;
-    };
     onUpdateClaimStatus: (claimId: number, newStatus: string) => void;
     onDeleteClaim: (claimId: number) => void;
     onAddClaim: () => void;
-    onPageChange: (page: number) => void;
 }
 
 // Main Claims tab content component
 const ClaimsContent = memo(
     ({
         claimsByStatus,
-        pagination,
         onUpdateClaimStatus,
         onDeleteClaim,
         onAddClaim,
-        onPageChange,
     }: Omit<ClaimsTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
         return (
-            <div className="flex flex-col h-full overflow-hidden">
-                <div className="flex-1 overflow-hidden">
+            <div className="flex flex-col w-full h-full overflow-hidden">
+                <div className="flex-1 w-full overflow-hidden">
                     <ClaimsKanban
                         claimsByStatus={claimsByStatus}
                         onUpdateStatus={onUpdateClaimStatus}
                         onDelete={onDeleteClaim}
                         onAddClaim={onAddClaim}
-                    />
-                </div>
-                <div className="px-4 py-3">
-                    <TaskPagination
-                        currentPage={pagination.page}
-                        totalPages={pagination.totalPages}
-                        onPageChange={onPageChange}
                     />
                 </div>
             </div>
@@ -119,11 +104,9 @@ function ClaimsTabContentComponent({
     isLoading,
     error,
     claimsByStatus,
-    pagination,
     onUpdateClaimStatus,
     onDeleteClaim,
     onAddClaim,
-    onPageChange,
 }: ClaimsTabContentProps) {
     if (isLoading) {
         return <LoadingContent />;
@@ -138,11 +121,9 @@ function ClaimsTabContentComponent({
             return (
                 <ClaimsContent
                     claimsByStatus={claimsByStatus}
-                    pagination={pagination}
                     onUpdateClaimStatus={onUpdateClaimStatus}
                     onDeleteClaim={onDeleteClaim}
                     onAddClaim={onAddClaim}
-                    onPageChange={onPageChange}
                 />
             );
         case 'reports':

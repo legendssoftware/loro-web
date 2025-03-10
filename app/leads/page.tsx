@@ -58,7 +58,7 @@ export default function LeadsPage() {
     const [activeTab, setActiveTab] = useState<string>('leads');
     const [filterParams, setFilterParams] = useState<LeadFilterParams>({
         page: 1,
-        limit: 20,
+        limit: 500,
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -73,7 +73,6 @@ export default function LeadsPage() {
         updateLeadStatus,
         deleteLead,
         createLead,
-        pagination,
         refetch,
     } = useLeadsQuery(isAuthenticated ? currentFilters : {});
 
@@ -115,26 +114,16 @@ export default function LeadsPage() {
         setFilterParams((prev) => ({
             ...prev,
             ...newFilters,
-            page: 1, // Reset to first page when applying new filters
+            limit: 500, // Always keep the limit at 500
         }));
     }, []);
 
     // Clear filters handler
     const handleClearFilters = useCallback(() => {
-        console.log('Clearing filters');
         setFilterParams({
             page: 1,
-            limit: 20,
+            limit: 500,
         });
-    }, []);
-
-    // Handle page change
-    const handlePageChange = useCallback((page: number) => {
-        console.log('Changing to page:', page);
-        setFilterParams((prev) => ({
-            ...prev,
-            page,
-        }));
     }, []);
 
     return (
@@ -159,11 +148,9 @@ export default function LeadsPage() {
                             isLoading={isLoading}
                             error={error}
                             leadsByStatus={leadsByStatus}
-                            pagination={pagination}
                             onUpdateLeadStatus={handleUpdateLeadStatus}
                             onDeleteLead={handleDeleteLead}
                             onAddLead={handleCreateLead}
-                            onPageChange={handlePageChange}
                         />
                     </div>
                 </div>

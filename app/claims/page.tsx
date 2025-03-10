@@ -10,8 +10,6 @@ import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
 import { ClaimsTabContent } from '@/modules/claims/components/claims-tab-content';
 import { ClaimsFilter } from '@/modules/claims/components/claims-filter';
 import { ClaimDetailsModal } from '@/modules/claims/components/claim-details-modal';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 
 // Tab configuration
 const tabs = [
@@ -134,14 +132,6 @@ export default function ClaimsPage() {
                                 onClearFilters={handleClearFilters}
                                 claims={claims || []}
                             />
-                            <Button
-                                size="sm"
-                                className="ml-2 bg-primary hover:bg-primary/90 text-[11px] uppercase font-normal font-body"
-                                onClick={handleCreateClaim}
-                            >
-                                <Plus className="w-3.5 h-3.5 mr-1" />
-                                Add Claim
-                            </Button>
                         </div>
                     )}
                     <div className="flex items-center justify-start flex-1 px-2 overflow-hidden">

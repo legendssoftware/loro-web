@@ -1078,7 +1078,7 @@ export function TaskDetailsModal({
                         <div className="flex flex-col items-center justify-center p-4 text-center rounded-lg bg-card">
                             <Map className="w-12 h-12 mb-2 text-primary/50" />
                             <p className="text-xs font-thin uppercase font-body">
-                                Coming Soon
+                                Activating Soon
                             </p>
                             <p className="mt-2 text-xs font-thin uppercase text-card-foreground/60 font-body">
                                 Route planning and management will be available

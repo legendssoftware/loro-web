@@ -11,13 +11,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import {
-    ClaimFilterParams,
-    ClaimStatus,
-    ClaimCategory,
-    Claim,
-    StatusColors,
-} from '@/lib/types/claim';
+import { Quotation, QuotationFilterParams } from '@/lib/types/quotation';
+import { OrderStatus } from '@/lib/enums/status.enums';
 import {
     CalendarIcon,
     Check,
@@ -27,22 +22,11 @@ import {
     AlertCircle,
     CheckCircle,
     XCircle,
-    CreditCard,
     Calendar,
     Users,
-    Tag,
     User,
-    DollarSign,
-    Receipt,
-    Plane,
-    Bus,
-    Utensils,
-    Coffee,
-    Hotel,
-    Building,
-    MapPin,
     Clock,
-    CalendarX2,
+    Package,
 } from 'lucide-react';
 import { useCallback, useState, memo } from 'react';
 import {
@@ -65,28 +49,20 @@ enum DateRangePreset {
     CUSTOM = 'CUSTOM',
 }
 
-// Extend ClaimFilterParams to include ownerId
-interface ExtendedClaimFilterParams extends ClaimFilterParams {
-    ownerId?: number;
-}
-
-interface ClaimsFilterProps {
-    onApplyFilters: (filters: ExtendedClaimFilterParams) => void;
+interface QuotationsFilterProps {
+    onApplyFilters: (filters: QuotationFilterParams) => void;
     onClearFilters: () => void;
-    claims?: Claim[];
+    quotations?: Quotation[];
 }
 
-function ClaimsFilterComponent({
+function QuotationsFilterComponent({
     onApplyFilters,
     onClearFilters,
-    claims = [],
-}: ClaimsFilterProps) {
+    quotations = [],
+}: QuotationsFilterProps) {
     const [search, setSearch] = useState<string>('');
-    const [status, setStatus] = useState<ClaimStatus | undefined>(undefined);
-    const [category, setCategory] = useState<ClaimCategory | undefined>(
-        undefined,
-    );
-    const [ownerId, setOwnerId] = useState<number | undefined>(undefined);
+    const [status, setStatus] = useState<OrderStatus | undefined>(undefined);
+    const [clientId, setClientId] = useState<number | undefined>(undefined);
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
     const [dateRangePreset, setDateRangePreset] = useState<
@@ -95,7 +71,7 @@ function ClaimsFilterComponent({
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     const handleApplyFilters = useCallback(() => {
-        const filters: ExtendedClaimFilterParams = {};
+        const filters: QuotationFilterParams = {};
         const newActiveFilters: string[] = [];
 
         if (search) {
@@ -108,14 +84,9 @@ function ClaimsFilterComponent({
             newActiveFilters.push('Status');
         }
 
-        if (category) {
-            filters.category = category;
-            newActiveFilters.push('Category');
-        }
-
-        if (ownerId) {
-            filters.ownerId = ownerId;
-            newActiveFilters.push('Owner');
+        if (clientId) {
+            filters.clientId = clientId;
+            newActiveFilters.push('Client');
         }
 
         if (startDate || endDate) {
@@ -130,13 +101,12 @@ function ClaimsFilterComponent({
 
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
-    }, [search, status, category, ownerId, startDate, endDate, onApplyFilters]);
+    }, [search, status, clientId, startDate, endDate, onApplyFilters]);
 
     const handleClearFilters = useCallback(() => {
         setSearch('');
         setStatus(undefined);
-        setCategory(undefined);
-        setOwnerId(undefined);
+        setClientId(undefined);
         setStartDate(undefined);
         setEndDate(undefined);
         setDateRangePreset(undefined);
@@ -201,116 +171,69 @@ function ClaimsFilterComponent({
         return 'DATE RANGE';
     }, [dateRangePreset, startDate, endDate]);
 
-    const categoryLabels = {
-        [ClaimCategory.GENERAL]: 'General',
-        [ClaimCategory.TRAVEL]: 'Travel',
-        [ClaimCategory.TRANSPORT]: 'Transport',
-        [ClaimCategory.ACCOMMODATION]: 'Accommodation',
-        [ClaimCategory.MEALS]: 'Meals',
-        [ClaimCategory.ENTERTAINMENT]: 'Entertainment',
-        [ClaimCategory.HOTEL]: 'Hotel',
-        [ClaimCategory.OTHER]: 'Other',
-        [ClaimCategory.PROMOTION]: 'Promotion',
-        [ClaimCategory.EVENT]: 'Event',
-        [ClaimCategory.ANNOUNCEMENT]: 'Announcement',
-        [ClaimCategory.TRANSPORTATION]: 'Transportation',
-        [ClaimCategory.OTHER_EXPENSES]: 'Other Expenses',
-    };
+    // Extract unique clients from quotations for dropdown options
+    const uniqueClients = React.useMemo(() => {
+        const clientsMap = new Map();
 
-    const statusLabels = {
-        [ClaimStatus.PENDING]: 'PENDING',
-        [ClaimStatus.APPROVED]: 'APPROVED',
-        [ClaimStatus.REJECTED]: 'REJECTED',
-        [ClaimStatus.PAID]: 'PAID',
-        [ClaimStatus.CANCELLED]: 'CANCELLED',
-        [ClaimStatus.DECLINED]: 'DECLINED',
-        [ClaimStatus.DELETED]: 'DELETED',
-    };
-
-    const statusIcons = {
-        [ClaimStatus.PENDING]: AlertCircle,
-        [ClaimStatus.APPROVED]: CheckCircle,
-        [ClaimStatus.REJECTED]: XCircle,
-        [ClaimStatus.PAID]: CreditCard,
-        [ClaimStatus.CANCELLED]: CalendarX2,
-        [ClaimStatus.DECLINED]: XCircle,
-        [ClaimStatus.DELETED]: XCircle,
-    };
-
-    const statusColors = {
-        [ClaimStatus.PENDING]: 'text-yellow-600',
-        [ClaimStatus.APPROVED]: 'text-green-600',
-        [ClaimStatus.REJECTED]: 'text-red-600',
-        [ClaimStatus.PAID]: 'text-blue-600',
-        [ClaimStatus.CANCELLED]: 'text-gray-600',
-        [ClaimStatus.DECLINED]: 'text-purple-600',
-        [ClaimStatus.DELETED]: 'text-orange-600',
-    };
-
-    const categoryColors = {
-        [ClaimCategory.GENERAL]: 'text-gray-600',
-        [ClaimCategory.TRAVEL]: 'text-blue-600',
-        [ClaimCategory.TRANSPORT]: 'text-indigo-600',
-        [ClaimCategory.ACCOMMODATION]: 'text-purple-600',
-        [ClaimCategory.MEALS]: 'text-green-600',
-        [ClaimCategory.ENTERTAINMENT]: 'text-pink-600',
-        [ClaimCategory.HOTEL]: 'text-violet-600',
-        [ClaimCategory.OTHER]: 'text-slate-600',
-        [ClaimCategory.PROMOTION]: 'text-yellow-600',
-        [ClaimCategory.EVENT]: 'text-orange-600',
-        [ClaimCategory.ANNOUNCEMENT]: 'text-red-600',
-        [ClaimCategory.TRANSPORTATION]: 'text-cyan-600',
-        [ClaimCategory.OTHER_EXPENSES]: 'text-gray-500',
-    };
-
-    const categoryIcons = {
-        [ClaimCategory.GENERAL]: Receipt,
-        [ClaimCategory.TRAVEL]: Plane,
-        [ClaimCategory.TRANSPORT]: Bus,
-        [ClaimCategory.ACCOMMODATION]: Building,
-        [ClaimCategory.MEALS]: Utensils,
-        [ClaimCategory.ENTERTAINMENT]: Coffee,
-        [ClaimCategory.HOTEL]: Hotel,
-        [ClaimCategory.OTHER]: Tag,
-        [ClaimCategory.PROMOTION]: DollarSign,
-        [ClaimCategory.EVENT]: Calendar,
-        [ClaimCategory.ANNOUNCEMENT]: AlertCircle,
-        [ClaimCategory.TRANSPORTATION]: Bus,
-        [ClaimCategory.OTHER_EXPENSES]: Receipt,
-    };
-
-    // Extract unique owners from claims
-    const uniqueOwners = React.useMemo(() => {
-        const ownersMap = new Map();
-
-        claims.forEach((claim) => {
+        quotations.forEach((quotation) => {
             if (
-                claim.owner &&
-                claim.owner.uid &&
-                !ownersMap.has(claim.owner.uid)
+                quotation.client &&
+                quotation.client.uid &&
+                !clientsMap.has(quotation.client.uid)
             ) {
-                ownersMap.set(claim.owner.uid, {
-                    id: claim.owner.uid,
-                    name: claim.owner.name || 'Unknown',
-                    surname: claim.owner.surname || '',
-                    email: claim.owner.email || '',
-                    avatar: claim.owner.photoURL || claim.owner.avatarUrl || '',
+                clientsMap.set(quotation.client.uid, {
+                    id: quotation.client.uid,
+                    name: quotation.client.name || 'Unknown',
+                    photo: quotation.client.photo || '',
+                    email: quotation.client.email || '',
                 });
             }
         });
 
-        return Array.from(ownersMap.values());
-    }, [claims]);
+        return Array.from(clientsMap.values());
+    }, [quotations]);
 
-    // Use unique owners or fallback to sample data if empty
-    const owners =
-        uniqueOwners.length > 0
-            ? uniqueOwners
-            : [
-                  { id: 1, name: 'John Doe', avatar: '/avatars/01.png' },
-                  { id: 2, name: 'Jane Smith', avatar: '/avatars/02.png' },
-                  { id: 3, name: 'Alex Johnson', avatar: '/avatars/03.png' },
-              ];
+    const statusLabels: Record<OrderStatus, string> = {
+        [OrderStatus.PENDING]: 'PENDING',
+        [OrderStatus.INPROGRESS]: 'IN PROGRESS',
+        [OrderStatus.APPROVED]: 'APPROVED',
+        [OrderStatus.REJECTED]: 'REJECTED',
+        [OrderStatus.COMPLETED]: 'COMPLETED',
+        [OrderStatus.CANCELLED]: 'CANCELLED',
+        [OrderStatus.POSTPONED]: 'POSTPONED',
+        [OrderStatus.OUTFORDELIVERY]: 'OUT FOR DELIVERY',
+        [OrderStatus.DELIVERED]: 'DELIVERED',
+    };
+
+    type IconType = React.ForwardRefExoticComponent<
+        Omit<React.SVGProps<SVGSVGElement>, 'ref'> & {
+            ref?: React.Ref<SVGSVGElement>;
+        }
+    >;
+
+    const statusIcons: Record<OrderStatus, IconType> = {
+        [OrderStatus.PENDING]: AlertCircle,
+        [OrderStatus.INPROGRESS]: Clock,
+        [OrderStatus.APPROVED]: CheckCircle,
+        [OrderStatus.REJECTED]: XCircle,
+        [OrderStatus.COMPLETED]: Check,
+        [OrderStatus.CANCELLED]: X,
+        [OrderStatus.POSTPONED]: Clock,
+        [OrderStatus.OUTFORDELIVERY]: Package,
+        [OrderStatus.DELIVERED]: Package,
+    };
+
+    const statusColors: Record<OrderStatus, string> = {
+        [OrderStatus.PENDING]: 'text-yellow-600',
+        [OrderStatus.INPROGRESS]: 'text-blue-600',
+        [OrderStatus.APPROVED]: 'text-green-600',
+        [OrderStatus.REJECTED]: 'text-red-600',
+        [OrderStatus.COMPLETED]: 'text-purple-600',
+        [OrderStatus.CANCELLED]: 'text-gray-600',
+        [OrderStatus.POSTPONED]: 'text-orange-600',
+        [OrderStatus.OUTFORDELIVERY]: 'text-indigo-600',
+        [OrderStatus.DELIVERED]: 'text-teal-600',
+    };
 
     return (
         <div className="flex items-center justify-end flex-1 gap-2">
@@ -328,7 +251,7 @@ function ClaimsFilterComponent({
                             handleApplyFilters();
                         }
                     }}
-                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-normal placeholder:font-body"
+                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
                 />
                 {search && (
                     <Button
@@ -342,7 +265,7 @@ function ClaimsFilterComponent({
                             }
                         }}
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4 text-red-500" />
                         <span className="sr-only">Clear search</span>
                     </Button>
                 )}
@@ -456,7 +379,7 @@ function ClaimsFilterComponent({
                 </DropdownMenu>
             </div>
 
-            {/* Claim Status Filter */}
+            {/* Quotation Status Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -487,11 +410,11 @@ function ClaimsFilterComponent({
                         className="p-1 w-[180px]"
                     >
                         <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            CLAIM STATUS
+                            QUOTATION STATUS
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {Object.values(ClaimStatus).map((statusOption) => {
+                            {Object.values(OrderStatus).map((statusOption) => {
                                 const StatusIcon = statusIcons[statusOption];
 
                                 return (
@@ -538,102 +461,15 @@ function ClaimsFilterComponent({
                 </DropdownMenu>
             </div>
 
-            {/* Category Filter */}
+            {/* Client Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                {category ? (
-                                    categoryIcons[category] &&
-                                    React.createElement(
-                                        categoryIcons[category],
-                                        {
-                                            className: `h-3 w-3 ${categoryColors[category]}`,
-                                        },
-                                    )
-                                ) : (
-                                    <Tag className="w-4 h-4 text-muted-foreground" />
-                                )}
+                                <User className="w-4 h-4 text-muted-foreground" />
                                 <span className="text-[10px] font-normal uppercase font-body">
-                                    {category
-                                        ? categoryLabels[category].toUpperCase()
-                                        : 'CATEGORY'}
-                                </span>
-                            </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[220px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            CLAIM CATEGORY
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
-                            {Object.values(ClaimCategory).map(
-                                (categoryOption) => {
-                                    const CategoryIcon =
-                                        categoryIcons[categoryOption];
-
-                                    return (
-                                        <DropdownMenuItem
-                                            key={categoryOption}
-                                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                                            onClick={() => {
-                                                setCategory(
-                                                    category === categoryOption
-                                                        ? undefined
-                                                        : categoryOption,
-                                                );
-                                                setTimeout(
-                                                    handleApplyFilters,
-                                                    0,
-                                                );
-                                            }}
-                                        >
-                                            <div className="flex items-center gap-1">
-                                                <CategoryIcon
-                                                    className={`w-4 h-4 mr-2 ${categoryColors[categoryOption]}`}
-                                                />
-                                                <span
-                                                    className={`uppercase text-[10px] font-normal ${
-                                                        category ===
-                                                        categoryOption
-                                                            ? categoryColors[
-                                                                  categoryOption
-                                                              ]
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    {categoryLabels[
-                                                        categoryOption
-                                                    ].toUpperCase()}
-                                                </span>
-                                            </div>
-                                            {category === categoryOption && (
-                                                <Check className="w-4 h-4 text-primary" />
-                                            )}
-                                        </DropdownMenuItem>
-                                    );
-                                },
-                            )}
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
-            {/* Owner Filter */}
-            <div className="w-[180px]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {ownerId ? 'OWNER' : 'ASSIGNEE'}
+                                    {clientId ? 'CLIENT' : 'CLIENT'}
                                 </span>
                             </div>
                             <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -644,57 +480,38 @@ function ClaimsFilterComponent({
                         className="p-1 w-[180px]"
                     >
                         <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            OWNER
+                            CLIENT
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
                             onClick={() => {
-                                setOwnerId(ownerId === -1 ? undefined : -1);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Avatar className="w-6 h-6">
-                                    <AvatarFallback>ME</AvatarFallback>
-                                </Avatar>
-                                <span className="text-[10px] font-normal">
-                                    My Claims
-                                </span>
-                            </div>
-                            {ownerId === -1 && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() => {
-                                setOwnerId(ownerId === 0 ? undefined : 0);
+                                setClientId(undefined);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
                             <div className="flex items-center gap-2">
                                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <X className="w-3 h-3" />
+                                    <Users className="w-3 h-3" />
                                 </div>
                                 <span className="text-[10px] font-normal">
-                                    No Owner
+                                    All Clients
                                 </span>
                             </div>
-                            {ownerId === 0 && (
+                            {!clientId && (
                                 <Check className="w-4 h-4 text-primary" />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {owners.map((owner) => (
+                        {uniqueClients.map((client) => (
                             <DropdownMenuItem
-                                key={owner.id}
+                                key={client.id}
                                 className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
                                 onClick={() => {
-                                    setOwnerId(
-                                        ownerId === owner.id
+                                    setClientId(
+                                        clientId === client.id
                                             ? undefined
-                                            : owner.id,
+                                            : client.id,
                                     );
                                     setTimeout(handleApplyFilters, 0);
                                 }}
@@ -702,18 +519,18 @@ function ClaimsFilterComponent({
                                 <div className="flex items-center gap-2">
                                     <Avatar className="w-6 h-6">
                                         <AvatarImage
-                                            src={owner.avatar}
-                                            alt={owner.name}
+                                            src={client.photo}
+                                            alt={client.name}
                                         />
                                         <AvatarFallback>
-                                            {owner.name.charAt(0)}
+                                            {client.name.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <span className="text-[10px] font-normal">
-                                        {owner.name}
+                                        {client.name}
                                     </span>
                                 </div>
-                                {ownerId === owner.id && (
+                                {clientId === client.id && (
                                     <Check className="w-4 h-4 text-primary" />
                                 )}
                             </DropdownMenuItem>
@@ -738,4 +555,4 @@ function ClaimsFilterComponent({
     );
 }
 
-export const ClaimsFilter = memo(ClaimsFilterComponent);
+export const QuotationsFilter = memo(QuotationsFilterComponent);

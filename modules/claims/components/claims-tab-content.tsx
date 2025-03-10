@@ -56,13 +56,13 @@ ClaimsContent.displayName = 'ClaimsContent';
 // Reports tab content
 const ReportsContent = memo(() => {
     return (
-        <div className="h-full overflow-hidden">
+        <div className="w-full h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-lg font-normal uppercase font-body">
+                <p className="text-lg font-thin uppercase font-body">
                     Claim Reports
                 </p>
-                <p className="text-xs font-normal uppercase text-muted-foreground font-body">
-                    Reports functionality coming soon
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Claims reports functionality activating soon
                 </p>
             </div>
         </div>
@@ -74,13 +74,13 @@ ReportsContent.displayName = 'ReportsContent';
 // Analytics tab content
 const AnalyticsContent = memo(() => {
     return (
-        <div className="h-full overflow-hidden">
+        <div className="w-full h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-lg font-normal uppercase font-body">
+                <p className="text-lg font-thin uppercase font-body">
                     Claim Analytics
                 </p>
-                <p className="text-xs font-normal uppercase text-muted-foreground font-body">
-                    Analytics functionality coming soon
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Claims analytics functionality activating soon
                 </p>
             </div>
         </div>

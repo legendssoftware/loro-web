@@ -1,24 +1,23 @@
 'use client';
 
 import { memo, useCallback } from 'react';
-import { cn } from '@/lib/utils';
 
 interface TabItem {
     id: string;
     label: string;
 }
 
-interface ClaimsTabGroupProps {
+interface QuotationsTabGroupProps {
     tabs: TabItem[];
     activeTab: string;
     onTabChange: (tabId: string) => void;
 }
 
-function ClaimsTabGroupComponent({
+function QuotationsTabGroupComponent({
     tabs,
     activeTab,
     onTabChange,
-}: ClaimsTabGroupProps) {
+}: QuotationsTabGroupProps) {
     const handleTabChange = useCallback(
         (tabId: string) => {
             if (activeTab !== tabId) {
@@ -56,4 +55,4 @@ function ClaimsTabGroupComponent({
     );
 }
 
-export const ClaimsTabGroup = memo(ClaimsTabGroupComponent);
+export const QuotationsTabGroup = memo(QuotationsTabGroupComponent);

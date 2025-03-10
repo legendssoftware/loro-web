@@ -58,9 +58,9 @@ const ReportsContent = memo(() => {
     return (
         <div className='h-full overflow-hidden'>
             <div className='flex flex-col items-center justify-center h-full'>
-                <p className='text-lg font-normal uppercase font-body'>Task Reports</p>
-                <p className='text-xs font-normal uppercase text-muted-foreground font-body'>
-                    Reports functionality coming soon
+                <p className='text-lg font-thin uppercase font-body'>Task Reports</p>
+                <p className='text-xs font-thin uppercase text-muted-foreground font-body'>
+                    Task reports functionality activating soon
                 </p>
             </div>
         </div>
@@ -72,11 +72,11 @@ ReportsContent.displayName = 'ReportsContent';
 // Analytics tab content
 const AnalyticsContent = memo(() => {
     return (
-        <div className='h-full overflow-hidden'>
-            <div className='flex flex-col items-center justify-center h-full'>
-                <p className='text-lg font-normal uppercase font-body'>Task Analytics</p>
-                <p className='text-xs font-normal uppercase text-muted-foreground font-body'>
-                    Analytics functionality coming soon
+        <div className='w-full h-full overflow-hidden'>
+            <div className='flex flex-col items-center justify-center w-full h-full'>
+                <p className='text-lg font-thin uppercase font-body'>Task Analytics</p>
+                <p className='text-xs font-thin uppercase text-muted-foreground font-body'>
+                    Task analytics functionality activating soon
                 </p>
             </div>
         </div>

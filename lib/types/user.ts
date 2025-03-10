@@ -1,13 +1,31 @@
+export interface UserAddress {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+}
+
 export interface User {
     uid: number;
+    name: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    role: 'admin' | 'user' | 'manager';
-    organisationRef: string;
-    branchRef: string;
-    isActive: boolean;
-    lastLogin: string;
-    createdAt: string;
-    updatedAt: string;
+    surname?: string;
+    phone?: string;
+    avatarUrl?: string;
+    photoURL?: string;
+    address?: UserAddress;
+    accessLevel?: string;
+    status?: string;
+    userref?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isDeleted?: boolean;
+    role?: string;
+    branch?: string;
+    department?: string;
+    position?: string;
+    notes?: string;
+    photo?: string;
+
 }

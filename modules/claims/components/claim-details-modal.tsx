@@ -94,17 +94,17 @@ export function ClaimDetailsModal({
     const getStatusButtonVariant = (status: ClaimStatus) => {
         switch (status) {
             case ClaimStatus.PENDING:
-                return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 ${currentStatus === status ? 'bg-yellow-100' : ''}`;
+                return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${currentStatus === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
             case ClaimStatus.APPROVED:
-                return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 ${currentStatus === status ? 'bg-green-100' : ''}`;
+                return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${currentStatus === status ? 'bg-green-100 dark:bg-green-900/30' : ''}`;
             case ClaimStatus.REJECTED:
-                return `text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 ${currentStatus === status ? 'bg-red-100' : ''}`;
+                return `text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${currentStatus === status ? 'bg-red-100 dark:bg-red-900/30' : ''}`;
             case ClaimStatus.PAID:
-                return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 ${currentStatus === status ? 'bg-blue-100' : ''}`;
+                return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${currentStatus === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
             case ClaimStatus.CANCELLED:
-                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 ${currentStatus === status ? 'bg-gray-100' : ''}`;
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
             default:
-                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 ${currentStatus === status ? 'bg-gray-100' : ''}`;
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
         }
     };
 
@@ -700,7 +700,7 @@ export function ClaimDetailsModal({
                             >
                                 <AlertCircle
                                     strokeWidth={1.2}
-                                    className="text-yellow-600 w-7 h-7"
+                                    className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
                                 />
                             </Button>
                             <Button
@@ -714,7 +714,7 @@ export function ClaimDetailsModal({
                             >
                                 <CheckCircle
                                     strokeWidth={1.2}
-                                    className="text-green-600 w-7 h-7"
+                                    className="text-green-600 w-7 h-7 dark:text-green-400"
                                 />
                             </Button>
                             <Button
@@ -728,7 +728,7 @@ export function ClaimDetailsModal({
                             >
                                 <Ban
                                     strokeWidth={1.2}
-                                    className="text-red-600 w-7 h-7"
+                                    className="text-red-600 w-7 h-7 dark:text-red-400"
                                 />
                             </Button>
                             <Button
@@ -742,7 +742,7 @@ export function ClaimDetailsModal({
                             >
                                 <CreditCard
                                     strokeWidth={1.2}
-                                    className="text-blue-600 w-7 h-7"
+                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
                                 />
                             </Button>
                             <Button
@@ -756,7 +756,7 @@ export function ClaimDetailsModal({
                             >
                                 <CalendarX2
                                     strokeWidth={1.2}
-                                    className="text-gray-600 w-7 h-7"
+                                    className="text-gray-600 w-7 h-7 dark:text-gray-400"
                                 />
                             </Button>
                             <Button
@@ -766,7 +766,7 @@ export function ClaimDetailsModal({
                                 onClick={handleDelete}
                                 title="Delete Claim"
                             >
-                                <Trash2 className="w-7 h-7" strokeWidth={1.5} />
+                                <Trash2 className="w-7 h-7 dark:text-red-400" strokeWidth={1.5} />
                             </Button>
                         </div>
                     </DialogFooter>

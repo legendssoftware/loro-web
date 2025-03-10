@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 // Get base URL from environment variables or default to localhost
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: 50000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -32,7 +33,8 @@ axiosInstance.interceptors.request.use(
             // If not found, try the older session-storage
             if (!accessToken) {
                 try {
-                    const sessionData = sessionStorage.getItem('session-storage');
+                    const sessionData =
+                        sessionStorage.getItem('session-storage');
                     if (sessionData) {
                         const parsedData = JSON.parse(sessionData);
                         accessToken = parsedData?.state?.accessToken;
@@ -52,7 +54,7 @@ axiosInstance.interceptors.request.use(
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
 );
 
 // Add response interceptor for error handling
@@ -69,7 +71,10 @@ axiosInstance.interceptors.response.use(
         // Handle auth errors with token refresh if not already trying to refresh
         if ((isAuthError || isTokenError) && !originalRequest._retry) {
             originalRequest._retry = true;
-            console.warn('Authentication error detected:', error.response?.data?.message);
+            console.warn(
+                'Authentication error detected:',
+                error.response?.data?.message,
+            );
 
             try {
                 // Get token from sessionStorage in client-side only
@@ -86,31 +91,44 @@ axiosInstance.interceptors.response.use(
                             refreshToken = authStorageData?.state?.refreshToken;
                         }
                     } catch (authError) {
-                        console.error('Error accessing auth storage:', authError);
+                        console.error(
+                            'Error accessing auth storage:',
+                            authError,
+                        );
                     }
 
                     // If not found, try the older session-storage
                     if (!refreshToken) {
                         try {
-                            const sessionData = sessionStorage.getItem('session-storage');
+                            const sessionData =
+                                sessionStorage.getItem('session-storage');
                             if (sessionData) {
                                 sessionStorageData = JSON.parse(sessionData);
-                                refreshToken = sessionStorageData?.state?.refreshToken;
+                                refreshToken =
+                                    sessionStorageData?.state?.refreshToken;
                             }
                         } catch (sessionError) {
-                            console.error('Error accessing session storage:', sessionError);
+                            console.error(
+                                'Error accessing session storage:',
+                                sessionError,
+                            );
                         }
                     }
 
                     if (refreshToken) {
                         console.log('Attempting to refresh token...');
                         // Call token refresh endpoint
-                        const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-                            refreshToken,
-                        });
+                        const response = await axios.post(
+                            `${API_BASE_URL}/auth/refresh-token`,
+                            {
+                                refreshToken,
+                            },
+                        );
 
                         if (!response.data.accessToken) {
-                            throw new Error('No access token returned from refresh endpoint');
+                            throw new Error(
+                                'No access token returned from refresh endpoint',
+                            );
                         }
 
                         const { accessToken } = response.data;
@@ -120,19 +138,32 @@ axiosInstance.interceptors.response.use(
                         if (authStorageData) {
                             try {
                                 authStorageData.state.accessToken = accessToken;
-                                sessionStorage.setItem('auth-storage', JSON.stringify(authStorageData));
+                                sessionStorage.setItem(
+                                    'auth-storage',
+                                    JSON.stringify(authStorageData),
+                                );
                             } catch (storageError) {
-                                console.error('Error updating auth storage:', storageError);
+                                console.error(
+                                    'Error updating auth storage:',
+                                    storageError,
+                                );
                             }
                         }
 
                         // Update token in session storage if it exists
                         if (sessionStorageData) {
                             try {
-                                sessionStorageData.state.accessToken = accessToken;
-                                sessionStorage.setItem('session-storage', JSON.stringify(sessionStorageData));
+                                sessionStorageData.state.accessToken =
+                                    accessToken;
+                                sessionStorage.setItem(
+                                    'session-storage',
+                                    JSON.stringify(sessionStorageData),
+                                );
                             } catch (storageError) {
-                                console.error('Error updating session storage:', storageError);
+                                console.error(
+                                    'Error updating session storage:',
+                                    storageError,
+                                );
                             }
                         }
 
@@ -143,10 +174,13 @@ axiosInstance.interceptors.response.use(
                         // Retry the original request
                         return axiosInstance(originalRequest);
                     } else {
-                        console.error('No refresh token available, cannot refresh session');
+                        console.error(
+                            'No refresh token available, cannot refresh session',
+                        );
                         // Redirect to login page after a small delay
                         setTimeout(() => {
-                            window.location.href = '/sign-in?reason=token_expired';
+                            window.location.href =
+                                '/sign-in?reason=token_expired';
                         }, 1000);
                     }
                 }
@@ -170,7 +204,7 @@ axiosInstance.interceptors.response.use(
         }
 
         return Promise.reject(error);
-    }
+    },
 );
 
 // Utility function to check authentication status - helpful for debugging
@@ -190,7 +224,7 @@ export const checkAuthStatus = () => {
                 console.log('Auth storage found:', {
                     isAuthenticated: authData?.state?.isAuthenticated,
                     hasAccessToken: !!authToken,
-                    hasRefreshToken: !!refreshToken
+                    hasRefreshToken: !!refreshToken,
                 });
             } else {
                 console.log('No auth-storage found');
@@ -208,7 +242,7 @@ export const checkAuthStatus = () => {
                 console.log('Session storage found:', {
                     isAuthenticated: sessionData?.state?.isAuthenticated,
                     hasAccessToken: !!sessionToken,
-                    hasRefreshToken: !!sessionRefresh
+                    hasRefreshToken: !!sessionRefresh,
                 });
             } else {
                 console.log('No session-storage found');
@@ -218,9 +252,9 @@ export const checkAuthStatus = () => {
         }
 
         return {
-            isAuthenticated: !!(authToken || (sessionData?.state?.accessToken)),
+            isAuthenticated: !!(authToken || sessionData?.state?.accessToken),
             authToken,
-            refreshToken
+            refreshToken,
         };
     }
     return { isAuthenticated: false, authToken: null, refreshToken: null };

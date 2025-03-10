@@ -572,24 +572,6 @@ export function ClaimDetailsModal({
         }
     };
 
-    // Edit Modal
-    const EditModal = () => (
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-            <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
-                <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">
-                        Editing this Claim
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="flex items-center justify-center h-64">
-                    <h2 className="text-xs font-thin uppercase font-body">
-                        Activating Soon
-                    </h2>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-
     // If no claim provided, show a message
     if (!claim) {
         return (
@@ -597,7 +579,7 @@ export function ClaimDetailsModal({
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Submit a new Claim
+                            Claim Creation
                         </DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
@@ -616,22 +598,24 @@ export function ClaimDetailsModal({
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
-                            <DialogTitle className="text-xl font-semibold uppercase font-body">
-                                Claim {claim.amount}
+                            <DialogTitle className="text-lg font-thin uppercase font-body">
+                                Claim #{claim.uid}
                             </DialogTitle>
                             <div className="flex items-center gap-2 mt-2">
                                 <Badge
                                     variant="outline"
                                     className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getStatusBadgeColor(claim.status)}`}
                                 >
-                                    {claim.status.toUpperCase()}
+                                    {claim.status}
                                 </Badge>
-                                <Badge
-                                    variant="outline"
-                                    className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getCategoryColor(claim.category)}`}
-                                >
-                                    {claim.category.toUpperCase()}
-                                </Badge>
+                                {claim.category && (
+                                    <Badge
+                                        variant="outline"
+                                        className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getCategoryColor(claim.category)}`}
+                                    >
+                                        {claim.category}
+                                    </Badge>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -656,24 +640,24 @@ export function ClaimDetailsModal({
 
                     <div className="mt-4">
                         <div className="flex items-center mb-6 overflow-x-auto border-b border-border/10">
-                            {tabs.map((tab) => (
+                            {['details', 'history', 'documents'].map((tab) => (
                                 <div
-                                    key={tab.id}
+                                    key={tab}
                                     className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
                                 >
                                     <div
-                                        className={`mb-3 font-body px-0 font-normal ${
-                                            activeTab === tab.id
+                                        className={`mb-3 font-body px-0 font-normal cursor-pointer ${
+                                            activeTab === tab
                                                 ? 'text-primary dark:text-primary'
-                                                : 'text-muted-foreground hover:text-foreground'
+                                                : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
-                                        onClick={() => handleTabChange(tab.id)}
+                                        onClick={() => handleTabChange(tab)}
                                     >
                                         <span className="text-xs font-thin uppercase font-body">
-                                            {tab.label}
+                                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
                                         </span>
                                     </div>
-                                    {activeTab === tab.id && (
+                                    {activeTab === tab && (
                                         <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary" />
                                     )}
                                 </div>
@@ -682,7 +666,7 @@ export function ClaimDetailsModal({
                         {renderTabContent()}
                     </div>
 
-                    <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t border-border/30">
+                    <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700">
                         <div className="flex flex-col items-center justify-center w-full">
                             <p className="text-xs font-thin uppercase font-body">
                                 Manage this claim
@@ -759,18 +743,20 @@ export function ClaimDetailsModal({
                                     className="text-gray-600 w-7 h-7 dark:text-gray-400"
                                 />
                             </Button>
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="rounded-full w-14 h-14"
-                                onClick={handleDelete}
-                                title="Delete Claim"
-                            >
-                                <Trash2
-                                    className="w-7 h-7 dark:text-white"
-                                    strokeWidth={1.5}
-                                />
-                            </Button>
+                            {onDelete && (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-red-800 border-red-200 rounded-full w-14 h-14 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
+                                    onClick={handleDelete}
+                                    title="Delete Claim"
+                                >
+                                    <Trash2
+                                        strokeWidth={1.2}
+                                        className="text-red-600 w-7 h-7 dark:text-red-400"
+                                    />
+                                </Button>
+                            )}
                         </div>
                     </DialogFooter>
                 </DialogContent>
@@ -781,30 +767,26 @@ export function ClaimDetailsModal({
                 open={confirmStatusChangeOpen}
                 onOpenChange={setConfirmStatusChangeOpen}
             >
-                <AlertDialogContent className="bg-card">
+                <AlertDialogContent className="font-body">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="font-semibold font-body">
+                        <AlertDialogTitle className="text-lg font-thin uppercase font-body">
                             Confirm Status Change
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="font-thin font-body">
-                            Are you sure you want to change the claim status to{' '}
-                            {pendingStatusChange}? This action cannot be undone.
+                        <AlertDialogDescription className="font-thin">
+                            Are you sure you want to change the status of this claim
+                            {pendingStatusChange && ` to ${pendingStatusChange}`}?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex flex-row justify-between w-full">
-                        <div className="w-1/2">
-                            <AlertDialogCancel className="w-full font-thin font-body">
-                                Cancel
-                            </AlertDialogCancel>
-                        </div>
-                        <div className="w-1/2">
-                            <AlertDialogAction
-                                onClick={confirmStatusChange}
-                                className="w-full font-thin bg-primary hover:bg-primary/90 font-body"
-                            >
-                                Confirm
-                            </AlertDialogAction>
-                        </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="font-thin font-body">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmStatusChange}
+                            className="font-thin bg-primary hover:bg-primary/90 font-body"
+                        >
+                            Confirm
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -814,9 +796,9 @@ export function ClaimDetailsModal({
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
             >
-                <AlertDialogContent className="bg-card">
+                <AlertDialogContent className="font-body">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="font-semibold font-body">
+                        <AlertDialogTitle className="text-lg font-thin uppercase font-body">
                             Confirm Deletion
                         </AlertDialogTitle>
                         <AlertDialogDescription className="font-thin font-body">
@@ -824,26 +806,35 @@ export function ClaimDetailsModal({
                             action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex flex-row justify-between w-full">
-                        <div className="w-1/2">
-                            <AlertDialogCancel className="w-full font-thin font-body">
-                                Cancel
-                            </AlertDialogCancel>
-                        </div>
-                        <div className="w-1/2">
-                            <AlertDialogAction
-                                onClick={confirmDelete}
-                                className="w-full font-thin bg-destructive hover:bg-destructive/90 font-body"
-                            >
-                                Delete
-                            </AlertDialogAction>
-                        </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="font-thin font-body">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="font-thin bg-destructive hover:bg-destructive/90 font-body"
+                        >
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
             {/* Edit Modal */}
-            <EditModal />
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            Edit Claim
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex items-center justify-center h-64">
+                        <h2 className="text-xs font-thin uppercase font-body">
+                            Activating Soon
+                        </h2>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

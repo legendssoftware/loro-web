@@ -4,18 +4,21 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     ChartSpline,
-    ClipboardEdit,
+    ClipboardList,
+    CalendarCheck2,
     Power,
     Settings,
     Users,
     HandCoins,
-    UserPlusIcon,
+    Handshake,
     Package,
     ShoppingBag,
     UsersRound,
     Store,
     Map,
     KeySquare,
+    BriefcaseBusiness,
+    Warehouse,
 } from 'lucide-react';
 import {
     Sheet,
@@ -48,7 +51,7 @@ const navigationItems = [
     },
     {
         title: 'Leads',
-        icon: <UserPlusIcon size={18} strokeWidth={1.5} />,
+        icon: <Handshake size={18} strokeWidth={1.5} />,
         href: '/leads',
         description: 'Manage potential customers',
     },
@@ -60,7 +63,7 @@ const navigationItems = [
     },
     {
         title: 'Tasks',
-        icon: <ClipboardEdit size={18} strokeWidth={1.5} />,
+        icon: <CalendarCheck2 size={18} strokeWidth={1.5} />,
         href: '/tasks',
         description: 'Track work assignments',
     },
@@ -78,14 +81,14 @@ const navigationItems = [
     },
     {
         title: 'Clients',
-        icon: <UsersRound size={18} strokeWidth={1.5} />,
+        icon: <BriefcaseBusiness size={18} strokeWidth={1.5} />,
         href: '/clients',
         description: 'View active customers',
     },
     {
-        title: 'Resellers',
-        icon: <Store size={18} strokeWidth={1.5} />,
-        href: '/resellers',
+        title: 'Suppliers',
+        icon: <Warehouse size={18} strokeWidth={1.5} />,
+        href: '/suppliers',
         description: 'Manage partner businesses',
     },
     {
@@ -226,7 +229,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                                 'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-12 rounded-xl',
                                                 'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
                                                 isActive &&
-                                                    'border-primary border text-primary bg-primary/5'
+                                                    'border-primary border text-primary bg-primary/5',
                                             )}
                                         >
                                             {item.icon}

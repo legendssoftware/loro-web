@@ -10,16 +10,23 @@ interface ClaimsHeaderProps {
     onAddClaim?: () => void;
 }
 
-function ClaimsHeaderComponent({ onApplyFilters, onClearFilters, onAddClaim }: ClaimsHeaderProps) {
+function ClaimsHeaderComponent({
+    onApplyFilters,
+    onClearFilters,
+    onAddClaim,
+}: ClaimsHeaderProps) {
     return (
-        <div className='flex-shrink-0 px-8 py-3 border-b border-border/10'>
-            <div className='flex items-center justify-between w-full'>
-                <ClaimsFilter onApplyFilters={onApplyFilters} onClearFilters={onClearFilters} />
-                <Button onClick={onAddClaim} className='ml-4' size='sm'>
-                    <PlusCircle className='w-4 h-4 mr-2' />
-                    <p className='text-xs font-normal uppercase font-body'>Add Claim</p>
-                </Button>
-            </div>
+        <div className="flex items-center justify-end gap-2 px-2">
+            <ClaimsFilter
+                onApplyFilters={onApplyFilters}
+                onClearFilters={onClearFilters}
+            />
+            <Button onClick={onAddClaim} size="sm">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                <p className="font-normal uppercase text-[10px] font-body">
+                    Add Claim
+                </p>
+            </Button>
         </div>
     );
 }

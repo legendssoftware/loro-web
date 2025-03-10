@@ -249,7 +249,7 @@ function ClaimCardComponent({
                 {claim?.owner && (
                     <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
                         <div className="flex -space-x-2">
-                            <Avatar className="border w-7 h-7 border-primary">
+                            <Avatar className="border h-9 w-9 border-primary">
                                 <AvatarImage
                                     src={claim?.owner?.photoURL}
                                     alt={claim?.owner?.name}

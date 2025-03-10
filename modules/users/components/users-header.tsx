@@ -17,14 +17,16 @@ export function UsersHeader({
     onAddUser,
 }: UsersHeaderProps) {
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-end px-2">
             <UsersFilter
                 onApplyFilters={onApplyFilters}
                 onClearFilters={onClearFilters}
             />
-            <Button onClick={onAddUser} className="ml-4">
+            <Button onClick={onAddUser} size="sm">
                 <UserPlus className="w-4 h-4 mr-2" />
-                <span className="text-[10px] font-normal uppercase font-body">Add User</span>
+                <span className="text-[10px] font-normal uppercase font-body">
+                    Add User
+                </span>
             </Button>
         </div>
     );

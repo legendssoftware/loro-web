@@ -43,7 +43,7 @@ export function FloatingPagination({
     return (
         <div
             className={cn(
-                'fixed bottom-8 right-8 flex items-center gap-2 bg-background/80 backdrop-blur-sm border border-border rounded-full px-3 py-2 shadow-md z-50',
+                'fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-background/80 backdrop-blur-sm border border-border rounded-full px-3 py-2 shadow-md z-50',
                 className,
             )}
         >

@@ -9,7 +9,12 @@ import { useRouter } from 'next/navigation';
 import { TasksTabGroup } from '@/modules/tasks/components/tasks-tab-group';
 import { TasksTabContent } from '@/modules/tasks/components/tasks-tab-content';
 import { TasksHeader } from '@/modules/tasks/components/tasks-header';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 // Tab configuration
 const tabs = [
@@ -30,7 +35,11 @@ function CreateTaskModal({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
-                <DialogTitle className="sr-only">Create New Task</DialogTitle>
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        Task Creation
+                    </DialogTitle>
+                </DialogHeader>
                 <div className="flex items-center justify-center h-64">
                     <h2 className="text-xs font-thin uppercase font-body">
                         Activating Soon
@@ -73,7 +82,6 @@ export default function TasksPage() {
         updateTask,
         deleteTask,
         createTask,
-        pagination,
         refetch,
     } = useTasksQuery(isAuthenticated ? currentFilters : {});
 
@@ -129,7 +137,7 @@ export default function TasksPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen overflow-hidden">
+            <div className="flex flex-col h-screen gap-2 overflow-hidden">
                 <TasksTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
@@ -143,7 +151,7 @@ export default function TasksPage() {
                             onAddTask={handleCreateTask}
                         />
                     )}
-                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <TasksTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}

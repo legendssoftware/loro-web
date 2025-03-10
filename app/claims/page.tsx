@@ -106,7 +106,7 @@ export default function ClaimsPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen overflow-hidden">
+            <div className="flex flex-col h-screen gap-2 overflow-hidden">
                 <ClaimsTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
@@ -120,7 +120,7 @@ export default function ClaimsPage() {
                             onAddClaim={handleCreateClaim}
                         />
                     )}
-                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <ClaimsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}

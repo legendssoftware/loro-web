@@ -1,11 +1,14 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import {
     Building,
     Mail,
@@ -20,13 +23,12 @@ import {
     UserMinus,
     UserCog,
     Shield,
-    AtSign
+    AtSign,
 } from 'lucide-react';
 import { User, UserStatus, AccessLevel } from '@/lib/types/user';
-import { ChangeEvent, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { showErrorToast } from '@/lib/utils/toast-config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -49,7 +51,8 @@ export function UserDetailsModal({
 }: UserDetailsModalProps) {
     const [editedUser, setEditedUser] = useState<User>({ ...user });
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] =
+        useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
@@ -57,15 +60,6 @@ export function UserDetailsModal({
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
         return format(new Date(date), 'MMM d, yyyy');
-    };
-
-    // Handle input changes
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setEditedUser((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
     };
 
     // Handle status change
@@ -158,7 +152,10 @@ export function UserDetailsModal({
                             </h3>
                             <div className="flex items-start gap-4">
                                 <Avatar className="w-20 h-20 border-2 border-primary">
-                                    <AvatarImage src={user.photoURL} alt={user.name} />
+                                    <AvatarImage
+                                        src={user.photoURL}
+                                        alt={user.name}
+                                    />
                                     <AvatarFallback className="text-2xl">
                                         {`${user.name.charAt(0)}${user.surname.charAt(0)}`}
                                     </AvatarFallback>
@@ -188,11 +185,16 @@ export function UserDetailsModal({
                                             </Badge>
                                         </div>
 
-                                        {user.userEmploymentProfile?.position && (
+                                        {user.userEmploymentProfile
+                                            ?.position && (
                                             <div className="flex items-center text-sm text-muted-foreground">
                                                 <Briefcase className="w-4 h-4 mr-1" />
                                                 <span className="text-xs font-thin uppercase font-body">
-                                                    {user.userEmploymentProfile.position}
+                                                    {
+                                                        user
+                                                            .userEmploymentProfile
+                                                            .position
+                                                    }
                                                 </span>
                                             </div>
                                         )}
@@ -242,7 +244,8 @@ export function UserDetailsModal({
                                     <div className="flex items-center">
                                         <Building className="w-4 h-4 mr-2 text-card-foreground/60" />
                                         <span className="text-xs font-thin font-body">
-                                            Organization: {user.organisation.name}
+                                            Organization:{' '}
+                                            {user.organisation.name}
                                         </span>
                                     </div>
                                 )}
@@ -280,7 +283,8 @@ export function UserDetailsModal({
                                 <div className="flex items-center">
                                     <Calendar className="w-4 h-4 mr-2 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
-                                        Last Updated: {formatDate(user.updatedAt)}
+                                        Last Updated:{' '}
+                                        {formatDate(user.updatedAt)}
                                     </span>
                                 </div>
                             </div>
@@ -309,7 +313,8 @@ export function UserDetailsModal({
                             Activity
                         </h3>
                         <p className="text-xs font-thin font-body">
-                            User activity history will be displayed here in future updates.
+                            User activity history will be displayed here in
+                            future updates.
                         </p>
                     </div>
                 );
@@ -325,7 +330,7 @@ export function UserDetailsModal({
                     <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
                             <DialogTitle className="text-xl font-semibold uppercase font-body">
-                                User Details
+                                {`${user.name} ${user.surname}`}
                             </DialogTitle>
                             <div className="flex items-center gap-2 mt-2">
                                 <Badge
@@ -395,7 +400,9 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${user.status === UserStatus.ACTIVE ? 'bg-green-100 dark:bg-green-900/30' : ''}`}
-                                onClick={() => handleStatusChange(UserStatus.ACTIVE)}
+                                onClick={() =>
+                                    handleStatusChange(UserStatus.ACTIVE)
+                                }
                                 title="Activate User"
                             >
                                 <UserCheck
@@ -407,7 +414,9 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${user.status === UserStatus.INACTIVE ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`}
-                                onClick={() => handleStatusChange(UserStatus.INACTIVE)}
+                                onClick={() =>
+                                    handleStatusChange(UserStatus.INACTIVE)
+                                }
                                 title="Deactivate User"
                             >
                                 <UserX
@@ -419,7 +428,9 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${user.status === UserStatus.SUSPENDED ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
-                                onClick={() => handleStatusChange(UserStatus.SUSPENDED)}
+                                onClick={() =>
+                                    handleStatusChange(UserStatus.SUSPENDED)
+                                }
                                 title="Suspend User"
                             >
                                 <UserMinus
@@ -432,7 +443,9 @@ export function UserDetailsModal({
                                     variant="outline"
                                     size="icon"
                                     className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
-                                    onClick={() => setShowDeleteConfirmation(true)}
+                                    onClick={() =>
+                                        setShowDeleteConfirmation(true)
+                                    }
                                     title="Delete User"
                                 >
                                     <UserCog
@@ -450,12 +463,15 @@ export function UserDetailsModal({
                             <AlertTriangle className="w-4 h-4" />
                             <AlertTitle>Warning</AlertTitle>
                             <AlertDescription>
-                                Are you sure you want to delete this user? This action cannot be undone.
+                                Are you sure you want to delete this user? This
+                                action cannot be undone.
                                 <div className="flex justify-end gap-2 mt-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setShowDeleteConfirmation(false)}
+                                        onClick={() =>
+                                            setShowDeleteConfirmation(false)
+                                        }
                                     >
                                         Cancel
                                     </Button>
@@ -472,11 +488,15 @@ export function UserDetailsModal({
                     )}
                 </DialogContent>
             </Dialog>
-            
+
             {/* Edit User Modal - "Activating Soon" */}
             <Dialog open={showEditModal} onOpenChange={handleCloseEditModal}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
-                    <DialogTitle className="sr-only">Edit User</DialogTitle>
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                                 Creation
+                        </DialogTitle>
+                    </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">
                             Activating Soon

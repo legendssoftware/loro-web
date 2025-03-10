@@ -156,7 +156,7 @@ function LeadCardComponent({
                 {lead?.owner && (
                     <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
                         <div className="flex -space-x-2">
-                            <Avatar className="border w-7 h-7 border-primary">
+                            <Avatar className="border w-9 h-9 border-primary">
                                 <AvatarImage
                                     src={lead?.owner?.photoURL}
                                     alt={lead?.owner?.name}

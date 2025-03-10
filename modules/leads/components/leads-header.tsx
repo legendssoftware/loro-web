@@ -9,7 +9,7 @@ interface LeadsHeaderProps {
 
 export function LeadsHeader({ onApplyFilters, onClearFilters, onAddLead }: LeadsHeaderProps) {
     return (
-        <div className="flex items-center justify-between px-8 py-4">
+        <div className="flex items-center justify-end px-2">
             <LeadsFilter onApplyFilters={onApplyFilters} onClearFilters={onClearFilters} />
         </div>
     );

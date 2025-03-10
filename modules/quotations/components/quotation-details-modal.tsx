@@ -74,6 +74,9 @@ export function QuotationDetailsModal({
 
     const quotation = data as Quotation;
 
+    // If this is a new quotation (uid === 0), handle it accordingly
+    const isNewQuotation = quotation?.uid === 0;
+
     // Use StatusColors from quotation types
     const getStatusColors = useMemo(() => {
         if (!quotation) return null;
@@ -953,10 +956,8 @@ export function QuotationDetailsModal({
                 >
                     <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                         <DialogHeader>
-                            <DialogTitle className="flex flex-row items-center justify-center text-xl font-body">
-                                <p className="text-lg font-thin uppercase font-body">
-                                    Editing this Quotation
-                                </p>
+                            <DialogTitle className="text-lg font-thin uppercase font-body">
+                                Quotation Editing
                             </DialogTitle>
                         </DialogHeader>
                         <div className="w-full h-full overflow-hidden">

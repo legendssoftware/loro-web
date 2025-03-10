@@ -10,16 +10,23 @@ interface TasksHeaderProps {
     onAddTask: () => void;
 }
 
-function TasksHeaderComponent({ onApplyFilters, onClearFilters, onAddTask }: TasksHeaderProps) {
+function TasksHeaderComponent({
+    onApplyFilters,
+    onClearFilters,
+    onAddTask,
+}: TasksHeaderProps) {
     return (
-        <div className='flex-shrink-0 px-8 py-3 border-b border-border/10'>
-            <div className='flex items-center justify-between w-full'>
-                <TasksFilter onApplyFilters={onApplyFilters} onClearFilters={onClearFilters} />
-                <Button onClick={onAddTask} className='ml-4' size='sm'>
-                    <PlusCircle className='w-4 h-4 mr-2' />
-                    <p className='text-xs font-normal uppercase font-body'>Add Task</p>
-                </Button>
-            </div>
+        <div className="flex items-center justify-end gap-2 px-2">
+            <TasksFilter
+                onApplyFilters={onApplyFilters}
+                onClearFilters={onClearFilters}
+            />
+            <Button onClick={onAddTask} size="sm">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                <p className="text-[10px] font-normal uppercase font-body">
+                    Add Task
+                </p>
+            </Button>
         </div>
     );
 }

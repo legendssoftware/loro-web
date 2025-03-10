@@ -9,7 +9,12 @@ import { useRouter } from 'next/navigation';
 import { UsersTabGroup } from '@/modules/users/components/users-tab-group';
 import { UsersTabContent } from '@/modules/users/components/users-tab-content';
 import { UsersHeader } from '@/modules/users/components/users-header';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 // Tab configuration
 const tabs = [
@@ -31,7 +36,11 @@ function CreateUserModal({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
-                <DialogTitle className="sr-only">Create New User</DialogTitle>
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        User Creation
+                    </DialogTitle>
+                </DialogHeader>
                 <div className="flex items-center justify-center h-64">
                     <h2 className="text-xs font-thin uppercase font-body">
                         Activating Soon
@@ -138,7 +147,7 @@ export default function StaffPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen overflow-hidden">
+            <div className="flex flex-col h-screen gap-2 overflow-hidden">
                 <UsersTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
@@ -152,7 +161,7 @@ export default function StaffPage() {
                             onAddUser={handleCreateUser}
                         />
                     )}
-                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <UsersTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
@@ -162,8 +171,14 @@ export default function StaffPage() {
                             onDeleteUser={handleDeleteUser}
                             onAddUser={handleCreateUser}
                             pagination={{
-                                currentPage: Math.max(1, filterParams.page || 1),
-                                totalPages: Math.max(1, pagination?.totalPages || 1),
+                                currentPage: Math.max(
+                                    1,
+                                    filterParams.page || 1,
+                                ),
+                                totalPages: Math.max(
+                                    1,
+                                    pagination?.totalPages || 1,
+                                ),
                                 onPageChange: handlePageChange,
                             }}
                         />

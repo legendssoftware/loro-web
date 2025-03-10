@@ -1,20 +1,192 @@
 'use client';
 
 import { PageTransition } from '@/components/animations/page-transition';
-import { motion } from 'framer-motion';
-import { itemVariants } from '@/lib/utils/animations';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useClientsQuery, ClientFilterParams, ClientStatus } from '@/hooks/use-clients-query';
+import { useAuthStatus } from '@/hooks/use-auth-status';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group';
+import { ClientsHeader } from '@/modules/clients/components/clients-header';
+import { ClientsTabContent } from '@/modules/clients/components/clients-tab-content';
+
+// Tab configuration
+const tabs = [
+    { id: 'clients', label: 'CLIENTS' },
+    { id: 'reports', label: 'REPORTS' },
+    { id: 'analytics', label: 'ANALYTICS' },
+];
+
+// Create Client Modal Component
+function CreateClientModal({
+    isOpen,
+    onClose,
+    onCreateClient,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onCreateClient?: (clientData: any) => void;
+}) {
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        Client Creation
+                    </DialogTitle>
+                </DialogHeader>
+                <div className="flex items-center justify-center h-64">
+                    <h2 className="text-xs font-thin uppercase font-body">
+                        Activating Soon
+                    </h2>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 export default function ClientsPage() {
+    const router = useRouter();
+    const { isAuthenticated, checkStatus } = useAuthStatus();
+
+    // Check authentication on component mount
+    useEffect(() => {
+        const status = checkStatus();
+        if (!status.isAuthenticated) {
+            console.warn('User not authenticated. Redirecting to login page.');
+            router.push('/sign-in');
+        }
+    }, [checkStatus, router]);
+
+    // State
+    const [activeTab, setActiveTab] = useState<string>('clients');
+    const [filterParams, setFilterParams] = useState<ClientFilterParams>({
+        page: 1,
+        limit: 20,
+    });
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+    // Memoize filter params to prevent unnecessary re-renders
+    const currentFilters = useMemo(() => filterParams, [filterParams]);
+
+    // Use the React Query hook only if authenticated
+    const {
+        clients,
+        clientsByStatus,
+        loading: isLoading,
+        error,
+        refetch,
+        createClient,
+        updateClient,
+        deleteClient,
+        updateClientStatus,
+        pagination,
+    } = useClientsQuery(isAuthenticated ? currentFilters : {});
+
+    // Refetch data when authentication changes
+    useEffect(() => {
+        if (isAuthenticated) {
+            refetch();
+        }
+    }, [isAuthenticated, refetch]);
+
+    // Handlers
+    const handleCreateClient = useCallback(() => {
+        setIsCreateDialogOpen(true);
+    }, []);
+
+    const handleSubmitCreateClient = useCallback(
+        async (clientData: any) => {
+            await createClient(clientData);
+            setIsCreateDialogOpen(false);
+        },
+        [createClient],
+    );
+
+    const handleUpdateClientStatus = useCallback(
+        async (clientId: number, newStatus: string) => {
+            await updateClientStatus(clientId, newStatus);
+        },
+        [updateClientStatus],
+    );
+
+    const handleDeleteClient = useCallback(
+        async (clientId: number) => {
+            await deleteClient(clientId);
+        },
+        [deleteClient],
+    );
+
+    // Apply filters handler
+    const handleApplyFilters = useCallback((newFilters: ClientFilterParams) => {
+        setFilterParams((prev) => ({
+            ...prev,
+            ...newFilters,
+            limit: 20,
+        }));
+    }, []);
+
+    // Clear filters handler
+    const handleClearFilters = useCallback(() => {
+        setFilterParams({
+            page: 1,
+            limit: 20,
+        });
+    }, []);
+
+    // Page change handler
+    const handlePageChange = useCallback((page: number) => {
+        setFilterParams((prev) => ({
+            ...prev,
+            page,
+        }));
+    }, []);
+
     return (
         <PageTransition>
-            <div className='flex flex-col items-center justify-center h-screen gap-3 p-4'>
-                <motion.p
-                    className='text-sm uppercase font-body'
-                    variants={itemVariants}
-                >
-                    Clients Page
-                </motion.p>
+            <div className="flex flex-col w-full h-screen gap-2 overflow-hidden bg-background">
+                <div className="w-full">
+                    <ClientsTabGroup
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+                </div>
+                <div className="flex flex-col flex-1 w-full overflow-hidden">
+                    <div className="py-2">
+                        <ClientsHeader
+                            onApplyFilters={handleApplyFilters}
+                            onClearFilters={handleClearFilters}
+                            onAddClient={handleCreateClient}
+                        />
+                    </div>
+                    <div className="flex-1 w-full overflow-hidden">
+                        <ClientsTabContent
+                            activeTab={activeTab}
+                            isLoading={isLoading}
+                            error={error as Error | null}
+                            clients={filterParams.status ? clients : []}
+                            clientsByStatus={clientsByStatus}
+                            onAddClient={handleCreateClient}
+                            onEditClient={(client) => console.log('Edit client', client)}
+                            onDeleteClient={handleDeleteClient}
+                            onUpdateClientStatus={handleUpdateClientStatus}
+                            pagination={{
+                                currentPage: Math.max(1, pagination?.page || 1),
+                                totalPages: Math.max(1, pagination?.totalPages || 1),
+                                onPageChange: handlePageChange,
+                            }}
+                        />
+                    </div>
+                </div>
             </div>
+
+            {/* Render the CreateClientModal */}
+            <CreateClientModal
+                isOpen={isCreateDialogOpen}
+                onClose={() => setIsCreateDialogOpen(false)}
+                onCreateClient={handleSubmitCreateClient}
+            />
         </PageTransition>
     );
 }

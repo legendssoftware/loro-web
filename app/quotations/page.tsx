@@ -9,9 +9,9 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-tab-group';
 import { QuotationsTabContent } from '@/modules/quotations/components/quotations-tab-content';
-import { QuotationsFilter } from '@/modules/quotations/components/quotations-filter';
-import { QuotationDetailsModal } from '@/modules/quotations/components/quotation-details-modal';
 import { QuotationsHeader } from '@/modules/quotations/components/quotations-header';
+import { QuotationDetailsModal } from '@/modules/quotations/components/quotation-details-modal';
+import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 
 // Tab configuration
 const tabs = [
@@ -39,7 +39,6 @@ export default function QuotationsPage() {
         page: 1,
         limit: 500,
     });
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
     // Memoize filter params to prevent unnecessary re-renders
     const currentFilters = useMemo(() => filterParams, [filterParams]);
@@ -49,13 +48,12 @@ export default function QuotationsPage() {
         quotationsByStatus,
         isLoading,
         error,
-        updateQuotationStatus,
-        pagination,
         refetch,
-        quotations,
-        applyFilters,
-        clearFilters,
-    } = useQuotationsQuery(isAuthenticated ? currentFilters : {});
+        updateQuotationStatus,
+    } = useQuotationsQuery(currentFilters);
+
+    // Get the quotation modal hook
+    const quotationModal = useQuotationDetailsModal();
 
     // Refetch data when authentication changes
     useEffect(() => {
@@ -73,16 +71,25 @@ export default function QuotationsPage() {
     );
 
     const handleCreateQuotation = useCallback(() => {
-        setIsCreateDialogOpen(true);
-    }, []);
+        // Create an empty quotation object and open the modal
+        const emptyQuotation = {
+            uid: 0, // Temporary ID for new quotation
+            status: OrderStatus.PENDING,
+            // Include any other required fields with default values
+        };
+        quotationModal.onOpen(emptyQuotation as any);
+    }, [quotationModal]);
 
-    const handleApplyFilters = useCallback((newFilters: QuotationFilterParams) => {
-        setFilterParams((prev) => ({
-            ...prev,
-            ...newFilters,
-            limit: 500, // Always keep the limit at 500
-        }));
-    }, []);
+    const handleApplyFilters = useCallback(
+        (newFilters: QuotationFilterParams) => {
+            setFilterParams((prev) => ({
+                ...prev,
+                ...newFilters,
+                limit: 500, // Always keep the limit at 500
+            }));
+        },
+        [],
+    );
 
     const handleClearFilters = useCallback(() => {
         setFilterParams({
@@ -93,10 +100,6 @@ export default function QuotationsPage() {
 
     const handleDeleteQuotation = useCallback(async (id: number) => {
         /* Implement delete functionality */
-    }, []);
-
-    const handleSubmitCreateQuotation = useCallback((quotation: any) => {
-        // Implement the logic to submit a new quotation
     }, []);
 
     return (
@@ -110,18 +113,20 @@ export default function QuotationsPage() {
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {activeTab === 'quotations' && (
                         <QuotationsHeader
-                                onApplyFilters={handleApplyFilters}
-                                onClearFilters={handleClearFilters}
+                            onApplyFilters={handleApplyFilters}
+                            onClearFilters={handleClearFilters}
                             onAddQuotation={handleCreateQuotation}
-                            />
+                        />
                     )}
-                    <div className="flex items-center justify-center flex-1 px-8 py-4 overflow-hidden">
+                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <QuotationsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
                             error={error}
                             quotationsByStatus={quotationsByStatus}
-                            onUpdateQuotationStatus={handleUpdateQuotationStatus}
+                            onUpdateQuotationStatus={
+                                handleUpdateQuotationStatus
+                            }
                             onDeleteQuotation={handleDeleteQuotation}
                             onAddQuotation={handleCreateQuotation}
                         />
@@ -131,9 +136,8 @@ export default function QuotationsPage() {
 
             {/* Render the CreateQuotationModal */}
             <QuotationDetailsModal
-                isOpen={isCreateDialogOpen}
-                onClose={() => setIsCreateDialogOpen(false)}
-                onSave={handleSubmitCreateQuotation}
+                onUpdateStatus={handleUpdateQuotationStatus}
+                onDeleteQuotation={handleDeleteQuotation}
             />
         </PageTransition>
     );

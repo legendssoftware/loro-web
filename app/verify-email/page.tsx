@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { containerVariants } from '@/lib/utils/animations';
 
-const VerifyEmailPage = () => {
+// Client component that uses useSearchParams
+const VerifyEmailClient = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -121,4 +122,36 @@ const VerifyEmailPage = () => {
     );
 };
 
-export default VerifyEmailPage;
+// Loading fallback component
+const EmailVerificationLoading = () => {
+    return (
+        <div className='relative flex items-center justify-center min-h-screen p-4'
+            style={{
+                backgroundImage:
+                    'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'bottom center',
+                backgroundRepeat: 'no-repeat',
+            }}>
+            <div className='absolute inset-0 bg-black/50' />
+            <div className='relative w-full max-w-md p-6 space-y-4 text-center shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'>
+                <h1 className='text-2xl font-normal text-center text-white uppercase sm:text-3xl font-heading'>
+                    Loading
+                </h1>
+                <div className='flex flex-col items-center justify-center gap-4'>
+                    <Loader2 className='w-8 h-8 text-white animate-spin' />
+                    <p className='text-xs text-white uppercase font-body'>Initializing...</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Main page component with Suspense boundary
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={<EmailVerificationLoading />}>
+            <VerifyEmailClient />
+        </Suspense>
+    );
+}

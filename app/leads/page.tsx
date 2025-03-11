@@ -8,7 +8,7 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { LeadsTabGroup } from '@/modules/leads/components/leads-tab-group';
 import { LeadsTabContent } from '@/modules/leads/components/leads-tab-content';
-import { LeadsHeader } from '@/modules/leads/components/leads-header';
+// import { LeadsHeader } from '@/modules/leads/components/leads-header';
 import {
     Dialog,
     DialogContent,
@@ -36,9 +36,7 @@ function CreateLeadModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">
-                        Lead Creation
-                    </DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                 </DialogHeader>
                 <div className="flex items-center justify-center h-64">
                     <h2 className="text-xs font-thin uppercase font-body">
@@ -118,22 +116,22 @@ export default function LeadsPage() {
         [createLead],
     );
 
-    // Apply filters handler
-    const handleApplyFilters = useCallback((newFilters: LeadFilterParams) => {
-        setFilterParams((prev) => ({
-            ...prev,
-            ...newFilters,
-            limit: 500, // Always keep the limit at 500
-        }));
-    }, []);
+    // // Apply filters handler
+    // const handleApplyFilters = useCallback((newFilters: LeadFilterParams) => {
+    //     setFilterParams((prev) => ({
+    //         ...prev,
+    //         ...newFilters,
+    //         limit: 500, // Always keep the limit at 500
+    //     }));
+    // }, []);
 
-    // Clear filters handler
-    const handleClearFilters = useCallback(() => {
-        setFilterParams({
-            page: 1,
-            limit: 500,
-        });
-    }, []);
+    // // Clear filters handler
+    // const handleClearFilters = useCallback(() => {
+    //     setFilterParams({
+    //         page: 1,
+    //         limit: 500,
+    //     });
+    // }, []);
 
     return (
         <PageTransition>
@@ -144,13 +142,13 @@ export default function LeadsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {activeTab === 'leads' && (
+                    {/* {activeTab === 'leads' && (
                         <LeadsHeader
                             onApplyFilters={handleApplyFilters}
                             onClearFilters={handleClearFilters}
                             onAddLead={handleCreateLead}
                         />
-                    )}
+                    )} */}
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <LeadsTabContent
                             activeTab={activeTab}

@@ -12,13 +12,14 @@ import { TaskDetailsModal } from './task-details-modal';
 interface TaskCardProps {
     task: Task;
     onUpdateStatus?: (taskId: number, newStatus: string, newDeadline?: Date) => void;
+    onUpdateTask?: (taskId: number, updates: Partial<Task>) => void;
     onDelete?: (taskId: number) => void;
     onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
     index?: number;
 }
 
 // Create the TaskCard as a standard component
-function TaskCardComponent({ task, onUpdateStatus, onDelete, onUpdateSubtaskStatus, index = 0 }: TaskCardProps) {
+function TaskCardComponent({ task, onUpdateStatus, onUpdateTask, onDelete, onUpdateSubtaskStatus, index = 0 }: TaskCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Use CSS variables for animation delay
@@ -251,6 +252,7 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, onUpdateSubtaskStat
                     isOpen={isModalOpen}
                     onClose={closeModal}
                     onUpdateStatus={handleStatusChange}
+                    onUpdateTask={onUpdateTask}
                     onDelete={handleDelete}
                     onUpdateSubtaskStatus={handleSubtaskStatusToggle}
                 />

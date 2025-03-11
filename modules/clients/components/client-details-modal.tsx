@@ -412,7 +412,7 @@ export function ClientDetailsModal({
                                 <Badge
                                     variant="outline"
                                     className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getStatusBadgeColor(
-                                        client.status
+                                        client.status,
                                     )}`}
                                 >
                                     {client.status?.toUpperCase() || 'UNKNOWN'}
@@ -421,7 +421,7 @@ export function ClientDetailsModal({
                                     <Badge
                                         variant="outline"
                                         className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getCategoryBadgeColor(
-                                            client.category
+                                            client.category,
                                         )}`}
                                     >
                                         {client.category.toUpperCase()}
@@ -475,7 +475,10 @@ export function ClientDetailsModal({
                                 </div>
                             ))}
                         </div>
-                        <div className="overflow-y-auto" style={{ maxHeight: 'calc(70vh - 100px)' }}>
+                        <div
+                            className="overflow-y-auto"
+                            style={{ maxHeight: 'calc(70vh - 100px)' }}
+                        >
                             {renderTabContent()}
                         </div>
                     </div>
@@ -495,7 +498,11 @@ export function ClientDetailsModal({
                                         variant="outline"
                                         size="icon"
                                         className={`w-14 h-14 rounded-full text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${client.status === ClientStatus.PENDING ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`}
-                                        onClick={() => handleStatusChange(ClientStatus.PENDING)}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                ClientStatus.PENDING,
+                                            )
+                                        }
                                         title="Set as Pending"
                                     >
                                         <AlertCircle
@@ -509,7 +516,11 @@ export function ClientDetailsModal({
                                         variant="outline"
                                         size="icon"
                                         className={`w-14 h-14 rounded-full text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${client.status === ClientStatus.ACTIVE ? 'bg-green-100 dark:bg-green-900/30' : ''}`}
-                                        onClick={() => handleStatusChange(ClientStatus.ACTIVE)}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                ClientStatus.ACTIVE,
+                                            )
+                                        }
                                         title="Activate Client"
                                     >
                                         <CheckCircle
@@ -523,7 +534,11 @@ export function ClientDetailsModal({
                                         variant="outline"
                                         size="icon"
                                         className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${client.status === ClientStatus.INACTIVE ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
-                                        onClick={() => handleStatusChange(ClientStatus.INACTIVE)}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                ClientStatus.INACTIVE,
+                                            )
+                                        }
                                         title="Deactivate Client"
                                     >
                                         <Ban
@@ -566,7 +581,9 @@ export function ClientDetailsModal({
                                             variant="outline"
                                             size="icon"
                                             className="text-red-800 border-red-200 rounded-full w-14 h-14 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
-                                            onClick={() => setShowDeleteConfirmation(true)}
+                                            onClick={() =>
+                                                setShowDeleteConfirmation(true)
+                                            }
                                             title="Delete Client"
                                         >
                                             <Trash
@@ -620,9 +637,7 @@ export function ClientDetailsModal({
                 >
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                         <DialogHeader>
-                            <DialogTitle className="text-lg font-thin uppercase font-body">
-                                Edit Client
-                            </DialogTitle>
+                            <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                         </DialogHeader>
                         <div className="flex items-center justify-center h-64">
                             <h2 className="text-xs font-thin uppercase font-body">

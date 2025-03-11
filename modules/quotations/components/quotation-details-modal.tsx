@@ -956,16 +956,12 @@ export function QuotationDetailsModal({
                 >
                     <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                         <DialogHeader>
-                            <DialogTitle className="text-lg font-thin uppercase font-body">
-                                Quotation Editing
-                            </DialogTitle>
+                            <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                         </DialogHeader>
-                        <div className="w-full h-full overflow-hidden">
-                            <div className="flex flex-col items-center justify-center h-full">
-                                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                                    Activating soon
-                                </p>
-                            </div>
+                        <div className="flex items-center justify-center h-64">
+                            <h2 className="text-xs font-thin uppercase font-body">
+                                Activating Soon
+                            </h2>
                         </div>
                     </DialogContent>
                 </Dialog>

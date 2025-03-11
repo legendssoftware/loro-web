@@ -578,9 +578,7 @@ export function ClaimDetailsModal({
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Claim Creation
-                        </DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">
@@ -654,7 +652,8 @@ export function ClaimDetailsModal({
                                         onClick={() => handleTabChange(tab)}
                                     >
                                         <span className="text-xs font-thin uppercase font-body">
-                                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                            {tab.charAt(0).toUpperCase() +
+                                                tab.slice(1)}
                                         </span>
                                     </div>
                                     {activeTab === tab && (
@@ -773,8 +772,11 @@ export function ClaimDetailsModal({
                             Confirm Status Change
                         </AlertDialogTitle>
                         <AlertDialogDescription className="font-thin">
-                            Are you sure you want to change the status of this claim
-                            {pendingStatusChange && ` to ${pendingStatusChange}`}?
+                            Are you sure you want to change the status of this
+                            claim
+                            {pendingStatusChange &&
+                                ` to ${pendingStatusChange}`}
+                            ?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -824,9 +826,7 @@ export function ClaimDetailsModal({
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Edit Claim
-                        </DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">

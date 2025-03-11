@@ -9,7 +9,7 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-tab-group';
 import { QuotationsTabContent } from '@/modules/quotations/components/quotations-tab-content';
-import { QuotationsHeader } from '@/modules/quotations/components/quotations-header';
+// import { QuotationsHeader } from '@/modules/quotations/components/quotations-header';
 import { QuotationDetailsModal } from '@/modules/quotations/components/quotation-details-modal';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 
@@ -80,23 +80,23 @@ export default function QuotationsPage() {
         quotationModal.onOpen(emptyQuotation as any);
     }, [quotationModal]);
 
-    const handleApplyFilters = useCallback(
-        (newFilters: QuotationFilterParams) => {
-            setFilterParams((prev) => ({
-                ...prev,
-                ...newFilters,
-                limit: 500, // Always keep the limit at 500
-            }));
-        },
-        [],
-    );
+    // const handleApplyFilters = useCallback(
+    //     (newFilters: QuotationFilterParams) => {
+    //         setFilterParams((prev) => ({
+    //             ...prev,
+    //             ...newFilters,
+    //             limit: 500, // Always keep the limit at 500
+    //         }));
+    //     },
+    //     [],
+    // );
 
-    const handleClearFilters = useCallback(() => {
-        setFilterParams({
-            page: 1,
-            limit: 500,
-        });
-    }, []);
+    // const handleClearFilters = useCallback(() => {
+    //     setFilterParams({
+    //         page: 1,
+    //         limit: 500,
+    //     });
+    // }, []);
 
     const handleDeleteQuotation = useCallback(async (id: number) => {
         /* Implement delete functionality */
@@ -111,13 +111,13 @@ export default function QuotationsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {activeTab === 'quotations' && (
+                    {/* {activeTab === 'quotations' && (
                         <QuotationsHeader
                             onApplyFilters={handleApplyFilters}
                             onClearFilters={handleClearFilters}
                             onAddQuotation={handleCreateQuotation}
                         />
-                    )}
+                    )} */}
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <QuotationsTabContent
                             activeTab={activeTab}

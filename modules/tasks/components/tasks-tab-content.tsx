@@ -9,6 +9,7 @@ interface TasksTabContentProps {
     error: Error | null;
     tasksByStatus: Record<TaskStatus, Task[]>;
     onUpdateTaskStatus: (taskId: number, newStatus: string, newDeadline?: Date) => void;
+    onUpdateTask?: (taskId: number, updates: Partial<Task>) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask: () => void;
     onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
@@ -19,6 +20,7 @@ const TasksContent = memo(
     ({
         tasksByStatus,
         onUpdateTaskStatus,
+        onUpdateTask,
         onDeleteTask,
         onAddTask,
         onUpdateSubtaskStatus,
@@ -29,6 +31,7 @@ const TasksContent = memo(
                     <TasksKanban
                         tasksByStatus={tasksByStatus}
                         onUpdateTaskStatus={onUpdateTaskStatus}
+                        onUpdateTask={onUpdateTask}
                         onDeleteTask={onDeleteTask}
                         onAddTask={onAddTask}
                         onUpdateSubtaskStatus={onUpdateSubtaskStatus}
@@ -104,6 +107,7 @@ function TasksTabContentComponent({
     error,
     tasksByStatus,
     onUpdateTaskStatus,
+    onUpdateTask,
     onDeleteTask,
     onAddTask,
     onUpdateSubtaskStatus,
@@ -122,6 +126,7 @@ function TasksTabContentComponent({
                 <TasksContent
                     tasksByStatus={tasksByStatus}
                     onUpdateTaskStatus={onUpdateTaskStatus}
+                    onUpdateTask={onUpdateTask}
                     onDeleteTask={onDeleteTask}
                     onAddTask={onAddTask}
                     onUpdateSubtaskStatus={onUpdateSubtaskStatus}
@@ -135,6 +140,7 @@ function TasksTabContentComponent({
             return <TasksContent
                 tasksByStatus={tasksByStatus}
                 onUpdateTaskStatus={onUpdateTaskStatus}
+                onUpdateTask={onUpdateTask}
                 onDeleteTask={onDeleteTask}
                 onAddTask={onAddTask}
                 onUpdateSubtaskStatus={onUpdateSubtaskStatus}

@@ -549,9 +549,7 @@ export function ProductDetailsModal({
             <Dialog open={showEditModal} onOpenChange={handleCloseEditModal}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Product Editor
-                        </DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">

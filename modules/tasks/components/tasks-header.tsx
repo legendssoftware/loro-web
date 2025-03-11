@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { TasksFilter } from './tasks-filter';
+// import { TasksFilter } from './tasks-filter';
 import { TaskFilterParams } from '@/lib/types/task';
 
 interface TasksHeaderProps {
@@ -11,18 +11,21 @@ interface TasksHeaderProps {
 }
 
 function TasksHeaderComponent({
-    onApplyFilters,
-    onClearFilters,
+    // onApplyFilters,
+    // onClearFilters,
     onAddTask,
 }: TasksHeaderProps) {
     return (
         <div className="flex items-center justify-end gap-2 px-2">
-            <TasksFilter
+            {/* <TasksFilter
                 onApplyFilters={onApplyFilters}
                 onClearFilters={onClearFilters}
-            />
+            /> */}
             <Button onClick={onAddTask} size="sm">
-                <PlusCircle className="w-4 h-4 mr-2 text-white" strokeWidth={1.5}/>
+                <PlusCircle
+                    className="w-4 h-4 mr-2 text-white"
+                    strokeWidth={1.5}
+                />
                 <p className="text-[10px] font-normal uppercase font-body text-white">
                     Add Task
                 </p>

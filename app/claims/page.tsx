@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
 import { ClaimsTabContent } from '@/modules/claims/components/claims-tab-content';
 import { ClaimDetailsModal } from '@/modules/claims/components/claim-details-modal';
-import { ClaimsHeader } from '@/modules/claims/components/claims-header';
+// import { ClaimsHeader } from '@/modules/claims/components/claims-header';
 
 // Tab configuration
 const tabs = [
@@ -86,22 +86,22 @@ export default function ClaimsPage() {
         [createClaim],
     );
 
-    // Apply filters handler
-    const handleApplyFilters = useCallback((newFilters: ClaimFilterParams) => {
-        setFilterParams((prev) => ({
-            ...prev,
-            ...newFilters,
-            limit: 500, // Always keep the limit at 500
-        }));
-    }, []);
+    // // Apply filters handler
+    // const handleApplyFilters = useCallback((newFilters: ClaimFilterParams) => {
+    //     setFilterParams((prev) => ({
+    //         ...prev,
+    //         ...newFilters,
+    //         limit: 500, // Always keep the limit at 500
+    //     }));
+    // }, []);
 
-    // Clear filters handler
-    const handleClearFilters = useCallback(() => {
-        setFilterParams({
-            page: 1,
-            limit: 500,
-        });
-    }, []);
+    // // Clear filters handler
+    // const handleClearFilters = useCallback(() => {
+    //     setFilterParams({
+    //         page: 1,
+    //         limit: 500,
+    //     });
+    // }, []);
 
     return (
         <PageTransition>
@@ -112,13 +112,13 @@ export default function ClaimsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {activeTab === 'claims' && (
+                    {/* {activeTab === 'claims' && (
                         <ClaimsHeader
                             onApplyFilters={handleApplyFilters}
                             onClearFilters={handleClearFilters}
                             onAddClaim={handleCreateClaim}
                         />
-                    )}
+                    )} */}
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <ClaimsTabContent
                             activeTab={activeTab}

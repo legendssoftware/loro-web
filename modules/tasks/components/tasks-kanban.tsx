@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface TasksKanbanProps {
     tasksByStatus: Record<TaskStatus, Task[]>;
     onUpdateTaskStatus: (taskId: number, newStatus: string, newDeadline?: Date) => void;
+    onUpdateTask?: (taskId: number, updates: Partial<Task>) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask?: () => void;
     onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
@@ -28,6 +29,7 @@ const EmptyColumn = memo(() => (
 export function TasksKanban({
     tasksByStatus,
     onUpdateTaskStatus,
+    onUpdateTask,
     onDeleteTask,
     onAddTask,
     onUpdateSubtaskStatus,

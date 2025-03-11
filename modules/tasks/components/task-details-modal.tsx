@@ -67,6 +67,7 @@ interface TaskDetailsModalProps {
         newStatus: string,
         newDeadline?: Date,
     ) => void;
+    onUpdateTask?: (taskId: number, updates: Partial<Task>) => void;
     onDelete: (taskId: number) => void;
     onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
 }
@@ -106,6 +107,7 @@ export function TaskDetailsModal({
     isOpen,
     onClose,
     onUpdateStatus,
+    onUpdateTask,
     onDelete,
     onUpdateSubtaskStatus,
 }: TaskDetailsModalProps) {
@@ -121,7 +123,10 @@ export function TaskDetailsModal({
     const [isPostponeDatePickerOpen, setIsPostponeDatePickerOpen] =
         useState<boolean>(false);
     const [postponeDate, setPostponeDate] = useState<Date | undefined>(
-        undefined,
+        task.deadline ? new Date(task.deadline) : new Date(),
+    );
+    const [postponeTime, setPostponeTime] = useState<string>(
+        task.deadline ? format(new Date(task.deadline), 'HH:mm') : '12:00',
     );
 
     const formatDate = (date?: Date) => {
@@ -219,9 +224,11 @@ export function TaskDetailsModal({
 
         if (newStatus === TaskStatus.POSTPONED) {
             setPendingStatusChange(newStatus);
-            setPostponeDate(
-                task.deadline ? new Date(task.deadline) : new Date(),
-            );
+            const deadlineDate = task.deadline
+                ? new Date(task.deadline)
+                : new Date();
+            setPostponeDate(deadlineDate);
+            setPostponeTime(format(deadlineDate, 'HH:mm'));
             setIsPostponeDatePickerOpen(true);
         } else {
             setPendingStatusChange(newStatus);
@@ -236,7 +243,10 @@ export function TaskDetailsModal({
             onClose();
 
             if (pendingStatusChange === TaskStatus.POSTPONED && postponeDate) {
-                onUpdateStatus(task.uid, pendingStatusChange, postponeDate);
+                const [hours, minutes] = postponeTime.split(':').map(Number);
+                const combinedDateTime = new Date(postponeDate);
+                combinedDateTime.setHours(hours, minutes);
+                onUpdateStatus(task.uid, pendingStatusChange, combinedDateTime);
             } else {
                 onUpdateStatus(task.uid, pendingStatusChange);
             }
@@ -294,14 +304,17 @@ export function TaskDetailsModal({
 
     const calculateSubtaskProgress = useCallback(() => {
         // Check if task has subtasks that aren't deleted
-        const validSubtasks = task?.subtasks?.filter(st => !st?.isDeleted) || [];
+        const validSubtasks =
+            task?.subtasks?.filter((st) => !st?.isDeleted) || [];
 
         if (validSubtasks.length === 0) {
             return 0;
         }
 
         // Count completed subtasks
-        const completedSubtasks = validSubtasks.filter(st => st?.status === 'COMPLETED').length;
+        const completedSubtasks = validSubtasks.filter(
+            (st) => st?.status === 'COMPLETED',
+        ).length;
 
         // Calculate percentage
         return Math.round((completedSubtasks / validSubtasks.length) * 100);
@@ -322,29 +335,31 @@ export function TaskDetailsModal({
                         </div>
 
                         {/* Only show progress if there are subtasks */}
-                        {task?.subtasks && task?.subtasks?.filter(st => !st?.isDeleted).length > 0 && (
-                            <div>
-                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                    Stage
-                                </h3>
-                                <div className="flex flex-col gap-1 mb-2">
-                                    <div className="flex items-center justify-between mb-1 text-xs">
-                                        <div className="flex items-center">
-                                            <span className="text-[10px] font-thin uppercase font-body">
-                                                Progress
+                        {task?.subtasks &&
+                            task?.subtasks?.filter((st) => !st?.isDeleted)
+                                .length > 0 && (
+                                <div>
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Stage
+                                    </h3>
+                                    <div className="flex flex-col gap-1 mb-2">
+                                        <div className="flex items-center justify-between mb-1 text-xs">
+                                            <div className="flex items-center">
+                                                <span className="text-[10px] font-thin uppercase font-body">
+                                                    Progress
+                                                </span>
+                                            </div>
+                                            <span className="text-sm font-medium uppercase font-body">
+                                                {calculateSubtaskProgress()}%
                                             </span>
                                         </div>
-                                        <span className="text-sm font-medium uppercase font-body">
-                                            {calculateSubtaskProgress()}%
-                                        </span>
+                                        <Progress
+                                            value={calculateSubtaskProgress()}
+                                            className="h-2"
+                                        />
                                     </div>
-                                    <Progress
-                                        value={calculateSubtaskProgress()}
-                                        className="h-2"
-                                    />
                                 </div>
-                            </div>
-                        )}
+                            )}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -435,7 +450,7 @@ export function TaskDetailsModal({
                                                 Deadline
                                             </span>
                                         </div>
-                                        <span className="text-xs font-thin font-body">
+                                        <span className="text-xs font-thin uppercase font-body">
                                             {formatDate(task?.deadline)}{' '}
                                             {formatTime(task?.deadline)}
                                         </span>
@@ -1167,15 +1182,33 @@ export function TaskDetailsModal({
     };
 
     const handleEditFormSubmit = (taskId: number, taskData: Partial<Task>) => {
-        // Update the task status if it changed
+        // First, determine if we need to update the status separately
         if (taskData.status && taskData.status !== task.status) {
-            onUpdateStatus(taskId, taskData.status);
+            // If we're postponing with a new deadline, it will be handled by onUpdateStatus
+            if (taskData.status === TaskStatus.POSTPONED && taskData.deadline) {
+                onUpdateStatus(
+                    taskId,
+                    taskData.status,
+                    new Date(taskData.deadline),
+                );
+            } else {
+                onUpdateStatus(taskId, taskData.status);
+            }
+        }
+
+        // Create an updates object excluding status if it was already handled
+        const updates: Partial<Task> = { ...taskData };
+        if (updates.status && updates.status !== task.status) {
+            delete updates.status; // Remove status as it's already handled
+        }
+
+        // Only proceed if there are other fields to update and we have the onUpdateTask function
+        if (Object.keys(updates).length > 0 && onUpdateTask) {
+            onUpdateTask(taskId, updates);
         }
 
         // Close the edit modal
         setIsEditModalOpen(false);
-
-        // You could add more functionality here to handle other field updates
     };
 
     return (
@@ -1364,9 +1397,7 @@ export function TaskDetailsModal({
             >
                 <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Task Editing
-                        </DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">
@@ -1445,39 +1476,60 @@ export function TaskDetailsModal({
                 open={isPostponeDatePickerOpen}
                 onOpenChange={setIsPostponeDatePickerOpen}
             >
-                <DialogContent className="bg-card">
-                    <DialogHeader>
-                        <DialogTitle className="text-xs font-thin uppercase font-body">
-                            Select New Deadline
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <UiCalendar
-                            mode="single"
-                            selected={postponeDate}
-                            onSelect={(date) => setPostponeDate(date)}
-                            initialFocus
-                            className="border rounded-md"
-                        />
+                <DialogContent className="max-w-[350px] p-0 border-0 rounded-lg overflow-hidden dark:bg-black bg-card">
+                    <div className="flex flex-col">
+                        <div className="p-3 border-b dark:border-gray-800">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-medium">
+                                    Pick a date and time
+                                </h2>
+                            </div>
+                        </div>
+                        <div className="p-0">
+                            <UiCalendar
+                                mode="single"
+                                selected={postponeDate}
+                                onSelect={(date) => setPostponeDate(date)}
+                                initialFocus
+                                className="dark:bg-black dark:text-gray-200"
+                            />
+                        </div>
+                        <div className="p-3 border-t dark:border-gray-800">
+                            <div className="flex flex-col space-y-2">
+                                <span className="text-xs font-medium">
+                                    Select Time
+                                </span>
+                                <input
+                                    type="time"
+                                    className="w-full h-8 px-3 text-sm bg-transparent border rounded dark:border-gray-800 dark:text-gray-300"
+                                    value={postponeTime}
+                                    onChange={(e) =>
+                                        setPostponeTime(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end p-3 space-x-2 border-t dark:border-gray-800">
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    setIsPostponeDatePickerOpen(false)
+                                }
+                                className="text-xs h-9 dark:bg-transparent dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setIsPostponeDatePickerOpen(false);
+                                    setConfirmStatusChangeOpen(true);
+                                }}
+                                className="text-xs h-9 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
+                            >
+                                Confirm
+                            </Button>
+                        </div>
                     </div>
-                    <DialogFooter className="flex flex-row justify-between w-full">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsPostponeDatePickerOpen(false)}
-                            className="w-full text-xs font-normal uppercase dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700 font-body"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                setIsPostponeDatePickerOpen(false);
-                                setConfirmStatusChangeOpen(true);
-                            }}
-                            className="w-full text-xs font-normal text-white uppercase dark:bg-primary dark:hover:bg-primary/90 font-body"
-                        >
-                            Confirm
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>

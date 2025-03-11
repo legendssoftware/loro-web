@@ -2,10 +2,19 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useClientsQuery, ClientFilterParams, ClientStatus } from '@/hooks/use-clients-query';
+import {
+    useClientsQuery,
+    ClientFilterParams,
+    ClientStatus,
+} from '@/hooks/use-clients-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group';
 import { ClientsHeader } from '@/modules/clients/components/clients-header';
 import { ClientsTabContent } from '@/modules/clients/components/clients-tab-content';
@@ -31,9 +40,7 @@ function CreateClientModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">
-                        Client Creation
-                    </DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
                 </DialogHeader>
                 <div className="flex items-center justify-center h-64">
                     <h2 className="text-xs font-thin uppercase font-body">
@@ -167,12 +174,17 @@ export default function ClientsPage() {
                             clients={filterParams.status ? clients : []}
                             clientsByStatus={clientsByStatus}
                             onAddClient={handleCreateClient}
-                            onEditClient={(client) => console.log('Edit client', client)}
+                            onEditClient={(client) =>
+                                console.log('Edit client', client)
+                            }
                             onDeleteClient={handleDeleteClient}
                             onUpdateClientStatus={handleUpdateClientStatus}
                             pagination={{
                                 currentPage: Math.max(1, pagination?.page || 1),
-                                totalPages: Math.max(1, pagination?.totalPages || 1),
+                                totalPages: Math.max(
+                                    1,
+                                    pagination?.totalPages || 1,
+                                ),
                                 onPageChange: handlePageChange,
                             }}
                         />

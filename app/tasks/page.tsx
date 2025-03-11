@@ -2,7 +2,7 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { TaskStatus, TaskFilterParams } from '@/lib/types/task';
+import { TaskStatus, TaskFilterParams, Task } from '@/lib/types/task';
 import { useTasksQuery } from '@/hooks/use-tasks-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 
 // Tab configuration
 const tabs = [
@@ -248,6 +250,40 @@ export default function TasksPage() {
         });
     }, []);
 
+    // Add a new handler function for general task updates
+    const handleUpdateTask = useCallback(
+        async (taskId: number, updates: Partial<Task>) => {
+            try {
+                console.log(`Updating task ${taskId} with:`, updates);
+
+                // Create a formatted updates object with correct types
+                const formattedUpdates: Partial<Task> = { ...updates };
+
+                // Convert date fields if they exist, but maintain the correct Task type
+                if (updates.deadline) {
+                    // If it's already a Date object, keep it; otherwise convert it
+                    formattedUpdates.deadline = updates.deadline instanceof Date
+                        ? updates.deadline
+                        : new Date(updates.deadline);
+                }
+
+                if (updates.repetitionDeadline) {
+                    formattedUpdates.repetitionDeadline = updates.repetitionDeadline instanceof Date
+                        ? updates.repetitionDeadline
+                        : new Date(updates.repetitionDeadline);
+                }
+
+                // Use the updateTask function to apply the updates
+                await updateTask(taskId, formattedUpdates);
+                // No need to manually refetch as the query will be invalidated automatically
+            } catch (error) {
+                console.error(`Error updating task ${taskId}:`, error);
+                // Error toast is already shown by the mutation
+            }
+        },
+        [updateTask],
+    );
+
     return (
         <PageTransition>
             <div className="flex flex-col h-screen gap-2 overflow-hidden">
@@ -271,6 +307,7 @@ export default function TasksPage() {
                             error={error}
                             tasksByStatus={tasksByStatus}
                             onUpdateTaskStatus={handleUpdateTaskStatus}
+                            onUpdateTask={handleUpdateTask}
                             onDeleteTask={handleDeleteTask}
                             onAddTask={handleCreateTask}
                             onUpdateSubtaskStatus={handleUpdateSubtaskStatus}

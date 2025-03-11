@@ -23,7 +23,7 @@ export function UsersHeader({
                 onClearFilters={onClearFilters}
             />
             <Button onClick={onAddUser} size="sm">
-                <UserPlus className="w-4 h-4 mr-2" />
+                <UserPlus className="w-4 h-4 mr-2 text-white" strokeWidth={1.5} />
                 <span className="text-[10px] font-normal uppercase font-body text-white">
                     Add User
                 </span>

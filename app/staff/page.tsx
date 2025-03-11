@@ -2,7 +2,7 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { UserFilterParams, UserStatus } from '@/lib/types/user';
+import { UserFilterParams, UserStatus, User } from '@/lib/types/user';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { toast } from 'react-hot-toast';
+import UserForm, { UserFormValues } from '@/modules/users/components/user-form';
 
 // Tab configuration
 const tabs = [
@@ -28,22 +30,37 @@ function CreateUserModal({
     isOpen,
     onClose,
     onCreateUser,
+    isLoading,
 }: {
     isOpen: boolean;
     onClose: () => void;
-    onCreateUser?: (userData: any) => void;
+    onCreateUser?: (userData: UserFormValues) => void;
+    isLoading?: boolean;
 }) {
+    const handleSubmit = useCallback(
+        async (data: UserFormValues) => {
+            try {
+                await onCreateUser?.(data);
+                toast.success('User created successfully');
+                onClose();
+            } catch (error) {
+                console.error('Error creating user:', error);
+                toast.error('Failed to create user');
+            }
+        },
+        [onCreateUser, onClose]
+    );
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">Add New User</DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center justify-center h-64">
-                    <h2 className="text-xs font-thin uppercase font-body">
-                        Activating Soon
-                    </h2>
-                </div>
+                <UserForm
+                    onSubmit={handleSubmit}
+                    isLoading={isLoading}
+                />
             </DialogContent>
         </Dialog>
     );
@@ -66,9 +83,10 @@ export default function StaffPage() {
     const [activeTab, setActiveTab] = useState<string>('users');
     const [filterParams, setFilterParams] = useState<UserFilterParams>({
         page: 1,
-        limit: 500,
+        limit: 20, // Updated from 10 to 20 to fetch more users per page
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Memoize filter params to prevent unnecessary re-renders
     const currentFilters = useMemo(() => filterParams, [filterParams]);
@@ -112,10 +130,19 @@ export default function StaffPage() {
     }, []);
 
     const handleSubmitCreateUser = useCallback(
-        async (userData: any) => {
-            await createUser(userData);
+        async (userData: UserFormValues) => {
+            try {
+                setIsSubmitting(true);
+                await createUser(userData as unknown as Partial<User>);
+                return true;
+            } catch (error) {
+                console.error('Error creating user:', error);
+                throw error;
+            } finally {
+                setIsSubmitting(false);
+            }
         },
-        [createUser],
+        [createUser]
     );
 
     // Apply filters handler
@@ -123,7 +150,8 @@ export default function StaffPage() {
         setFilterParams((prev) => ({
             ...prev,
             ...newFilters,
-            limit: 5, // Changed from 500 to 5 for testing pagination
+            page: 1, // Reset to page 1 when filters change
+            limit: 20, // Updated from 10 to 20 to fetch more users per page
         }));
     }, []);
 
@@ -131,7 +159,7 @@ export default function StaffPage() {
     const handleClearFilters = useCallback(() => {
         setFilterParams({
             page: 1,
-            limit: 5, // Changed from 500 to 5 for testing pagination
+            limit: 20, // Updated from 10 to 20 to fetch more users per page
         });
     }, []);
 
@@ -189,6 +217,7 @@ export default function StaffPage() {
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}
                 onCreateUser={handleSubmitCreateUser}
+                isLoading={isSubmitting}
             />
         </PageTransition>
     );

@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { TaskPriority, TaskType, RepetitionType } from '@/lib/types/task';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { useClientsQuery } from '@/hooks/use-clients-query';
-import { format, parse, set } from 'date-fns';
+import { format } from 'date-fns';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { toast } from 'react-hot-toast';
 import { ClientType } from '@/lib/types/client-enums';
@@ -28,7 +28,6 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    CalendarIcon,
     Plus as PlusIcon,
     Trash as TrashIcon,
     ChevronDown,
@@ -48,7 +47,6 @@ import {
     FileSpreadsheet,
     MessageSquare,
     MessageCircle,
-    Send,
     MapPin,
     Target,
     Tag,

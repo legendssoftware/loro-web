@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import {
+    Edit,
     X,
     Calendar,
     Clock,
@@ -631,7 +632,7 @@ export function ClaimDetailsModal({
                                 className="w-9 h-9"
                                 onClick={handleEdit}
                             >
-                                <Pencil className="w-5 h-5" />
+                                <Edit className="w-5 h-5" />
                             </Button>
                         </div>
                     </DialogHeader>

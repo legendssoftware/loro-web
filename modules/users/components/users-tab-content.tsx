@@ -37,8 +37,8 @@ const UsersContent = memo(
                         onUpdateUserStatus={onUpdateUserStatus}
                         onDeleteUser={onDeleteUser}
                         onAddUser={onAddUser}
-                        currentPage={pagination?.currentPage}
-                        totalPages={pagination?.totalPages}
+                        currentPage={pagination?.currentPage || 1}
+                        totalPages={pagination?.totalPages || 1}
                         onPageChange={pagination?.onPageChange}
                     />
                 </div>

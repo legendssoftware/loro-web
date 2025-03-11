@@ -16,11 +16,11 @@ export function useUsersQuery(filters: UserFilterParams = {}) {
     const queryClient = useQueryClient();
     const userApi = useUserApi();
 
-    // Ensure we always use a limit of 500
+    // Use the provided limit from filters or default to 20 if not specified
     const enhancedFilters = useMemo(
         () => ({
             ...filters,
-            limit: 500,
+            limit: filters.limit || 20,
         }),
         [filters],
     );
@@ -198,7 +198,7 @@ export function useUsersQuery(filters: UserFilterParams = {}) {
             currentPage: data?.page || 1,
             totalPages: Math.max(1, data?.totalPages || 1),
             total: data?.total || 0,
-            limit: data?.limit || 5,
+            limit: data?.limit || 20,
         },
     };
 }

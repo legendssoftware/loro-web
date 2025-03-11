@@ -2,7 +2,7 @@
 
 import { User, UserStatus } from '@/lib/types/user';
 import { UserCard } from './user-card';
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useMemo } from 'react';
 import { FloatingPagination } from '@/components/ui/floating-pagination';
 
 interface UsersGridProps {
@@ -15,7 +15,7 @@ interface UsersGridProps {
     onPageChange?: (page: number) => void;
 }
 
-function UsersGridComponent({
+export function UsersGridComponent({
     users,
     onUpdateUserStatus,
     onDeleteUser,
@@ -24,41 +24,57 @@ function UsersGridComponent({
     totalPages = 1,
     onPageChange,
 }: UsersGridProps) {
-    // Local pagination state if not provided by parent
-    const [localCurrentPage, setLocalCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5); // Set to 5 for testing as requested
-    const [paginatedUsers, setPaginatedUsers] = useState<User[]>([]);
+    // Use received pagination props or handle pagination locally
+    const [localCurrentPage, setLocalCurrentPage] = useState(currentPage);
+    const [displayedUsers, setDisplayedUsers] = useState<User[]>(users);
 
-    // Handle parent-controlled or local pagination
-    const isExternalPagination = !!onPageChange;
-    const effectiveCurrentPage = isExternalPagination ? currentPage : localCurrentPage;
-    const effectiveTotalPages = isExternalPagination ? totalPages : Math.max(1, Math.ceil(users.length / itemsPerPage));
-
-    // Update paginated users when users array or page changes
+    // Update local state when props change
     useEffect(() => {
-        if (!isExternalPagination) {
-            const startIndex = (localCurrentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            setPaginatedUsers(users.slice(startIndex, endIndex));
+        setLocalCurrentPage(currentPage);
+    }, [currentPage]);
+
+    // Define a consistent page size
+    const PAGE_SIZE = 20;
+
+    // Update displayed users when users or pagination changes
+    useEffect(() => {
+        // Use external pagination if onPageChange is provided (server-side pagination)
+        // Otherwise, handle pagination locally (client-side pagination)
+        if (onPageChange) {
+            // For server-side pagination, just use the provided users
+            setDisplayedUsers(users);
         } else {
-            setPaginatedUsers(users);
+            // For client-side pagination, slice the users array based on current page
+            const startIndex = (localCurrentPage - 1) * PAGE_SIZE;
+            const endIndex = startIndex + PAGE_SIZE;
+            setDisplayedUsers(users.slice(startIndex, endIndex));
         }
-    }, [users, localCurrentPage, itemsPerPage, isExternalPagination]);
+    }, [users, localCurrentPage, onPageChange]);
 
     // Handle page change
     const handlePageChange = (page: number) => {
-        if (isExternalPagination && onPageChange) {
+        if (onPageChange) {
+            // Call the provided onPageChange handler (server-side pagination)
             onPageChange(page);
         } else {
+            // Update local state for client-side pagination
             setLocalCurrentPage(page);
         }
     };
-    
-    // Only show users if we have some
-    const displayedUsers = isExternalPagination ? users : paginatedUsers;
+
+    // Determine total pages for local pagination
+    const localTotalPages = useMemo(() => {
+        if (onPageChange) {
+            // Use the provided totalPages for server-side pagination
+            return totalPages;
+        } else {
+            // Calculate total pages for client-side pagination
+            return Math.max(1, Math.ceil(users.length / PAGE_SIZE));
+        }
+    }, [users, totalPages, onPageChange]);
 
     return (
-        <div className="flex-1 w-full overflow-hidden relative">
+        <div className="relative w-full h-full">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {displayedUsers.map((user, index) => (
                     <UserCard
@@ -75,11 +91,11 @@ function UsersGridComponent({
                     </div>
                 )}
             </div>
-            
-            {/* Always show pagination regardless of number of items */}
-            <FloatingPagination 
-                currentPage={effectiveCurrentPage}
-                totalPages={effectiveTotalPages}
+
+            {/* Pagination - always render the component, it will hide itself if only 1 page */}
+            <FloatingPagination
+                currentPage={localCurrentPage}
+                totalPages={localTotalPages}
                 onPageChange={handlePageChange}
             />
         </div>

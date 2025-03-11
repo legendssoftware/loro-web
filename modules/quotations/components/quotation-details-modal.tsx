@@ -206,18 +206,18 @@ export function QuotationDetailsModal({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={handleEdit}
+                                    onClick={onClose}
                                     className="w-8 h-8 rounded-full"
                                 >
-                                    <Edit className="w-4 h-4" />
+                                    <X className="w-5 h-5" />
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={onClose}
+                                    onClick={handleEdit}
                                     className="w-8 h-8 rounded-full"
                                 >
-                                    <X className="w-4 h-4" />
+                                    <Edit className="w-5 h-5" />
                                 </Button>
                             </div>
                         </div>
@@ -974,13 +974,13 @@ export function QuotationDetailsModal({
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
+                        <AlertDialogTitle className="text-xs font-thin uppercase font-body">
                             Confirm Status Change
                         </AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogDescription className="text-xs font-thin uppercase font-body">
                             Are you sure you want to change the status of this
                             quotation to{' '}
-                            <span className="font-bold">
+                            <span className="font-bold font-body">
                                 {pendingStatusChange &&
                                     pendingStatusChange.toUpperCase()}
                             </span>

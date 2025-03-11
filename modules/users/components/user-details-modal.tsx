@@ -6,6 +6,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,6 +54,8 @@ export function UserDetailsModal({
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [showDeleteConfirmation, setShowDeleteConfirmation] =
         useState<boolean>(false);
+    const [showStatusConfirmation, setShowStatusConfirmation] = useState<boolean>(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState<UserStatus | null>(null);
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
@@ -62,10 +65,39 @@ export function UserDetailsModal({
         return format(new Date(date), 'MMM d, yyyy');
     };
 
-    // Handle status change
-    const handleStatusChange = (status: UserStatus) => {
-        if (onUpdateStatus) {
-            onUpdateStatus(user.uid, status);
+    // Handle status change with confirmation
+    const initiateStatusChange = (status: UserStatus) => {
+        // Don't show confirmation if already in that status
+        if (user.status === status) {
+            return;
+        }
+
+        setPendingStatusChange(status);
+        setShowStatusConfirmation(true);
+    };
+
+    // Confirm and execute status change
+    const confirmStatusChange = () => {
+        if (pendingStatusChange && onUpdateStatus) {
+            onUpdateStatus(user.uid, pendingStatusChange);
+            setShowStatusConfirmation(false);
+            setPendingStatusChange(null);
+        }
+    };
+
+    // Cancel status change
+    const cancelStatusChange = () => {
+        setShowStatusConfirmation(false);
+        setPendingStatusChange(null);
+    };
+
+    // Handle delete with confirmation
+    const handleDelete = () => {
+        if (onDelete) {
+            onDelete(user.uid);
+            setShowDeleteConfirmation(false);
+            toast.success('User deleted successfully');
+            onClose();
         }
     };
 
@@ -112,18 +144,6 @@ export function UserDetailsModal({
         }
     };
 
-    // Handle delete user
-    const handleDelete = useCallback(async () => {
-        if (onDelete) {
-            try {
-                await onDelete(user.uid);
-                onClose();
-            } catch (error) {
-                showErrorToast('Failed to delete user', toast);
-            }
-        }
-    }, [user.uid, onDelete, onClose]);
-
     // Show the "Activating Soon" modal when Edit is clicked
     const handleEditClick = () => {
         setShowEditModal(true);
@@ -132,6 +152,38 @@ export function UserDetailsModal({
     // Close the edit modal
     const handleCloseEditModal = () => {
         setShowEditModal(false);
+    };
+
+    // Get status action message
+    const getStatusActionMessage = (status: UserStatus | null): string => {
+        if (!status) return '';
+
+        switch (status) {
+            case UserStatus.ACTIVE:
+                return 'activate';
+            case UserStatus.INACTIVE:
+                return 'deactivate';
+            case UserStatus.SUSPENDED:
+                return 'suspend';
+            default:
+                return 'update';
+        }
+    };
+
+    // Get user-friendly status name
+    const getStatusDisplayName = (status: UserStatus | null): string => {
+        if (!status) return '';
+
+        switch (status) {
+            case UserStatus.ACTIVE:
+                return 'ACTIVE';
+            case UserStatus.INACTIVE:
+                return 'INACTIVE';
+            case UserStatus.SUSPENDED:
+                return 'SUSPENDED';
+            default:
+                return status.toUpperCase();
+        }
     };
 
     const tabs = [
@@ -163,7 +215,7 @@ export function UserDetailsModal({
 
                                 <div className="flex-1">
                                     <div className="grid gap-2">
-                                        <h2 className="text-xl font-bold">
+                                        <h2 className="text-xl font-normal font-body">
                                             {user.name} {user.surname}
                                         </h2>
                                         <div className="flex items-center gap-2">
@@ -400,9 +452,7 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${user.status === UserStatus.ACTIVE ? 'bg-green-100 dark:bg-green-900/30' : ''}`}
-                                onClick={() =>
-                                    handleStatusChange(UserStatus.ACTIVE)
-                                }
+                                onClick={() => initiateStatusChange(UserStatus.ACTIVE)}
                                 title="Activate User"
                             >
                                 <UserCheck
@@ -414,9 +464,7 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${user.status === UserStatus.INACTIVE ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`}
-                                onClick={() =>
-                                    handleStatusChange(UserStatus.INACTIVE)
-                                }
+                                onClick={() => initiateStatusChange(UserStatus.INACTIVE)}
                                 title="Deactivate User"
                             >
                                 <UserX
@@ -428,9 +476,7 @@ export function UserDetailsModal({
                                 variant="outline"
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${user.status === UserStatus.SUSPENDED ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
-                                onClick={() =>
-                                    handleStatusChange(UserStatus.SUSPENDED)
-                                }
+                                onClick={() => initiateStatusChange(UserStatus.SUSPENDED)}
                                 title="Suspend User"
                             >
                                 <UserMinus
@@ -443,9 +489,7 @@ export function UserDetailsModal({
                                     variant="outline"
                                     size="icon"
                                     className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
-                                    onClick={() =>
-                                        setShowDeleteConfirmation(true)
-                                    }
+                                    onClick={() => setShowDeleteConfirmation(true)}
                                     title="Delete User"
                                 >
                                     <UserCog
@@ -456,38 +500,75 @@ export function UserDetailsModal({
                             )}
                         </div>
                     </DialogFooter>
-
-                    {/* Delete Confirmation */}
-                    {showDeleteConfirmation && (
-                        <Alert variant="destructive" className="mt-4">
-                            <AlertTriangle className="w-4 h-4" />
-                            <AlertTitle>Warning</AlertTitle>
-                            <AlertDescription>
-                                Are you sure you want to delete this user? This
-                                action cannot be undone.
-                                <div className="flex justify-end gap-2 mt-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            setShowDeleteConfirmation(false)
-                                        }
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={handleDelete}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
-                            </AlertDescription>
-                        </Alert>
-                    )}
                 </DialogContent>
             </Dialog>
+
+            {/* Status Change Confirmation Dialog */}
+            {showStatusConfirmation && (
+                <Dialog open={showStatusConfirmation} onOpenChange={() => setShowStatusConfirmation(false)}>
+                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                        <DialogTitle className="sr-only">Confirm Status Change</DialogTitle>
+                        <div className="p-0">
+                            <h2 className="mb-4 text-base font-semibold text-center uppercase font-body">
+                                CONFIRM STATUS CHANGE
+                            </h2>
+                            <p className="mb-6 text-sm text-center font-body">
+                                Are you sure you want to change the user status to <span className="font-semibold">{getStatusDisplayName(pendingStatusChange)}</span>?
+                                This action cannot be undone.
+                            </p>
+                            <div className="flex justify-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    className="w-32 h-10 text-xs text-gray-300 uppercase border-gray-600 font-body hover:bg-gray-800"
+                                    onClick={cancelStatusChange}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-purple-600 font-body hover:bg-purple-700"
+                                    onClick={confirmStatusChange}
+                                >
+                                    CONFIRM
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {showDeleteConfirmation && (
+                <Dialog open={showDeleteConfirmation} onOpenChange={() => setShowDeleteConfirmation(false)}>
+                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                        <DialogTitle className="sr-only">Confirm Delete User</DialogTitle>
+                        <div className="p-0">
+                            <h2 className="mb-4 text-base font-semibold text-center uppercase font-body">
+                                CONFIRM DELETE USER
+                            </h2>
+                            <p className="mb-6 text-sm text-center font-body">
+                                Are you sure you want to delete this user? This action cannot be undone.
+                            </p>
+                            <div className="flex justify-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    className="w-32 h-10 text-xs text-gray-300 uppercase border-gray-600 font-body hover:bg-gray-800"
+                                    onClick={() => setShowDeleteConfirmation(false)}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-purple-600 font-body hover:bg-purple-700"
+                                    onClick={handleDelete}
+                                >
+                                    CONFIRM
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* Edit User Modal - "Activating Soon" */}
             <Dialog open={showEditModal} onOpenChange={handleCloseEditModal}>

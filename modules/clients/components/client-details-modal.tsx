@@ -366,7 +366,7 @@ export function ClientDetailsModal({
                             <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                 Quotes Coming Soon
                             </h3>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs uppercase text-muted-foreground font-body">
                                 This feature will be available in a future
                                 update.
                             </p>
@@ -380,7 +380,7 @@ export function ClientDetailsModal({
                             <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                 Activity Log Coming Soon
                             </h3>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs uppercase text-muted-foreground font-body">
                                 This feature will be available in a future
                                 update.
                             </p>

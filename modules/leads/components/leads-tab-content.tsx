@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { AppLoader } from '@/components/loaders/page-loader';
+import { AppHoneycombLoader } from '@/components/loaders/honeycomb-loader';
 import { LeadsKanban } from './leads-kanban';
 import { Lead, LeadStatus } from '@/lib/types/lead';
 
@@ -78,7 +78,7 @@ AnalyticsContent.displayName = 'AnalyticsContent';
 const LoadingContent = memo(() => {
     return (
         <div className="flex items-center justify-center flex-1 w-full h-full">
-            <AppLoader />
+            <AppHoneycombLoader size="sm" />
         </div>
     );
 });

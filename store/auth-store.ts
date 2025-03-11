@@ -106,21 +106,44 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
                 if (state.accessToken && state.refreshToken) {
                     try {
-                        // Optimized token validation - basic validation only
+                        // Immediately set auth state to prevent flicker during validation
+                        state.setAuthState({
+                            isAuthenticated: true,
+                            isLoading: true
+                        });
+
+                        // Set tokens in auth service
+                        authService.setTokens(state.accessToken, state.refreshToken);
+
+                        // Optimized token validation with better error handling
                         const isValid = authService.validateToken(state.accessToken);
 
                         if (isValid) {
-                            // Set tokens immediately without extra validation
-                            authService.setTokens(state.accessToken, state.refreshToken);
-
-                            // Ensure authentication state is set to avoid flickering
+                            // Update state when validation completes successfully
                             state.setAuthState({
                                 isAuthenticated: true,
                                 isLoading: false
                             });
                         } else {
-                            // Token is invalid, sign out without additional attempts
-                            state.signOut();
+                            // Token is invalid, attempt refresh before signing out
+                            authService.refreshAccessToken(state.refreshToken)
+                                .then(tokens => {
+                                    if (tokens) {
+                                        state.setAuthState({
+                                            accessToken: tokens.accessToken,
+                                            refreshToken: tokens.refreshToken,
+                                            isAuthenticated: true,
+                                            isLoading: false
+                                        });
+                                    } else {
+                                        // Refresh failed, sign out
+                                        state.signOut();
+                                    }
+                                })
+                                .catch(() => {
+                                    // Refresh failed, sign out
+                                    state.signOut();
+                                });
                         }
                     } catch (error) {
                         // If any error occurs during validation, sign out

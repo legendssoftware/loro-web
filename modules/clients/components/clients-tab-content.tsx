@@ -2,11 +2,8 @@
 
 import { memo } from 'react';
 import { ClientsGrid } from './clients-grid';
-import { Loader2 } from 'lucide-react';
-import {
-    Client,
-    ClientsByStatus,
-} from '@/hooks/use-clients-query';
+import { Client, ClientsByStatus } from '@/hooks/use-clients-query';
+import { AppHoneycombLoader } from '@/components/loaders/honeycomb-loader';
 
 interface ClientsTabContentProps {
     activeTab: string;
@@ -104,10 +101,7 @@ AnalyticsContent.displayName = 'AnalyticsContent';
 const LoadingContent = memo(() => {
     return (
         <div className="flex items-center justify-center flex-1 w-full h-full">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="ml-2 text-xs font-thin uppercase font-body">
-                Loading clients...
-            </span>
+            <AppHoneycombLoader size="sm" />
         </div>
     );
 });
@@ -145,7 +139,9 @@ function ClientsTabContentComponent({
     }
 
     if (error) {
-        return <ErrorContent message={`Error loading clients: ${error.message}`} />;
+        return (
+            <ErrorContent message={`Error loading clients: ${error.message}`} />
+        );
     }
 
     // Get all clients from different statuses if clientsByStatus is provided

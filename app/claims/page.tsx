@@ -26,7 +26,6 @@ export default function ClaimsPage() {
     useEffect(() => {
         const status = checkStatus();
         if (!status.isAuthenticated) {
-            console.warn('User not authenticated. Redirecting to login page.');
             router.push('/sign-in');
         }
     }, [checkStatus, router]);

@@ -2,6 +2,194 @@
 
 A modern Next.js 14 dashboard for managing location tracking, geofencing, and business operations. Built with TypeScript and Tailwind CSS.
 
+## 🎯 Key Features
+
+### 1. Business Management 💼
+- **Client Management**
+  - Client profiles and details
+  - Client filtering and organization
+  - Communication tracking
+  - Client cards with quick actions
+
+- **User Management**
+  - User profiles
+  - Role-based access control
+  - User activity tracking
+  - Secure authentication
+
+- **Claims Handling**
+  - Kanban-style claims management
+  - Status tracking and updates
+  - Detailed claim information
+  - Document attachments
+
+- **Task Management**
+  - Task assignment
+  - Deadline tracking
+  - Priority management
+  - Progress monitoring
+
+### 2. Inventory & Quotations 📦
+- **Inventory Management**
+  - Stock tracking
+  - Product categories
+  - Pricing management
+  - Inventory alerts
+
+- **Quotation System**
+  - Quote generation
+  - Approval workflow
+  - Client-specific pricing
+  - Quote tracking
+
+### 3. Location Services 🗺️
+- **Interactive Maps**
+  - Real-time location data
+  - Route optimization
+  - Geofencing capabilities
+  - Address verification
+
+### 4. System Administration ⚙️
+- **Settings Management**
+  - Organization settings
+  - User permissions
+  - System configuration
+  - Branding options
+
+## 🚀 Quick Start Guide
+
+1. **Setup (2 minutes)**
+   ```bash
+   git clone <repository-url>
+   cd dashboard
+   yarn install
+   ```
+
+2. **Environment Setup (1 minute)**
+   ```bash
+   cp .env.example .env.local
+   # Update:
+   NEXT_PUBLIC_API_URL=http://localhost:4400
+   ```
+
+3. **Start Development (1 minute)**
+   ```bash
+   yarn dev
+   ```
+
+4. **Authentication**
+   - Visit http://localhost:3000
+   - Login with demo credentials:
+     - Email: admin@loro.com
+     - Password: admin123
+
+## 📱 Key Pages
+
+1. **Client Management**
+   - /clients - Client overview and management
+   - /leads - Lead tracking and conversion
+
+2. **User Management**
+   - /users - User administration
+   - /staff - Staff management and roles
+
+3. **Operations**
+   - /tasks - Task management dashboard
+   - /claims - Claims processing
+   - /quotations - Quote management
+   - /inventory - Inventory tracking
+
+4. **Location Services**
+   - /map - Interactive location mapping
+
+5. **Administration**
+   - /settings - System configuration
+   - /resellers - Reseller management
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **State Management**: 
+  - [Zustand](https://github.com/pmndrs/zustand)
+  - React Context
+- **API Management**: [TanStack Query](https://tanstack.com/query)
+- **Authentication**: JWT token-based auth with refresh tokens
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+- **Animation**: [Framer Motion](https://www.framer.com/motion/)
+
+## 📂 Project Structure
+
+```
+dashboard/
+├── app/                  # Next.js App Router pages
+│   ├── clients/          # Client management
+│   ├── users/            # User management
+│   ├── tasks/            # Task management
+│   ├── claims/           # Claims processing
+│   ├── inventory/        # Inventory management
+│   ├── quotations/       # Quote system
+│   ├── settings/         # System settings
+│   ├── map/              # Location mapping
+│   ├── sign-in/          # Authentication pages
+│   └── layout.tsx        # Root layout
+├── components/           # Shared UI components
+│   ├── ui/               # Base UI components
+│   ├── forms/            # Form components
+│   ├── navigation/       # Navigation elements
+│   └── auth/             # Auth components
+├── modules/              # Feature modules
+│   ├── clients/          # Client-related components
+│   ├── users/            # User-related components
+│   ├── tasks/            # Task-related components
+│   └── claims/           # Claims-related components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions
+│   ├── services/         # API services
+│   ├── utils/            # Helper utilities
+│   └── types/            # TypeScript type definitions
+├── store/                # Zustand state stores
+├── providers/            # Context providers
+└── styles/               # Global styles
+```
+
+## 🔄 Recent Updates
+
+### Authentication System Improvements
+- Fixed page refresh redirection issue
+- Improved token refresh mechanism
+- Enhanced session persistence
+- Smoother authentication flow
+- Route preservation during page refreshes
+
+### Performance Optimizations
+- Reduced unnecessary re-renders
+- Optimized data fetching with React Query
+- Improved component memoization
+- Enhanced routing transitions
+
+## 🤝 Support
+
+Need help with the dashboard?
+Contact: support@loro.com
+
+## 📝 Troubleshooting
+
+### Authentication Issues
+If you experience authentication problems:
+1. Clear browser cookies and local storage
+2. Ensure your API server is running
+3. Check your network connections
+4. Verify correct API endpoints in .env
+
+### Page Navigation
+If experiencing routing issues:
+1. Ensure you're using client-side navigation (`useRouter` from next/navigation)
+2. Avoid full page refreshes when possible
+3. Use Link components for internal navigation
+
 ## 🎯 Demo Features
 
 ### 1. Location Management 📍
@@ -129,11 +317,6 @@ NEXT_PUBLIC_API_URL=http://localhost:4400
 NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_key
 NEXT_PUBLIC_MAPBOX_TOKEN=your_token
 ```
-
-## 🤝 Support
-
-Need help with the demo?
-Contact: support@loro.com
 
 ## ✨ Features
 

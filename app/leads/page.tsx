@@ -135,6 +135,8 @@ export default function LeadsPage() {
         });
     }, []);
 
+    console.log(leadsByStatus);
+
     return (
         <PageTransition>
             <div className="flex flex-col h-screen gap-2 overflow-hidden">

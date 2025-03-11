@@ -87,12 +87,23 @@ export function middleware(request: NextRequest) {
         // Get the access token from cookies
         const accessToken = request.cookies.get('accessToken')?.value;
 
-        // If there's no token or it's invalid, redirect to sign-in
+        // Add a grace period by setting a flag in the headers
+        // This allows the client to attempt token refresh before redirecting
         if (!accessToken || !validateToken(accessToken)) {
-            const signInUrl = new URL('/sign-in', request.url);
-            // Add the original URL as a parameter to redirect back after sign-in
-            signInUrl.searchParams.set('callbackUrl', encodeURI(request.url));
-            return NextResponse.redirect(signInUrl);
+            // Instead of immediate redirect, set a header flag
+            // The client-side RouteGuard will handle the redirect if needed
+            const response = NextResponse.next();
+            response.headers.set('X-Auth-Required', 'true');
+
+            // Only redirect if there's no token at all (brand new session)
+            if (!accessToken) {
+                const signInUrl = new URL('/sign-in', request.url);
+                // Add the original URL as a parameter to redirect back after sign-in
+                signInUrl.searchParams.set('callbackUrl', encodeURI(request.url));
+                return NextResponse.redirect(signInUrl);
+            }
+
+            return response;
         }
 
         // If there is a valid token, let the request proceed

@@ -31,8 +31,12 @@ function ClientsGridComponent({
 
     // Handle parent-controlled or local pagination
     const isExternalPagination = !!onPageChange;
-    const effectiveCurrentPage = isExternalPagination ? currentPage : localCurrentPage;
-    const effectiveTotalPages = isExternalPagination ? totalPages : Math.max(1, Math.ceil(clients.length / itemsPerPage));
+    const effectiveCurrentPage = isExternalPagination
+        ? currentPage
+        : localCurrentPage;
+    const effectiveTotalPages = isExternalPagination
+        ? totalPages
+        : Math.max(1, Math.ceil(clients.length / itemsPerPage));
 
     // Update paginated clients when clients array or page changes
     useEffect(() => {
@@ -59,7 +63,7 @@ function ClientsGridComponent({
 
     return (
         <div className="relative flex-1 w-full overflow-hidden">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-2 px-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {displayedClients.map((client, index) => (
                     <ClientCard
                         key={client.uid}

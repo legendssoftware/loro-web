@@ -12,4 +12,15 @@ export interface Product {
     updatedAt: Date;
     isDeleted?: boolean;
     sku?: string;
+    stockQuantity?: number;
+    warehouseLocation?: string;
+    reorderPoint?: number;
+    packageQuantity?: number;
+    packageUnit?: string;
+    packageDetails?: string;
+    barcode?: string;
+    weight?: number;
+    isOnPromotion?: boolean;
+    promotionStartDate?: Date;
+    promotionEndDate?: Date;
 }

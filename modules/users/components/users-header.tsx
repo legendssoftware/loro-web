@@ -24,7 +24,7 @@ export function UsersHeader({
             />
             <Button onClick={onAddUser} size="sm">
                 <UserPlus className="w-4 h-4 mr-2" />
-                <span className="text-[10px] font-normal uppercase font-body">
+                <span className="text-[10px] font-normal uppercase font-body text-white">
                     Add User
                 </span>
             </Button>

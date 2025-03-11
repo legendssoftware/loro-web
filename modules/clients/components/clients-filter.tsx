@@ -27,7 +27,14 @@ import {
     Trash,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import {
+    format,
+    subDays,
+    startOfWeek,
+    endOfWeek,
+    startOfMonth,
+    endOfMonth,
+} from 'date-fns';
 import React from 'react';
 
 // Date range presets
@@ -56,7 +63,9 @@ export function ClientsFilter({
     const [category, setCategory] = useState<string | undefined>(undefined);
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-    const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset | undefined>(undefined);
+    const [dateRangePreset, setDateRangePreset] = useState<
+        DateRangePreset | undefined
+    >(undefined);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     // Get unique categories from clients
@@ -65,8 +74,8 @@ export function ClientsFilter({
               new Set(
                   clients
                       .filter((client) => client.category)
-                      .map((client) => client.category)
-              )
+                      .map((client) => client.category),
+              ),
           )
         : [];
 
@@ -238,8 +247,8 @@ export function ClientsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-xs font-thin font-body">
+                                <CalendarIcon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
@@ -253,25 +262,39 @@ export function ClientsFilter({
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(DateRangePreset.TODAY)
+                                }
                                 className="text-xs font-normal font-body"
                             >
                                 Today
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.YESTERDAY,
+                                    )
+                                }
                                 className="text-xs font-normal font-body"
                             >
                                 Yesterday
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_WEEK,
+                                    )
+                                }
                                 className="text-xs font-normal font-body"
                             >
                                 Last Week
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_MONTH,
+                                    )
+                                }
                                 className="text-xs font-normal font-body"
                             >
                                 Last Month
@@ -303,9 +326,12 @@ export function ClientsFilter({
                             <div className="flex items-center gap-2">
                                 {status ? (
                                     <>
-                                        {React.createElement(statusIcons[status], {
-                                            className: `w-4 h-4 ${statusColors[status]}`,
-                                        })}
+                                        {React.createElement(
+                                            statusIcons[status],
+                                            {
+                                                className: `w-4 h-4 ${statusColors[status]}`,
+                                            },
+                                        )}
                                         <span
                                             className={`text-xs font-thin font-body ${statusColors[status]}`}
                                         >
@@ -314,8 +340,11 @@ export function ClientsFilter({
                                     </>
                                 ) : (
                                     <>
-                                        <Building className="w-4 h-4 text-muted-foreground" />
-                                        <span className="text-xs font-thin font-body">
+                                        <Building
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
                                             STATUS
                                         </span>
                                     </>
@@ -330,29 +359,37 @@ export function ClientsFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {Object.entries(statusLabels).map(([key, label]) => {
-                                const Icon = statusIcons[key as ClientStatus];
-                                return (
-                                    <DropdownMenuItem
-                                        key={key}
-                                        onClick={() => {
-                                            setStatus(key as ClientStatus);
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
-                                        className="text-xs font-normal font-body"
-                                    >
-                                        <Icon
-                                            className={`w-4 h-4 mr-2 ${
-                                                statusColors[key as ClientStatus]
-                                            }`}
-                                        />
-                                        <span>{label}</span>
-                                        {status === key && (
-                                            <Check className="w-4 h-4 ml-auto" />
-                                        )}
-                                    </DropdownMenuItem>
-                                );
-                            })}
+                            {Object.entries(statusLabels).map(
+                                ([key, label]) => {
+                                    const Icon =
+                                        statusIcons[key as ClientStatus];
+                                    return (
+                                        <DropdownMenuItem
+                                            key={key}
+                                            onClick={() => {
+                                                setStatus(key as ClientStatus);
+                                                setTimeout(
+                                                    handleApplyFilters,
+                                                    0,
+                                                );
+                                            }}
+                                            className="text-xs font-normal font-body"
+                                        >
+                                            <Icon
+                                                className={`w-4 h-4 mr-2 ${
+                                                    statusColors[
+                                                        key as ClientStatus
+                                                    ]
+                                                }`}
+                                            />
+                                            <span>{label}</span>
+                                            {status === key && (
+                                                <Check className="w-4 h-4 ml-auto" />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                },
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {
@@ -385,8 +422,8 @@ export function ClientsFilter({
                                     </>
                                 ) : (
                                     <>
-                                        <Tag className="w-4 h-4 text-muted-foreground" />
-                                        <span className="text-xs font-thin font-body">
+                                        <Tag className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-thin font-body">
                                             CATEGORY
                                         </span>
                                     </>
@@ -429,7 +466,11 @@ export function ClientsFilter({
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setCategory(undefined);
-                                            if (activeFilters.includes('Category')) {
+                                            if (
+                                                activeFilters.includes(
+                                                    'Category',
+                                                )
+                                            ) {
                                                 handleApplyFilters();
                                             }
                                         }}

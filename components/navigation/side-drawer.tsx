@@ -4,21 +4,15 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     ChartSpline,
-    ClipboardList,
     CalendarCheck2,
     Power,
-    Settings,
     Users,
     HandCoins,
     Handshake,
     Package,
     ShoppingBag,
-    UsersRound,
-    Store,
-    Map,
     KeySquare,
     BriefcaseBusiness,
-    Warehouse,
 } from 'lucide-react';
 import {
     Sheet,
@@ -27,8 +21,10 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { useRBAC } from '@/hooks/use-rbac';
+import { AccessLevel } from '@/types/auth';
 import toast from 'react-hot-toast';
 
 interface SideDrawerProps {
@@ -36,79 +32,87 @@ interface SideDrawerProps {
     onClose: () => void;
 }
 
+// Navigation items with role-based access control information
 const navigationItems = [
     {
         title: 'Home',
         icon: <ChartSpline size={18} strokeWidth={1.5} />,
         href: '/',
         description: 'Overview dashboard and statistics',
-    },
-    {
-        title: 'Map',
-        icon: <Map size={18} strokeWidth={1.5} />,
-        href: '/map',
-        description: 'Geographic view of operations',
+        // Everyone can access the dashboard home
+        feature: 'dashboard',
     },
     {
         title: 'Leads',
         icon: <Handshake size={18} strokeWidth={1.5} />,
         href: '/leads',
         description: 'Manage potential customers',
+        // Basic users can access leads
+        feature: 'leads',
     },
     {
         title: 'Staff',
         icon: <Users size={18} strokeWidth={1.5} />,
         href: '/staff',
         description: 'Manage team members',
+        // Only admins, managers, and supervisors can access staff
+        allowedRoles: [
+            AccessLevel.ADMIN,
+            AccessLevel.MANAGER,
+            AccessLevel.SUPERVISOR,
+            AccessLevel.HR,
+        ],
     },
     {
         title: 'Tasks',
         icon: <CalendarCheck2 size={18} strokeWidth={1.5} />,
         href: '/tasks',
         description: 'Track work assignments',
+        // Basic users can access tasks
+        feature: 'tasks',
     },
     {
         title: 'Claims',
         icon: <HandCoins size={18} strokeWidth={1.5} />,
         href: '/claims',
         description: 'Handle employee claims',
+        // Basic users can access claims
+        feature: 'claims',
     },
     {
         title: 'Quotations',
         icon: <ShoppingBag size={18} strokeWidth={1.5} />,
         href: '/quotations',
         description: 'Manage purchase transactions',
+        // Basic users can access quotations
+        feature: 'quotations',
     },
     {
         title: 'Clients',
         icon: <BriefcaseBusiness size={18} strokeWidth={1.5} />,
         href: '/clients',
         description: 'View active customers',
-    },
-    {
-        title: 'Suppliers',
-        icon: <Warehouse size={18} strokeWidth={1.5} />,
-        href: '/suppliers',
-        description: 'Manage partner businesses',
+        // Only admin, manager, supervisor can access clients
+        allowedRoles: [
+            AccessLevel.ADMIN,
+            AccessLevel.MANAGER,
+            AccessLevel.SUPERVISOR,
+        ],
     },
     {
         title: 'Inventory',
         icon: <Package size={18} strokeWidth={1.5} />,
         href: '/inventory',
         description: 'Track product stock levels',
-    },
-    {
-        title: 'Settings',
-        icon: <Settings size={18} strokeWidth={1.5} />,
-        href: '/settings',
-        description: 'Configure system preferences',
+        // Only admin, manager can access inventory
+        allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
     },
 ];
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const pathname = usePathname();
     const { profileData, signOut } = useAuthStore();
-    const router = useRouter();
+    const { hasRole, hasPermission } = useRBAC();
 
     const handleSignOut = async () => {
         try {
@@ -214,8 +218,22 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                 </SheetHeader>
                 <div className="flex-1 p-2">
                     <div className="flex flex-col space-y-1">
+                        {/* Filter the navigation items based on user permissions */}
                         {navigationItems.map((item) => {
                             const isActive = pathname === item.href;
+
+                            // Skip rendering this item if user doesn't have permission
+                            if (
+                                item.allowedRoles &&
+                                !hasRole(item.allowedRoles)
+                            ) {
+                                return null;
+                            }
+
+                            if (item.feature && !hasPermission(item.feature)) {
+                                return null;
+                            }
+
                             return (
                                 <Link
                                     key={item.title}

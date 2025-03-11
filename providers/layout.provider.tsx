@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import { RouteGuard } from '@/components/rbac/route-guard';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -31,15 +32,17 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
         <QueryClientProvider client={queryClient}>
             <ThemeProvider attribute='class' defaultTheme='dark' enableSystem disableTransitionOnChange>
                 <AuthProvider>
-                    <LicenseProvider>
-                        <AnimatePresence mode="wait">
-                            {/* Add key based on pathname to ensure proper AnimatePresence behavior */}
-                            <div key={pathname} className="w-full h-full">
-                                {children}
-                            </div>
-                        </AnimatePresence>
-                        <Toaster />
-                    </LicenseProvider>
+                    <RouteGuard>
+                        <LicenseProvider>
+                            <AnimatePresence mode="wait">
+                                {/* Add key based on pathname to ensure proper AnimatePresence behavior */}
+                                <div key={pathname} className="w-full h-full">
+                                    {children}
+                                </div>
+                            </AnimatePresence>
+                            <Toaster />
+                        </LicenseProvider>
+                    </RouteGuard>
                 </AuthProvider>
             </ThemeProvider>
         </QueryClientProvider>

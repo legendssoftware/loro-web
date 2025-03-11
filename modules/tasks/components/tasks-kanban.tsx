@@ -9,9 +9,10 @@ import { cn } from '@/lib/utils';
 
 interface TasksKanbanProps {
     tasksByStatus: Record<TaskStatus, Task[]>;
-    onUpdateTaskStatus: (taskId: number, newStatus: string) => void;
+    onUpdateTaskStatus: (taskId: number, newStatus: string, newDeadline?: Date) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask?: () => void;
+    onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
 }
 
 // Memoized task card to prevent unnecessary re-renders
@@ -29,6 +30,7 @@ export function TasksKanban({
     onUpdateTaskStatus,
     onDeleteTask,
     onAddTask,
+    onUpdateSubtaskStatus,
 }: TasksKanbanProps) {
     const renderColumn = useCallback(
         (status: TaskStatus, title: string, count: number) => {
@@ -60,21 +62,27 @@ export function TasksKanban({
                         </Button>
                     </div>
                     <div className="space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2">
-                        {tasks?.map((task, index) => (
-                            <MemoizedTaskCard
-                                key={task?.uid}
-                                task={task}
-                                onUpdateStatus={onUpdateTaskStatus}
-                                onDelete={onDeleteTask}
-                                index={index}
-                            />
-                        ))}
-                        {tasks?.length === 0 && <EmptyColumn />}
+                        <div className="mt-2 space-y-2 overflow-hidden">
+                            {tasks.length > 0 ? (
+                                tasks.map((task, index) => (
+                                    <MemoizedTaskCard
+                                        key={task.uid}
+                                        task={task}
+                                        onUpdateStatus={onUpdateTaskStatus}
+                                        onDelete={onDeleteTask}
+                                        onUpdateSubtaskStatus={onUpdateSubtaskStatus}
+                                        index={index}
+                                    />
+                                ))
+                            ) : (
+                                <EmptyColumn />
+                            )}
+                        </div>
                     </div>
                 </div>
             );
         },
-        [tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask],
+        [tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask, onUpdateSubtaskStatus],
     );
 
     return (

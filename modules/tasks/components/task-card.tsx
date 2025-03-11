@@ -11,13 +11,14 @@ import { TaskDetailsModal } from './task-details-modal';
 
 interface TaskCardProps {
     task: Task;
-    onUpdateStatus?: (taskId: number, newStatus: string) => void;
+    onUpdateStatus?: (taskId: number, newStatus: string, newDeadline?: Date) => void;
     onDelete?: (taskId: number) => void;
+    onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
     index?: number;
 }
 
 // Create the TaskCard as a standard component
-function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCardProps) {
+function TaskCardComponent({ task, onUpdateStatus, onDelete, onUpdateSubtaskStatus, index = 0 }: TaskCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Use CSS variables for animation delay
@@ -26,12 +27,21 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCa
     } as React.CSSProperties;
 
     const handleStatusChange = useCallback(
-        (taskId: number, newStatus: string) => {
+        (taskId: number, newStatus: string, newDeadline?: Date) => {
             if (onUpdateStatus) {
-                onUpdateStatus(taskId, newStatus);
+                onUpdateStatus(taskId, newStatus, newDeadline);
             }
         },
         [onUpdateStatus],
+    );
+
+    const handleSubtaskStatusToggle = useCallback(
+        (subtaskId: number, newStatus: string) => {
+            if (onUpdateSubtaskStatus) {
+                onUpdateSubtaskStatus(subtaskId, newStatus);
+            }
+        },
+        [onUpdateSubtaskStatus],
     );
 
     const handleDelete = useCallback(
@@ -92,6 +102,22 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCa
         setIsModalOpen(false);
     }, []);
 
+    // Add a function to calculate progress based on subtasks
+    const calculateSubtaskProgress = useCallback(() => {
+        // Check if task has subtasks that aren't deleted
+        const validSubtasks = task?.subtasks?.filter(st => !st?.isDeleted) || [];
+
+        if (validSubtasks.length === 0) {
+            return 0;
+        }
+
+        // Count completed subtasks
+        const completedSubtasks = validSubtasks.filter(st => st?.status === 'COMPLETED').length;
+
+        // Calculate percentage
+        return Math.round((completedSubtasks / validSubtasks.length) * 100);
+    }, [task?.subtasks]);
+
     return (
         <>
             <div
@@ -131,17 +157,19 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCa
                     {/* Task Description */}
                     <p className='text-xs font-normal line-clamp-2 font-body'>{task?.description}</p>
 
-                    {/* Progress */}
-                    <div className='mb-2'>
-                        <div className='flex items-center justify-between text-[10px] mb-1'>
-                            <div className='flex items-center'>
-                                <ChartSpline className='w-4 h-4 mr-1' strokeWidth={1.5} />
-                                <span className='font-normal uppercase font-body text-[10px]'>Progress</span>
+                    {/* Progress - Only show if task has subtasks */}
+                    {task?.subtasks && task?.subtasks?.filter(st => !st?.isDeleted).length > 0 && (
+                        <div className='mb-2'>
+                            <div className='flex items-center justify-between text-[10px] mb-1'>
+                                <div className='flex items-center'>
+                                    <ChartSpline className='w-4 h-4 mr-1' strokeWidth={1.5} />
+                                    <span className='font-normal uppercase font-body text-[10px]'>Progress</span>
+                                </div>
+                                <span className='font-normal uppercase font-body text-[12px]'>{calculateSubtaskProgress()}%</span>
                             </div>
-                            <span className='font-normal uppercase font-body text-[12px]'>{task?.progress}%</span>
+                            <Progress value={calculateSubtaskProgress()} className='h-1' />
                         </div>
-                        <Progress value={task?.progress} className='h-1' />
-                    </div>
+                    )}
 
                     {/* Task Meta Information */}
                     <div className='grid grid-cols-2 gap-1'>
@@ -224,6 +252,7 @@ function TaskCardComponent({ task, onUpdateStatus, onDelete, index = 0 }: TaskCa
                     onClose={closeModal}
                     onUpdateStatus={handleStatusChange}
                     onDelete={handleDelete}
+                    onUpdateSubtaskStatus={handleSubtaskStatusToggle}
                 />
             )}
         </>

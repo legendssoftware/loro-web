@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import {
     X,
@@ -56,13 +56,19 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Calendar as UiCalendar } from '@/components/ui/calendar';
 
 interface TaskDetailsModalProps {
     task: Task;
     isOpen: boolean;
     onClose: () => void;
-    onUpdateStatus: (taskId: number, newStatus: string) => void;
+    onUpdateStatus: (
+        taskId: number,
+        newStatus: string,
+        newDeadline?: Date,
+    ) => void;
     onDelete: (taskId: number) => void;
+    onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
 }
 
 interface ExtendedCreator {
@@ -101,6 +107,7 @@ export function TaskDetailsModal({
     onClose,
     onUpdateStatus,
     onDelete,
+    onUpdateSubtaskStatus,
 }: TaskDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<TaskStatus>(task.status);
     const [activeTab, setActiveTab] = useState<string>('details');
@@ -111,6 +118,11 @@ export function TaskDetailsModal({
     const [pendingStatusChange, setPendingStatusChange] =
         useState<TaskStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [isPostponeDatePickerOpen, setIsPostponeDatePickerOpen] =
+        useState<boolean>(false);
+    const [postponeDate, setPostponeDate] = useState<Date | undefined>(
+        undefined,
+    );
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -204,8 +216,17 @@ export function TaskDetailsModal({
 
     const handleStatusChange = (newStatus: TaskStatus) => {
         if (newStatus === currentStatus) return;
-        setPendingStatusChange(newStatus);
-        setConfirmStatusChangeOpen(true);
+
+        if (newStatus === TaskStatus.POSTPONED) {
+            setPendingStatusChange(newStatus);
+            setPostponeDate(
+                task.deadline ? new Date(task.deadline) : new Date(),
+            );
+            setIsPostponeDatePickerOpen(true);
+        } else {
+            setPendingStatusChange(newStatus);
+            setConfirmStatusChangeOpen(true);
+        }
     };
 
     const confirmStatusChange = () => {
@@ -213,7 +234,12 @@ export function TaskDetailsModal({
             setCurrentStatus(pendingStatusChange);
             setConfirmStatusChangeOpen(false);
             onClose();
-            onUpdateStatus(task.uid, pendingStatusChange);
+
+            if (pendingStatusChange === TaskStatus.POSTPONED && postponeDate) {
+                onUpdateStatus(task.uid, pendingStatusChange, postponeDate);
+            } else {
+                onUpdateStatus(task.uid, pendingStatusChange);
+            }
         }
     };
 
@@ -230,6 +256,18 @@ export function TaskDetailsModal({
     const handleTabChange = (tabId: string) => {
         if (activeTab !== tabId) {
             setActiveTab(tabId);
+        }
+    };
+
+    const handleSubtaskStatusToggle = (
+        subtaskId: number,
+        currentStatus: string,
+    ) => {
+        const newStatus =
+            currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+
+        if (onUpdateSubtaskStatus) {
+            onUpdateSubtaskStatus(subtaskId, newStatus);
         }
     };
 
@@ -254,6 +292,21 @@ export function TaskDetailsModal({
         return parts.join(', ') || 'No address details provided';
     };
 
+    const calculateSubtaskProgress = useCallback(() => {
+        // Check if task has subtasks that aren't deleted
+        const validSubtasks = task?.subtasks?.filter(st => !st?.isDeleted) || [];
+
+        if (validSubtasks.length === 0) {
+            return 0;
+        }
+
+        // Count completed subtasks
+        const completedSubtasks = validSubtasks.filter(st => st?.status === 'COMPLETED').length;
+
+        // Calculate percentage
+        return Math.round((completedSubtasks / validSubtasks.length) * 100);
+    }, [task?.subtasks]);
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'details':
@@ -268,27 +321,30 @@ export function TaskDetailsModal({
                             </p>
                         </div>
 
-                        <div>
-                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                Stage
-                            </h3>
-                            <div className="flex flex-col gap-1 mb-2">
-                                <div className="flex items-center justify-between mb-1 text-xs">
-                                    <div className="flex items-center">
-                                        <span className="text-[10px] font-thin uppercase font-body">
-                                            Progress
+                        {/* Only show progress if there are subtasks */}
+                        {task?.subtasks && task?.subtasks?.filter(st => !st?.isDeleted).length > 0 && (
+                            <div>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Stage
+                                </h3>
+                                <div className="flex flex-col gap-1 mb-2">
+                                    <div className="flex items-center justify-between mb-1 text-xs">
+                                        <div className="flex items-center">
+                                            <span className="text-[10px] font-thin uppercase font-body">
+                                                Progress
+                                            </span>
+                                        </div>
+                                        <span className="text-sm font-medium uppercase font-body">
+                                            {calculateSubtaskProgress()}%
                                         </span>
                                     </div>
-                                    <span className="text-sm font-medium uppercase font-body">
-                                        {task?.progress}%
-                                    </span>
+                                    <Progress
+                                        value={calculateSubtaskProgress()}
+                                        className="h-2"
+                                    />
                                 </div>
-                                <Progress
-                                    value={task?.progress}
-                                    className="h-2"
-                                />
                             </div>
-                        </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -455,24 +511,42 @@ export function TaskDetailsModal({
                                         .map((subtask) => (
                                             <div
                                                 key={subtask?.uid}
-                                                className="flex items-center justify-between p-2 border bg-card"
+                                                className="flex items-center justify-between p-3 border rounded bg-card"
                                             >
                                                 <div className="flex items-center">
                                                     <div
-                                                        className={`w-2 h-2 rounded-full mr-2 ${
+                                                        className={`w-5 h-5 rounded-full mr-2 flex items-center justify-center border cursor-pointer ${
                                                             subtask.status ===
                                                             'COMPLETED'
-                                                                ? 'bg-green-500'
-                                                                : 'bg-yellow-500'
+                                                                ? 'bg-green-500 border-green-500'
+                                                                : 'border-yellow-500 bg-transparent'
                                                         }`}
-                                                    ></div>
-                                                    <span className="text-xs font-thin font-body">
+                                                        onClick={() =>
+                                                            handleSubtaskStatusToggle(
+                                                                subtask.uid,
+                                                                subtask.status,
+                                                            )
+                                                        }
+                                                    >
+                                                        {subtask.status ===
+                                                            'COMPLETED' && (
+                                                            <CheckCheck className="w-3 h-3 text-white" />
+                                                        )}
+                                                    </div>
+                                                    <span
+                                                        className={`text-xs font-thin font-body ${
+                                                            subtask.status ===
+                                                            'COMPLETED'
+                                                                ? 'line-through text-muted-foreground'
+                                                                : ''
+                                                        }`}
+                                                    >
                                                         {subtask?.title}
                                                     </span>
                                                 </div>
                                                 <Badge
                                                     variant="outline"
-                                                    className={`text-[10px] px-2 py-0.5 border-0 ${
+                                                    className={`text-[10px] px-3 py-1 border-0 font-body font-thin ${
                                                         subtask.status ===
                                                         'COMPLETED'
                                                             ? 'bg-green-100 text-green-800'
@@ -1365,6 +1439,47 @@ export function TaskDetailsModal({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Postpone Date Picker Dialog */}
+            <Dialog
+                open={isPostponeDatePickerOpen}
+                onOpenChange={setIsPostponeDatePickerOpen}
+            >
+                <DialogContent className="bg-card">
+                    <DialogHeader>
+                        <DialogTitle className="text-xs font-thin uppercase font-body">
+                            Select New Deadline
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <UiCalendar
+                            mode="single"
+                            selected={postponeDate}
+                            onSelect={(date) => setPostponeDate(date)}
+                            initialFocus
+                            className="border rounded-md"
+                        />
+                    </div>
+                    <DialogFooter className="flex flex-row justify-between w-full">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsPostponeDatePickerOpen(false)}
+                            className="w-full text-xs font-normal uppercase dark:bg-card dark:text-gray-200 dark:hover:bg-card/80 dark:border-gray-700 font-body"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setIsPostponeDatePickerOpen(false);
+                                setConfirmStatusChangeOpen(true);
+                            }}
+                            className="w-full text-xs font-normal text-white uppercase dark:bg-primary dark:hover:bg-primary/90 font-body"
+                        >
+                            Confirm
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

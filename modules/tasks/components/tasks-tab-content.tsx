@@ -8,9 +8,10 @@ interface TasksTabContentProps {
     isLoading: boolean;
     error: Error | null;
     tasksByStatus: Record<TaskStatus, Task[]>;
-    onUpdateTaskStatus: (taskId: number, newStatus: string) => void;
+    onUpdateTaskStatus: (taskId: number, newStatus: string, newDeadline?: Date) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask: () => void;
+    onUpdateSubtaskStatus?: (subtaskId: number, newStatus: string) => void;
 }
 
 // Main Tasks tab content component
@@ -20,6 +21,7 @@ const TasksContent = memo(
         onUpdateTaskStatus,
         onDeleteTask,
         onAddTask,
+        onUpdateSubtaskStatus,
     }: Omit<TasksTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
         return (
             <div className='flex flex-col h-full overflow-hidden'>
@@ -29,6 +31,7 @@ const TasksContent = memo(
                         onUpdateTaskStatus={onUpdateTaskStatus}
                         onDeleteTask={onDeleteTask}
                         onAddTask={onAddTask}
+                        onUpdateSubtaskStatus={onUpdateSubtaskStatus}
                     />
                 </div>
             </div>
@@ -103,6 +106,7 @@ function TasksTabContentComponent({
     onUpdateTaskStatus,
     onDeleteTask,
     onAddTask,
+    onUpdateSubtaskStatus,
 }: TasksTabContentProps) {
     if (isLoading) {
         return <LoadingContent />;
@@ -120,6 +124,7 @@ function TasksTabContentComponent({
                     onUpdateTaskStatus={onUpdateTaskStatus}
                     onDeleteTask={onDeleteTask}
                     onAddTask={onAddTask}
+                    onUpdateSubtaskStatus={onUpdateSubtaskStatus}
                 />
             );
         case 'reports':
@@ -127,7 +132,13 @@ function TasksTabContentComponent({
         case 'analytics':
             return <AnalyticsContent />;
         default:
-            return null;
+            return <TasksContent
+                tasksByStatus={tasksByStatus}
+                onUpdateTaskStatus={onUpdateTaskStatus}
+                onDeleteTask={onDeleteTask}
+                onAddTask={onAddTask}
+                onUpdateSubtaskStatus={onUpdateSubtaskStatus}
+            />;
     }
 }
 

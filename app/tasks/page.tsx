@@ -53,22 +53,22 @@ function CreateTaskModal({
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
-            // Only allow closing if not submitting
-            if (!isSubmitting && !open) {
-                onClose();
-            }
-        }}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                // Only allow closing if not submitting
+                if (!isSubmitting && !open) {
+                    onClose();
+                }
+            }}
+        >
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-thin uppercase font-body">
                         Task Creation
                     </DialogTitle>
                 </DialogHeader>
-                <TaskForm
-                    onSubmit={handleSubmit}
-                    isLoading={isSubmitting}
-                />
+                <TaskForm onSubmit={handleSubmit} isLoading={isSubmitting} />
             </DialogContent>
         </Dialog>
     );
@@ -107,6 +107,7 @@ export default function TasksPage() {
         deleteTask,
         createTask,
         refetch,
+        updateSubtask,
     } = useTasksQuery(isAuthenticated ? currentFilters : {});
 
     // Refetch data when authentication changes or component mounts
@@ -123,27 +124,63 @@ export default function TasksPage() {
                 }
             };
 
-            document.addEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            );
 
             return () => {
-                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                document.removeEventListener(
+                    'visibilitychange',
+                    handleVisibilityChange,
+                );
             };
         }
     }, [isAuthenticated, refetch]);
 
     // Handlers
     const handleUpdateTaskStatus = useCallback(
-        async (taskId: number, newStatus: string) => {
+        async (taskId: number, newStatus: string, newDeadline?: Date) => {
             try {
-                // The updateTask function now returns a promise that resolves after the mutation completes
-                await updateTask(taskId, { status: newStatus as TaskStatus });
-                // No need to manually refetch as the query will be invalidated automatically
+                // If we're postponing with a new deadline, include it in the update
+                if (newStatus === TaskStatus.POSTPONED && newDeadline) {
+                    await updateTask(taskId, {
+                        status: newStatus as TaskStatus,
+                        deadline: newDeadline,
+                    });
+                } else {
+                    // Otherwise just update the status
+                    await updateTask(taskId, {
+                        status: newStatus as TaskStatus,
+                    });
+                }
             } catch (error) {
                 console.error(`Error updating task ${taskId} status:`, error);
                 // Error toast is already shown by the mutation
             }
         },
         [updateTask],
+    );
+
+    // Add a handler for updating subtask status
+    const handleUpdateSubtaskStatus = useCallback(
+        async (subtaskId: number, newStatus: string) => {
+            try {
+                // Check if we have access to updateSubtask in useTasksQuery hook
+                // If not, this needs to be implemented in the hooks first
+                if (typeof updateSubtask === 'function') {
+                    await updateSubtask(subtaskId, { status: newStatus });
+                } else {
+                    console.error('updateSubtask function is not available');
+                }
+            } catch (error) {
+                console.error(
+                    `Error updating subtask ${subtaskId} status:`,
+                    error,
+                );
+            }
+        },
+        [updateSubtask],
     );
 
     const handleDeleteTask = useCallback(
@@ -173,7 +210,9 @@ export default function TasksPage() {
                 const formattedTaskData = {
                     ...taskData,
                     // Convert any dates to ISO strings if needed
-                    deadline: taskData.deadline ? new Date(taskData.deadline).toISOString() : undefined,
+                    deadline: taskData.deadline
+                        ? new Date(taskData.deadline).toISOString()
+                        : undefined,
                     repetitionDeadline: taskData.repetitionDeadline
                         ? new Date(taskData.repetitionDeadline).toISOString()
                         : undefined,
@@ -234,6 +273,7 @@ export default function TasksPage() {
                             onUpdateTaskStatus={handleUpdateTaskStatus}
                             onDeleteTask={handleDeleteTask}
                             onAddTask={handleCreateTask}
+                            onUpdateSubtaskStatus={handleUpdateSubtaskStatus}
                         />
                     </div>
                 </div>

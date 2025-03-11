@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,7 +19,6 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
 } from '@/components/ui/select';
 import {
     Popover,
@@ -56,9 +55,7 @@ import {
     Repeat,
     BarChart4,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 
 const taskFormSchema = z.object({
     title: z.string().min(1, { message: 'Title is required' }),
@@ -294,19 +291,26 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                     >
                                         <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                         <SelectContent>
-                                            {Object.values(TaskType).map((type) => (
-                                                <SelectItem key={type} value={type}>
-                                                    <div className="flex items-center gap-2">
-                                                        {renderTaskTypeIcon(type)}
-                                                        <span className="text-[10px] font-normal font-body">
-                                                            {type.replace(
-                                                                /_/g,
-                                                                ' ',
+                                            {Object.values(TaskType).map(
+                                                (type) => (
+                                                    <SelectItem
+                                                        key={type}
+                                                        value={type}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            {renderTaskTypeIcon(
+                                                                type,
                                                             )}
-                                                        </span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {type.replace(
+                                                                    /_/g,
+                                                                    ' ',
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ),
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -359,7 +363,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                             {field.value ? (
                                                 <>
                                                     {React.createElement(
-                                                        priorityIcons[field.value],
+                                                        priorityIcons[
+                                                            field.value
+                                                        ],
                                                         {
                                                             className: `w-4 h-4 ${getPriorityColor(field.value)}`,
                                                             strokeWidth: 1.5,
@@ -514,7 +520,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                         defaultValue={
                                             field.value || RepetitionType.NONE
                                         }
-                                        value={field.value || RepetitionType.NONE}
+                                        value={
+                                            field.value || RepetitionType.NONE
+                                        }
                                     >
                                         <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                         <SelectContent>
@@ -556,7 +564,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                 strokeWidth={1.5}
                                             />
                                             <span className="text-[10px] font-thin font-body">
-                                                {field.value || 'SELECT CATEGORY'}
+                                                {field.value ||
+                                                    'SELECT CATEGORY'}
                                             </span>
                                         </div>
                                         <ChevronDown
@@ -699,7 +708,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                     <div className="flex items-center gap-2">
                                                         <Avatar className="w-6 h-6">
                                                             <AvatarImage
-                                                                src={user.photoURL}
+                                                                src={
+                                                                    user.photoURL
+                                                                }
                                                                 alt={user.name}
                                                             />
                                                             <AvatarFallback className="text-[10px]">
@@ -769,7 +780,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                         name: client?.name,
                                                         email: client?.email,
                                                         address:
-                                                            client?.address?.street,
+                                                            client?.address
+                                                                ?.street,
                                                         phone: client?.phone,
                                                         contactPerson:
                                                             client?.contactPerson,
@@ -792,7 +804,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                                     client.logo ||
                                                                     client.photo
                                                                 }
-                                                                alt={client.name}
+                                                                alt={
+                                                                    client.name
+                                                                }
                                                             />
                                                             <AvatarFallback className="text-[10px]">
                                                                 {client.name.charAt(
@@ -834,7 +848,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
                     </div>
 
                     {subtaskFields.map((field, index) => (
-                        <Card key={field.id} className="bg-card/50 border-border">
+                        <Card
+                            key={field.id}
+                            className="bg-card/50 border-border"
+                        >
                             <CardHeader className="flex flex-row items-center justify-between py-2 space-y-0">
                                 <CardTitle className="text-xs font-normal uppercase font-body">
                                     Subtask #{index + 1}
@@ -864,7 +881,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                     />
                                     {errors.subtasks?.[index]?.title && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.subtasks[index]?.title?.message}
+                                            {
+                                                errors.subtasks[index]?.title
+                                                    ?.message
+                                            }
                                         </p>
                                     )}
                                 </div>
@@ -887,8 +907,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                     {errors.subtasks?.[index]?.description && (
                                         <p className="mt-1 text-xs text-red-500">
                                             {
-                                                errors.subtasks[index]?.description
-                                                    ?.message
+                                                errors.subtasks[index]
+                                                    ?.description?.message
                                             }
                                         </p>
                                     )}
@@ -908,9 +928,25 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 {isLoading ? (
                     <div className="flex items-center justify-center gap-2">
                         <span className="animate-spin">
-                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg
+                                className="w-4 h-4"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
                             </svg>
                         </span>
                         <span>Creating Task...</span>

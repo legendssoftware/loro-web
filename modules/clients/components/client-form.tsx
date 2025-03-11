@@ -32,21 +32,27 @@ import {
     FileText,
     ChevronDown,
     Users,
-    ShieldCheck,
     ToggleLeft,
+    LayoutGrid,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Form schema definition with improved validation
 const clientFormSchema = z.object({
-    name: z.string().min(1, { message: 'Client name is required' }),
-    contactPerson: z.string().min(1, { message: 'Contact person is required' }),
+    name: z.string().min(1, { message: 'A client name is required' }),
+    contactPerson: z
+        .string()
+        .min(1, { message: 'A contact person is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
     // Phone validation - allow international formats
-    phone: z.string().min(6, { message: 'Valid phone number is required' }),
+    phone: z.string().min(6, { message: 'A valid phone number is required' }),
     alternativePhone: z.string().optional(),
     // Add URL validation for website
-    website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
+    website: z
+        .string()
+        .url({ message: 'Please enter a valid URL' })
+        .optional()
+        .or(z.literal('')),
     logo: z.string().optional(),
     description: z.string().optional(),
     address: z.object({
@@ -55,16 +61,18 @@ const clientFormSchema = z.object({
         city: z.string().min(1, { message: 'City is required' }),
         state: z.string().min(1, { message: 'State/Province is required' }),
         country: z.string().min(1, { message: 'Country is required' }),
-        postalCode: z.string().min(1, { message: 'Postal code is required' })
+        postalCode: z.string().min(1, { message: 'Postal code is required' }),
     }),
-    category: z.string().default('contract'),
+    category: z.nativeEnum(ClientType).default(ClientType.CONTRACT),
     type: z.nativeEnum(ClientType).default(ClientType.STANDARD),
     // Using ClientStatus from the frontend which maps to the backend enum names correctly
     status: z.nativeEnum(ClientStatus).default(ClientStatus.ACTIVE),
     ref: z.string(),
-    assignedSalesRep: z.object({
-        uid: z.number()
-    }).optional(),
+    assignedSalesRep: z
+        .object({
+            uid: z.number(),
+        })
+        .optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -118,9 +126,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             city: '',
             state: '',
             country: 'South Africa', // Default country
-            postalCode: ''
+            postalCode: '',
         },
-        category: 'contract', // Default category
+        category: ClientType.CONTRACT, // Default category
         type: ClientType.STANDARD, // Default type
         status: ClientStatus.ACTIVE, // Default status
         ref: generateClientRef(), // Generate a unique reference
@@ -183,7 +191,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     },
                     onUploadProgress: (progressEvent) => {
                         if (progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            const progress = Math.round(
+                                (progressEvent.loaded * 100) /
+                                    progressEvent.total,
+                            );
                             setUploadProgress(progress);
                         }
                     },
@@ -445,7 +456,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
-                                    Include the full URL (e.g., https://www.example.com)
+                                    Include the full URL (e.g.,
+                                    https://www.example.com)
                                 </p>
                             </div>
 
@@ -475,7 +487,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
-                                    Include country code (e.g., +27 for South Africa)
+                                    Include country code (e.g., +27 for South
+                                    Africa)
                                 </p>
                             </div>
 
@@ -560,7 +573,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                 />
                                 {errors.address?.street && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.address.street.message as string}
+                                        {
+                                            errors.address.street
+                                                .message as string
+                                        }
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
@@ -584,7 +600,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                 />
                                 {errors.address?.suburb && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.address.suburb.message as string}
+                                        {
+                                            errors.address.suburb
+                                                .message as string
+                                        }
                                     </p>
                                 )}
                             </div>
@@ -594,8 +613,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                     htmlFor="address.city"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    City{' '}
-                                    <span className="text-red-500">*</span>
+                                    City <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="address.city"
@@ -647,7 +665,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                 />
                                 {errors.address?.country && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.address.country.message as string}
+                                        {
+                                            errors.address.country
+                                                .message as string
+                                        }
                                     </p>
                                 )}
                             </div>
@@ -668,7 +689,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                 />
                                 {errors.address?.postalCode && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.address.postalCode.message as string}
+                                        {
+                                            errors.address.postalCode
+                                                .message as string
+                                        }
                                     </p>
                                 )}
                             </div>
@@ -695,11 +719,65 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                 >
                                     Category
                                 </Label>
-                                <Input
-                                    id="category"
-                                    {...register('category')}
-                                    placeholder="contract"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                <Controller
+                                    control={control}
+                                    name="category"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <LayoutGrid
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT CATEGORY'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        ClientType,
+                                                    ).map((type) => (
+                                                        <SelectItem
+                                                            key={type}
+                                                            value={type}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <LayoutGrid
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {type.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                 />
                                 {errors.category && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -728,7 +806,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                     />
                                                     <span className="text-[10px] font-thin font-body">
                                                         {field.value?.uid
-                                                            ? (users?.find(u => u.uid === field.value?.uid)?.name || 'Unknown User')
+                                                            ? users?.find(
+                                                                  (u) =>
+                                                                      u.uid ===
+                                                                      field
+                                                                          .value
+                                                                          ?.uid,
+                                                              )?.name ||
+                                                              'Unknown User'
                                                             : 'SELECT SALES REP'}
                                                     </span>
                                                 </div>
@@ -739,16 +824,23 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                             </div>
                                             <Select
                                                 onValueChange={(value) => {
-                                                    const uid = parseInt(value, 10);
+                                                    const uid = parseInt(
+                                                        value,
+                                                        10,
+                                                    );
                                                     if (!isNaN(uid)) {
                                                         field.onChange({ uid });
                                                     }
                                                 }}
-                                                value={field.value?.uid?.toString() || ''}
+                                                value={
+                                                    field.value?.uid?.toString() ||
+                                                    ''
+                                                }
                                             >
                                                 <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                                 <SelectContent className="overflow-y-auto max-h-60">
-                                                    {users && users.length > 0 ? (
+                                                    {users &&
+                                                    users.length > 0 ? (
                                                         users.map((user) => (
                                                             <SelectItem
                                                                 key={user.uid}
@@ -757,26 +849,39 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                                 <div className="flex items-center gap-2">
                                                                     <Avatar className="w-6 h-6">
                                                                         <AvatarImage
-                                                                            src={user.photoURL}
-                                                                            alt={user.name}
+                                                                            src={
+                                                                                user.photoURL
+                                                                            }
+                                                                            alt={
+                                                                                user.name
+                                                                            }
                                                                         />
                                                                         <AvatarFallback className="text-[10px]">
                                                                             {`${user.name.charAt(0)}${user.surname ? user.surname.charAt(0) : ''}`}
                                                                         </AvatarFallback>
                                                                     </Avatar>
                                                                     <span className="text-[10px] font-normal font-body">
-                                                                        {user.name}
+                                                                        {
+                                                                            user.name
+                                                                        }
                                                                         {user.surname
                                                                             ? ` ${user.surname}`
                                                                             : ''}{' '}
-                                                                        ({user.email})
+                                                                        (
+                                                                        {
+                                                                            user.email
+                                                                        }
+                                                                        )
                                                                     </span>
                                                                 </div>
                                                             </SelectItem>
                                                         ))
                                                     ) : (
                                                         <div className="px-2 py-4 text-center">
-                                                            <p className="text-[10px] text-muted-foreground">No sales reps available</p>
+                                                            <p className="text-[10px] text-muted-foreground">
+                                                                No sales reps
+                                                                available
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </SelectContent>
@@ -838,7 +943,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                             <div className="flex items-center gap-2">
                                                                 <Tag
                                                                     className="w-4 h-4"
-                                                                    strokeWidth={1.5}
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
                                                                 />
                                                                 <span className="uppercase text-[10px] font-thin font-body">
                                                                     {type.replace(
@@ -905,7 +1012,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                             <div className="flex items-center gap-2">
                                                                 <ToggleLeft
                                                                     className="w-4 h-4"
-                                                                    strokeWidth={1.5}
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
                                                                 />
                                                                 <span className="uppercase text-[10px] font-thin font-body">
                                                                     {status.replace(
@@ -934,7 +1043,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     variant="outline"
                     className="h-9 text-[10px] font-light uppercase font-body"
                     onClick={() => {
-                        if (window.confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                        if (
+                            window.confirm(
+                                'Are you sure you want to reset the form? All entered data will be lost.',
+                            )
+                        ) {
                             reset();
                             setLogoImage(null);
                             setSelectedFile(null);
@@ -951,7 +1064,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                 >
                     {isSubmitting ? (
                         <div className="flex items-center gap-2">
-                            <span className="inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                            <span className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></span>
                             <span>Creating...</span>
                         </div>
                     ) : isLoading ? (

@@ -916,6 +916,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                                         <SelectItem
                                                             key={unit}
                                                             value={unit}
+                                                            className="text-[10px] font-light uppercase font-body"
                                                         >
                                                             {unit}
                                                         </SelectItem>

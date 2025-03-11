@@ -369,34 +369,34 @@ export function TasksFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
                             >
                                 Today
-                                {dateRangePreset === DateRangePreset.TODAY && (
+                            {dateRangePreset === DateRangePreset.TODAY && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
                             >
                                 Yesterday
-                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                            {dateRangePreset === DateRangePreset.YESTERDAY && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
                             >
                                 Last Week
-                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
                             >
@@ -420,7 +420,7 @@ export function TasksFilter({
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Date Range
                                 </span>
-                            </DropdownMenuItem>
+                        </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -483,21 +483,21 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        {StatusIcon && (
-                                            <StatusIcon
+                                            {StatusIcon && (
+                                                    <StatusIcon
                                                 className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
                                                 strokeWidth={1.5}
-                                            />
-                                        )}
-                                        <span
+                                                    />
+                                            )}
+                                            <span
                                             className={`text-[10px] font-normal font-body ${
-                                                status === statusOption
+                                                    status === statusOption
                                                     ? statusColors[statusOption]
-                                                    : ''
-                                            }`}
-                                        >
-                                            {statusLabels[statusOption]}
-                                        </span>
+                                                        : ''
+                                                }`}
+                                            >
+                                                {statusLabels[statusOption]}
+                                            </span>
                                         {status === statusOption && (
                                             <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
@@ -574,19 +574,19 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <Award
+                                                <Award
                                             className={`w-4 h-4 mr-2 ${priorityColors[priorityOption]}`}
                                             strokeWidth={1.5}
-                                        />
-                                        <span
+                                                />
+                                            <span
                                             className={`text-[10px] font-normal font-body ${
-                                                priority === priorityOption
+                                                    priority === priorityOption
                                                     ? priorityColors[priorityOption]
-                                                    : ''
-                                            }`}
-                                        >
+                                                        : ''
+                                                }`}
+                                            >
                                             {priorityLabels[priorityOption].toUpperCase()}
-                                        </span>
+                                            </span>
                                         {priority === priorityOption && (
                                             <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
@@ -688,19 +688,19 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <TypeIcon
-                                            className={`w-4 h-4 mr-2 ${taskTypeColors[typeOption]}`}
+                                            <TypeIcon
+                                                className={`w-4 h-4 mr-2 ${taskTypeColors[typeOption]}`}
                                             strokeWidth={1.5}
-                                        />
-                                        <span
+                                            />
+                                            <span
                                             className={`text-[10px] font-normal font-body ${
-                                                taskType === typeOption
+                                                    taskType === typeOption
                                                     ? taskTypeColors[typeOption]
-                                                    : ''
-                                            }`}
-                                        >
-                                            {typeOption.replace(/_/g, ' ')}
-                                        </span>
+                                                        : ''
+                                                }`}
+                                            >
+                                                {typeOption.replace(/_/g, ' ')}
+                                            </span>
                                         {taskType === typeOption && (
                                             <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
@@ -758,11 +758,11 @@ export function TasksFilter({
                             }}
                         >
                             <Avatar className="w-6 h-6 mr-2">
-                                <AvatarFallback>ME</AvatarFallback>
-                            </Avatar>
+                                    <AvatarFallback>ME</AvatarFallback>
+                                </Avatar>
                             <span className="text-[10px] font-normal font-body">
-                                Assigned to Me
-                            </span>
+                                    Assigned to Me
+                                </span>
                             {assigneeId === -1 && (
                                 <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
@@ -799,17 +799,17 @@ export function TasksFilter({
                                 }}
                             >
                                 <Avatar className="w-6 h-6 mr-2">
-                                    <AvatarImage
-                                        src={assignee.avatar}
-                                        alt={assignee.name}
-                                    />
-                                    <AvatarFallback>
-                                        {assignee.name.charAt(0)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                        <AvatarImage
+                                            src={assignee.avatar}
+                                            alt={assignee.name}
+                                        />
+                                        <AvatarFallback>
+                                            {assignee.name.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
                                 <span className="text-[10px] font-normal font-body">
-                                    {assignee.name}
-                                </span>
+                                        {assignee.name}
+                                    </span>
                                 {assigneeId === assignee.id && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                 )}

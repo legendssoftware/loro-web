@@ -83,13 +83,6 @@ export function LeadsFilter({
         [activeFilters],
     );
 
-    const handleStatusChange = useCallback(
-        (value: LeadStatus) => {
-            setStatus(value === status ? undefined : value);
-        },
-        [status],
-    );
-
     const handleDateRangeSelect = useCallback((preset: DateRangePreset) => {
         const today = new Date();
 
@@ -259,7 +252,10 @@ export function LeadsFilter({
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -270,47 +266,83 @@ export function LeadsFilter({
                         <DropdownMenuGroup>
                             <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
-                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(DateRangePreset.TODAY)
+                                }
                             >
                                 Today
                                 {dateRangePreset === DateRangePreset.TODAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check
+                                        className="w-4 h-4 ml-auto text-primary"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
-                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.YESTERDAY,
+                                    )
+                                }
                             >
                                 Yesterday
-                                {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.YESTERDAY && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto text-primary"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_WEEK,
+                                    )
+                                }
                             >
                                 Last Week
-                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.LAST_WEEK && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto text-primary"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_MONTH,
+                                    )
+                                }
                             >
                                 Last Month
-                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.LAST_MONTH && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto text-primary"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
-                                onClick={() => handleDateRangeSelect(DateRangePreset.CUSTOM)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.CUSTOM,
+                                    )
+                                }
                             >
                                 Custom Range
                                 {dateRangePreset === DateRangePreset.CUSTOM && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check
+                                        className="w-4 h-4 ml-auto text-primary"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
 
@@ -348,7 +380,9 @@ export function LeadsFilter({
                                                         <CalendarComponent
                                                             mode="single"
                                                             selected={startDate}
-                                                            onSelect={setStartDate}
+                                                            onSelect={
+                                                                setStartDate
+                                                            }
                                                             initialFocus
                                                         />
                                                     </PopoverContent>
@@ -383,7 +417,9 @@ export function LeadsFilter({
                                                         <CalendarComponent
                                                             mode="single"
                                                             selected={endDate}
-                                                            onSelect={setEndDate}
+                                                            onSelect={
+                                                                setEndDate
+                                                            }
                                                             initialFocus
                                                         />
                                                     </PopoverContent>
@@ -436,7 +472,9 @@ export function LeadsFilter({
                                                 strokeWidth: 1.5,
                                             },
                                         )}
-                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
+                                        <span
+                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                        >
                                             {statusLabels[status]}
                                         </span>
                                     </>
@@ -452,7 +490,10 @@ export function LeadsFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -492,7 +533,10 @@ export function LeadsFilter({
                                             {statusLabels[statusOption]}
                                         </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                            <Check
+                                                className="w-4 h-4 ml-auto text-primary"
+                                                strokeWidth={1.5}
+                                            />
                                         )}
                                     </DropdownMenuItem>
                                 );
@@ -530,7 +574,10 @@ export function LeadsFilter({
                                     {ownerUid ? 'OWNER' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -552,7 +599,10 @@ export function LeadsFilter({
                                 Assigned to Me
                             </span>
                             {ownerUid === -1 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                <Check
+                                    className="w-4 h-4 ml-auto text-primary"
+                                    strokeWidth={1.5}
+                                />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -569,7 +619,10 @@ export function LeadsFilter({
                                 Unassigned
                             </span>
                             {ownerUid === 0 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                <Check
+                                    className="w-4 h-4 ml-auto text-primary"
+                                    strokeWidth={1.5}
+                                />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />

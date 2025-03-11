@@ -22,8 +22,8 @@ function TasksHeaderComponent({
                 onClearFilters={onClearFilters}
             />
             <Button onClick={onAddTask} size="sm">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                <p className="text-[10px] font-normal uppercase font-body">
+                <PlusCircle className="w-4 h-4 mr-2 text-white" strokeWidth={1.5}/>
+                <p className="text-[10px] font-normal uppercase font-body text-white">
                     Add Task
                 </p>
             </Button>

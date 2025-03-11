@@ -1,4 +1,5 @@
 @import './loader.css';
+@import './driver.css';
 
 @tailwind base;
 @tailwind components;

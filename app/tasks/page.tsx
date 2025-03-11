@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { TasksTabGroup } from '@/modules/tasks/components/tasks-tab-group';
 import { TasksTabContent } from '@/modules/tasks/components/tasks-tab-content';
 import { TasksHeader } from '@/modules/tasks/components/tasks-header';
+import TaskForm from '@/modules/tasks/components/task-form';
 import {
     Dialog,
     DialogContent,
@@ -27,24 +28,47 @@ const tabs = [
 function CreateTaskModal({
     isOpen,
     onClose,
+    onCreateTask,
 }: {
     isOpen: boolean;
     onClose: () => void;
     onCreateTask?: (taskData: any) => void;
 }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (formData: any) => {
+        try {
+            setIsSubmitting(true);
+            if (onCreateTask) {
+                await onCreateTask(formData);
+                // Only close the modal if task creation was successful
+                onClose();
+            }
+        } catch (error) {
+            console.error('Error creating task:', error);
+            // Error is already shown via toast in the onCreateTask function
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            // Only allow closing if not submitting
+            if (!isSubmitting && !open) {
+                onClose();
+            }
+        }}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-thin uppercase font-body">
                         Task Creation
                     </DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center justify-center h-64">
-                    <h2 className="text-xs font-thin uppercase font-body">
-                        Activating Soon
-                    </h2>
-                </div>
+                <TaskForm
+                    onSubmit={handleSubmit}
+                    isLoading={isSubmitting}
+                />
             </DialogContent>
         </Dialog>
     );
@@ -85,24 +109,53 @@ export default function TasksPage() {
         refetch,
     } = useTasksQuery(isAuthenticated ? currentFilters : {});
 
-    // Refetch data when authentication changes
+    // Refetch data when authentication changes or component mounts
     useEffect(() => {
         if (isAuthenticated) {
+            // Refetch data when the component mounts or when returning to the page
             refetch();
+
+            // Set up a visibility change listener to refresh data when returning to the tab
+            const handleVisibilityChange = () => {
+                if (document.visibilityState === 'visible') {
+                    console.log('Task page became visible, refreshing data...');
+                    refetch();
+                }
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            return () => {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+            };
         }
     }, [isAuthenticated, refetch]);
 
     // Handlers
     const handleUpdateTaskStatus = useCallback(
         async (taskId: number, newStatus: string) => {
-            await updateTask(taskId, { status: newStatus as TaskStatus });
+            try {
+                // The updateTask function now returns a promise that resolves after the mutation completes
+                await updateTask(taskId, { status: newStatus as TaskStatus });
+                // No need to manually refetch as the query will be invalidated automatically
+            } catch (error) {
+                console.error(`Error updating task ${taskId} status:`, error);
+                // Error toast is already shown by the mutation
+            }
         },
         [updateTask],
     );
 
     const handleDeleteTask = useCallback(
         async (taskId: number) => {
-            await deleteTask(taskId);
+            try {
+                // The deleteTask function now returns a promise that resolves after the mutation completes
+                await deleteTask(taskId);
+                // No need to manually refetch as the query will be invalidated automatically
+            } catch (error) {
+                console.error(`Error deleting task ${taskId}:`, error);
+                // Error toast is already shown by the mutation
+            }
         },
         [deleteTask],
     );
@@ -113,7 +166,28 @@ export default function TasksPage() {
 
     const handleSubmitCreateTask = useCallback(
         async (taskData: any) => {
-            await createTask(taskData);
+            try {
+                console.log('Creating task with data:', taskData);
+
+                // Make sure all required fields are present and properly formatted
+                const formattedTaskData = {
+                    ...taskData,
+                    // Convert any dates to ISO strings if needed
+                    deadline: taskData.deadline ? new Date(taskData.deadline).toISOString() : undefined,
+                    repetitionDeadline: taskData.repetitionDeadline
+                        ? new Date(taskData.repetitionDeadline).toISOString()
+                        : undefined,
+                };
+
+                // The createTask function now returns a promise that resolves after the mutation completes
+                await createTask(formattedTaskData);
+                // No need to manually refetch as the query will be invalidated automatically
+                return true;
+            } catch (error) {
+                console.error('Error creating task:', error);
+                // Error toast is already shown by the mutation
+                throw error; // Re-throw the error to be handled by the form component
+            }
         },
         [createTask],
     );

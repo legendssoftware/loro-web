@@ -264,34 +264,34 @@ export function UsersFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
                             >
                                 Today
-                                {dateRangePreset === DateRangePreset.TODAY && (
+                            {dateRangePreset === DateRangePreset.TODAY && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
                             >
                                 Yesterday
-                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                            {dateRangePreset === DateRangePreset.YESTERDAY && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
                             >
                                 Last Week
-                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
                                     <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                            )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                                 className="text-[10px] font-normal font-body"
                                 onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
                             >
@@ -315,7 +315,7 @@ export function UsersFilter({
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Date Range
                                 </span>
-                            </DropdownMenuItem>
+                        </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -378,21 +378,21 @@ export function UsersFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        {StatusIcon && (
-                                            <StatusIcon
+                                            {StatusIcon && (
+                                                    <StatusIcon
                                                 className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
                                                 strokeWidth={1.5}
-                                            />
-                                        )}
-                                        <span
+                                                    />
+                                            )}
+                                            <span
                                             className={`text-[10px] font-normal font-body ${
-                                                status === statusOption
+                                                    status === statusOption
                                                     ? statusColors[statusOption]
-                                                    : ''
-                                            }`}
-                                        >
-                                            {statusLabels[statusOption]}
-                                        </span>
+                                                        : ''
+                                                }`}
+                                            >
+                                                {statusLabels[statusOption]}
+                                            </span>
                                         {status === statusOption && (
                                             <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
@@ -469,19 +469,19 @@ export function UsersFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <Shield
+                                                <Shield
                                             className={`w-4 h-4 mr-2 ${accessLevelColors[levelOption]}`}
                                             strokeWidth={1.5}
-                                        />
-                                        <span
+                                                />
+                                            <span
                                             className={`text-[10px] font-normal font-body ${
-                                                accessLevel === levelOption
+                                                    accessLevel === levelOption
                                                     ? accessLevelColors[levelOption]
-                                                    : ''
-                                            }`}
-                                        >
-                                            {levelOption.toUpperCase()}
-                                        </span>
+                                                        : ''
+                                                }`}
+                                            >
+                                                {levelOption.toUpperCase()}
+                                            </span>
                                         {accessLevel === levelOption && (
                                             <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
@@ -531,7 +531,7 @@ export function UsersFilter({
                                         />
                                         <span className="text-[10px] font-thin font-body">
                                             BRANCH
-                                        </span>
+                                </span>
                                     </>
                                 )}
                             </div>
@@ -563,7 +563,7 @@ export function UsersFilter({
                                     />
                                     <span className="text-[10px] font-normal font-body">
                                         {branch.name.toUpperCase()}
-                                    </span>
+                                        </span>
                                     {branchId === branch.id && (
                                         <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                     )}

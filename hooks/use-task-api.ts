@@ -141,11 +141,87 @@ export const useTaskApi = () => {
         }
     }, []);
 
+    // Get a subtask by ID
+    const getSubtask = useCallback(async (subtaskId: number): Promise<any> => {
+        try {
+            // The controller endpoint is /tasks/sub-task/:ref
+            const response = await axiosInstance.get(`/tasks/sub-task/${subtaskId}`);
+
+            if (response.data && response.data.subtask) {
+                return response.data.subtask;
+            } else {
+                console.error('Unexpected API response format:', response.data);
+                throw new Error('Invalid API response format');
+            }
+        } catch (error) {
+            console.error(`Error fetching subtask ${subtaskId}:`, error);
+            throw error;
+        }
+    }, []);
+
+    // Update a subtask
+    const updateSubtask = useCallback(async (subtaskId: number, updates: any): Promise<void> => {
+        try {
+            // The controller endpoint is /tasks/sub-task/:ref for PATCH
+            const response = await axiosInstance.patch(`/tasks/sub-task/${subtaskId}`, updates);
+
+            if (!response.data) {
+                console.error('Unexpected API response format:', response.data);
+                throw new Error('Invalid API response format');
+            }
+
+            console.log('Subtask updated successfully:', response.data);
+        } catch (error) {
+            console.error(`Error updating subtask ${subtaskId}:`, error);
+            throw error;
+        }
+    }, []);
+
+    // Complete a subtask
+    const completeSubtask = useCallback(async (subtaskId: number): Promise<void> => {
+        try {
+            // The controller endpoint is /tasks/sub-task/complete/:ref for PATCH
+            const response = await axiosInstance.patch(`/tasks/sub-task/complete/${subtaskId}`);
+
+            if (!response.data) {
+                console.error('Unexpected API response format:', response.data);
+                throw new Error('Invalid API response format');
+            }
+
+            console.log('Subtask completed successfully:', response.data);
+        } catch (error) {
+            console.error(`Error completing subtask ${subtaskId}:`, error);
+            throw error;
+        }
+    }, []);
+
+    // Delete a subtask
+    const deleteSubtask = useCallback(async (subtaskId: number): Promise<void> => {
+        try {
+            // The controller endpoint is /tasks/sub-task/:ref for DELETE
+            const response = await axiosInstance.delete(`/tasks/sub-task/${subtaskId}`);
+
+            if (!response.data) {
+                console.error('Unexpected API response format:', response.data);
+                throw new Error('Invalid API response format');
+            }
+
+            console.log('Subtask deleted successfully:', response.data);
+        } catch (error) {
+            console.error(`Error deleting subtask ${subtaskId}:`, error);
+            throw error;
+        }
+    }, []);
+
     return {
         getTasks,
         getTask,
         updateTask,
         deleteTask,
         createTask,
+        getSubtask,
+        updateSubtask,
+        completeSubtask,
+        deleteSubtask,
     };
 };

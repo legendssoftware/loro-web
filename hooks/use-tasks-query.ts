@@ -80,7 +80,7 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
             }
         },
         onSuccess: () => {
-            // Invalidate tasks query to trigger a refetch, but don't show another toast
+            // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
         },
     });
@@ -108,7 +108,7 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
             }
         },
         onSuccess: () => {
-            // Invalidate tasks query to trigger a refetch, but don't show another toast
+            // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
         },
     });
@@ -130,7 +130,7 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
             }
         },
         onSuccess: () => {
-            // Invalidate tasks query to trigger a refetch, but don't show another toast
+            // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
         },
     });
@@ -138,7 +138,7 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     // Create task wrapper function
     const createTask = useCallback(
         async (taskData: Partial<Task>) => {
-            return createTaskMutation.mutate(taskData);
+            return createTaskMutation.mutateAsync(taskData);
         },
         [createTaskMutation],
     );
@@ -146,7 +146,7 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     // Update task wrapper function
     const updateTask = useCallback(
         async (taskId: number, updates: Partial<Task>) => {
-            return updateTaskMutation.mutate({ taskId, updates });
+            return updateTaskMutation.mutateAsync({ taskId, updates });
         },
         [updateTaskMutation],
     );
@@ -154,9 +154,105 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     // Delete task wrapper function
     const deleteTask = useCallback(
         async (taskId: number) => {
-            return deleteTaskMutation.mutate(taskId);
+            return deleteTaskMutation.mutateAsync(taskId);
         },
         [deleteTaskMutation],
+    );
+
+    // Update subtask mutation
+    const updateSubtaskMutation = useMutation({
+        mutationFn: async ({
+            subtaskId,
+            updates,
+        }: {
+            subtaskId: number;
+            updates: any;
+        }) => {
+            try {
+                await taskApi.updateSubtask(subtaskId, updates);
+                showSuccessToast('Subtask updated successfully.', toast);
+                return { success: true };
+            } catch (error) {
+                showErrorToast(
+                    'Failed to update subtask. Please try again.',
+                    toast,
+                );
+                console.error('Update subtask error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate all task-related queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+    });
+
+    // Complete subtask mutation
+    const completeSubtaskMutation = useMutation({
+        mutationFn: async (subtaskId: number) => {
+            try {
+                await taskApi.completeSubtask(subtaskId);
+                showSuccessToast('Subtask completed successfully.', toast);
+                return { success: true };
+            } catch (error) {
+                showErrorToast(
+                    'Failed to complete subtask. Please try again.',
+                    toast,
+                );
+                console.error('Complete subtask error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate all task-related queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+    });
+
+    // Delete subtask mutation
+    const deleteSubtaskMutation = useMutation({
+        mutationFn: async (subtaskId: number) => {
+            try {
+                await taskApi.deleteSubtask(subtaskId);
+                showSuccessToast('Subtask deleted successfully.', toast);
+                return { success: true };
+            } catch (error) {
+                showErrorToast(
+                    'Failed to delete subtask. Please try again.',
+                    toast,
+                );
+                console.error('Delete subtask error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            // Invalidate all task-related queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+    });
+
+    // Update subtask wrapper function
+    const updateSubtask = useCallback(
+        async (subtaskId: number, updates: any) => {
+            return updateSubtaskMutation.mutateAsync({ subtaskId, updates });
+        },
+        [updateSubtaskMutation],
+    );
+
+    // Complete subtask wrapper function
+    const completeSubtask = useCallback(
+        async (subtaskId: number) => {
+            return completeSubtaskMutation.mutateAsync(subtaskId);
+        },
+        [completeSubtaskMutation],
+    );
+
+    // Delete subtask wrapper function
+    const deleteSubtask = useCallback(
+        async (subtaskId: number) => {
+            return deleteSubtaskMutation.mutateAsync(subtaskId);
+        },
+        [deleteSubtaskMutation],
     );
 
     // Apply filters
@@ -179,6 +275,9 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
         createTask,
         updateTask,
         deleteTask,
+        updateSubtask,
+        completeSubtask,
+        deleteSubtask,
         applyFilters,
         clearFilters,
         refetch,

@@ -247,104 +247,76 @@ export function UsersFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            DATE RANGE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.TODAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    TODAY
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                            >
+                                Today
+                                {dateRangePreset === DateRangePreset.TODAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                            >
+                                Yesterday
+                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                            >
+                                Last Week
+                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                            >
+                                Last Month
+                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
                                 </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.TODAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.YESTERDAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    YESTERDAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.LAST_WEEK)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST WEEK
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(
-                                    DateRangePreset.LAST_MONTH,
-                                )
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST MONTH
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -361,26 +333,32 @@ export function UsersFilter({
                                             React.createElement(
                                                 statusIcons[status],
                                                 {
-                                                    className: `w-3 h-3 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    strokeWidth: 1.5,
                                                 },
                                             )}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Users className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Users
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'STATUS'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            USER STATUS
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -390,7 +368,7 @@ export function UsersFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setStatus(
                                                 status === statusOption
@@ -400,32 +378,41 @@ export function UsersFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        {StatusIcon && (
+                                            <StatusIcon
+                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                status === statusOption
+                                                    ? statusColors[statusOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -440,27 +427,31 @@ export function UsersFilter({
                                 {accessLevel ? (
                                     <>
                                         <Shield
-                                            className={`h-3 w-3 ${accessLevelColors[accessLevel]}`}
+                                            className={`w-4 h-4 ${accessLevelColors[accessLevel]}`}
+                                            strokeWidth={1.5}
                                         />
+                                        <span className={`text-[10px] font-thin font-body ${accessLevelColors[accessLevel]}`}>
+                                            {accessLevel.toUpperCase()}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Shield className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Shield
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            ACCESS LEVEL
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {accessLevel
-                                        ? accessLevel.toUpperCase()
-                                        : 'ACCESS LEVEL'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            ACCESS LEVEL
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Access Level
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -468,7 +459,7 @@ export function UsersFilter({
                                 (levelOption) => (
                                     <DropdownMenuItem
                                         key={levelOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setAccessLevel(
                                                 accessLevel === levelOption
@@ -478,30 +469,39 @@ export function UsersFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            <>
-                                                <Shield
-                                                    className={`h-4 w-4 ${accessLevelColors[levelOption]}`}
-                                                />
-                                            </>
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    accessLevel === levelOption
-                                                        ? accessLevelColors[
-                                                              levelOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {levelOption.toUpperCase()}
-                                            </span>
-                                        </div>
+                                        <Shield
+                                            className={`w-4 h-4 mr-2 ${accessLevelColors[levelOption]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                accessLevel === levelOption
+                                                    ? accessLevelColors[levelOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {levelOption.toUpperCase()}
+                                        </span>
                                         {accessLevel === levelOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 ),
                             )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setAccessLevel(undefined);
+                                    if (activeFilters.includes('Access Level')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Access Level Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -513,27 +513,41 @@ export function UsersFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <Building className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {branchId ? 'BRANCH' : 'BRANCH'}
-                                </span>
+                                {branchId && branches.find(b => b.id === branchId) ? (
+                                    <>
+                                        <Building
+                                            className="w-4 h-4 text-blue-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin text-blue-600 font-body">
+                                            {branches.find(b => b.id === branchId)?.name.toUpperCase()}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Building
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            BRANCH
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            BRANCH
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Branch
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
                             {branches.map((branch) => (
                                 <DropdownMenuItem
                                     key={branch.id}
-                                    className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                     onClick={() => {
                                         setBranchId(
                                             branchId === branch.id
@@ -543,17 +557,36 @@ export function UsersFilter({
                                         setTimeout(handleApplyFilters, 0);
                                     }}
                                 >
-                                    <div className="flex items-center gap-1">
-                                        <Building className="w-4 h-4 mr-2 text-gray-600" />
-                                        <span className="uppercase text-[10px] font-normal">
-                                            {branch.name}
-                                        </span>
-                                    </div>
+                                    <Building
+                                        className="w-4 h-4 mr-2 text-blue-600"
+                                        strokeWidth={1.5}
+                                    />
+                                    <span className="text-[10px] font-normal font-body">
+                                        {branch.name.toUpperCase()}
+                                    </span>
                                     {branchId === branch.id && (
-                                        <Check className="w-4 h-4 text-primary" />
+                                        <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                     )}
                                 </DropdownMenuItem>
                             ))}
+                            {branches.length > 0 && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setBranchId(undefined);
+                                            if (activeFilters.includes('Branch')) {
+                                                handleApplyFilters();
+                                            }
+                                        }}
+                                        className="flex items-center justify-center w-full"
+                                    >
+                                        <span className="text-[10px] font-normal text-red-500 font-body">
+                                            Clear Branch Filter
+                                        </span>
+                                    </DropdownMenuItem>
+                                </>
+                            )}
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -562,13 +595,13 @@ export function UsersFilter({
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-10 h-10"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 text-xs font-normal font-body"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-5 h-5 text-red-500" />
-                    <span className="sr-only">Clear all filters</span>
+                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Clear All ({activeFilters.length})
                 </Button>
             )}
         </div>

@@ -1,23 +1,9 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Claim, ClaimStatus, StatusColors } from '@/lib/types/claim';
-import {
-    CreditCard,
-    Calendar,
-    Clock,
-    MoreHorizontal,
-    Trash2,
-    FileText,
-} from 'lucide-react';
+import { Claim, StatusColors } from '@/lib/types/claim';
+import { CreditCard, Calendar, Clock, FileText } from 'lucide-react';
 import { memo, useState, useCallback } from 'react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -67,16 +53,6 @@ function ClaimCardComponent({
         return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase() || 'U';
     };
 
-    // Handle status change
-    const handleStatusChange = (newStatus: string) => {
-        onUpdateStatus(claim.uid, newStatus);
-    };
-
-    // Handle deletion
-    const handleDelete = () => {
-        setIsDeleteDialogOpen(true);
-    };
-
     const confirmDelete = () => {
         onDelete(claim.uid);
         setIsDeleteDialogOpen(false);
@@ -113,87 +89,6 @@ function ClaimCardComponent({
                             </Badge>
                         </div>
                     </div>
-
-                    {/* Actions menu */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            asChild
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <button className="p-1 rounded-full hover:bg-muted">
-                                <MoreHorizontal className="w-4 h-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <h3 className="px-2 py-1.5 text-xs font-medium">
-                                Change Status
-                            </h3>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(ClaimStatus.PENDING);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Pending
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(ClaimStatus.APPROVED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Approved
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(ClaimStatus.REJECTED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Rejected
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(ClaimStatus.PAID);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Paid
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(ClaimStatus.CANCELLED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Cancelled
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete();
-                                }}
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Delete
-                                </span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
 
                 {/* Task Details */}

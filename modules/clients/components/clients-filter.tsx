@@ -206,10 +206,10 @@ export function ClientsFilter({
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2 px-2">
+        <div className="flex items-center justify-end flex-1 gap-2">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
                 <Input
                     placeholder="search..."
                     value={search}
@@ -235,7 +235,7 @@ export function ClientsFilter({
                             }
                         }}
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4" strokeWidth={1.5} />
                         <span className="sr-only">Clear search</span>
                     </Button>
                 )}
@@ -247,16 +247,19 @@ export function ClientsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
                                 <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-xs font-thin font-body">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -265,7 +268,7 @@ export function ClientsFilter({
                                 onClick={() =>
                                     handleDateRangeSelect(DateRangePreset.TODAY)
                                 }
-                                className="text-xs font-normal font-body"
+                                className="text-[10px] font-normal font-body"
                             >
                                 Today
                             </DropdownMenuItem>
@@ -275,7 +278,7 @@ export function ClientsFilter({
                                         DateRangePreset.YESTERDAY,
                                     )
                                 }
-                                className="text-xs font-normal font-body"
+                                className="text-[10px] font-normal font-body"
                             >
                                 Yesterday
                             </DropdownMenuItem>
@@ -285,7 +288,7 @@ export function ClientsFilter({
                                         DateRangePreset.LAST_WEEK,
                                     )
                                 }
-                                className="text-xs font-normal font-body"
+                                className="text-[10px] font-normal font-body"
                             >
                                 Last Week
                             </DropdownMenuItem>
@@ -295,7 +298,7 @@ export function ClientsFilter({
                                         DateRangePreset.LAST_MONTH,
                                     )
                                 }
-                                className="text-xs font-normal font-body"
+                                className="text-[10px] font-normal font-body"
                             >
                                 Last Month
                             </DropdownMenuItem>
@@ -309,9 +312,11 @@ export function ClientsFilter({
                                         handleApplyFilters();
                                     }
                                 }}
-                                className="text-xs font-normal font-body"
+                                className="flex items-center justify-center w-full"
                             >
-                                Clear Date Range
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
+                                </span>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
@@ -330,6 +335,7 @@ export function ClientsFilter({
                                             statusIcons[status],
                                             {
                                                 className: `w-4 h-4 ${statusColors[status]}`,
+                                                strokeWidth: 1.5,
                                             },
                                         )}
                                         <span
@@ -350,11 +356,11 @@ export function ClientsFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-xs font-thin font-body">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -381,10 +387,16 @@ export function ClientsFilter({
                                                         key as ClientStatus
                                                     ]
                                                 }`}
+                                                strokeWidth={1.5}
                                             />
-                                            <span>{label}</span>
+                                            <span className="text-[10px] font-normal font-body">
+                                                {label}
+                                            </span>
                                             {status === key && (
-                                                <Check className="w-4 h-4 ml-auto" />
+                                                <Check
+                                                    className="w-4 h-4 ml-auto"
+                                                    strokeWidth={1.5}
+                                                />
                                             )}
                                         </DropdownMenuItem>
                                     );
@@ -398,9 +410,11 @@ export function ClientsFilter({
                                         handleApplyFilters();
                                     }
                                 }}
-                                className="text-xs font-normal font-body"
+                                className="flex items-center justify-center w-full"
                             >
-                                Clear Status Filter
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
@@ -415,25 +429,28 @@ export function ClientsFilter({
                             <div className="flex items-center gap-2">
                                 {category ? (
                                     <>
-                                        <Tag className="w-4 h-4 text-blue-600" />
-                                        <span className="text-xs font-thin text-blue-600 font-body">
+                                        <Tag className="w-4 h-4 text-blue-600" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-thin text-blue-600 font-body">
                                             {category.toUpperCase()}
                                         </span>
                                     </>
                                 ) : (
                                     <>
-                                        <Tag className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                        <Tag
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
                                         <span className="text-[10px] font-thin font-body">
                                             CATEGORY
                                         </span>
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-xs font-thin font-body">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Filter by Category
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -448,16 +465,26 @@ export function ClientsFilter({
                                         }}
                                         className="text-xs font-normal font-body"
                                     >
-                                        <Tag className="w-4 h-4 mr-2 text-blue-600" />
-                                        <span>{cat.toUpperCase()}</span>
+                                        <Tag
+                                            className="w-4 h-4 mr-2 text-blue-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-normal font-body">
+                                            {cat.toUpperCase()}
+                                        </span>
                                         {category === cat && (
-                                            <Check className="w-4 h-4 ml-auto" />
+                                            <Check
+                                                className="w-4 h-4 ml-auto"
+                                                strokeWidth={1.5}
+                                            />
                                         )}
                                     </DropdownMenuItem>
                                 ))
                             ) : (
                                 <div className="px-2 py-1 text-xs text-muted-foreground">
-                                    No categories available
+                                    <span className="text-[10px] font-normal text-red-500 font-body uppercase">
+                                        No categories available
+                                    </span>
                                 </div>
                             )}
                             {category && (
@@ -494,7 +521,7 @@ export function ClientsFilter({
                         onClick={handleClearFilters}
                         className="h-10 text-xs font-normal font-body"
                     >
-                        <X className="w-4 h-4 mr-2" />
+                        <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
                         Clear All ({activeFilters.length})
                     </Button>
                 )}

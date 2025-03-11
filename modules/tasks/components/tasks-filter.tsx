@@ -352,104 +352,76 @@ export function TasksFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            DATE RANGE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.TODAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    TODAY
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                            >
+                                Today
+                                {dateRangePreset === DateRangePreset.TODAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                            >
+                                Yesterday
+                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                            >
+                                Last Week
+                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                            >
+                                Last Month
+                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
                                 </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.TODAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.YESTERDAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    YESTERDAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.LAST_WEEK)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST WEEK
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(
-                                    DateRangePreset.LAST_MONTH,
-                                )
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST MONTH
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -466,26 +438,32 @@ export function TasksFilter({
                                             React.createElement(
                                                 statusIcons[status],
                                                 {
-                                                    className: `w-3 h-3 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    strokeWidth: 1.5,
                                                 },
                                             )}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Clock
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'STATUS'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            TASK STATUS
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -495,7 +473,7 @@ export function TasksFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setStatus(
                                                 status === statusOption
@@ -505,32 +483,41 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        {StatusIcon && (
+                                            <StatusIcon
+                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                status === statusOption
+                                                    ? statusColors[statusOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -545,27 +532,31 @@ export function TasksFilter({
                                 {priority ? (
                                     <>
                                         <Award
-                                            className={`h-3 w-3 ${priorityColors[priority]}`}
+                                            className={`w-4 h-4 ${priorityColors[priority]}`}
+                                            strokeWidth={1.5}
                                         />
+                                        <span className={`text-[10px] font-thin font-body ${priorityColors[priority]}`}>
+                                            {priorityLabels[priority].toUpperCase()}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Award className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Award
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            PRIORITY
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {priority
-                                        ? priorityLabels[priority].toUpperCase()
-                                        : 'PRIORITY'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            TASK PRIORITY
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Priority
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -573,7 +564,7 @@ export function TasksFilter({
                                 (priorityOption) => (
                                     <DropdownMenuItem
                                         key={priorityOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setPriority(
                                                 priority === priorityOption
@@ -583,32 +574,39 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            <>
-                                                <Award
-                                                    className={`h-4 w-4 ${priorityColors[priorityOption]}`}
-                                                />
-                                            </>
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    priority === priorityOption
-                                                        ? priorityColors[
-                                                              priorityOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {priorityLabels[
-                                                    priorityOption
-                                                ].toUpperCase()}
-                                            </span>
-                                        </div>
+                                        <Award
+                                            className={`w-4 h-4 mr-2 ${priorityColors[priorityOption]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                priority === priorityOption
+                                                    ? priorityColors[priorityOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {priorityLabels[priorityOption].toUpperCase()}
+                                        </span>
                                         {priority === priorityOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 ),
                             )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setPriority(undefined);
+                                    if (activeFilters.includes('Priority')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Priority Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -621,27 +619,33 @@ export function TasksFilter({
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
                                 {taskType ? (
-                                    <Tag
-                                        className={`h-4 w-4 ${taskTypeColors[taskType]}`}
-                                    />
+                                    <>
+                                        <Tag
+                                            className={`w-4 h-4 ${taskTypeColors[taskType]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className={`text-[10px] font-thin font-body ${taskTypeColors[taskType]}`}>
+                                            {taskType.replace(/_/g, ' ')}
+                                        </span>
+                                    </>
                                 ) : (
-                                    <Tag className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Tag
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            TASK TYPE
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {taskType
-                                        ? taskType.replace(/_/g, ' ')
-                                        : 'TASK TYPE'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[220px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            TASK TYPE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Task Type
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
@@ -674,7 +678,7 @@ export function TasksFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={typeOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setTaskType(
                                                 taskType === typeOption
@@ -684,28 +688,39 @@ export function TasksFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            <TypeIcon
-                                                className={`w-4 h-4 mr-2 ${taskTypeColors[typeOption]}`}
-                                            />
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ${
-                                                    taskType === typeOption
-                                                        ? taskTypeColors[
-                                                              typeOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {typeOption.replace(/_/g, ' ')}
-                                            </span>
-                                        </div>
+                                        <TypeIcon
+                                            className={`w-4 h-4 mr-2 ${taskTypeColors[typeOption]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                taskType === typeOption
+                                                    ? taskTypeColors[typeOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {typeOption.replace(/_/g, ' ')}
+                                        </span>
                                         {taskType === typeOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setTaskType(undefined);
+                                    if (activeFilters.includes('Task Type')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Task Type Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -717,24 +732,24 @@ export function TasksFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <Users
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {assigneeId ? 'ASSIGNED' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            ASSIGNEE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Assignee
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                             onClick={() => {
                                 setAssigneeId(
                                     assigneeId === -1 ? undefined : -1,
@@ -742,42 +757,38 @@ export function TasksFilter({
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <Avatar className="w-6 h-6">
-                                    <AvatarFallback>ME</AvatarFallback>
-                                </Avatar>
-                                <span className="text-[10px] font-normal">
-                                    Assigned to Me
-                                </span>
-                            </div>
+                            <Avatar className="w-6 h-6 mr-2">
+                                <AvatarFallback>ME</AvatarFallback>
+                            </Avatar>
+                            <span className="text-[10px] font-normal font-body">
+                                Assigned to Me
+                            </span>
                             {assigneeId === -1 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                             onClick={() => {
                                 setAssigneeId(assigneeId === 0 ? undefined : 0);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <X className="w-3 h-3" />
-                                </div>
-                                <span className="text-[10px] font-normal">
-                                    Unassigned
-                                </span>
+                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                                <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
+                            <span className="text-[10px] font-normal font-body">
+                                Unassigned
+                            </span>
                             {assigneeId === 0 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {assignees.map((assignee) => (
                             <DropdownMenuItem
                                 key={assignee.id}
-                                className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                 onClick={() => {
                                     setAssigneeId(
                                         assigneeId === assignee.id
@@ -787,25 +798,37 @@ export function TasksFilter({
                                     setTimeout(handleApplyFilters, 0);
                                 }}
                             >
-                                <div className="flex items-center gap-2">
-                                    <Avatar className="w-6 h-6">
-                                        <AvatarImage
-                                            src={assignee.avatar}
-                                            alt={assignee.name}
-                                        />
-                                        <AvatarFallback>
-                                            {assignee.name.charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-[10px] font-normal">
-                                        {assignee.name}
-                                    </span>
-                                </div>
+                                <Avatar className="w-6 h-6 mr-2">
+                                    <AvatarImage
+                                        src={assignee.avatar}
+                                        alt={assignee.name}
+                                    />
+                                    <AvatarFallback>
+                                        {assignee.name.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="text-[10px] font-normal font-body">
+                                    {assignee.name}
+                                </span>
                                 {assigneeId === assignee.id && (
-                                    <Check className="w-4 h-4 text-primary" />
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                         ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setAssigneeId(undefined);
+                                if (activeFilters.includes('Assignee')) {
+                                    handleApplyFilters();
+                                }
+                            }}
+                            className="flex items-center justify-center w-full"
+                        >
+                            <span className="text-[10px] font-normal text-red-500 font-body">
+                                Clear Assignee Filter
+                            </span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -813,13 +836,13 @@ export function TasksFilter({
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-10 h-10"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 text-xs font-normal font-body"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-5 h-5 text-red-500" />
-                    <span className="sr-only">Clear all filters</span>
+                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Clear All ({activeFilters.length})
                 </Button>
             )}
         </div>

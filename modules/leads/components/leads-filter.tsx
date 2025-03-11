@@ -251,211 +251,172 @@ export function LeadsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            DATE RANGE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.TODAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    TODAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.TODAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.YESTERDAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    YESTERDAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.LAST_WEEK)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST WEEK
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(
-                                    DateRangePreset.LAST_MONTH,
-                                )
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST MONTH
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.CUSTOM)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    CUSTOM RANGE
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.CUSTOM && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                            >
+                                Today
+                                {dateRangePreset === DateRangePreset.TODAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                            >
+                                Yesterday
+                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                            >
+                                Last Week
+                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                            >
+                                Last Month
+                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.CUSTOM)}
+                            >
+                                Custom Range
+                                {dateRangePreset === DateRangePreset.CUSTOM && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
 
-                        {dateRangePreset === DateRangePreset.CUSTOM && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <div className="p-2 space-y-2">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <p className="mb-1 text-[10px] font-normal">
-                                                Start
-                                            </p>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        className={cn(
-                                                            'w-full h-7 px-2 text-left font-normal text-xs justify-start',
-                                                            !startDate &&
-                                                                'text-muted-foreground',
-                                                        )}
+                            {dateRangePreset === DateRangePreset.CUSTOM && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <div className="p-2 space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <p className="mb-1 text-[10px] font-normal">
+                                                    Start
+                                                </p>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className={cn(
+                                                                'w-full h-7 px-2 text-left font-normal text-xs justify-start',
+                                                                !startDate &&
+                                                                    'text-muted-foreground',
+                                                            )}
+                                                        >
+                                                            {startDate
+                                                                ? format(
+                                                                      startDate,
+                                                                      'MMM d, yyyy',
+                                                                  )
+                                                                : 'Select'}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent
+                                                        className="w-auto p-0"
+                                                        align="start"
                                                     >
-                                                        {startDate
-                                                            ? format(
-                                                                  startDate,
-                                                                  'MMM d, yyyy',
-                                                              )
-                                                            : 'Select'}
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent
-                                                    className="w-auto p-0"
-                                                    align="start"
-                                                >
-                                                    <CalendarComponent
-                                                        mode="single"
-                                                        selected={startDate}
-                                                        onSelect={setStartDate}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                        <div>
-                                            <p className="mb-1 text-[10px] font-normal">
-                                                End
-                                            </p>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        className={cn(
-                                                            'w-full h-7 px-2 text-left font-normal text-xs justify-start',
-                                                            !endDate &&
-                                                                'text-muted-foreground',
-                                                        )}
+                                                        <CalendarComponent
+                                                            mode="single"
+                                                            selected={startDate}
+                                                            onSelect={setStartDate}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+                                            <div>
+                                                <p className="mb-1 text-[10px] font-normal">
+                                                    End
+                                                </p>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className={cn(
+                                                                'w-full h-7 px-2 text-left font-normal text-xs justify-start',
+                                                                !endDate &&
+                                                                    'text-muted-foreground',
+                                                            )}
+                                                        >
+                                                            {endDate
+                                                                ? format(
+                                                                      endDate,
+                                                                      'MMM d, yyyy',
+                                                                  )
+                                                                : 'Select'}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent
+                                                        className="w-auto p-0"
+                                                        align="start"
                                                     >
-                                                        {endDate
-                                                            ? format(
-                                                                  endDate,
-                                                                  'MMM d, yyyy',
-                                                              )
-                                                            : 'Select'}
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent
-                                                    className="w-auto p-0"
-                                                    align="start"
-                                                >
-                                                    <CalendarComponent
-                                                        mode="single"
-                                                        selected={endDate}
-                                                        onSelect={setEndDate}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                                        <CalendarComponent
+                                                            mode="single"
+                                                            selected={endDate}
+                                                            onSelect={setEndDate}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
                                         </div>
+                                        <Button
+                                            size="sm"
+                                            className="w-full mt-2 h-7"
+                                            onClick={handleApplyFilters}
+                                        >
+                                            Apply Range
+                                        </Button>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        className="w-full mt-2 h-7"
-                                        onClick={handleApplyFilters}
-                                    >
-                                        Apply Range
-                                    </Button>
-                                </div>
-                            </>
-                        )}
+                                </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
+                                </span>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -472,25 +433,31 @@ export function LeadsFilter({
                                             statusIcons[status],
                                             {
                                                 className: `w-4 h-4 ${statusColors[status]}`,
+                                                strokeWidth: 1.5,
                                             },
                                         )}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Filter className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Filter
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'STATUS'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            LEAD STATUS
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -499,7 +466,7 @@ export function LeadsFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             setStatus(
                                                 status === statusOption
@@ -509,32 +476,41 @@ export function LeadsFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        {StatusIcon && (
+                                            <StatusIcon
+                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                status === statusOption
+                                                    ? statusColors[statusOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -546,59 +522,69 @@ export function LeadsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {ownerUid ? 'ASSIGNED' : 'OWNER'}
+                                <User
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
+                                    {ownerUid ? 'OWNER' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            OWNER
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Owner
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                             onClick={() => {
                                 setOwnerUid(ownerUid === -1 ? undefined : -1);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <Avatar className="w-6 h-6">
-                                    <AvatarFallback>ME</AvatarFallback>
-                                </Avatar>
-                                <span className="text-[10px] font-normal">
-                                    Assigned to Me
-                                </span>
-                            </div>
+                            <Avatar className="w-6 h-6 mr-2">
+                                <AvatarFallback>ME</AvatarFallback>
+                            </Avatar>
+                            <span className="text-[10px] font-normal font-body">
+                                Assigned to Me
+                            </span>
                             {ownerUid === -1 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                             onClick={() => {
                                 setOwnerUid(ownerUid === 0 ? undefined : 0);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <X className="w-3 h-3" />
-                                </div>
-                                <span className="text-[10px] font-normal">
-                                    Unassigned
-                                </span>
+                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                                <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
+                            <span className="text-[10px] font-normal font-body">
+                                Unassigned
+                            </span>
                             {ownerUid === 0 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setOwnerUid(undefined);
+                                if (activeFilters.includes('Owner')) {
+                                    handleApplyFilters();
+                                }
+                            }}
+                            className="flex items-center justify-center w-full"
+                        >
+                            <span className="text-[10px] font-normal text-red-500 font-body">
+                                Clear Owner Filter
+                            </span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -607,13 +593,13 @@ export function LeadsFilter({
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-10 h-10"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 text-xs font-normal font-body"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-5 h-5 text-red-500" />
-                    <span className="sr-only">Clear all filters</span>
+                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Clear All ({activeFilters.length})
                 </Button>
             )}
         </div>

@@ -17,7 +17,7 @@ export function ClientsHeader({
     onAddClient,
 }: ClientsHeaderProps) {
     return (
-        <div className="flex items-center justify-end px-2">
+        <div className="flex flex-row items-center justify-end gap-0 px-2">
             <ClientsFilter
                 onApplyFilters={onApplyFilters}
                 onClearFilters={onClearFilters}

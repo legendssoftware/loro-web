@@ -20,19 +20,15 @@ import {
     Search,
     X,
     ChevronDown,
-    Calendar,
     Package,
     Tag,
     DollarSign,
-    Box,
-    Percent,
     Check,
     CalendarIcon,
     PackageCheck,
     PackageX,
     AlertCircle,
     PackageMinus,
-    TagIcon,
 } from 'lucide-react';
 import { useCallback, useState, useMemo } from 'react';
 import {
@@ -258,6 +254,23 @@ export function ProductsFilter({
         [handleApplyFilters],
     );
 
+    // Get date range label
+    const getDateRangeLabel = useCallback(() => {
+        if (dateRangePreset === DateRangePreset.TODAY) return 'TODAY';
+        if (dateRangePreset === DateRangePreset.YESTERDAY) return 'YESTERDAY';
+        if (dateRangePreset === DateRangePreset.LAST_WEEK) return 'LAST WEEK';
+        if (dateRangePreset === DateRangePreset.LAST_MONTH) return 'LAST MONTH';
+        if (dateRangePreset === DateRangePreset.CUSTOM) {
+            if (startDate && endDate) {
+                return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')}`;
+            }
+            if (startDate) {
+                return `FROM ${format(startDate, 'MMM d')}`;
+            }
+        }
+        return 'DATE RANGE';
+    }, [dateRangePreset, startDate, endDate]);
+
     // Price range options
     const priceRanges = [
         { label: 'All Prices', min: undefined, max: undefined },
@@ -269,14 +282,14 @@ export function ProductsFilter({
     ];
 
     return (
-        <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
+        <div className="flex items-center justify-end flex-1 gap-2">
             {/* Search input */}
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1 max-w-sm">
+                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
                 <Input
                     type="search"
                     placeholder="search..."
-                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-normal placeholder:font-body"
+                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => {
@@ -286,13 +299,18 @@ export function ProductsFilter({
                     }}
                 />
                 {search && (
-                    <X
-                        className="absolute right-2.5 top-2.5 h-4 w-4 cursor-pointer text-muted-foreground"
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
                         onClick={() => {
                             setSearch('');
                             setTimeout(handleApplyFilters, 0);
                         }}
-                    />
+                    >
+                        <X className="w-4 h-4" strokeWidth={1.5} />
+                        <span className="sr-only">Clear search</span>
+                    </Button>
                 )}
             </div>
 
@@ -308,24 +326,34 @@ export function ProductsFilter({
                                             React.createElement(
                                                 statusIcons[status],
                                                 {
-                                                    className: `h-3 w-3 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    strokeWidth: 1.5
                                                 },
                                             )}
+                                        <span
+                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                        >
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Package className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Package
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'Status'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 opacity-50" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[180px]">
-                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                            <Package className="inline-block w-4 h-4 mr-2" />
-                            Status
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
@@ -334,7 +362,7 @@ export function ProductsFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between cursor-pointer"
+                                        className="text-xs font-normal font-body"
                                         onClick={() => {
                                             setStatus(
                                                 statusOption as ProductStatus,
@@ -342,32 +370,33 @@ export function ProductsFilter({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        <StatusIcon
+                                            className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-normal font-body">
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        setTimeout(handleApplyFilters, 0);
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -380,43 +409,144 @@ export function ProductsFilter({
                         <DropdownMenuTrigger asChild>
                             <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                                 <div className="flex items-center gap-2">
-                                    <Tag className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-[10px] font-normal uppercase font-body">
-                                        {category || 'Category'}
+                                    <Tag
+                                        className="w-4 h-4 text-muted-foreground"
+                                        strokeWidth={1.5}
+                                    />
+                                    <span className="text-[10px] font-thin font-body">
+                                        {category || 'CATEGORY'}
                                     </span>
                                 </div>
-                                <ChevronDown className="w-4 h-4 opacity-50" />
+                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                             </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[180px]">
-                            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                                <Tag className="inline-block w-4 h-4 mr-2" />
-                                Category
+                        <DropdownMenuContent className="w-56" align="start">
+                            <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                                Filter by Category
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
                                 {categories.map((cat) => (
                                     <DropdownMenuItem
                                         key={cat}
-                                        className="flex items-center justify-between cursor-pointer"
                                         onClick={() => {
                                             setCategory(cat);
                                             setTimeout(handleApplyFilters, 0);
                                         }}
+                                        className="text-xs font-normal font-body"
                                     >
-                                        <span className="text-[10px] font-normal uppercase">
+                                        <Tag className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-normal font-body">
                                             {cat}
                                         </span>
                                         {category === cat && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 ))}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setCategory(undefined);
+                                        if (
+                                            activeFilters.includes('Category')
+                                        ) {
+                                            setTimeout(handleApplyFilters, 0);
+                                        }
+                                    }}
+                                    className="flex items-center justify-center w-full"
+                                >
+                                    <span className="text-[10px] font-normal text-red-500 font-body">
+                                        Clear Category Filter
+                                    </span>
+                                </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             )}
+
+            {/* Date Range Filter */}
+            <div className="w-[180px]">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                            <div className="flex items-center gap-2">
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
+                                    {getDateRangeLabel()}
+                                </span>
+                            </div>
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    handleDateRangeSelect(DateRangePreset.TODAY)
+                                }
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Today
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.YESTERDAY,
+                                    )
+                                }
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Yesterday
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_WEEK,
+                                    )
+                                }
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Last Week
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_MONTH,
+                                    )
+                                }
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Last Month
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
+                                </span>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             {/* Price Range Filter */}
             <div className="w-[180px]">
@@ -424,211 +554,73 @@ export function ProductsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <TagIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <DollarSign
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {minPrice !== undefined ||
                                     maxPrice !== undefined
-                                        ? `R${minPrice || 0} - ${maxPrice !== undefined ? `R${maxPrice}` : 'Any'}`
-                                        : 'Price'}
+                                        ? `${minPrice || 0} - ${maxPrice || '∞'}`
+                                        : 'PRICE RANGE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 opacity-50" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[180px]">
-                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                            <TagIcon className="inline-block w-4 h-4 mr-2" />
-                            Price Range
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Price Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {priceRanges.map((range) => (
+                            {priceRanges.map((range, index) => (
                                 <DropdownMenuItem
-                                    key={range.label}
-                                    className="flex items-center justify-between cursor-pointer"
+                                    key={index}
                                     onClick={() => {
                                         setMinPrice(range.min);
                                         setMaxPrice(range.max);
                                         setTimeout(handleApplyFilters, 0);
                                     }}
+                                    className="text-[10px] font-normal font-body"
                                 >
-                                    <span className="text-[10px] font-normal">
-                                        {range.label}
-                                    </span>
+                                    {range.label}
                                     {minPrice === range.min &&
                                         maxPrice === range.max && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                                         )}
                                 </DropdownMenuItem>
                             ))}
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
-            {/* Date Filter */}
-            <div className="w-[180px]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {dateRangePreset
-                                        ? dateRangePreset
-                                              .replace(/_/g, ' ')
-                                              .toLowerCase()
-                                        : 'Date'}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setMinPrice(undefined);
+                                    setMaxPrice(undefined);
+                                    if (activeFilters.includes('Price')) {
+                                        setTimeout(handleApplyFilters, 0);
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Price Filter
                                 </span>
-                            </div>
-                            <ChevronDown className="w-4 h-4 opacity-50" />
-                        </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[180px]">
-                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                            <Calendar className="inline-block w-4 h-4 mr-2" />
-                            Date Range
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() =>
-                                    handleDateRangeSelect(DateRangePreset.TODAY)
-                                }
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span className="text-[10px] font-normal uppercase">
-                                        Today
-                                    </span>
-                                </div>
-                                {dateRangePreset === DateRangePreset.TODAY && (
-                                    <Check className="w-4 h-4 text-primary" />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.YESTERDAY,
-                                    )
-                                }
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span className="text-[10px] font-normal uppercase">
-                                        Yesterday
-                                    </span>
-                                </div>
-                                {dateRangePreset ===
-                                    DateRangePreset.YESTERDAY && (
-                                    <Check className="w-4 h-4 text-primary" />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.LAST_WEEK,
-                                    )
-                                }
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span className="text-[10px] font-normal uppercase">
-                                        Last Week
-                                    </span>
-                                </div>
-                                {dateRangePreset ===
-                                    DateRangePreset.LAST_WEEK && (
-                                    <Check className="w-4 h-4 text-primary" />
-                                )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.LAST_MONTH,
-                                    )
-                                }
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span className="text-[10px] font-normal uppercase">
-                                        Last Month
-                                    </span>
-                                </div>
-                                {dateRangePreset ===
-                                    DateRangePreset.LAST_MONTH && (
-                                    <Check className="w-4 h-4 text-primary" />
-                                )}
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            {/* Stock and Promotion Quick Filters */}
-            <div className="flex space-x-2">
-                <Button
-                    variant={inStock ? 'default' : 'outline'}
-                    size="sm"
-                    className="h-10 bg-card border-border"
-                    onClick={() => {
-                        setInStock((prev) => !prev);
-                        setTimeout(handleApplyFilters, 0);
-                    }}
-                >
-                    <Box className="w-4 h-4 mr-2" />
-                    <span className="text-[10px] font-normal uppercase font-body">
-                        In Stock
-                    </span>
-                </Button>
-
-                <Button
-                    variant={onPromotion ? 'default' : 'outline'}
-                    size="sm"
-                    className="h-10 bg-card border-border"
-                    onClick={() => {
-                        setOnPromotion((prev) => !prev);
-                        setTimeout(handleApplyFilters, 0);
-                    }}
-                >
-                    <Percent className="w-4 h-4 mr-2" />
-                    <span className="text-[10px] font-normal uppercase font-body">
-                        On Sale
-                    </span>
-                </Button>
-            </div>
-
-            {/* Clear filters button */}
+            {/* Clear All Filters */}
             {activeFilters.length > 0 && (
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="h-10 bg-card border-border"
                     onClick={handleClearFilters}
+                    className="h-10 px-3 text-[10px] font-thin font-body text-red-500"
                 >
-                    <X className="w-4 h-4 mr-2" />
-                    <span className="text-[10px] font-normal uppercase font-body">
-                        Clear Filters
-                    </span>
+                    CLEAR ALL
                 </Button>
-            )}
-
-            {/* Active filter badges */}
-            {activeFilters.length > 0 && (
-                <div className="hidden md:flex flex-wrap gap-1.5 items-center">
-                    {activeFilters.map((filter) => (
-                        <div
-                            key={filter}
-                            className="flex items-center px-2 py-1 text-xs rounded-md bg-primary/10 text-primary"
-                        >
-                            {filter}
-                        </div>
-                    ))}
-                </div>
             )}
         </div>
     );

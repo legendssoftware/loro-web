@@ -239,7 +239,7 @@ function QuotationsFilterComponent({
         <div className="flex items-center justify-end flex-1 gap-2">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
                 <Input
                     placeholder="search..."
                     value={search}
@@ -265,7 +265,7 @@ function QuotationsFilterComponent({
                             }
                         }}
                     >
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500" strokeWidth={1.5} />
                         <span className="sr-only">Clear search</span>
                     </Button>
                 )}
@@ -277,104 +277,76 @@ function QuotationsFilterComponent({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <CalendarIcon
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            DATE RANGE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.TODAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    TODAY
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Today
+                                {dateRangePreset === DateRangePreset.TODAY && (
+                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Yesterday
+                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Last Week
+                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                                className="text-[10px] font-normal font-body"
+                            >
+                                Last Month
+                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
+                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
                                 </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.TODAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.YESTERDAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    YESTERDAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.LAST_WEEK)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST WEEK
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(
-                                    DateRangePreset.LAST_MONTH,
-                                )
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST MONTH
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -391,26 +363,34 @@ function QuotationsFilterComponent({
                                             React.createElement(
                                                 statusIcons[status],
                                                 {
-                                                    className: `w-3 h-3 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    strokeWidth: 1.5,
                                                 },
                                             )}
+                                        <span
+                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                        >
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Clock
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'STATUS'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            QUOTATION STATUS
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -420,7 +400,7 @@ function QuotationsFilterComponent({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="text-xs font-normal font-body"
                                         onClick={() => {
                                             setStatus(
                                                 status === statusOption
@@ -430,32 +410,33 @@ function QuotationsFilterComponent({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        <StatusIcon
+                                            className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-normal font-body">
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        setTimeout(handleApplyFilters, 0);
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -467,24 +448,24 @@ function QuotationsFilterComponent({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <User
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {clientId ? 'CLIENT' : 'CLIENT'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            CLIENT
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Client
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="text-xs font-normal font-body"
                             onClick={() => {
                                 setClientId(undefined);
                                 setTimeout(handleApplyFilters, 0);
@@ -492,21 +473,21 @@ function QuotationsFilterComponent({
                         >
                             <div className="flex items-center gap-2">
                                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <Users className="w-3 h-3" />
+                                    <Users className="w-3 h-3" strokeWidth={1.5} />
                                 </div>
-                                <span className="text-[10px] font-normal">
+                                <span className="text-[10px] font-normal font-body">
                                     All Clients
                                 </span>
                             </div>
                             {!clientId && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {uniqueClients.map((client) => (
                             <DropdownMenuItem
                                 key={client.id}
-                                className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                className="text-xs font-normal font-body"
                                 onClick={() => {
                                     setClientId(
                                         clientId === client.id
@@ -516,7 +497,7 @@ function QuotationsFilterComponent({
                                     setTimeout(handleApplyFilters, 0);
                                 }}
                             >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mr-2">
                                     <Avatar className="w-6 h-6">
                                         <AvatarImage
                                             src={client.photo}
@@ -526,12 +507,12 @@ function QuotationsFilterComponent({
                                             {client.name.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <span className="text-[10px] font-normal">
+                                    <span className="text-[10px] font-normal font-body">
                                         {client.name}
                                     </span>
                                 </div>
                                 {clientId === client.id && (
-                                    <Check className="w-4 h-4 text-primary" />
+                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                         ))}
@@ -543,12 +524,11 @@ function QuotationsFilterComponent({
             {activeFilters.length > 0 && (
                 <Button
                     variant="ghost"
-                    size="icon"
-                    className="w-10 h-10"
+                    size="sm"
                     onClick={handleClearFilters}
+                    className="h-10 px-3 text-[10px] font-thin font-body text-red-500"
                 >
-                    <X className="w-5 h-5 text-red-500" />
-                    <span className="sr-only">Clear all filters</span>
+                    CLEAR ALL
                 </Button>
             )}
         </div>

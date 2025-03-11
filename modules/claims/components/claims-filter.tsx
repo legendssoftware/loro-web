@@ -354,104 +354,76 @@ function ClaimsFilterComponent({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <Calendar
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="p-1 w-[180px]"
-                    >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            DATE RANGE
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Select Date Range
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.TODAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    TODAY
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                            >
+                                Today
+                                {dateRangePreset === DateRangePreset.TODAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                            >
+                                Yesterday
+                                {dateRangePreset === DateRangePreset.YESTERDAY && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                            >
+                                Last Week
+                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-[10px] font-normal font-body"
+                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                            >
+                                Last Month
+                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDateRangePreset(undefined);
+                                    setStartDate(undefined);
+                                    setEndDate(undefined);
+                                    if (activeFilters.includes('Date Range')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Date Range
                                 </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.TODAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.YESTERDAY)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    YESTERDAY
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(DateRangePreset.LAST_WEEK)
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST WEEK
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
-                            onClick={() =>
-                                handleDateRangeSelect(
-                                    DateRangePreset.LAST_MONTH,
-                                )
-                            }
-                        >
-                            <div className="flex items-center gap-1">
-                                <Calendar
-                                    size={16}
-                                    color="black"
-                                    strokeWidth={1.2}
-                                />
-                                <span className="uppercase text-[10px] font-normal">
-                                    LAST MONTH
-                                </span>
-                            </div>
-                            {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                <Check className="w-4 h-4 text-primary" />
-                            )}
-                        </DropdownMenuItem>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -468,26 +440,32 @@ function ClaimsFilterComponent({
                                             React.createElement(
                                                 statusIcons[status],
                                                 {
-                                                    className: `w-3 h-3 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    strokeWidth: 1.5,
                                                 },
                                             )}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
+                                            {statusLabels[status]}
+                                        </span>
                                     </>
                                 ) : (
-                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Clock className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-thin font-body">
+                                            STATUS
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {status ? statusLabels[status] : 'STATUS'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="p-1 w-[180px]"
+                        className="w-56 p-1"
                     >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            CLAIM STATUS
+                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
+                            Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -497,7 +475,7 @@ function ClaimsFilterComponent({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                        className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
                                         onClick={() => {
                                             setStatus(
                                                 status === statusOption
@@ -507,32 +485,41 @@ function ClaimsFilterComponent({
                                             setTimeout(handleApplyFilters, 0);
                                         }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {StatusIcon && (
-                                                <>
-                                                    <StatusIcon
-                                                        className={`w-4 h-4 ${statusColors[statusOption]}`}
-                                                    />
-                                                </>
-                                            )}
-                                            <span
-                                                className={`uppercase text-[10px] font-normal ml-1 ${
-                                                    status === statusOption
-                                                        ? statusColors[
-                                                              statusOption
-                                                          ]
-                                                        : ''
-                                                }`}
-                                            >
-                                                {statusLabels[statusOption]}
-                                            </span>
-                                        </div>
+                                        {StatusIcon && (
+                                            <StatusIcon
+                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                status === statusOption
+                                                    ? statusColors[statusOption]
+                                                    : ''
+                                            }`}
+                                        >
+                                            {statusLabels[statusOption]}
+                                        </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setStatus(undefined);
+                                    if (activeFilters.includes('Status')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Status Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -545,31 +532,37 @@ function ClaimsFilterComponent({
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
                                 {category ? (
-                                    categoryIcons[category] &&
-                                    React.createElement(
-                                        categoryIcons[category],
-                                        {
-                                            className: `h-3 w-3 ${categoryColors[category]}`,
-                                        },
-                                    )
+                                    <>
+                                        {categoryIcons[category] &&
+                                            React.createElement(
+                                                categoryIcons[category],
+                                                {
+                                                    className: `w-4 h-4 ${categoryColors[category]}`,
+                                                    strokeWidth: 1.5,
+                                                },
+                                            )}
+                                        <span className={`text-[10px] font-thin font-body ${categoryColors[category]}`}>
+                                            {categoryLabels[category].toUpperCase()}
+                                        </span>
+                                    </>
                                 ) : (
-                                    <Tag className="w-4 h-4 text-muted-foreground" />
+                                    <>
+                                        <Tag className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                        <span className="text-[10px] font-thin font-body">
+                                            CATEGORY
+                                        </span>
+                                    </>
                                 )}
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    {category
-                                        ? categoryLabels[category].toUpperCase()
-                                        : 'CATEGORY'}
-                                </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="p-1 w-[220px]"
+                        className="w-56 p-1"
                     >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            CLAIM CATEGORY
+                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
+                            Filter by Category
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
@@ -581,7 +574,7 @@ function ClaimsFilterComponent({
                                     return (
                                         <DropdownMenuItem
                                             key={categoryOption}
-                                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
                                             onClick={() => {
                                                 setCategory(
                                                     category === categoryOption
@@ -594,32 +587,40 @@ function ClaimsFilterComponent({
                                                 );
                                             }}
                                         >
-                                            <div className="flex items-center gap-1">
-                                                <CategoryIcon
-                                                    className={`w-4 h-4 mr-2 ${categoryColors[categoryOption]}`}
-                                                />
-                                                <span
-                                                    className={`uppercase text-[10px] font-normal ${
-                                                        category ===
-                                                        categoryOption
-                                                            ? categoryColors[
-                                                                  categoryOption
-                                                              ]
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    {categoryLabels[
-                                                        categoryOption
-                                                    ].toUpperCase()}
-                                                </span>
-                                            </div>
+                                            <CategoryIcon
+                                                className={`w-4 h-4 mr-2 ${categoryColors[categoryOption]}`}
+                                                strokeWidth={1.5}
+                                            />
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    category === categoryOption
+                                                        ? categoryColors[categoryOption]
+                                                        : ''
+                                                }`}
+                                            >
+                                                {categoryLabels[categoryOption].toUpperCase()}
+                                            </span>
                                             {category === categoryOption && (
-                                                <Check className="w-4 h-4 text-primary" />
+                                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                             )}
                                         </DropdownMenuItem>
                                     );
                                 },
                             )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setCategory(undefined);
+                                    if (activeFilters.includes('Category')) {
+                                        handleApplyFilters();
+                                    }
+                                }}
+                                className="flex items-center justify-center w-full"
+                            >
+                                <span className="text-[10px] font-normal text-red-500 font-body">
+                                    Clear Category Filter
+                                </span>
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -631,65 +632,61 @@ function ClaimsFilterComponent({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-[10px] font-normal uppercase font-body">
+                                <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                <span className="text-[10px] font-thin font-body">
                                     {ownerId ? 'OWNER' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="p-1 w-[180px]"
+                        className="w-56 p-1"
                     >
-                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-semibold uppercase">
-                            OWNER
+                        <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
+                            Filter by Owner
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
                             onClick={() => {
                                 setOwnerId(ownerId === -1 ? undefined : -1);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <Avatar className="w-6 h-6">
-                                    <AvatarFallback>ME</AvatarFallback>
-                                </Avatar>
-                                <span className="text-[10px] font-normal">
-                                    My Claims
-                                </span>
-                            </div>
+                            <Avatar className="w-6 h-6 mr-2">
+                                <AvatarFallback>ME</AvatarFallback>
+                            </Avatar>
+                            <span className="text-[10px] font-normal font-body">
+                                My Claims
+                            </span>
                             {ownerId === -1 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
                             onClick={() => {
                                 setOwnerId(ownerId === 0 ? undefined : 0);
                                 setTimeout(handleApplyFilters, 0);
                             }}
                         >
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <X className="w-3 h-3" />
-                                </div>
-                                <span className="text-[10px] font-normal">
-                                    No Owner
-                                </span>
+                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                                <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
+                            <span className="text-[10px] font-normal font-body">
+                                No Owner
+                            </span>
                             {ownerId === 0 && (
-                                <Check className="w-4 h-4 text-primary" />
+                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {owners.map((owner) => (
                             <DropdownMenuItem
                                 key={owner.id}
-                                className="flex items-center justify-between gap-2 px-2 rounded cursor-pointer h-9"
+                                className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
                                 onClick={() => {
                                     setOwnerId(
                                         ownerId === owner.id
@@ -699,25 +696,37 @@ function ClaimsFilterComponent({
                                     setTimeout(handleApplyFilters, 0);
                                 }}
                             >
-                                <div className="flex items-center gap-2">
-                                    <Avatar className="w-6 h-6">
-                                        <AvatarImage
-                                            src={owner.avatar}
-                                            alt={owner.name}
-                                        />
-                                        <AvatarFallback>
-                                            {owner.name.charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-[10px] font-normal">
-                                        {owner.name}
-                                    </span>
-                                </div>
+                                <Avatar className="w-6 h-6 mr-2">
+                                    <AvatarImage
+                                        src={owner.avatar}
+                                        alt={owner.name}
+                                    />
+                                    <AvatarFallback>
+                                        {owner.name.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="text-[10px] font-normal font-body">
+                                    {owner.name}
+                                </span>
                                 {ownerId === owner.id && (
-                                    <Check className="w-4 h-4 text-primary" />
+                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                         ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setOwnerId(undefined);
+                                if (activeFilters.includes('Owner')) {
+                                    handleApplyFilters();
+                                }
+                            }}
+                            className="flex items-center justify-center w-full"
+                        >
+                            <span className="text-[10px] font-normal text-red-500 font-body">
+                                Clear Owner Filter
+                            </span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -725,13 +734,13 @@ function ClaimsFilterComponent({
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-10 h-10"
+                    variant="outline"
+                    size="sm"
                     onClick={handleClearFilters}
+                    className="h-10 text-xs font-normal font-body"
                 >
-                    <X className="w-5 h-5 text-red-500" />
-                    <span className="sr-only">Clear all filters</span>
+                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    Clear All ({activeFilters.length})
                 </Button>
             )}
         </div>

@@ -16,10 +16,8 @@ import {
     Search,
     X,
     ChevronDown,
-    Calendar,
     Building,
     Check,
-    CalendarIcon,
     UserCheck,
     UserX,
     AlertCircle,
@@ -27,14 +25,7 @@ import {
     Trash,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import {
-    format,
-    subDays,
-    startOfWeek,
-    endOfWeek,
-    startOfMonth,
-    endOfMonth,
-} from 'date-fns';
+import { format } from 'date-fns';
 import React from 'react';
 
 // Date range presets
@@ -124,65 +115,6 @@ export function ClientsFilter({
         onClearFilters();
     }, [onClearFilters]);
 
-    // Handle date range selection
-    const handleDateRangeSelect = useCallback(
-        (preset: DateRangePreset) => {
-            const today = new Date();
-
-            switch (preset) {
-                case DateRangePreset.TODAY:
-                    setStartDate(today);
-                    setEndDate(today);
-                    break;
-                case DateRangePreset.YESTERDAY:
-                    const yesterday = subDays(today, 1);
-                    setStartDate(yesterday);
-                    setEndDate(yesterday);
-                    break;
-                case DateRangePreset.LAST_WEEK:
-                    const lastWeekStart = startOfWeek(subDays(today, 7));
-                    const lastWeekEnd = endOfWeek(subDays(today, 7));
-                    setStartDate(lastWeekStart);
-                    setEndDate(lastWeekEnd);
-                    break;
-                case DateRangePreset.LAST_MONTH:
-                    const lastMonthStart = startOfMonth(subDays(today, 30));
-                    const lastMonthEnd = endOfMonth(subDays(today, 30));
-                    setStartDate(lastMonthStart);
-                    setEndDate(lastMonthEnd);
-                    break;
-                case DateRangePreset.CUSTOM:
-                    break;
-                default:
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-            }
-
-            setDateRangePreset(preset);
-            if (preset !== DateRangePreset.CUSTOM) {
-                setTimeout(handleApplyFilters, 0);
-            }
-        },
-        [handleApplyFilters],
-    );
-
-    // Get date range label
-    const getDateRangeLabel = useCallback(() => {
-        if (dateRangePreset === DateRangePreset.TODAY) return 'TODAY';
-        if (dateRangePreset === DateRangePreset.YESTERDAY) return 'YESTERDAY';
-        if (dateRangePreset === DateRangePreset.LAST_WEEK) return 'LAST WEEK';
-        if (dateRangePreset === DateRangePreset.LAST_MONTH) return 'LAST MONTH';
-        if (dateRangePreset === DateRangePreset.CUSTOM) {
-            if (startDate && endDate) {
-                return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')}`;
-            }
-            if (startDate) {
-                return `FROM ${format(startDate, 'MMM d')}`;
-            }
-        }
-        return 'DATE RANGE';
-    }, [dateRangePreset, startDate, endDate]);
-
     // Status labels and icons
     const statusLabels = {
         [ClientStatus.ACTIVE]: 'ACTIVE',
@@ -209,7 +141,10 @@ export function ClientsFilter({
         <div className="flex items-center justify-end flex-1 gap-2">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
+                <Search
+                    className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                    strokeWidth={1.5}
+                />
                 <Input
                     placeholder="search..."
                     value={search}
@@ -240,89 +175,6 @@ export function ClientsFilter({
                     </Button>
                 )}
             </div>
-
-            {/* Date Range Filter */}
-            <div className="w-[180px]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                <CalendarIcon
-                                    className="w-4 h-4 text-muted-foreground"
-                                    strokeWidth={1.5}
-                                />
-                                <span className="text-[10px] font-thin font-body">
-                                    {getDateRangeLabel()}
-                                </span>
-                            </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
-                        </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
-                            Select Date Range
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleDateRangeSelect(DateRangePreset.TODAY)
-                                }
-                                className="text-[10px] font-normal font-body"
-                            >
-                                Today
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.YESTERDAY,
-                                    )
-                                }
-                                className="text-[10px] font-normal font-body"
-                            >
-                                Yesterday
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.LAST_WEEK,
-                                    )
-                                }
-                                className="text-[10px] font-normal font-body"
-                            >
-                                Last Week
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleDateRangeSelect(
-                                        DateRangePreset.LAST_MONTH,
-                                    )
-                                }
-                                className="text-[10px] font-normal font-body"
-                            >
-                                Last Month
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setDateRangePreset(undefined);
-                                    setStartDate(undefined);
-                                    setEndDate(undefined);
-                                    if (activeFilters.includes('Date Range')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
-                            >
-                                <span className="text-[10px] font-normal text-red-500 font-body">
-                                    Clear Date Range
-                                </span>
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
             {/* Status Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
@@ -356,7 +208,10 @@ export function ClientsFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -429,7 +284,10 @@ export function ClientsFilter({
                             <div className="flex items-center gap-2">
                                 {category ? (
                                     <>
-                                        <Tag className="w-4 h-4 text-blue-600" strokeWidth={1.5} />
+                                        <Tag
+                                            className="w-4 h-4 text-blue-600"
+                                            strokeWidth={1.5}
+                                        />
                                         <span className="text-[10px] font-thin text-blue-600 font-body">
                                             {category.toUpperCase()}
                                         </span>
@@ -446,7 +304,10 @@ export function ClientsFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">

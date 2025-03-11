@@ -2,21 +2,14 @@
 
 import { useState } from 'react';
 import { PageTransition } from '@/components/animations/page-transition';
-import { ProductsHeader } from '@/modules/inventory/components/products-header';
+import { ProductsHeaderWithDialog } from '@/modules/inventory/components/products-header-with-dialog';
 import {
     useProductsQuery,
     ProductFilterParams,
     Product,
 } from '@/hooks/use-products-query';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { UsersTabGroup } from '@/modules/users/components/users-tab-group';
 import { ProductsTabContent } from '@/modules/inventory/components/products-tab-content';
-import { ProductForm } from '@/modules/inventory/components/product-form';
 import { ProductFormValues } from '@/modules/inventory/components/product-form';
 
 // Utility function to safely convert products
@@ -31,62 +24,12 @@ const tabs = [
     { id: 'chart', label: 'Analytics' },
 ];
 
-// Create Product Modal Component using our ProductForm
-function CreateProductModal({
-    isOpen,
-    onClose,
-    onCreateProduct,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onCreateProduct?: (productData: ProductFormValues) => void;
-}) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = async (data: ProductFormValues) => {
-        try {
-            setIsSubmitting(true);
-            if (onCreateProduct) {
-                await onCreateProduct(data);
-                // Only close the modal if product creation was successful
-                onClose();
-            }
-        } catch (error) {
-            console.error('Error creating product:', error);
-            // Error is already shown via toast in the onCreateProduct function
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
-                <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">
-                        Add New Product
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="px-1 py-4">
-                    {isOpen && (
-                        <ProductForm
-                            onSubmit={handleSubmit}
-                            isLoading={isSubmitting}
-                        />
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-export default function InventoryPage() {
+export default function InventoryWithDialogPage() {
     const [activeTab, setActiveTab] = useState<string>('grid');
     const [filters, setFilters] = useState<ProductFilterParams>({
         page: 1,
         limit: 20,
     });
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
     const {
         data: productsData,
@@ -121,11 +64,6 @@ export default function InventoryPage() {
             page: 1,
             limit: 20,
         });
-    };
-
-    // Handle adding a new product
-    const handleAddProduct = () => {
-        setIsCreateDialogOpen(true);
     };
 
     // Handle submitting a new product
@@ -167,10 +105,11 @@ export default function InventoryPage() {
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
                     <div className="flex items-center justify-end px-2">
-                        <ProductsHeader
+                        {/* Using our ProductsHeaderWithDialog component */}
+                        <ProductsHeaderWithDialog
                             onApplyFilters={handleApplyFilters}
                             onClearFilters={handleClearFilters}
-                            onAddProduct={handleAddProduct}
+                            onCreateProduct={handleSubmitCreateProduct}
                         />
                     </div>
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
@@ -194,13 +133,6 @@ export default function InventoryPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Render the CreateProductModal with our ProductForm */}
-            <CreateProductModal
-                isOpen={isCreateDialogOpen}
-                onClose={() => setIsCreateDialogOpen(false)}
-                onCreateProduct={handleSubmitCreateProduct}
-            />
         </PageTransition>
     );
 }

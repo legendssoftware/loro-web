@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ClientType } from '@/lib/types/client-enums';
-import { AccountStatus } from '@/lib/enums/status.enums';
+import { ClientStatus } from '@/hooks/use-clients-query';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { toast } from 'react-hot-toast';
@@ -37,14 +37,16 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Form schema definition
+// Form schema definition with improved validation
 const clientFormSchema = z.object({
     name: z.string().min(1, { message: 'Client name is required' }),
     contactPerson: z.string().min(1, { message: 'Contact person is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
-    phone: z.string().min(1, { message: 'Phone number is required' }),
+    // Phone validation - allow international formats
+    phone: z.string().min(6, { message: 'Valid phone number is required' }),
     alternativePhone: z.string().optional(),
-    website: z.string().optional(),
+    // Add URL validation for website
+    website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
     logo: z.string().optional(),
     description: z.string().optional(),
     address: z.object({
@@ -57,7 +59,8 @@ const clientFormSchema = z.object({
     }),
     category: z.string().default('contract'),
     type: z.nativeEnum(ClientType).default(ClientType.STANDARD),
-    status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
+    // Using ClientStatus from the frontend which maps to the backend enum names correctly
+    status: z.nativeEnum(ClientStatus).default(ClientStatus.ACTIVE),
     ref: z.string(),
     assignedSalesRep: z.object({
         uid: z.number()
@@ -74,22 +77,32 @@ interface ClientFormProps {
     isLoading?: boolean;
 }
 
-// Client Form Component
+/**
+ * ClientForm Component
+ *
+ * This component provides a form interface for creating and editing clients.
+ * It handles data validation, image uploads, and form submission according to
+ * the backend API requirements.
+ *
+ * @component
+ */
 export const ClientForm: React.FC<ClientFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,
 }) => {
+    // State for tracking the file upload process
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [logoImage, setLogoImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const profileData = useAuthStore(selectProfileData);
 
     // Generate a unique client reference code
     const generateClientRef = () =>
         `CL${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // Default form values
+    // Default form values - ensuring all required fields have initial values
     const defaultValues: Partial<ClientFormValues> = {
         name: '',
         contactPerson: '',
@@ -104,14 +117,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             suburb: '',
             city: '',
             state: '',
-            country: '',
+            country: 'South Africa', // Default country
             postalCode: ''
         },
-        category: 'contract',
-        type: ClientType.STANDARD,
-        status: AccountStatus.ACTIVE,
-        ref: generateClientRef(),
-        ...initialData,
+        category: 'contract', // Default category
+        type: ClientType.STANDARD, // Default type
+        status: ClientStatus.ACTIVE, // Default status
+        ref: generateClientRef(), // Generate a unique reference
+        ...initialData, // Override with any provided initial data
     };
 
     // Initialize form
@@ -143,9 +156,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         setLogoImage(previewUrl);
     };
 
-    // Upload image function that will be called on form submission
+    /**
+     * Uploads an image file to the server
+     * @param file The file to upload
+     * @returns The URL of the uploaded image, or null if upload failed
+     */
     const uploadImage = async (file: File): Promise<string | null> => {
         try {
+            setUploadProgress(0);
             // Create form data
             const formData = new FormData();
             formData.append('file', file);
@@ -154,7 +172,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             // Get access token from auth store for authentication
             const accessToken = useAuthStore.getState().accessToken;
 
-            // Upload directly to the backend using axiosInstance
+            // Upload directly to the backend using axiosInstance with progress tracking
             const response = await axiosInstance.post(
                 '/docs/upload',
                 formData,
@@ -163,12 +181,19 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                         'Content-Type': 'multipart/form-data',
                         Authorization: `Bearer ${accessToken}`,
                     },
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(progress);
+                        }
+                    },
                 },
             );
 
             const data = response.data;
 
             if (data.publicUrl) {
+                toast.success('Logo uploaded successfully');
                 return data.publicUrl;
             } else {
                 toast.error('Failed to upload logo image');
@@ -178,10 +203,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             console.error('Error uploading image:', error);
             toast.error('Error uploading logo image');
             return null;
+        } finally {
+            setUploadProgress(0);
         }
     };
 
-    // Form submission handler
+    /**
+     * Submits the form data to the server
+     * Handles file uploads and organizational context
+     */
     const onFormSubmit = async (data: ClientFormValues) => {
         try {
             setIsSubmitting(true);
@@ -198,10 +228,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             // Get auth store data for organisational context
             const profileData = useAuthStore.getState().profileData;
 
-            // Create client with organizational context if available
+            // Prepare client data - ensure data is formatted exactly as the backend expects
             const clientData = {
                 ...data,
                 logo: logoUrl,
+                // Ensure status is passed as a string matching the backend's enum values
+                status: data.status,
+                // Ensure the ref is set and follows the pattern
+                ref: data.ref || generateClientRef(),
+                // Include organization data if available
                 ...(profileData?.organisationRef
                     ? {
                           organisation: {
@@ -209,6 +244,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                           },
                       }
                     : {}),
+                // Include branch data if available
                 ...(profileData?.branch?.uid
                     ? {
                           branch: { uid: parseInt(profileData.branch.uid, 10) },
@@ -221,7 +257,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
             // Reset form after successful submission
             toast.success('Client created successfully');
-            reset();
+            reset(defaultValues);
             setLogoImage(null);
             setSelectedFile(null);
         } catch (error) {
@@ -408,6 +444,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                         {errors.website.message}
                                     </p>
                                 )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Include the full URL (e.g., https://www.example.com)
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -435,6 +474,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                         {errors.phone.message}
                                     </p>
                                 )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Include country code (e.g., +27 for South Africa)
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -461,6 +503,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                         {errors.alternativePhone.message}
                                     </p>
                                 )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Optional secondary contact number
+                                </p>
                             </div>
                         </div>
 
@@ -518,6 +563,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                         {errors.address.street.message as string}
                                     </p>
                                 )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Include building number and street name
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -680,7 +728,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                     />
                                                     <span className="text-[10px] font-thin font-body">
                                                         {field.value?.uid
-                                                            ? users?.find(u => u.uid === field.value?.uid)?.name || 'SELECT SALES REP'
+                                                            ? (users?.find(u => u.uid === field.value?.uid)?.name || 'Unknown User')
                                                             : 'SELECT SALES REP'}
                                                     </span>
                                                 </div>
@@ -692,42 +740,53 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                             <Select
                                                 onValueChange={(value) => {
                                                     const uid = parseInt(value, 10);
-                                                    field.onChange({ uid });
+                                                    if (!isNaN(uid)) {
+                                                        field.onChange({ uid });
+                                                    }
                                                 }}
-                                                value={field.value?.uid?.toString()}
+                                                value={field.value?.uid?.toString() || ''}
                                             >
                                                 <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                                 <SelectContent className="overflow-y-auto max-h-60">
-                                                    {users?.map((user) => (
-                                                        <SelectItem
-                                                            key={user.uid}
-                                                            value={user.uid.toString()}
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <Avatar className="w-6 h-6">
-                                                                    <AvatarImage
-                                                                        src={user.photoURL}
-                                                                        alt={user.name}
-                                                                    />
-                                                                    <AvatarFallback className="text-[10px]">
-                                                                        {`${user.name.charAt(0)}${user.surname ? user.surname.charAt(0) : ''}`}
-                                                                    </AvatarFallback>
-                                                                </Avatar>
-                                                                <span className="text-[10px] font-normal font-body">
-                                                                    {user.name}
-                                                                    {user.surname
-                                                                        ? ` ${user.surname}`
-                                                                        : ''}{' '}
-                                                                    ({user.email})
-                                                                </span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
+                                                    {users && users.length > 0 ? (
+                                                        users.map((user) => (
+                                                            <SelectItem
+                                                                key={user.uid}
+                                                                value={user.uid.toString()}
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <Avatar className="w-6 h-6">
+                                                                        <AvatarImage
+                                                                            src={user.photoURL}
+                                                                            alt={user.name}
+                                                                        />
+                                                                        <AvatarFallback className="text-[10px]">
+                                                                            {`${user.name.charAt(0)}${user.surname ? user.surname.charAt(0) : ''}`}
+                                                                        </AvatarFallback>
+                                                                    </Avatar>
+                                                                    <span className="text-[10px] font-normal font-body">
+                                                                        {user.name}
+                                                                        {user.surname
+                                                                            ? ` ${user.surname}`
+                                                                            : ''}{' '}
+                                                                        ({user.email})
+                                                                    </span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        ))
+                                                    ) : (
+                                                        <div className="px-2 py-4 text-center">
+                                                            <p className="text-[10px] text-muted-foreground">No sales reps available</p>
+                                                        </div>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     )}
                                 />
+                                <p className="text-[10px] text-muted-foreground">
+                                    The assigned representative for this client
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -837,7 +896,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                                                 <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                                 <SelectContent>
                                                     {Object.values(
-                                                        AccountStatus,
+                                                        ClientStatus,
                                                     ).map((status) => (
                                                         <SelectItem
                                                             key={status}
@@ -875,9 +934,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     variant="outline"
                     className="h-9 text-[10px] font-light uppercase font-body"
                     onClick={() => {
-                        reset();
-                        setLogoImage(null);
-                        setSelectedFile(null);
+                        if (window.confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                            reset();
+                            setLogoImage(null);
+                            setSelectedFile(null);
+                        }
                     }}
                     disabled={isSubmitting}
                 >
@@ -888,11 +949,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     disabled={isLoading || isSubmitting}
                     className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                 >
-                    {isSubmitting
-                        ? 'Creating...'
-                        : isLoading
-                          ? 'Loading...'
-                          : 'Create Client'}
+                    {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                            <span className="inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                            <span>Creating...</span>
+                        </div>
+                    ) : isLoading ? (
+                        'Loading...'
+                    ) : (
+                        'Create Client'
+                    )}
                 </Button>
             </div>
         </form>

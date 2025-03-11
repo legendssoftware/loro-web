@@ -18,6 +18,8 @@ import {
 import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group';
 import { ClientsHeader } from '@/modules/clients/components/clients-header';
 import { ClientsTabContent } from '@/modules/clients/components/clients-tab-content';
+import { ClientForm, ClientFormValues } from '@/modules/clients/components/client-form';
+import { toast } from 'react-hot-toast';
 
 // Tab configuration
 const tabs = [
@@ -34,18 +36,32 @@ function CreateClientModal({
 }: {
     isOpen: boolean;
     onClose: () => void;
-    onCreateClient?: (clientData: any) => void;
+    onCreateClient?: (clientData: ClientFormValues) => void;
 }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (data: ClientFormValues) => {
+        setIsSubmitting(true);
+        try {
+            await onCreateClient?.(data);
+            onClose();
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">Create New Client</DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center justify-center h-64">
-                    <h2 className="text-xs font-thin uppercase font-body">
-                        Activating Soon
-                    </h2>
+                <div className="px-1 py-4">
+                    {/* Import and use our ClientForm component */}
+                    {isOpen && <ClientForm
+                        onSubmit={handleSubmit}
+                        isLoading={isSubmitting}
+                    />}
                 </div>
             </DialogContent>
         </Dialog>
@@ -102,11 +118,19 @@ export default function ClientsPage() {
     }, []);
 
     const handleSubmitCreateClient = useCallback(
-        async (clientData: any) => {
-            await createClient(clientData);
-            setIsCreateDialogOpen(false);
+        async (clientData: ClientFormValues) => {
+            try {
+                await createClient(clientData);
+                toast.success('Client created successfully');
+                // Refetch clients to update the list
+                refetch();
+                setIsCreateDialogOpen(false);
+            } catch (error) {
+                console.error('Error creating client:', error);
+                toast.error('Failed to create client. Please try again.');
+            }
         },
-        [createClient],
+        [createClient, refetch],
     );
 
     const handleUpdateClientStatus = useCallback(

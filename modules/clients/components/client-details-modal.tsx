@@ -56,6 +56,8 @@ export function ClientDetailsModal({
     const [showDeleteConfirmation, setShowDeleteConfirmation] =
         useState<boolean>(false);
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
+    const [showStatusChangeConfirmation, setShowStatusChangeConfirmation] = useState<boolean>(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState<ClientStatus | null>(null);
 
     // Format dates
     const formatDate = (date?: Date) => {
@@ -64,10 +66,34 @@ export function ClientDetailsModal({
     };
 
     // Handle status change
-    const handleStatusChange = (status: ClientStatus) => {
-        if (onUpdateStatus) {
-            onUpdateStatus(client.uid, status);
+    const initiateStatusChange = (status: ClientStatus) => {
+        if (client.status === status) {
+            return;
         }
+
+        setPendingStatusChange(status);
+        setShowStatusChangeConfirmation(true);
+    };
+
+    const confirmStatusChange = () => {
+        if (pendingStatusChange && onUpdateStatus) {
+            onUpdateStatus(client.uid, pendingStatusChange);
+            setShowStatusChangeConfirmation(false);
+            setPendingStatusChange(null);
+        }
+    };
+
+    const cancelStatusChange = () => {
+        setShowStatusChangeConfirmation(false);
+        setPendingStatusChange(null);
+    };
+
+    const getStatusDisplayName = (status: ClientStatus | null): string => {
+        if (!status) return 'UNKNOWN';
+
+        // Ensure we're dealing with a string that can be uppercased
+        const statusString = String(status);
+        return statusString.toUpperCase();
     };
 
     // Handle tab change
@@ -120,14 +146,12 @@ export function ClientDetailsModal({
     };
 
     // Handle delete client
-    const handleDelete = useCallback(async () => {
+    const handleDelete = useCallback(() => {
         if (onDelete) {
-            try {
-                await onDelete(client.uid);
-                onClose();
-            } catch (error) {
-                showErrorToast('Failed to delete client', toast);
-            }
+            onDelete(client.uid);
+            setShowDeleteConfirmation(false);
+            toast.success('Client deleted successfully');
+            onClose();
         }
     }, [client.uid, onDelete, onClose]);
 
@@ -139,6 +163,11 @@ export function ClientDetailsModal({
     // Close the edit modal
     const handleCloseEditModal = () => {
         setShowEditModal(false);
+    };
+
+    // Update the delete confirmation logic to use a separate Dialog
+    const handleInitiateDelete = () => {
+        setShowDeleteConfirmation(true);
     };
 
     const tabs = [
@@ -485,146 +514,104 @@ export function ClientDetailsModal({
 
                     {/* Action Buttons */}
                     <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700">
-                        {!showDeleteConfirmation ? (
-                            <>
-                                <div className="flex flex-col items-center justify-center w-full">
-                                    <p className="text-xs font-thin uppercase font-body">
-                                        Quick Actions
-                                    </p>
-                                </div>
-                                <div className="flex flex-wrap justify-center w-full gap-3">
-                                    {/* Warning/Pending Button */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${client.status === ClientStatus.PENDING ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                ClientStatus.PENDING,
-                                            )
-                                        }
-                                        title="Set as Pending"
-                                    >
-                                        <AlertCircle
-                                            strokeWidth={1.2}
-                                            className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                        />
-                                    </Button>
+                        <div className="flex flex-col items-center justify-center w-full">
+                            <p className="text-xs font-thin uppercase font-body">
+                                Quick Actions
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap justify-center w-full gap-3">
+                            {/* Warning/Pending Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className={`w-14 h-14 rounded-full text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${client.status === ClientStatus.PENDING ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`}
+                                onClick={() =>
+                                    initiateStatusChange(ClientStatus.PENDING)
+                                }
+                                title="Set as Pending"
+                            >
+                                <AlertCircle
+                                    strokeWidth={1.2}
+                                    className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                />
+                            </Button>
 
-                                    {/* Active/Approved Button */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${client.status === ClientStatus.ACTIVE ? 'bg-green-100 dark:bg-green-900/30' : ''}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                ClientStatus.ACTIVE,
-                                            )
-                                        }
-                                        title="Activate Client"
-                                    >
-                                        <CheckCircle
-                                            strokeWidth={1.2}
-                                            className="text-green-600 w-7 h-7 dark:text-green-400"
-                                        />
-                                    </Button>
+                            {/* Active/Approved Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className={`w-14 h-14 rounded-full text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${client.status === ClientStatus.ACTIVE ? 'bg-green-100 dark:bg-green-900/30' : ''}`}
+                                onClick={() =>
+                                    initiateStatusChange(ClientStatus.ACTIVE)
+                                }
+                                title="Activate Client"
+                            >
+                                <CheckCircle
+                                    strokeWidth={1.2}
+                                    className="text-green-600 w-7 h-7 dark:text-green-400"
+                                />
+                            </Button>
 
-                                    {/* Inactive/Rejected Button */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${client.status === ClientStatus.INACTIVE ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                ClientStatus.INACTIVE,
-                                            )
-                                        }
-                                        title="Deactivate Client"
-                                    >
-                                        <Ban
-                                            strokeWidth={1.2}
-                                            className="text-red-600 w-7 h-7 dark:text-red-400"
-                                        />
-                                    </Button>
+                            {/* Inactive/Rejected Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${client.status === ClientStatus.INACTIVE ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
+                                onClick={() =>
+                                    initiateStatusChange(ClientStatus.INACTIVE)
+                                }
+                                title="Deactivate Client"
+                            >
+                                <Ban
+                                    strokeWidth={1.2}
+                                    className="text-red-600 w-7 h-7 dark:text-red-400"
+                                />
+                            </Button>
 
-                                    {/* Schedule/Calendar Button */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
-                                        onClick={handleEditClick}
-                                        title="Schedule"
-                                    >
-                                        <Calendar
-                                            strokeWidth={1.2}
-                                            className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                        />
-                                    </Button>
+                            {/* Schedule/Calendar Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
+                                onClick={handleEditClick}
+                                title="Schedule"
+                            >
+                                <Calendar
+                                    strokeWidth={1.2}
+                                    className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                />
+                            </Button>
 
-                                    {/* Edit/Task Button */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
-                                        onClick={handleEditClick}
-                                        title="Edit Client"
-                                    >
-                                        <Edit
-                                            strokeWidth={1.2}
-                                            className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                        />
-                                    </Button>
+                            {/* Edit/Task Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                onClick={handleEditClick}
+                                title="Edit Client"
+                            >
+                                <Edit
+                                    strokeWidth={1.2}
+                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                />
+                            </Button>
 
-                                    {/* Delete Button */}
-                                    {onDelete && (
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="text-red-800 border-red-200 rounded-full w-14 h-14 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
-                                            onClick={() =>
-                                                setShowDeleteConfirmation(true)
-                                            }
-                                            title="Delete Client"
-                                        >
-                                            <Trash
-                                                strokeWidth={1.2}
-                                                className="text-red-600 w-7 h-7 dark:text-red-400"
-                                            />
-                                        </Button>
-                                    )}
-                                </div>
-                            </>
-                        ) : (
-                            // Delete Confirmation
-                            <div className="w-full">
-                                <Alert variant="destructive" className="mb-4">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    <AlertTitle>Warning</AlertTitle>
-                                    <AlertDescription>
-                                        Are you sure you want to delete this
-                                        client? This action cannot be undone.
-                                    </AlertDescription>
-                                </Alert>
-                                <div className="flex justify-end gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            setShowDeleteConfirmation(false)
-                                        }
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={handleDelete}
-                                    >
-                                        Confirm Delete
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                            {/* Delete Button */}
+                            {onDelete && (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-red-800 border-red-200 rounded-full w-14 h-14 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
+                                    onClick={handleInitiateDelete}
+                                    title="Delete Client"
+                                >
+                                    <Trash
+                                        strokeWidth={1.2}
+                                        className="text-red-600 w-7 h-7 dark:text-red-400"
+                                    />
+                                </Button>
+                            )}
+                        </div>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -643,6 +630,86 @@ export function ClientDetailsModal({
                             <h2 className="text-xs font-thin uppercase font-body">
                                 Activating Soon
                             </h2>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Status Change Confirmation Dialog */}
+            {showStatusChangeConfirmation && (
+                <Dialog
+                    open={showStatusChangeConfirmation}
+                    onOpenChange={() => setShowStatusChangeConfirmation(false)}
+                >
+                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                        <DialogTitle className="sr-only">
+                            Confirm Status Change
+                        </DialogTitle>
+                        <div className="p-0">
+                            <h2 className="mb-4 text-base font-semibold text-center uppercase font-body">
+                                CONFIRM STATUS CHANGE
+                            </h2>
+                            <p className="mb-6 text-sm text-center uppercase font-body">
+                                ARE YOU SURE YOU WANT TO CHANGE THE STATUS OF THIS CLIENT TO{' '}
+                                <span className="font-semibold">
+                                    {pendingStatusChange && getStatusDisplayName(pendingStatusChange)}
+                                </span>
+                                ?
+                            </p>
+                            <div className="flex justify-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-red-600 border-0 font-body hover:bg-red-700"
+                                    onClick={cancelStatusChange}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-purple-600 font-body hover:bg-purple-700"
+                                    onClick={confirmStatusChange}
+                                >
+                                    CONFIRM
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {showDeleteConfirmation && (
+                <Dialog
+                    open={showDeleteConfirmation}
+                    onOpenChange={() => setShowDeleteConfirmation(false)}
+                >
+                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                        <DialogTitle className="sr-only">
+                            Confirm Delete Client
+                        </DialogTitle>
+                        <div className="p-0">
+                            <h2 className="mb-4 text-base font-semibold text-center uppercase font-body">
+                                CONFIRM DELETE CLIENT
+                            </h2>
+                            <p className="mb-6 text-sm text-center uppercase font-body">
+                                ARE YOU SURE YOU WANT TO DELETE THIS CLIENT? THIS ACTION CANNOT BE UNDONE.
+                            </p>
+                            <div className="flex justify-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-red-600 border-0 font-body hover:bg-red-700"
+                                    onClick={() => setShowDeleteConfirmation(false)}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    className="w-32 h-10 text-xs text-white uppercase bg-purple-600 font-body hover:bg-purple-700"
+                                    onClick={handleDelete}
+                                >
+                                    CONFIRM
+                                </Button>
+                            </div>
                         </div>
                     </DialogContent>
                 </Dialog>

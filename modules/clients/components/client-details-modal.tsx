@@ -170,14 +170,14 @@ export function ClientDetailsModal({
                                         src={client.logo}
                                         alt={client.name}
                                     />
-                                    <AvatarFallback className="text-2xl">
+                                    <AvatarFallback className="text-2xl font-body">
                                         {client.name.slice(0, 2).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
 
                                 <div className="flex-1">
                                     <div className="grid gap-2">
-                                        <h2 className="text-xl font-bold">
+                                        <h2 className="text-xl font-bold font-body">
                                             {client.name}
                                         </h2>
                                         <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export function ClientDetailsModal({
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Description
                                 </h3>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground font-body">
                                     {client.description}
                                 </p>
                             </div>
@@ -489,7 +489,7 @@ export function ClientDetailsModal({
                             <>
                                 <div className="flex flex-col items-center justify-center w-full">
                                     <p className="text-xs font-thin uppercase font-body">
-                                        Manage this client
+                                        Quick Actions
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap justify-center w-full gap-3">

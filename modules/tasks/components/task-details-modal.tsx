@@ -1288,7 +1288,7 @@ export function TaskDetailsModal({
                     <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700">
                         <div className="flex flex-col items-center justify-center w-full">
                             <p className="text-xs font-thin uppercase font-body">
-                                Manage this task
+                                Quick Actions
                             </p>
                         </div>
                         <div className="flex flex-wrap justify-center w-full gap-3">

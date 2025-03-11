@@ -505,100 +505,110 @@ export function LeadDetailsModal({
 
                     {/* Status Change Section */}
                     <DialogFooter className="flex-col items-center gap-6 pt-4 mt-6 border-t sm:gap-4">
-                        <div className="flex flex-wrap justify-center w-full gap-3">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.PENDING)
-                                }
-                                title="Set as Pending"
-                            >
-                                <Clock
-                                    strokeWidth={1.2}
-                                    className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.APPROVED)
-                                }
-                                title="Set as Approved"
-                            >
-                                <CheckCircle2
-                                    strokeWidth={1.2}
-                                    className="text-green-600 w-7 h-7 dark:text-green-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.REVIEW)
-                                }
-                                title="Set to Review"
-                            >
-                                <RefreshCw
-                                    strokeWidth={1.2}
-                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.DECLINED)
-                                }
-                                title="Set as Declined"
-                            >
-                                <XCircle
-                                    strokeWidth={1.2}
-                                    className="text-red-600 w-7 h-7 dark:text-red-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.CONVERTED)
-                                }
-                                title="Set as Converted"
-                            >
-                                <Check
-                                    strokeWidth={1.2}
-                                    className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
-                                onClick={() =>
-                                    handleStatusChange(LeadStatus.CANCELLED)
-                                }
-                                title="Set as Cancelled"
-                            >
-                                <X
-                                    strokeWidth={1.2}
-                                    className="text-gray-600 w-7 h-7 dark:text-gray-400"
-                                />
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
-                                onClick={handleDelete}
-                                title="Delete Lead"
-                            >
-                                <Trash2 className="w-7 h-7" strokeWidth={1.5} />
-                            </Button>
+                        <div className="flex flex-col items-center w-full gap-4">
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs font-thin uppercase font-body">
+                                    Quick Actions
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap justify-center w-full gap-3">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.PENDING)
+                                    }
+                                    title="Set as Pending"
+                                >
+                                    <Clock
+                                        strokeWidth={1.2}
+                                        className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.APPROVED)
+                                    }
+                                    title="Set as Approved"
+                                >
+                                    <CheckCircle2
+                                        strokeWidth={1.2}
+                                        className="text-green-600 w-7 h-7 dark:text-green-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.REVIEW)
+                                    }
+                                    title="Set to Review"
+                                >
+                                    <RefreshCw
+                                        strokeWidth={1.2}
+                                        className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.DECLINED)
+                                    }
+                                    title="Set as Declined"
+                                >
+                                    <XCircle
+                                        strokeWidth={1.2}
+                                        className="text-red-600 w-7 h-7 dark:text-red-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.CONVERTED)
+                                    }
+                                    title="Set as Converted"
+                                >
+                                    <Check
+                                        strokeWidth={1.2}
+                                        className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
+                                    onClick={() =>
+                                        handleStatusChange(LeadStatus.CANCELLED)
+                                    }
+                                    title="Set as Cancelled"
+                                >
+                                    <X
+                                        strokeWidth={1.2}
+                                        className="text-gray-600 w-7 h-7 dark:text-gray-400"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
+                                    onClick={handleDelete}
+                                    title="Delete Lead"
+                                >
+                                    <Trash2
+                                        className="w-7 h-7"
+                                        strokeWidth={1.5}
+                                    />
+                                </Button>
+                            </div>
                         </div>
                     </DialogFooter>
                 </DialogContent>

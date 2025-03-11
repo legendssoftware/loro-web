@@ -253,7 +253,7 @@ export function QuotationDetailsModal({
                                     }`}
                                     onClick={() => handleTabChange(tab.id)}
                                 >
-                                    <span className="text-[10px] font-thin uppercase font-body">
+                                    <span className="text-xs font-thin uppercase font-body">
                                         {tab?.label}
                                     </span>
                                 </div>
@@ -811,8 +811,8 @@ export function QuotationDetailsModal({
 
                     <DialogFooter className="flex flex-col items-center gap-2 pt-4 border-t border-border/10">
                         <div className="w-full">
-                            <h3 className="mb-4 text-xs font-semibold text-center uppercase font-body">
-                                Manage this quotation
+                            <h3 className="mb-4 text-xs font-thin text-center uppercase font-body">
+                                Quick Actions
                             </h3>
                             <div className="flex items-center justify-center gap-4">
                                 {/* Pending button */}

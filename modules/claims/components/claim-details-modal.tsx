@@ -19,7 +19,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import {
-    Edit,
     X,
     Calendar,
     Clock,
@@ -145,11 +144,6 @@ export function ClaimDetailsModal({
         }
     };
 
-    // Handle edit
-    const handleEdit = () => {
-        setIsEditModalOpen(true);
-    };
-
     // Get owner initials for avatar
     const getOwnerInitials = () => {
         if (!claim?.owner) return 'U';
@@ -176,13 +170,6 @@ export function ClaimDetailsModal({
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-950/50 dark:text-gray-300';
         }
     };
-
-    // Define tabs
-    const tabs = [
-        { id: 'details', label: 'Details' },
-        { id: 'people', label: 'People & Org' },
-        { id: 'history', label: 'History' },
-    ];
 
     // Inside the component function, add this helper function
     const isImageUrl = (url?: string) => {
@@ -625,14 +612,6 @@ export function ClaimDetailsModal({
                                 onClick={onClose}
                             >
                                 <X className="w-5 h-5" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-9 h-9"
-                                onClick={handleEdit}
-                            >
-                                <Edit className="w-5 h-5" />
                             </Button>
                         </div>
                     </DialogHeader>

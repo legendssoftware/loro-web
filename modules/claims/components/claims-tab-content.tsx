@@ -43,11 +43,8 @@ const ReportsContent = memo(() => {
     return (
         <div className="w-full h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-lg font-thin uppercase font-body">
-                    Claim Reports
-                </p>
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Claims reports functionality activating soon
+                    Activating soon
                 </p>
             </div>
         </div>

@@ -28,7 +28,6 @@ import {
     AlertCircle,
     Mail,
     Clock,
-    Edit,
 } from 'lucide-react';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 import { cn } from '@/lib/utils';
@@ -73,9 +72,6 @@ export function QuotationDetailsModal({
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
     const quotation = data as Quotation;
-
-    // If this is a new quotation (uid === 0), handle it accordingly
-    const isNewQuotation = quotation?.uid === 0;
 
     // Use StatusColors from quotation types
     const getStatusColors = useMemo(() => {
@@ -134,16 +130,6 @@ export function QuotationDetailsModal({
 
     const handleEdit = () => {
         setIsEditModalOpen(true);
-    };
-
-    const handleEditFormSubmit = (
-        quotationId: number,
-        quotationData: Partial<Quotation>,
-    ) => {
-        if (onEditQuotation) {
-            onEditQuotation(quotationId, quotationData);
-        }
-        setIsEditModalOpen(false);
     };
 
     // Get status button variant
@@ -210,14 +196,6 @@ export function QuotationDetailsModal({
                                     className="w-8 h-8 rounded-full"
                                 >
                                     <X className="w-5 h-5" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleEdit}
-                                    className="w-8 h-8 rounded-full"
-                                >
-                                    <Edit className="w-5 h-5" />
                                 </Button>
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -18,12 +18,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Lead, LeadStatus, StatusColors } from '@/lib/types/lead';
+import { Lead, LeadStatus } from '@/lib/types/lead';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import {
     AlertCircle,
     Calendar,
@@ -113,55 +112,6 @@ export function LeadDetailsModal({
                 return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
             default:
                 return '';
-        }
-    };
-
-    const getStatusIcon = (status: LeadStatus) => {
-        switch (status) {
-            case LeadStatus.PENDING:
-                return (
-                    <Clock
-                        className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            case LeadStatus.APPROVED:
-                return (
-                    <CheckCircle2
-                        className="text-green-600 w-7 h-7 dark:text-green-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            case LeadStatus.REVIEW:
-                return (
-                    <RefreshCw
-                        className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            case LeadStatus.DECLINED:
-                return (
-                    <XCircle
-                        className="text-red-600 w-7 h-7 dark:text-red-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            case LeadStatus.CONVERTED:
-                return (
-                    <Check
-                        className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            case LeadStatus.CANCELLED:
-                return (
-                    <X
-                        className="text-gray-600 w-7 h-7 dark:text-gray-400"
-                        strokeWidth={1.2}
-                    />
-                );
-            default:
-                return null;
         }
     };
 
@@ -468,14 +418,6 @@ export function LeadDetailsModal({
                                 onClick={onClose}
                             >
                                 <X className="w-5 h-5" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-9 h-9"
-                                onClick={() => setIsEditModalOpen(true)}
-                            >
-                                <Edit className="w-5 h-5" />
                             </Button>
                         </div>
                     </DialogHeader>

@@ -43,11 +43,8 @@ const ReportsContent = memo(() => {
     return (
         <div className="h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-lg font-thin uppercase font-body">
-                    Lead Reports
-                </p>
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Lead reports functionality activating soon
+                    Activating soon
                 </p>
             </div>
         </div>
@@ -59,13 +56,10 @@ ReportsContent.displayName = 'ReportsContent';
 // Analytics tab content
 const AnalyticsContent = memo(() => {
     return (
-        <div className="w-full h-full overflow-hidden">
-            <div className="flex flex-col items-center justify-center w-full h-full">
-                <p className="text-lg font-thin uppercase font-body">
-                    Lead Analytics
-                </p>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Lead analytics functionality activating soon
+                    Activating soon
                 </p>
             </div>
         </div>

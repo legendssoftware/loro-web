@@ -3,8 +3,6 @@
 import { Lead, LeadStatus, StatusColors } from '@/lib/types/lead';
 import { useCallback, memo } from 'react';
 import { LeadCard } from './lead-card';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface LeadsKanbanProps {
@@ -50,14 +48,6 @@ export function LeadsKanban({
                                 {count}
                             </span>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-6 h-6"
-                            onClick={() => onAddLead?.()}
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                        </Button>
                     </div>
                     <div className="space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2">
                         {leads?.map((lead, index) => (

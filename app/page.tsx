@@ -9,12 +9,12 @@ export default function Dashboard() {
     return (
         <ProtectedRoute>
             <PageTransition type="slide-up">
-                <div className='flex flex-col items-center justify-center h-screen gap-3 p-4'>
+                <div className="flex flex-col items-center justify-center h-screen gap-3 p-4">
                     <motion.p
-                        className='text-sm uppercase font-body'
+                        className="text-xs font-normal uppercase font-body"
                         variants={itemVariants}
                     >
-                        Dashboard
+                        reporting activating soon
                     </motion.p>
                 </div>
             </PageTransition>

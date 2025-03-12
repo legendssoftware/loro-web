@@ -3,10 +3,8 @@
 import { memo } from 'react';
 import { ProductsGrid } from './products-grid';
 import { Product } from '@/hooks/use-products-query';
-import { Kanban } from '@/components/placeholders/kanban-placeholder';
-import { BarChart } from '@/components/placeholders/chart-placeholder';
-import { PieChart } from '@/components/placeholders/chart-placeholder';
 import { AppHoneycombLoader } from '@/components/loaders/honeycomb-loader';
+import { FolderMinus } from 'lucide-react';
 
 interface ProductsTabContentProps {
     activeTab: string;
@@ -65,10 +63,11 @@ GridContent.displayName = 'GridContent';
 const KanbanContent = memo(() => {
     return (
         <div className="h-full overflow-hidden">
-            <Kanban
-                title="Inventory Reports"
-                subtitle="Organize products by status"
-            />
+            <div className="flex flex-col items-center justify-center h-full">
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Activating soon
+                </p>
+            </div>
         </div>
     );
 });
@@ -78,14 +77,11 @@ KanbanContent.displayName = 'KanbanContent';
 // Chart content
 const ChartContent = memo(() => {
     return (
-        <div className="w-full h-full overflow-hidden">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="p-4 bg-card rounded-xl">
-                    <BarChart title="Product Categories" />
-                </div>
-                <div className="p-4 bg-card rounded-xl">
-                    <PieChart title="Product Status Distribution" />
-                </div>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full">
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Activating soon
+                </p>
             </div>
         </div>
     );
@@ -107,10 +103,17 @@ LoadingContent.displayName = 'LoadingContent';
 // Error component
 const ErrorContent = memo(() => {
     return (
-        <div className="py-12 text-center">
-            <p className="text-xs font-normal uppercase text-destructive font-body">
-                Failed to load products. Please try again.
-            </p>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+                <FolderMinus
+                    className="text-red-500"
+                    size={50}
+                    strokeWidth={1}
+                />
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Please re-try
+                </p>
+            </div>
         </div>
     );
 });

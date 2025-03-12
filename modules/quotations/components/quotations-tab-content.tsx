@@ -5,6 +5,7 @@ import { OrderStatus } from '@/lib/enums/status.enums';
 import { QuotationsKanban } from './quotations-kanban';
 import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
+import { FolderMinus } from 'lucide-react';
 
 interface QuotationsTabContentProps {
     activeTab: string;
@@ -38,12 +39,16 @@ function QuotationsTabContentComponent({
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center w-full h-64">
-                <div className="text-lg font-semibold text-destructive">
-                    Error loading quotations
-                </div>
-                <div className="text-sm text-muted-foreground">
-                    {error.message}
+            <div className="h-full overflow-hidden">
+                <div className="flex flex-col items-center justify-center h-full gap-2">
+                    <FolderMinus
+                        className="text-red-500"
+                        size={50}
+                        strokeWidth={1}
+                    />
+                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                        Please re-try
+                    </p>
                 </div>
             </div>
         );
@@ -63,26 +68,20 @@ function QuotationsTabContentComponent({
             )}
 
             {activeTab === 'reports' && (
-                <div className="w-full h-full overflow-hidden">
+                <div className="h-full overflow-hidden">
                     <div className="flex flex-col items-center justify-center h-full">
-                        <p className="text-lg font-thin uppercase font-body">
-                            Quotations Reports
-                        </p>
                         <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                            Quotations reports functionality activating soon
+                            Activating soon
                         </p>
                     </div>
                 </div>
             )}
 
             {activeTab === 'analytics' && (
-                <div className="w-full h-full overflow-hidden">
+                <div className="h-full overflow-hidden">
                     <div className="flex flex-col items-center justify-center h-full">
-                        <p className="text-lg font-thin uppercase font-body">
-                            Quotations Analytics
-                        </p>
                         <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                            Quotations analytics functionality activating soon
+                            Activating soon
                         </p>
                     </div>
                 </div>

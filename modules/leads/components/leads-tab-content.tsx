@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { AppHoneycombLoader } from '@/components/loaders/honeycomb-loader';
 import { LeadsKanban } from './leads-kanban';
 import { Lead, LeadStatus } from '@/lib/types/lead';
+import { FolderMinus } from 'lucide-react';
 
 interface LeadsTabContentProps {
     activeTab: string;
@@ -82,10 +83,17 @@ LoadingContent.displayName = 'LoadingContent';
 // Error component
 const ErrorContent = memo(() => {
     return (
-        <div className="py-12 text-center">
-            <p className="text-xs font-normal uppercase text-destructive font-body">
-                Failed to load leads. Please try again.
-            </p>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+                <FolderMinus
+                    className="text-red-500"
+                    size={50}
+                    strokeWidth={1}
+                />
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                   Please re-try
+                </p>
+            </div>
         </div>
     );
 });

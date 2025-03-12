@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { ClientsGrid } from './clients-grid';
 import { Client, ClientsByStatus } from '@/hooks/use-clients-query';
 import { AppHoneycombLoader } from '@/components/loaders/honeycomb-loader';
+import { FolderMinus } from 'lucide-react';
 
 interface ClientsTabContentProps {
     activeTab: string;
@@ -66,11 +67,8 @@ const ReportsContent = memo(() => {
     return (
         <div className="h-full overflow-hidden">
             <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-lg font-thin uppercase font-body">
-                    Client Reports
-                </p>
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Client reports functionality activating soon
+                    Activating soon
                 </p>
             </div>
         </div>
@@ -82,13 +80,10 @@ ReportsContent.displayName = 'ReportsContent';
 // Analytics tab content
 const AnalyticsContent = memo(() => {
     return (
-        <div className="w-full h-full overflow-hidden">
-            <div className="flex flex-col items-center justify-center w-full h-full">
-                <p className="text-lg font-thin uppercase font-body">
-                    Client Analytics
-                </p>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Client analytics functionality activating soon
+                    Activating soon
                 </p>
             </div>
         </div>
@@ -111,10 +106,17 @@ LoadingContent.displayName = 'LoadingContent';
 // Error component
 const ErrorContent = memo(({ message }: { message: string }) => {
     return (
-        <div className="py-12 text-center">
-            <p className="text-xs font-normal uppercase text-destructive font-body">
-                {message || 'Failed to load clients. Please try again.'}
-            </p>
+        <div className="h-full overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+                <FolderMinus
+                    className="text-red-500"
+                    size={50}
+                    strokeWidth={1}
+                />
+                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    Please re-try
+                </p>
+            </div>
         </div>
     );
 });

@@ -48,6 +48,25 @@ const SignInForm = () => {
         }
     }, [error, clearAuthError]);
 
+    // Handle URL reason parameters for cases like token expiration or refresh failure
+    useEffect(() => {
+        const reason = searchParams.get('reason');
+        if (reason) {
+            let message = '';
+            switch (reason) {
+                case 'refresh_failed':
+                    message = 'Your session has expired. Please sign in again.';
+                    break;
+                case 'token_expired':
+                    message = 'Your authentication token has expired. Please sign in again.';
+                    break;
+                default:
+                    message = 'Please sign in to continue.';
+            }
+            showErrorToast(message, toast);
+        }
+    }, [searchParams]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 

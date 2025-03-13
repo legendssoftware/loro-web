@@ -32,11 +32,7 @@ export const useLeadApi = () => {
                 queryParams.append('endDate', filters.endDate.toISOString());
             }
 
-            // The axios interceptor will add the token headers
-            console.log(`Fetching leads with params: ${queryParams.toString()}`);
             const response = await axiosInstance.get(`/leads?${queryParams.toString()}`);
-
-            console.log('API Response:', response.data);
 
             // Process response based on server format from leads.controller.ts
             if (response.data) {
@@ -48,7 +44,6 @@ export const useLeadApi = () => {
                     totalPages: response.data.meta?.totalPages || 1,
                 };
             } else {
-                console.error('Unexpected API response format:', response.data);
                 return {
                     items: [],
                     total: 0,
@@ -58,7 +53,6 @@ export const useLeadApi = () => {
                 };
             }
         } catch (error) {
-            console.error('Error fetching leads:', error);
             throw error;
         }
     }, []);
@@ -73,11 +67,9 @@ export const useLeadApi = () => {
             if (response.data && response.data.lead) {
                 return response.data.lead;
             } else {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
         } catch (error) {
-            console.error(`Error fetching lead ${leadId}:`, error);
             throw error;
         }
     }, []);
@@ -89,13 +81,9 @@ export const useLeadApi = () => {
             const response = await axiosInstance.patch(`/leads/${leadId}`, updates);
 
             if (!response.data) {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
-
-            console.log('Lead updated successfully:', response.data);
         } catch (error) {
-            console.error(`Error updating lead ${leadId}:`, error);
             throw error;
         }
     }, []);
@@ -107,13 +95,10 @@ export const useLeadApi = () => {
             const response = await axiosInstance.delete(`/leads/${leadId}`);
 
             if (!response.data) {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
 
-            console.log('Lead deleted successfully:', response.data);
         } catch (error) {
-            console.error(`Error deleting lead ${leadId}:`, error);
             throw error;
         }
     }, []);
@@ -125,11 +110,9 @@ export const useLeadApi = () => {
             const response = await axiosInstance.post('/leads', leadData);
 
             if (!response.data) {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
 
-            console.log('Lead created successfully:', response.data);
         } catch (error) {
             console.error('Error creating lead:', error);
             throw error;

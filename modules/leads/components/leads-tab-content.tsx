@@ -110,6 +110,8 @@ function LeadsTabContentComponent({
     onDeleteLead,
     onAddLead,
 }: LeadsTabContentProps) {
+    console.log('leadsByStatus', leadsByStatus, error);
+
     if (isLoading) {
         return <LoadingContent />;
     }

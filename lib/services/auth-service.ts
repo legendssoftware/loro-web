@@ -189,7 +189,7 @@ class AuthService {
    */
   public async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
-      const { data } = await this.api.post('/auth/refresh-token', { refreshToken });
+      const { data } = await this.api.post('/auth/refresh', { refreshToken });
       return {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken

@@ -80,7 +80,6 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
                 return { success: true };
             } catch (error) {
                 showErrorToast('Failed to update lead. Please try again.', toast);
-                console.error('Update lead error:', error);
                 throw error;
             }
         },
@@ -99,7 +98,6 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
                 return { success: true };
             } catch (error) {
                 showErrorToast('Failed to delete lead. Please try again.', toast);
-                console.error('Delete lead error:', error);
                 throw error;
             }
         },

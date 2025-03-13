@@ -204,7 +204,7 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     // Attempt to refresh token
-                    const { data } = await api.post('/auth/refresh-token', {
+                    const { data } = await api.post('/auth/refresh', {
                         refreshToken,
                     });
 

@@ -157,6 +157,11 @@ class AuthService {
     try {
       const { data } = await this.api.post<AuthResponse>('/auth/sign-in', credentials);
 
+      // Check if the response contains a message but no tokens - this is an error case
+      if (data.message && !data.accessToken && !data.refreshToken) {
+        throw new AuthenticationError(data.message);
+      }
+
       if (data.accessToken && data.refreshToken) {
         this.setTokens(data.accessToken, data.refreshToken);
         // Also set cookies for middleware authentication
@@ -173,7 +178,9 @@ class AuthService {
           error.response?.status?.toString()
         );
       }
-      throw new AuthenticationError('Authentication failed');
+      throw new AuthenticationError(
+        error instanceof Error ? error.message : 'Authentication failed'
+      );
     }
   }
 

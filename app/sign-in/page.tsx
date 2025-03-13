@@ -72,22 +72,29 @@ const SignInForm = () => {
                 password: form.password.trim(),
             });
 
-            showSuccessToast(response.message, toast);
+            // Only show success toast and redirect if we have valid tokens
+            if (response.accessToken && response.refreshToken) {
+                showSuccessToast('Sign in successful!', toast);
 
-            // Simplified callback URL handling - decode it once and sanitize
-            const decodedCallbackUrl = decodeURIComponent(callbackUrl);
-            // Make sure callback URL is to our domain and valid
-            const finalRedirectUrl = decodedCallbackUrl.startsWith('/') ?
-                decodedCallbackUrl :
-                '/'; // Default to home page if invalid
+                // Simplified callback URL handling - decode it once and sanitize
+                const decodedCallbackUrl = decodeURIComponent(callbackUrl);
+                // Make sure callback URL is to our domain and valid
+                const finalRedirectUrl = decodedCallbackUrl.startsWith('/') ?
+                    decodedCallbackUrl :
+                    '/'; // Default to home page if invalid
 
-            // Shorter wait time before redirect
-            await new Promise(resolve => setTimeout(resolve, 500));
+                // Shorter wait time before redirect
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-            // Push to the sanitized URL
-            router.push(finalRedirectUrl);
+                // Push to the sanitized URL
+                router.push(finalRedirectUrl);
+            } else if (response.message) {
+                // If we have a message but no tokens, it's an error
+                showErrorToast(response.message, toast);
+            }
         } catch (error) {
             // Error handling is done in the useEffect above
+            // showErrorToast will be triggered by the error state change
         }
     };
 

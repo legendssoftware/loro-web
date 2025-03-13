@@ -60,7 +60,7 @@ export interface ProductFilterParams {
     inStock?: boolean;
     onPromotion?: boolean;
     from?: string; // Date range start
-    to?: string;   // Date range end
+    to?: string; // Date range end
     sortBy?: string;
     sortDirection?: 'asc' | 'desc';
 }
@@ -118,7 +118,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
                 total: 0,
                 page: 1,
                 limit: options.limit || 20,
-                totalPages: 1
+                totalPages: 1,
             };
         }
 
@@ -126,12 +126,9 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
             total: productsQuery.data.meta.total,
             page: productsQuery.data.meta.page,
             limit: productsQuery.data.meta.limit,
-            totalPages: productsQuery.data.meta.totalPages
+            totalPages: productsQuery.data.meta.totalPages,
         };
     }, [productsQuery.data?.meta, options.limit]);
-
-    // Log pagination information for debugging
-    console.log('Product query - pagination meta:', paginationMeta);
 
     // Separate products by status
     const productsByStatus = useMemo<ProductsByStatus>(() => {
@@ -170,7 +167,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
                 [ProductStatus.SPECIAL]: [],
                 [ProductStatus.HIDDEN]: [],
                 [ProductStatus.DELETED]: [],
-            }
+            },
         );
     }, [productsQuery.data?.data]);
 
@@ -196,9 +193,18 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
 
     // Update product mutation
     const updateProductMutation = useMutation({
-        mutationFn: async ({ productId, product }: { productId: number; product: Partial<Product> }) => {
+        mutationFn: async ({
+            productId,
+            product,
+        }: {
+            productId: number;
+            product: Partial<Product>;
+        }) => {
             try {
-                const result = await productApi.updateProduct(productId, product);
+                const result = await productApi.updateProduct(
+                    productId,
+                    product,
+                );
                 showSuccessToast('Product updated successfully.', toast);
                 return result;
             } catch (error) {
@@ -235,9 +241,18 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
 
     // Update product status mutation
     const updateProductStatusMutation = useMutation({
-        mutationFn: async ({ productId, status }: { productId: number; status: string }) => {
+        mutationFn: async ({
+            productId,
+            status,
+        }: {
+            productId: number;
+            status: string;
+        }) => {
             try {
-                const result = await productApi.updateProductStatus(productId, status);
+                const result = await productApi.updateProductStatus(
+                    productId,
+                    status,
+                );
                 showSuccessToast('Product status updated successfully.', toast);
                 return result;
             } catch (error) {
@@ -258,7 +273,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         (product: Partial<Product>) => {
             return createProductMutation.mutate(product);
         },
-        [createProductMutation]
+        [createProductMutation],
     );
 
     // Update a product
@@ -266,7 +281,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         (productId: number, product: Partial<Product>) => {
             return updateProductMutation.mutate({ productId, product });
         },
-        [updateProductMutation]
+        [updateProductMutation],
     );
 
     // Delete a product
@@ -274,7 +289,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         (productId: number) => {
             return deleteProductMutation.mutate(productId);
         },
-        [deleteProductMutation]
+        [deleteProductMutation],
     );
 
     // Update product status
@@ -282,7 +297,7 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         (productId: number, status: string) => {
             return updateProductStatusMutation.mutate({ productId, status });
         },
-        [updateProductStatusMutation]
+        [updateProductStatusMutation],
     );
 
     return {

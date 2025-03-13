@@ -38,6 +38,15 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
                     const response = await authService.signIn(credentials);
 
+                    // If we received a response with a message but no tokens, it's an error
+                    if (response.message && !response.accessToken && !response.refreshToken) {
+                        set({
+                            isLoading: false,
+                            error: response.message
+                        });
+                        throw new Error(response.message);
+                    }
+
                     set({
                         isAuthenticated: true,
                         accessToken: response.accessToken,

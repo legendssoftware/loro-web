@@ -1341,8 +1341,8 @@ export function TaskDetailsModal({
                                 <FolderMinus strokeWidth={1} size={50} />
                                 <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
                                     No attachments found for this task
-                                </p>
-                            </div>
+                            </p>
+                        </div>
                         )}
                     </div>
                 );
@@ -1692,7 +1692,7 @@ export function TaskDetailsModal({
                                 className="w-1/2 text-xs h-9 dark:bg-transparent dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900"
                             >
                                 <span className="text-xs font-thin uppercase font-body">
-                                    Cancel
+                                Cancel
                                 </span>
                             </Button>
                             <Button
@@ -1704,7 +1704,7 @@ export function TaskDetailsModal({
                                 className="w-1/2 text-xs h-9 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
                             >
                                 <span className="text-xs font-thin uppercase font-body">
-                                    Confirm
+                                Confirm
                                 </span>
                             </Button>
                         </div>

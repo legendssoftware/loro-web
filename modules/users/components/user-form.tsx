@@ -24,12 +24,19 @@ import {
     Key,
     ShieldCheck,
     ToggleLeft,
-    BriefcaseBusiness,
     ChevronDown,
     UserPlus,
+    Building,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AccountStatus } from '@/lib/enums/status.enums';
+
+// Define Branch interface
+interface Branch {
+    uid: number;
+    name: string;
+    ref: string;
+}
 
 // Form schema definition
 const userFormSchema = z.object({
@@ -47,6 +54,7 @@ const userFormSchema = z.object({
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
     userref: z.string(),
+    branchId: z.number().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -68,6 +76,8 @@ export const UserForm: React.FC<UserFormProps> = ({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [userImage, setUserImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [branches, setBranches] = useState<Branch[]>([]);
+    const [isLoadingBranches, setIsLoadingBranches] = useState(false);
 
     // Generate a unique user reference code
     const generateUserRef = () =>
@@ -85,6 +95,7 @@ export const UserForm: React.FC<UserFormProps> = ({
         accessLevel: AccessLevel.USER,
         status: AccountStatus.ACTIVE,
         userref: generateUserRef(),
+        branchId: initialData?.branchId,
         ...initialData,
     };
 
@@ -101,6 +112,42 @@ export const UserForm: React.FC<UserFormProps> = ({
         resolver: zodResolver(userFormSchema),
         defaultValues,
     });
+
+    // Fetch branches from the server
+    const fetchBranches = async () => {
+        try {
+            setIsLoadingBranches(true);
+            const accessToken = useAuthStore.getState().accessToken;
+            const profileData = useAuthStore.getState().profileData;
+
+            // Make API call to get branches for the current organization
+            const response = await axiosInstance.get('/branch', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                params: {
+                    organisationRef: profileData?.organisationRef,
+                },
+            });
+
+            if (response.data && Array.isArray(response.data.branches)) {
+                setBranches(response.data.branches);
+            } else {
+                setBranches([]);
+            }
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+            toast.error('Failed to load branches');
+            setBranches([]);
+        } finally {
+            setIsLoadingBranches(false);
+        }
+    };
+
+    // Load branches when component mounts
+    useEffect(() => {
+        fetchBranches();
+    }, []);
 
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,9 +235,11 @@ export const UserForm: React.FC<UserFormProps> = ({
                           },
                       }
                     : {}),
-                ...(profileData?.branch?.uid
+
+                // Add branch from the selector
+                ...(data.branchId
                     ? {
-                          branch: { uid: parseInt(profileData.branch.uid, 10) },
+                          branch: { uid: data.branchId },
                       }
                     : {}),
             };
@@ -581,6 +630,110 @@ export const UserForm: React.FC<UserFormProps> = ({
                                     )}
                                 />
                             </div>
+
+                            {/* Branch Selector */}
+                            <div className="space-y-1 md:col-span-2">
+                                <Label
+                                    htmlFor="branchId"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Branch
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="branchId"
+                                    render={({ field }: { field: any }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Building
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {isLoadingBranches
+                                                            ? 'LOADING BRANCHES...'
+                                                            : branches.find(
+                                                                  (b) =>
+                                                                      b.uid ===
+                                                                      parseInt(
+                                                                          field.value,
+                                                                      ),
+                                                              )?.name ||
+                                                              'SELECT BRANCH'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={(value) =>
+                                                    field.onChange(
+                                                        parseInt(value, 10),
+                                                    )
+                                                }
+                                                value={
+                                                    field.value
+                                                        ? field.value.toString()
+                                                        : undefined
+                                                }
+                                                disabled={
+                                                    isLoadingBranches ||
+                                                    branches.length === 0
+                                                }
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {branches.length === 0 &&
+                                                    !isLoadingBranches ? (
+                                                        <SelectItem
+                                                            value=""
+                                                            disabled
+                                                        >
+                                                            <span className="text-[10px] font-thin font-body text-muted-foreground">
+                                                                No branches
+                                                                available
+                                                            </span>
+                                                        </SelectItem>
+                                                    ) : (
+                                                        branches.map(
+                                                            (branch) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        branch.uid
+                                                                    }
+                                                                    value={branch.uid.toString()}
+                                                                >
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Building
+                                                                            className="w-4 h-4"
+                                                                            strokeWidth={
+                                                                                1.5
+                                                                            }
+                                                                        />
+                                                                        <span className="uppercase text-[10px] font-thin font-body">
+                                                                            {
+                                                                                branch.name
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ),
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                                {isLoadingBranches && (
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        Loading branches...
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -603,7 +756,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                 </Button>
                 <Button
                     type="submit"
-                         variant="outline"
+                    variant="outline"
                     disabled={isLoading || isSubmitting}
                     className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                 >

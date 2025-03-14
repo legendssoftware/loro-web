@@ -47,13 +47,18 @@ export function useUsersQuery(filters: UserFilterParams = {}) {
             [UserStatus.SUSPENDED]: [],
             [UserStatus.PENDING]: [],
             [UserStatus.DELETED]: [],
+            [UserStatus.REVIEW]: [],
+            [UserStatus.BANNED]: [],
+            [UserStatus.DECLINED]: [],
         } as UsersByStatus;
+
+        console.log(data?.items);
 
         if (data?.items) {
             // Group users by status
             data.items.forEach((user) => {
                 if (!user.isDeleted || user.status === UserStatus.DELETED) {
-                    statusGroups[user.status].push(user);
+                    statusGroups[user?.status]?.push(user);
                 }
             });
         }

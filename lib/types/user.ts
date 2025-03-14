@@ -1,12 +1,15 @@
-import { Branch } from "./branch";
-import { Organisation } from "./organisation";
+import { Branch } from './branch';
+import { Organisation } from './organisation';
 
 export enum UserStatus {
     ACTIVE = 'active',
     INACTIVE = 'inactive',
     SUSPENDED = 'suspended',
     PENDING = 'pending',
-    DELETED = 'deleted'
+    DELETED = 'deleted',
+    REVIEW = 'review',
+    BANNED = 'banned',
+    DECLINED = 'declined',
 }
 
 export enum AccessLevel {
@@ -14,7 +17,7 @@ export enum AccessLevel {
     MANAGER = 'manager',
     SUPPORT = 'support',
     DEVELOPER = 'developer',
-    USER = 'user'
+    USER = 'user',
 }
 
 export interface UserProfile {
@@ -72,6 +75,9 @@ export interface UsersByStatus {
     [UserStatus.SUSPENDED]: User[];
     [UserStatus.PENDING]: User[];
     [UserStatus.DELETED]: User[];
+    [UserStatus.REVIEW]: User[];
+    [UserStatus.BANNED]: User[];
+    [UserStatus.DECLINED]: User[];
 }
 
 export interface UserFilterParams {

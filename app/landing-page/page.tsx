@@ -14,7 +14,7 @@ import { PageTransition } from '@/components/animations/page-transition';
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { isAuthenticated, profileData } = useAuthStore();
+    const { isAuthenticated } = useAuthStore();
     const router = useRouter();
 
     // Handle account button click - directs to dashboard if logged in, sign-in if not
@@ -201,8 +201,10 @@ const LandingPage: React.FunctionComponent = () => {
                                 Get LORO CRM on Your Mobile Device
                             </h2>
                             <p className="max-w-xl mx-auto text-xs uppercase text-muted-foreground font-body">
-                                Experience the full power of LORO CRM on the go with our mobile application.
-                                Currently available for Android devices, with iOS support coming soon.
+                                Experience the full power of LORO CRM on the go
+                                with our mobile application. Currently available
+                                for Android devices, with iOS support coming
+                                soon.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row">
                                 <a
@@ -211,9 +213,7 @@ const LandingPage: React.FunctionComponent = () => {
                                     rel="noopener noreferrer"
                                     className="inline-block"
                                 >
-                                    <Button
-                                        className="px-8 py-6 text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body"
-                                    >
+                                    <Button className="px-8 py-6 text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body">
                                         <Download className="w-4 h-4 mr-2" />
                                         <span>Download Android APK</span>
                                     </Button>
@@ -226,8 +226,9 @@ const LandingPage: React.FunctionComponent = () => {
                                 </Button>
                             </div>
                             <p className="text-[10px] uppercase text-muted-foreground/70 font-body">
-                                For Android devices running Android 5.0 or newer.
-                                Enable installation from unknown sources in your device settings to install.
+                                For Android devices running Android 5.0 or
+                                newer. Enable installation from unknown sources
+                                in your device settings to install.
                             </p>
                         </motion.div>
                     </div>

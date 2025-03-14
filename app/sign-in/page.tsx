@@ -32,7 +32,9 @@ const SignInForm = () => {
         username: '',
         password: '',
     });
-    const [errors, setErrors] = useState<{ [K in keyof SignInSchema]?: string }>({});
+    const [errors, setErrors] = useState<{
+        [K in keyof SignInSchema]?: string;
+    }>({});
 
     // Clear any auth errors when component mounts or unmounts
     useEffect(() => {
@@ -58,7 +60,8 @@ const SignInForm = () => {
                     message = 'Your session has expired. Please sign in again.';
                     break;
                 case 'token_expired':
-                    message = 'Your authentication token has expired. Please sign in again.';
+                    message =
+                        'Your authentication token has expired. Please sign in again.';
                     break;
                 default:
                     message = 'Please sign in to continue.';
@@ -73,11 +76,14 @@ const SignInForm = () => {
         const result = signInSchema.safeParse(form);
 
         if (!result.success) {
-            const formattedErrors = result.error.issues.reduce((acc, issue) => {
-                const path = issue.path[0] as keyof SignInSchema;
-                acc[path] = issue.message;
-                return acc;
-            }, {} as { [K in keyof SignInSchema]?: string });
+            const formattedErrors = result.error.issues.reduce(
+                (acc, issue) => {
+                    const path = issue.path[0] as keyof SignInSchema;
+                    acc[path] = issue.message;
+                    return acc;
+                },
+                {} as { [K in keyof SignInSchema]?: string },
+            );
 
             setErrors(formattedErrors);
             return;
@@ -93,17 +99,27 @@ const SignInForm = () => {
 
             // Only show success toast and redirect if we have valid tokens
             if (response.accessToken && response.refreshToken) {
-                showSuccessToast('Sign in successful!', toast);
+                const hour = new Date().getHours();
+                const greeting =
+                    hour < 12
+                        ? 'Good morning'
+                        : hour < 18
+                          ? 'Good afternoon'
+                          : 'Good evening';
+                showSuccessToast(
+                    `${greeting},  ${response?.profileData?.name}!`,
+                    toast,
+                );
 
                 // Simplified callback URL handling - decode it once and sanitize
                 const decodedCallbackUrl = decodeURIComponent(callbackUrl);
                 // Make sure callback URL is to our domain and valid
-                const finalRedirectUrl = decodedCallbackUrl.startsWith('/') ?
-                    decodedCallbackUrl :
-                    '/'; // Default to home page if invalid
+                const finalRedirectUrl = decodedCallbackUrl.startsWith('/')
+                    ? decodedCallbackUrl
+                    : '/'; // Default to home page if invalid
 
                 // Shorter wait time before redirect
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise((resolve) => setTimeout(resolve, 500));
 
                 // Push to the sanitized URL
                 router.push(finalRedirectUrl);
@@ -122,10 +138,12 @@ const SignInForm = () => {
     };
 
     return (
-        <PublicOnlyRoute redirectTo={callbackUrl.startsWith('/') ? callbackUrl : '/'}>
-            <PageTransition type='fade'>
+        <PublicOnlyRoute
+            redirectTo={callbackUrl.startsWith('/') ? callbackUrl : '/'}
+        >
+            <PageTransition type="fade">
                 <div
-                    className='relative flex items-center justify-center min-h-screen p-4'
+                    className="relative flex items-center justify-center min-h-screen p-4"
                     style={{
                         backgroundImage:
                             'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
@@ -134,123 +152,162 @@ const SignInForm = () => {
                         backgroundRepeat: 'no-repeat',
                     }}
                 >
-                    <div className='absolute inset-0 bg-black/50' />
+                    <div className="absolute inset-0 bg-black/50" />
                     <motion.div
-                        className='relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'
+                        className="relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl"
                         variants={itemVariants}
                     >
-                        <h1 className='text-2xl font-normal text-center text-white sm:text-3xl font-heading'>
+                        <h1 className="text-2xl font-normal text-center text-white sm:text-3xl font-heading">
                             LORO CRM
                         </h1>
-                        <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
-                            <div className='space-y-1'>
+                        <form
+                            onSubmit={handleSubmit}
+                            className="mt-4 space-y-4 sm:mt-6"
+                        >
+                            <div className="space-y-1">
                                 <label
-                                    htmlFor='username'
-                                    className='block text-xs font-light text-white uppercase font-body'
+                                    htmlFor="username"
+                                    className="block text-xs font-light text-white uppercase font-body"
                                 >
                                     Username
                                 </label>
                                 <Input
-                                    id='username'
-                                    type='text'
+                                    id="username"
+                                    type="text"
                                     value={form.username}
-                                    onChange={e => setForm(prev => ({ ...prev, username: e.target.value }))}
-                                    placeholder='theguy@loro.co.za'
+                                    onChange={(e) =>
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            username: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="theguy@loro.co.za"
                                     disabled={isLoading}
                                     className={cn(
                                         'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
-                                        errors.username && 'border-red-500 focus-visible:ring-red-500',
+                                        errors.username &&
+                                            'border-red-500 focus-visible:ring-red-500',
                                         isLoading && 'opacity-50',
                                     )}
-                                    aria-label='Username'
+                                    aria-label="Username"
                                 />
-                                {errors.username && <p className='mt-1 text-xs text-red-500'>{errors.username}</p>}
+                                {errors.username && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.username}
+                                    </p>
+                                )}
                             </div>
-                            <div className='space-y-1'>
-                                <div className='flex justify-between'>
+                            <div className="space-y-1">
+                                <div className="flex justify-between">
                                     <label
-                                        htmlFor='password'
-                                        className='block text-xs font-light text-white uppercase font-body'
+                                        htmlFor="password"
+                                        className="block text-xs font-light text-white uppercase font-body"
                                     >
                                         Password
                                     </label>
                                     <Link
-                                        href='/forgot-password'
+                                        href="/forgot-password"
                                         className={cn(
                                             'text-[9px] cursor-pointer text-white hover:text-white/80 font-light font-body uppercase',
-                                            isLoading && 'pointer-events-none opacity-50',
+                                            isLoading &&
+                                                'pointer-events-none opacity-50',
                                         )}
                                         tabIndex={isLoading ? -1 : 0}
                                     >
                                         Forgot password?
                                     </Link>
                                 </div>
-                                <div className='relative'>
+                                <div className="relative">
                                     <Input
-                                        id='password'
-                                        type={showPassword ? 'text' : 'password'}
+                                        id="password"
+                                        type={
+                                            showPassword ? 'text' : 'password'
+                                        }
                                         value={form.password}
-                                        onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
-                                        placeholder='***********************'
+                                        onChange={(e) =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                password: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="***********************"
                                         disabled={isLoading}
                                         className={cn(
                                             'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light pr-10',
-                                            errors.password && 'border-red-500 focus-visible:ring-red-500',
+                                            errors.password &&
+                                                'border-red-500 focus-visible:ring-red-500',
                                             isLoading && 'opacity-50',
                                         )}
-                                        aria-label='Password'
+                                        aria-label="Password"
                                     />
                                     <Button
-                                        type='button'
-                                        variant='ghost'
-                                        size='icon'
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
                                         disabled={isLoading}
                                         className={cn(
                                             'absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent',
                                             isLoading && 'opacity-50',
                                         )}
                                         onClick={handleTogglePassword}
-                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        aria-label={
+                                            showPassword
+                                                ? 'Hide password'
+                                                : 'Show password'
+                                        }
                                     >
-                                        {showPassword ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
+                                        {showPassword ? (
+                                            <EyeOff className="w-4 h-4" />
+                                        ) : (
+                                            <Eye className="w-4 h-4" />
+                                        )}
                                     </Button>
-                                    {errors.password && <p className='mt-1 text-xs text-red-500'>{errors.password}</p>}
+                                    {errors.password && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.password}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
                             <Button
-                                type='submit'
+                                type="submit"
                                 className={cn(
                                     'w-full bg-primary hover:bg-primary/90 p-5 font-normal font-body uppercase text-xs',
                                     isLoading && 'opacity-50',
                                 )}
                                 disabled={isLoading}
-                                aria-label='Sign In'
+                                aria-label="Sign In"
                             >
                                 {isLoading ? (
-                                    <div className='flex items-center justify-center space-x-1'>
-                                        <p className='font-normal text-white uppercase'>Signing In</p>
+                                    <div className="flex items-center justify-center space-x-1">
+                                        <p className="font-normal text-white uppercase">
+                                            Signing In
+                                        </p>
                                         <Loader2
-                                            className='w-4 h-4 mr-2 text-white animate-spin'
+                                            className="w-4 h-4 mr-2 text-white animate-spin"
                                             size={16}
                                             strokeWidth={1.5}
                                         />
                                     </div>
                                 ) : (
-                                    <span className='font-normal text-white'>Sign In</span>
+                                    <span className="font-normal text-white">
+                                        Sign In
+                                    </span>
                                 )}
                             </Button>
                         </form>
-                        <div className='space-y-2 text-center'>
-                            <div className='text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center'>
-                                <p className='font-body uppercase text-[10px] text-white'>
+                        <div className="space-y-2 text-center">
+                            <div className="text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center">
+                                <p className="font-body uppercase text-[10px] text-white">
                                     Don&apos;t have an account?
                                 </p>
                                 <Link
-                                    href='/sign-up'
+                                    href="/sign-up"
                                     className={cn(
                                         'text-white hover:text-white/80 font-normal uppercase font-body text-[10px]',
-                                        isLoading && 'pointer-events-none opacity-50',
+                                        isLoading &&
+                                            'pointer-events-none opacity-50',
                                     )}
                                     tabIndex={isLoading ? -1 : 0}
                                 >
@@ -268,10 +325,10 @@ const SignInForm = () => {
 // Loading fallback for suspense
 const SignInFallback = () => {
     return (
-        <div className='flex items-center justify-center min-h-screen p-4 bg-gray-900'>
-            <div className='flex flex-col items-center space-y-4'>
-                <Loader2 className='w-10 h-10 text-primary animate-spin' />
-                <p className='text-sm text-white'>Loading...</p>
+        <div className="flex items-center justify-center min-h-screen p-4 bg-gray-900">
+            <div className="flex flex-col items-center space-y-4">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                <p className="text-sm text-white">Loading...</p>
             </div>
         </div>
     );

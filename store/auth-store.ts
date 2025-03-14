@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { authService, ProfileData, SignInCredentials, AuthResponse } from '@/lib/services/auth-service';
+import {
+    authService,
+    ProfileData,
+    SignInCredentials,
+    AuthResponse,
+} from '@/lib/services/auth-service';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -32,17 +37,21 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         (set, get) => ({
             ...initialState,
 
-            signIn: async credentials => {
+            signIn: async (credentials) => {
                 try {
                     set({ isLoading: true, error: null });
 
                     const response = await authService.signIn(credentials);
 
                     // If we received a response with a message but no tokens, it's an error
-                    if (response.message && !response.accessToken && !response.refreshToken) {
+                    if (
+                        response.message &&
+                        !response.accessToken &&
+                        !response.refreshToken
+                    ) {
                         set({
                             isLoading: false,
-                            error: response.message
+                            error: response.message,
                         });
                         throw new Error(response.message);
                     }
@@ -57,7 +66,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
                     return response;
                 } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
+                    const errorMessage =
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to sign in';
 
                     set({
                         isLoading: false,
@@ -82,8 +94,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                 set(initialState);
             },
 
-            setAuthState: state => {
-                set(currentState => {
+            setAuthState: (state) => {
+                set((currentState) => {
                     // If we're setting a new access token, update the auth service
                     if (
                         state.accessToken &&
@@ -91,7 +103,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                         (state.accessToken !== currentState.accessToken ||
                             state.refreshToken !== currentState.refreshToken)
                     ) {
-                        authService.setTokens(state.accessToken, state.refreshToken);
+                        authService.setTokens(
+                            state.accessToken,
+                            state.refreshToken,
+                        );
                     }
 
                     return { ...currentState, ...state };
@@ -103,13 +118,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         {
             name: 'auth-storage',
             storage: createJSONStorage(() => sessionStorage),
-            partialize: state => ({
+            partialize: (state) => ({
                 isAuthenticated: state.isAuthenticated,
                 accessToken: state.accessToken,
                 refreshToken: state.refreshToken,
                 profileData: state.profileData,
             }),
-            onRehydrateStorage: () => state => {
+            onRehydrateStorage: () => (state) => {
                 // After rehydration, validate token and setup auth service
                 if (!state) return; // Early return if state is undefined
 
@@ -118,31 +133,37 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                         // Immediately set auth state to prevent flicker during validation
                         state.setAuthState({
                             isAuthenticated: true,
-                            isLoading: true
+                            isLoading: true,
                         });
 
                         // Set tokens in auth service
-                        authService.setTokens(state.accessToken, state.refreshToken);
+                        authService.setTokens(
+                            state.accessToken,
+                            state.refreshToken,
+                        );
 
                         // Optimized token validation with better error handling
-                        const isValid = authService.validateToken(state.accessToken);
+                        const isValid = authService.validateToken(
+                            state.accessToken,
+                        );
 
                         if (isValid) {
                             // Update state when validation completes successfully
                             state.setAuthState({
                                 isAuthenticated: true,
-                                isLoading: false
+                                isLoading: false,
                             });
                         } else {
                             // Token is invalid, attempt refresh before signing out
-                            authService.refreshAccessToken(state.refreshToken)
-                                .then(tokens => {
+                            authService
+                                .refreshAccessToken(state.refreshToken)
+                                .then((tokens) => {
                                     if (tokens) {
                                         state.setAuthState({
                                             accessToken: tokens.accessToken,
                                             refreshToken: tokens.refreshToken,
                                             isAuthenticated: true,
-                                            isLoading: false
+                                            isLoading: false,
                                         });
                                     } else {
                                         // Refresh failed, sign out
@@ -168,8 +189,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 );
 
 // Selectors for specific parts of the auth state
-export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
+export const selectIsAuthenticated = (state: AuthState) =>
+    state.isAuthenticated;
 export const selectIsLoading = (state: AuthState) => state.isLoading;
 export const selectAuthError = (state: AuthState) => state.error;
 export const selectProfileData = (state: AuthState) => state.profileData;
-export const selectUserRole = (state: AuthState) => state.profileData?.accessLevel;
+export const selectUserRole = (state: AuthState) =>
+    state.profileData?.accessLevel;

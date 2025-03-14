@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { toast } from 'react-hot-toast';
 import { ClientType } from '@/lib/types/client-enums';
+import { axiosInstance } from '@/lib/services/api-client';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,8 +53,21 @@ import {
     Tag,
     Repeat,
     BarChart4,
+    Paperclip,
+    Upload,
+    X,
+    File as FileIcon,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 
 const taskFormSchema = z.object({
     title: z.string().min(1, { message: 'Title is required' }),
@@ -95,6 +109,7 @@ const taskFormSchema = z.object({
             }),
         )
         .optional(),
+    attachments: z.array(z.string()).optional(),
     creators: z
         .array(
             z.object({
@@ -122,6 +137,11 @@ const TaskForm: React.FC<TaskFormProps> = ({
     const profileData = useAuthStore(selectProfileData);
     const currentUserId = profileData?.uid ? parseInt(profileData.uid, 10) : 0;
 
+    // State for file attachments
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+
     const defaultValues: Partial<TaskFormValues> = {
         title: '',
         description: '',
@@ -131,6 +151,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         client: [],
         subtasks: [],
         creators: [{ uid: currentUserId }],
+        attachments: [],
         ...initialData,
     };
 
@@ -191,11 +212,108 @@ const TaskForm: React.FC<TaskFormProps> = ({
         [TaskPriority.URGENT]: 'text-red-500',
     };
 
-    const onFormSubmit = (data: TaskFormValues) => {
+    const getPriorityColor = (priority: TaskPriority) => {
+        return priorityColors[priority] || '';
+    };
+
+    // Handle file selection
+    const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        // Convert FileList to array and append to existing files
+        const newFiles = Array.from(files);
+        setSelectedFiles((prev) => [...prev, ...newFiles]);
+    };
+
+    // Remove a selected file
+    const removeFile = (index: number) => {
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    // Remove an existing attachment
+    const removeExistingAttachment = (index: number) => {
+        if (initialData?.attachments) {
+            const updatedAttachments = [...(initialData.attachments || [])];
+            updatedAttachments.splice(index, 1);
+
+            // Update form data
+            setValue('attachments', updatedAttachments);
+        }
+    };
+
+    // Upload files
+    const uploadFiles = async (files: File[]): Promise<string[]> => {
+        const uploadedUrls: string[] = [];
+        setIsUploading(true);
+
         try {
+            // Get access token from auth store
+            const accessToken = useAuthStore.getState().accessToken;
+
+            // Upload each file sequentially
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Set file type based on MIME type
+                const fileType = file.type.split('/')[0]; // Gets 'image' from 'image/png'
+                formData.append('type', fileType);
+
+                // Upload file
+                const response = await axiosInstance.post('/docs/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const progress = Math.round(
+                            (progressEvent.loaded * 100) / (progressEvent.total || 100)
+                        );
+                        setUploadProgress((prev) => ({
+                            ...prev,
+                            [file.name]: progress,
+                        }));
+                    },
+                });
+
+                if (response.data.publicUrl) {
+                    uploadedUrls.push(response.data.publicUrl);
+                }
+            }
+
+            return uploadedUrls;
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            toast.error('Failed to upload file(s). Please try again.');
+            return [];
+        } finally {
+            setIsUploading(false);
+            setUploadProgress({});
+        }
+    };
+
+    const onFormSubmit = async (data: TaskFormValues) => {
+        try {
+            // Upload files if any are selected
+            if (selectedFiles.length > 0) {
+                setIsUploading(true);
+                const attachmentUrls = await uploadFiles(selectedFiles);
+
+                // Add new uploads to any existing attachments
+                data.attachments = [
+                    ...(data.attachments || []),
+                    ...attachmentUrls
+                ];
+
+                setIsUploading(false);
+            }
+
             if (!data.creators || data.creators.length === 0) {
                 data.creators = [{ uid: currentUserId }];
             }
+
             onSubmit(data);
         } catch (error) {
             console.error('Error submitting task form:', error);
@@ -209,10 +327,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
             className: 'w-4 h-4',
             strokeWidth: 1.5,
         });
-    };
-
-    const getPriorityColor = (priority: TaskPriority) => {
-        return priorityColors[priority] || '';
     };
 
     return (
@@ -480,10 +594,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                         />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value
-                                                                ? format(
-                                                                      field.value,
-                                                                      'MMM d, yyyy',
-                                                                  )
+                                                                ? format(field.value, 'MMM d, yyyy',)
                                                                 : 'DATE'}
                                                         </span>
                                                     </div>
@@ -529,10 +640,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                         />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value
-                                                                ? format(
-                                                                      field.value,
-                                                                      'h:mm a',
-                                                                  )
+                                                                ? format(field.value, 'h:mm a')
                                                                 : 'TIME'}
                                                         </span>
                                                     </div>
@@ -746,10 +854,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                         />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value
-                                                                ? format(
-                                                                      field.value,
-                                                                      'MMM d, yyyy',
-                                                                  )
+                                                                ? format(field.value, 'MMM d, yyyy')
                                                                 : 'SELECT END DATE'}
                                                         </span>
                                                     </div>
@@ -795,10 +900,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                         />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value
-                                                                ? format(
-                                                                      field.value,
-                                                                      'h:mm a',
-                                                                  )
+                                                                ? format(field.value, 'h:mm a')
                                                                 : 'SELECT TIME'}
                                                         </span>
                                                     </div>
@@ -1115,6 +1217,118 @@ const TaskForm: React.FC<TaskFormProps> = ({
                         </Card>
                     ))}
                 </div>
+
+                {/* File Attachments Section */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Paperclip className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Attachments
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {/* File input button */}
+                            <div className="flex flex-col items-center">
+                                <label
+                                    htmlFor="task-files-upload"
+                                    className="flex items-center gap-2 px-4 py-2 transition-colors rounded cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary"
+                                >
+                                    <Upload className="w-4 h-4" strokeWidth={1.5} />
+                                    <span className="text-xs font-light uppercase font-body">
+                                        Select Files
+                                    </span>
+                                </label>
+                                <input
+                                    id="task-files-upload"
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleFileSelection}
+                                    disabled={isLoading || isUploading}
+                                />
+                            </div>
+
+                            {/* Selected files list */}
+                            {selectedFiles.length > 0 && (
+                                <div className="mt-4 space-y-2">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Selected Files ({selectedFiles.length})
+                                    </p>
+                                    <div className="p-2 space-y-2 border rounded border-border">
+                                        {selectedFiles.map((file, index) => (
+                                            <div key={index} className="flex items-center justify-between">
+                                                <div className="flex items-center">
+                                                    <FileIcon className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-xs font-light font-body truncate max-w-[150px]">
+                                                        {file.name}
+                                                    </span>
+                                                    <span className="ml-2 text-xs text-muted-foreground">
+                                                        ({Math.round(file.size / 1024)} KB)
+                                                    </span>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="w-6 h-6 p-0"
+                                                    onClick={() => removeFile(index)}
+                                                >
+                                                    <X className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                </Button>
+                                                {uploadProgress[file.name] && uploadProgress[file.name] < 100 && (
+                                                    <Progress value={uploadProgress[file.name]} className="h-1 w-full mt-1" />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Existing attachments (when editing) */}
+                            {initialData?.attachments && initialData.attachments.length > 0 && (
+                                <div className="mt-4 space-y-2">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Existing Attachments
+                                    </p>
+                                    <div className="p-2 space-y-2 border rounded border-border">
+                                        {initialData.attachments.map((url, index) => {
+                                            // Extract filename from URL
+                                            const filename = url.split('/').pop() || 'file';
+
+                                            return (
+                                                <div key={index} className="flex items-center justify-between">
+                                                    <div className="flex items-center">
+                                                        <FileIcon className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
+                                                        <a
+                                                            href={url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs font-light font-body truncate max-w-[150px] text-primary hover:underline"
+                                                        >
+                                                            {filename}
+                                                        </a>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="w-6 h-6 p-0"
+                                                        onClick={() => removeExistingAttachment(index)}
+                                                    >
+                                                        <X className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </fieldset>
 
             {/* Submit Button */}

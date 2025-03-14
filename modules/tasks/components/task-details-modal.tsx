@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
+import Image from 'next/image';
+import Link from 'next/link';
 import {
     X,
     Calendar,
@@ -33,6 +35,7 @@ import {
     CalendarRange,
     CalendarFold,
     Trash2,
+    File as FileIcon,
 } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
@@ -91,6 +94,7 @@ interface ExtendedTask extends Task {
         name?: string;
     }>;
     creator?: ExtendedCreator;
+    attachments?: string[];
     assignees?: Array<{
         uid: number;
         name: string;
@@ -286,6 +290,7 @@ export function TaskDetailsModal({
         { id: 'people', label: 'People & Org' },
         { id: 'activity', label: 'Activity' },
         { id: 'routes', label: 'Routes' },
+        { id: 'attachments', label: 'Attachments' },
     ];
 
     const formatAddress = (address?: any) => {
@@ -1163,17 +1168,123 @@ export function TaskDetailsModal({
                 );
             case 'routes':
                 return (
-                    <div className="space-y-6">
-                        <div className="flex flex-col items-center justify-center p-4 text-center rounded-lg bg-card">
-                            <Map className="w-12 h-12 mb-2 text-primary/50" />
-                            <p className="text-xs font-thin uppercase font-body">
-                                Activating Soon
-                            </p>
-                            <p className="mt-2 text-xs font-thin uppercase text-card-foreground/60 font-body">
-                                Route planning and management will be available
-                                in a future update.
-                            </p>
-                        </div>
+                    <div className="space-y-4">
+                        {extendedTask?.routes &&
+                        extendedTask?.routes?.length > 0 ? (
+                            <div>
+                                <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                    Assigned Routes
+                                </h3>
+                                <div className="max-w-[600px] rounded space-y-2">
+                                    {extendedTask.routes.map((route, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center p-2 border bg-card"
+                                        >
+                                            <Map className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                            <span className="text-xs font-thin font-body">
+                                                {route?.name ||
+                                                    `Route #${route?.uid || index + 1}`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center">
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    No Routes Assigned
+                                </h3>
+                                <p className="mb-4 text-xs font-thin text-center font-body">
+                                    This task is not part of any route.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                );
+            case 'attachments':
+                return (
+                    <div className="space-y-4">
+                        <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                            Files & Attachments
+                        </h3>
+
+                        {extendedTask.attachments && extendedTask.attachments.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {extendedTask.attachments.map((attachment, index) => {
+                                    // Determine file type from URL
+                                    const fileName = attachment.split('/').pop() || 'file';
+                                    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+                                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
+                                    const isPdf = fileExtension === 'pdf';
+
+                                    // Trim filename if too long
+                                    const trimmedFileName = fileName.length > 20
+                                        ? `${fileName.substring(0, 17)}...${fileExtension}`
+                                        : fileName;
+
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="overflow-hidden border rounded-lg shadow-sm border-border/50 bg-card/50"
+                                        >
+                                            {isImage ? (
+                                                <div className="relative">
+                                                    <div className="relative aspect-square">
+                                                        <Image
+                                                            src={attachment}
+                                                            alt={fileName}
+                                                            fill
+                                                            className="object-cover w-full h-full"
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                        />
+                                                    </div>
+                                                    <Link
+                                                        href={attachment}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/60 hover:opacity-100"
+                                                    >
+                                                        <span className="px-3 py-1 text-[10px] font-normal text-white rounded uppercase font-body bg-primary/80">
+                                                            View Full Size
+                                                        </span>
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center p-6 bg-muted/20">
+                                                    {isPdf ? (
+                                                        <FileText className="w-10 h-10 text-primary/70" />
+                                                    ) : (
+                                                        <FileIcon className="w-10 h-10 text-muted-foreground/70" />
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="p-3">
+                                                <div className="mb-2 text-xs font-thin truncate font-body" title={fileName}>
+                                                    {trimmedFileName}
+                                                </div>
+                                                <Link
+                                                    href={attachment}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center text-[10px] font-thin uppercase text-primary hover:underline font-body"
+                                                >
+                                                    {isImage ? 'View Image' : isPdf ? 'Open PDF' : 'Download File'}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center p-8 border rounded-lg border-border/30">
+                                <FileIcon className="w-12 h-12 mb-3 text-muted-foreground/30" />
+                                <p className="text-sm font-thin text-center text-muted-foreground font-body">
+                                    No attachments found for this task
+                                </p>
+                            </div>
+                        )}
                     </div>
                 );
             default:

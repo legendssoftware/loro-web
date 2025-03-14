@@ -10,7 +10,7 @@ export const toastConfig = {
         fontWeight: '300',
         padding: '16px',
     },
-    duration: 2000,
+    duration: 4000,
     position: 'bottom-center' as const,
 };
 

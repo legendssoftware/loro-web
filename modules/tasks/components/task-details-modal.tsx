@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { showErrorToast } from '@/lib/utils/toast-config';
 import {
     X,
     Calendar,
@@ -36,6 +38,8 @@ import {
     CalendarFold,
     Trash2,
     File as FileIcon,
+    FolderMinus,
+    Waypoints,
 } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
@@ -226,6 +230,12 @@ export function TaskDetailsModal({
     const handleStatusChange = (newStatus: TaskStatus) => {
         if (newStatus === currentStatus) return;
 
+        // Check if trying to complete a task with incomplete subtasks
+        if (newStatus === TaskStatus.COMPLETED && hasIncompleteSubtasks()) {
+            showIncompleteSubtasksToast();
+            return;
+        }
+
         if (newStatus === TaskStatus.POSTPONED) {
             setPendingStatusChange(newStatus);
             const deadlineDate = task.deadline
@@ -242,6 +252,13 @@ export function TaskDetailsModal({
 
     const confirmStatusChange = () => {
         if (pendingStatusChange) {
+            // Double-check if trying to complete a task with incomplete subtasks
+            if (pendingStatusChange === TaskStatus.COMPLETED && hasIncompleteSubtasks()) {
+                showIncompleteSubtasksToast();
+                setConfirmStatusChangeOpen(false);
+                return;
+            }
+
             setCurrentStatus(pendingStatusChange);
             setConfirmStatusChangeOpen(false);
             onClose();
@@ -324,6 +341,26 @@ export function TaskDetailsModal({
         // Calculate percentage
         return Math.round((completedSubtasks / validSubtasks.length) * 100);
     }, [task?.subtasks]);
+
+    // Helper function to check if task has incomplete subtasks
+    const hasIncompleteSubtasks = useCallback(() => {
+        const validSubtasks = task?.subtasks?.filter((st) => !st?.isDeleted) || [];
+
+        if (validSubtasks.length === 0) {
+            return false; // No subtasks means no incomplete subtasks
+        }
+
+        // Check if any subtask is not completed
+        return validSubtasks.some((st) => st?.status !== 'COMPLETED');
+    }, [task?.subtasks]);
+
+    // Helper function to show error toast for incomplete subtasks
+    const showIncompleteSubtasksToast = () => {
+        showErrorToast(
+            'Cannot complete task with incomplete subtasks. Please complete all subtasks first.',
+            toast
+        );
+    };
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -1191,12 +1228,10 @@ export function TaskDetailsModal({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center">
-                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                    No Routes Assigned
-                                </h3>
-                                <p className="mb-4 text-xs font-thin text-center font-body">
-                                    This task is not part of any route.
+                            <div className="flex flex-col items-center justify-center p-8 border rounded-lg border-border/30">
+                                <Waypoints strokeWidth={1} size={50} />
+                                <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
+                                    No routes planned as yet
                                 </p>
                             </div>
                         )}
@@ -1209,78 +1244,102 @@ export function TaskDetailsModal({
                             Files & Attachments
                         </h3>
 
-                        {extendedTask.attachments && extendedTask.attachments.length > 0 ? (
+                        {extendedTask.attachments &&
+                        extendedTask.attachments.length > 0 ? (
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {extendedTask.attachments.map((attachment, index) => {
-                                    // Determine file type from URL
-                                    const fileName = attachment.split('/').pop() || 'file';
-                                    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
-                                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
-                                    const isPdf = fileExtension === 'pdf';
+                                {extendedTask.attachments.map(
+                                    (attachment, index) => {
+                                        // Determine file type from URL
+                                        const fileName =
+                                            attachment.split('/').pop() ||
+                                            'file';
+                                        const fileExtension =
+                                            fileName
+                                                .split('.')
+                                                .pop()
+                                                ?.toLowerCase() || '';
+                                        const isImage = [
+                                            'jpg',
+                                            'jpeg',
+                                            'png',
+                                            'gif',
+                                            'webp',
+                                            'svg',
+                                        ].includes(fileExtension);
+                                        const isPdf = fileExtension === 'pdf';
 
-                                    // Trim filename if too long
-                                    const trimmedFileName = fileName.length > 20
-                                        ? `${fileName.substring(0, 17)}...${fileExtension}`
-                                        : fileName;
+                                        // Trim filename if too long
+                                        const trimmedFileName =
+                                            fileName.length > 20
+                                                ? `${fileName.substring(0, 17)}...${fileExtension}`
+                                                : fileName;
 
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="overflow-hidden border rounded-lg shadow-sm border-border/50 bg-card/50"
-                                        >
-                                            {isImage ? (
-                                                <div className="relative">
-                                                    <div className="relative aspect-square">
-                                                        <Image
-                                                            src={attachment}
-                                                            alt={fileName}
-                                                            fill
-                                                            className="object-cover w-full h-full"
-                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                        />
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="overflow-hidden border rounded-lg shadow-sm border-border/50 bg-card/50"
+                                            >
+                                                {isImage ? (
+                                                    <div className="relative">
+                                                        <div className="relative aspect-square">
+                                                            <Image
+                                                                src={attachment}
+                                                                alt={fileName}
+                                                                fill
+                                                                className="object-cover w-full h-full"
+                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                            />
+                                                        </div>
+                                                        <Link
+                                                            href={attachment}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/60 hover:opacity-100"
+                                                        >
+                                                            <span className="px-3 py-1 text-[10px] font-normal text-white rounded uppercase font-body bg-primary/80">
+                                                                View Full Size
+                                                            </span>
+                                                        </Link>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-center p-6 bg-muted/20">
+                                                        {isPdf ? (
+                                                            <FileText className="w-10 h-10 text-primary/70" />
+                                                        ) : (
+                                                            <FileIcon className="w-10 h-10 text-muted-foreground/70" />
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="p-3">
+                                                    <div
+                                                        className="mb-2 text-xs font-thin truncate font-body"
+                                                        title={fileName}
+                                                    >
+                                                        {trimmedFileName}
                                                     </div>
                                                     <Link
                                                         href={attachment}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/60 hover:opacity-100"
+                                                        className="flex items-center text-[10px] font-thin uppercase text-primary hover:underline font-body"
                                                     >
-                                                        <span className="px-3 py-1 text-[10px] font-normal text-white rounded uppercase font-body bg-primary/80">
-                                                            View Full Size
-                                                        </span>
+                                                        {isImage
+                                                            ? 'View Image'
+                                                            : isPdf
+                                                              ? 'Open PDF'
+                                                              : 'Download File'}
                                                     </Link>
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center justify-center p-6 bg-muted/20">
-                                                    {isPdf ? (
-                                                        <FileText className="w-10 h-10 text-primary/70" />
-                                                    ) : (
-                                                        <FileIcon className="w-10 h-10 text-muted-foreground/70" />
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            <div className="p-3">
-                                                <div className="mb-2 text-xs font-thin truncate font-body" title={fileName}>
-                                                    {trimmedFileName}
-                                                </div>
-                                                <Link
-                                                    href={attachment}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center text-[10px] font-thin uppercase text-primary hover:underline font-body"
-                                                >
-                                                    {isImage ? 'View Image' : isPdf ? 'Open PDF' : 'Download File'}
-                                                </Link>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    },
+                                )}
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center p-8 border rounded-lg border-border/30">
-                                <FileIcon className="w-12 h-12 mb-3 text-muted-foreground/30" />
-                                <p className="text-sm font-thin text-center text-muted-foreground font-body">
+                                <FolderMinus strokeWidth={1} size={50} />
+                                <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
                                     No attachments found for this task
                                 </p>
                             </div>
@@ -1587,16 +1646,19 @@ export function TaskDetailsModal({
                 open={isPostponeDatePickerOpen}
                 onOpenChange={setIsPostponeDatePickerOpen}
             >
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                </DialogHeader>
                 <DialogContent className="max-w-[350px] p-0 border-0 rounded-lg overflow-hidden dark:bg-black bg-card">
                     <div className="flex flex-col">
                         <div className="p-3 border-b dark:border-gray-800">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-sm font-medium">
+                            <div className="flex items-center justify-center">
+                                <h2 className="text-sm font-thin text-center uppercase font-body">
                                     Pick a date and time
                                 </h2>
                             </div>
                         </div>
-                        <div className="p-0">
+                        <div className="flex items-center justify-center w-full p-0">
                             <UiCalendar
                                 mode="single"
                                 selected={postponeDate}
@@ -1606,13 +1668,13 @@ export function TaskDetailsModal({
                             />
                         </div>
                         <div className="p-3 border-t dark:border-gray-800">
-                            <div className="flex flex-col space-y-2">
-                                <span className="text-xs font-medium">
+                            <div className="flex flex-col items-center space-y-2 ">
+                                <span className="text-xs font-thin uppercase font-body">
                                     Select Time
                                 </span>
                                 <input
                                     type="time"
-                                    className="w-full h-8 px-3 text-sm bg-transparent border rounded dark:border-gray-800 dark:text-gray-300"
+                                    className="w-full h-8 px-3 text-xs bg-transparent border rounded dark:border-gray-800 dark:text-gray-300 font-body"
                                     value={postponeTime}
                                     onChange={(e) =>
                                         setPostponeTime(e.target.value)
@@ -1620,24 +1682,30 @@ export function TaskDetailsModal({
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end p-3 space-x-2 border-t dark:border-gray-800">
+                        <div className="flex justify-between p-3 space-x-2 border-t dark:border-gray-800">
                             <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() =>
                                     setIsPostponeDatePickerOpen(false)
                                 }
-                                className="text-xs h-9 dark:bg-transparent dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900"
+                                className="w-1/2 text-xs h-9 dark:bg-transparent dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900"
                             >
-                                Cancel
+                                <span className="text-xs font-thin uppercase font-body">
+                                    Cancel
+                                </span>
                             </Button>
                             <Button
+                                size="sm"
                                 onClick={() => {
                                     setIsPostponeDatePickerOpen(false);
                                     setConfirmStatusChangeOpen(true);
                                 }}
-                                className="text-xs h-9 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
+                                className="w-1/2 text-xs h-9 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
                             >
-                                Confirm
+                                <span className="text-xs font-thin uppercase font-body">
+                                    Confirm
+                                </span>
                             </Button>
                         </div>
                     </div>

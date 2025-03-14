@@ -1254,8 +1254,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
                             {/* Selected files list */}
                             {selectedFiles.length > 0 && (
                                 <div className="mt-4 space-y-2">
-                                    <p className="text-xs font-medium text-muted-foreground">
-                                        Selected Files ({selectedFiles.length})
+                                    <p className="text-[9px] font-normal uppercase text-muted-foreground font-body">
+                                        Selected Files ({selectedFiles?.length})
                                     </p>
                                     <div className="p-2 space-y-2 border rounded border-border">
                                         {selectedFiles.map((file, index) => (
@@ -1279,7 +1279,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                                                     <X className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                 </Button>
                                                 {uploadProgress[file.name] && uploadProgress[file.name] < 100 && (
-                                                    <Progress value={uploadProgress[file.name]} className="h-1 w-full mt-1" />
+                                                    <Progress value={uploadProgress[file.name]} className="w-full h-1 mt-1" />
                                                 )}
                                             </div>
                                         ))}

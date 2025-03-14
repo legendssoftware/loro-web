@@ -1,5 +1,3 @@
-import { Toast } from 'react-hot-toast';
-
 // Standardized toast configuration to be used across the application
 export const toastConfig = {
     style: {

@@ -3,7 +3,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuthStore } from '@/store/auth-store';
-import { toast } from 'react-hot-toast';
 import { axiosInstance } from '@/lib/services/api-client';
 import { AccessLevel } from '@/lib/types/user';
 import { Button } from '@/components/ui/button';
@@ -30,13 +29,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AccountStatus } from '@/lib/enums/status.enums';
-
-// Define Branch interface
-interface Branch {
-    uid: number;
-    name: string;
-    ref: string;
-}
+import { useBranchQuery } from '@/hooks/use-branch-query';
 
 // Form schema definition
 const userFormSchema = z.object({
@@ -76,8 +69,9 @@ export const UserForm: React.FC<UserFormProps> = ({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [userImage, setUserImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [branches, setBranches] = useState<Branch[]>([]);
-    const [isLoadingBranches, setIsLoadingBranches] = useState(false);
+
+    // Use the global branch query hook
+    const { branches, isLoading: isLoadingBranches } = useBranchQuery();
 
     // Generate a unique user reference code
     const generateUserRef = () =>
@@ -105,49 +99,12 @@ export const UserForm: React.FC<UserFormProps> = ({
         register,
         handleSubmit,
         reset,
-        setValue,
         formState: { errors },
         watch,
     } = useForm<UserFormValues>({
         resolver: zodResolver(userFormSchema),
         defaultValues,
     });
-
-    // Fetch branches from the server
-    const fetchBranches = async () => {
-        try {
-            setIsLoadingBranches(true);
-            const accessToken = useAuthStore.getState().accessToken;
-            const profileData = useAuthStore.getState().profileData;
-
-            // Make API call to get branches for the current organization
-            const response = await axiosInstance.get('/branch', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                params: {
-                    organisationRef: profileData?.organisationRef,
-                },
-            });
-
-            if (response.data && Array.isArray(response.data.branches)) {
-                setBranches(response.data.branches);
-            } else {
-                setBranches([]);
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            toast.error('Failed to load branches');
-            setBranches([]);
-        } finally {
-            setIsLoadingBranches(false);
-        }
-    };
-
-    // Load branches when component mounts
-    useEffect(() => {
-        fetchBranches();
-    }, []);
 
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,12 +147,9 @@ export const UserForm: React.FC<UserFormProps> = ({
             if (data.publicUrl) {
                 return data.publicUrl;
             } else {
-                toast.error('Failed to upload image');
                 return null;
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            toast.error('Error uploading image');
             return null;
         }
     };
@@ -247,13 +201,10 @@ export const UserForm: React.FC<UserFormProps> = ({
             // Submit the data to the parent component
             await onSubmit(userData);
 
-            // Reset form after successful submission
             reset();
             setUserImage(null);
             setSelectedFile(null);
         } catch (error) {
-            console.error('Error submitting user form:', error);
-            toast.error('Failed to process user data');
         } finally {
             setIsSubmitting(false);
         }

@@ -40,15 +40,9 @@ export const useUserApi = () => {
                 if (filters.limit)
                     queryParams.append('limit', String(filters.limit));
 
-                // The axios interceptor will add the token headers
-                console.log(
-                    `Fetching users with params: ${queryParams.toString()}`,
-                );
                 const response = await axiosInstance.get(
                     `/user?${queryParams.toString()}`,
                 );
-
-                console.log('API Response:', response.data);
 
                 // Process response based on server format
                 if (response.data) {
@@ -60,10 +54,6 @@ export const useUserApi = () => {
                         totalPages: response.data.meta?.totalPages || 1,
                     };
                 } else {
-                    console.error(
-                        'Unexpected API response format:',
-                        response.data,
-                    );
                     return {
                         items: [],
                         total: 0,
@@ -73,7 +63,6 @@ export const useUserApi = () => {
                     };
                 }
             } catch (error) {
-                console.error('Error fetching users:', error);
                 throw error;
             }
         },
@@ -90,11 +79,9 @@ export const useUserApi = () => {
             if (response.data && response.data.data) {
                 return response.data.data;
             } else {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
         } catch (error) {
-            console.error(`Error fetching user ${userId}:`, error);
             throw error;
         }
     }, []);
@@ -110,16 +97,9 @@ export const useUserApi = () => {
                 );
 
                 if (!response.data) {
-                    console.error(
-                        'Unexpected API response format:',
-                        response.data,
-                    );
                     throw new Error('Invalid API response format');
                 }
-
-                console.log('User updated successfully:', response.data);
             } catch (error) {
-                console.error(`Error updating user ${userId}:`, error);
                 throw error;
             }
         },
@@ -133,13 +113,9 @@ export const useUserApi = () => {
             const response = await axiosInstance.delete(`/user/${userId}`);
 
             if (!response.data) {
-                console.error('Unexpected API response format:', response.data);
                 throw new Error('Invalid API response format');
             }
-
-            console.log('User deleted successfully:', response.data);
         } catch (error) {
-            console.error(`Error deleting user ${userId}:`, error);
             throw error;
         }
     }, []);
@@ -152,16 +128,9 @@ export const useUserApi = () => {
                 const response = await axiosInstance.post('/user', userData);
 
                 if (!response.data) {
-                    console.error(
-                        'Unexpected API response format:',
-                        response.data,
-                    );
                     throw new Error('Invalid API response format');
                 }
-
-                console.log('User created successfully:', response.data);
             } catch (error) {
-                console.error('Error creating user:', error);
                 throw error;
             }
         },

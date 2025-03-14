@@ -15,7 +15,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { toast } from 'react-hot-toast';
 import UserForm, { UserFormValues } from '@/modules/users/components/user-form';
 
 // Tab configuration
@@ -41,26 +40,21 @@ function CreateUserModal({
         async (data: UserFormValues) => {
             try {
                 await onCreateUser?.(data);
-                toast.success('User created successfully');
                 onClose();
-            } catch (error) {
-                console.error('Error creating user:', error);
-                toast.error('Failed to create user');
-            }
+            } catch (error) {}
         },
-        [onCreateUser, onClose]
+        [onCreateUser, onClose],
     );
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">Add New User</DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        Add New User
+                    </DialogTitle>
                 </DialogHeader>
-                <UserForm
-                    onSubmit={handleSubmit}
-                    isLoading={isLoading}
-                />
+                <UserForm onSubmit={handleSubmit} isLoading={isLoading} />
             </DialogContent>
         </Dialog>
     );
@@ -142,7 +136,7 @@ export default function StaffPage() {
                 setIsSubmitting(false);
             }
         },
-        [createUser]
+        [createUser],
     );
 
     // Apply filters handler

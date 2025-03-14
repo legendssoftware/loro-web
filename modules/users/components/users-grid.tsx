@@ -4,6 +4,7 @@ import { User, UserStatus } from '@/lib/types/user';
 import { UserCard } from './user-card';
 import { memo, useState, useEffect, useMemo } from 'react';
 import { FloatingPagination } from '@/components/ui/floating-pagination';
+import { FolderMinus } from 'lucide-react';
 
 interface UsersGridProps {
     users: User[];
@@ -19,7 +20,6 @@ export function UsersGridComponent({
     users,
     onUpdateUserStatus,
     onDeleteUser,
-    onAddUser,
     currentPage = 1,
     totalPages = 1,
     onPageChange,
@@ -73,6 +73,15 @@ export function UsersGridComponent({
         }
     }, [users, totalPages, onPageChange]);
 
+    if (users?.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center text-sm font-normal uppercase rounded-md h-[600px] col-span-full border-border text-muted-foreground font-body animate-fade-in">
+                <FolderMinus strokeWidth={1.2} size={60} />
+                <p className="text-xs font-normal uppercase">No users founds</p>
+            </div>
+        );
+    }
+
     return (
         <div className="relative w-full h-full">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -85,13 +94,7 @@ export function UsersGridComponent({
                         index={index}
                     />
                 ))}
-                {displayedUsers.length === 0 && (
-                    <div className="flex items-center justify-center h-24 text-sm font-normal uppercase border border-dashed rounded-md col-span-full border-border text-muted-foreground font-body animate-fade-in">
-                        No users found
-                    </div>
-                )}
             </div>
-
             {/* Pagination - always render the component, it will hide itself if only 1 page */}
             <FloatingPagination
                 currentPage={localCurrentPage}

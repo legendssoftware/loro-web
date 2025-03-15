@@ -66,7 +66,7 @@ interface UserEditFormProps {
 }
 
 // User Edit Form Component
-export const UserEditForm: React.FC<UserEditFormProps> = ({
+export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,

@@ -94,7 +94,7 @@ interface ClientFormProps {
  *
  * @component
  */
-export const ClientForm: React.FC<ClientFormProps> = ({
+export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,

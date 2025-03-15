@@ -40,6 +40,7 @@ import {
     File as FileIcon,
     FolderMinus,
     Waypoints,
+    Flag,
 } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
@@ -127,6 +128,7 @@ export function TaskDetailsModal({
     const [pendingStatusChange, setPendingStatusChange] =
         useState<TaskStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [isFlagModalOpen, setIsFlagModalOpen] = useState<boolean>(false);
     const [isPostponeDatePickerOpen, setIsPostponeDatePickerOpen] =
         useState<boolean>(false);
     const [postponeDate, setPostponeDate] = useState<Date | undefined>(
@@ -135,6 +137,7 @@ export function TaskDetailsModal({
     const [postponeTime, setPostponeTime] = useState<string>(
         task.deadline ? format(new Date(task.deadline), 'HH:mm') : '12:00',
     );
+    const [modalMode, setModalMode] = useState<'edit' | 'flag'>('edit');
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -1353,6 +1356,8 @@ export function TaskDetailsModal({
         }
     };
 
+    console.log(task, 'task data here');
+
     return (
         <>
             <Dialog open={isOpen} onOpenChange={() => onClose()}>
@@ -1390,14 +1395,31 @@ export function TaskDetailsModal({
                             >
                                 <X className="w-5 h-5" />
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-9 h-9"
-                                onClick={() => setIsEditModalOpen(true)}
-                            >
-                                <Edit className="w-5 h-5" />
-                            </Button>
+                            {task?.status !== TaskStatus.COMPLETED ? (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="w-9 h-9"
+                                    onClick={() => {
+                                        setModalMode('edit');
+                                        setIsEditModalOpen(true);
+                                    }}
+                                >
+                                    <Edit className="w-5 h-5" />
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="w-9 h-9"
+                                    onClick={() => {
+                                        setModalMode('flag');
+                                        setIsFlagModalOpen(true);
+                                    }}
+                                >
+                                    <Flag className="w-5 h-5 text-amber-500" />
+                                </Button>
+                            )}
                         </div>
                     </DialogHeader>
                     <div className="mt-4">
@@ -1537,14 +1559,43 @@ export function TaskDetailsModal({
                 open={isEditModalOpen}
                 onOpenChange={() => setIsEditModalOpen(false)}
             >
-                <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="w-[39vw] max-w-[1200px] border-border/50 max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            {modalMode === 'edit' ? 'Edit Task' : ''}
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center h-64">
                         <h2 className="text-xs font-thin uppercase font-body">
+                            Activatings Soon
+                        </h2>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Flag Task Modal */}
+            <Dialog
+                open={isFlagModalOpen}
+                onOpenChange={() => setIsFlagModalOpen(false)}
+            >
+                <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card flex items-center justify-center flex-col">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            Flag This Task
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                        <Flag
+                            className="w-12 h-12 text-amber-500"
+                            strokeWidth={1.5}
+                        />
+                        <h2 className="text-sm font-thin uppercase font-body">
                             Activating Soon
                         </h2>
+                        <p className="max-w-md text-[10px] text-center uppercase text-muted-foreground font-body">
+                            Flag functionality will allow you to mark completed
+                            tasks for follow-up, escalation, or review.
+                        </p>
                     </div>
                 </DialogContent>
             </Dialog>

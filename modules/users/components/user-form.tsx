@@ -63,7 +63,7 @@ interface UserFormProps {
 }
 
 // User Form Component
-export const UserForm: React.FC<UserFormProps> = ({
+export const UserForm: React.FunctionComponent<UserFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,

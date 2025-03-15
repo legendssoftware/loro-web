@@ -124,7 +124,7 @@ interface ProductFormProps {
 }
 
 // Product Form Component
-export const ProductForm: React.FC<ProductFormProps> = ({
+export const ProductForm: React.FunctionComponent<ProductFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,

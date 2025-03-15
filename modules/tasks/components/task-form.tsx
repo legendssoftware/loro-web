@@ -129,7 +129,7 @@ interface TaskFormProps {
     isLoading?: boolean;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({
+const TaskForm: React.FunctionComponent<TaskFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,

@@ -15,7 +15,7 @@ interface ProductDialogProps {
     buttonLabel?: string;
 }
 
-export const ProductDialog: React.FC<ProductDialogProps> = ({
+export const ProductDialog: React.FunctionComponent<ProductDialogProps> = ({
     onCreateProduct,
     buttonClassName = '',
     buttonLabel = 'Add Product',

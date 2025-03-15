@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuthStore } from '@/store/auth-store';
 import { axiosInstance } from '@/lib/services/api-client';
-import { AccessLevel } from '@/lib/types/user';
+import { AccessLevel, User, UserStatus } from '@/lib/types/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,59 +17,64 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Camera,
-    User,
+    User as UserIcon,
     Mail,
     Phone,
-    Key,
     ShieldCheck,
     ToggleLeft,
     ChevronDown,
-    UserPlus,
     Building,
     Eye,
     EyeOff,
+    Key,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AccountStatus } from '@/lib/enums/status.enums';
-import { useBranchQuery } from '@/hooks/use-branch-query';
+import { useBranchQuery, Branch } from '@/hooks/use-branch-query';
 
-// Form schema definition
-const userFormSchema = z.object({
+// Form schema definition - less strict for editing (no password required)
+const userEditFormSchema = z.object({
     username: z
         .string()
-        .min(3, { message: 'Username must be at least 3 characters' }),
-    password: z
-        .string()
-        .min(8, { message: 'Password must be at least 8 characters' }),
+        .min(3, { message: 'Username must be at least 3 characters' })
+        .optional(),
     name: z.string().min(1, { message: 'First name is required' }),
     surname: z.string().min(1, { message: 'Last name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
-    phone: z.string().min(1, { message: 'Phone number is required' }),
+    phone: z.string().optional(),
     photoURL: z.string().optional(),
-    accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
-    status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
-    userref: z.string(),
+    accessLevel: z.nativeEnum(AccessLevel).optional(),
+    status: z.nativeEnum(UserStatus).optional(),
+    userref: z.string().optional(),
     branchId: z.number().optional(),
+    password: z.string().optional(),
 });
 
 // Infer TypeScript type from the schema
-export type UserFormValues = z.infer<typeof userFormSchema>;
+export type UserEditFormValues = z.infer<typeof userEditFormSchema>;
+
+// Extended type for server updates that includes nested objects
+export type UserEditServerData = Partial<UserEditFormValues> & {
+    branch?: { uid: number };
+    organisation?: { uid: number };
+};
 
 // Props interface
-interface UserFormProps {
-    onSubmit: (data: UserFormValues) => void;
-    initialData?: Partial<UserFormValues>;
+interface UserEditFormProps {
+    onSubmit: (data: UserEditServerData) => Promise<void>;
+    initialData: User;
     isLoading?: boolean;
 }
 
-// User Form Component
-export const UserForm: React.FC<UserFormProps> = ({
+// User Edit Form Component
+export const UserEditForm: React.FC<UserEditFormProps> = ({
     onSubmit,
     initialData,
     isLoading = false,
 }) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [userImage, setUserImage] = useState<string | null>(null);
+    const [userImage, setUserImage] = useState<string | null>(
+        initialData.photoURL || null,
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -81,24 +86,19 @@ export const UserForm: React.FC<UserFormProps> = ({
         setShowPassword(!showPassword);
     };
 
-    // Generate a unique user reference code
-    const generateUserRef = () =>
-        `USR${Math.floor(100000 + Math.random() * 900000)}`;
-
-    // Default form values
-    const defaultValues: Partial<UserFormValues> = {
-        username: '',
+    // Default form values from initialData
+    const defaultValues: Partial<UserEditFormValues> = {
+        username: initialData.username || '',
+        name: initialData.name || '',
+        surname: initialData.surname || '',
+        email: initialData.email || '',
+        phone: initialData.phone || '',
+        photoURL: initialData.photoURL || '',
+        accessLevel: initialData.accessLevel,
+        status: initialData.status as UserStatus,
+        userref: initialData.userref || '',
+        branchId: (initialData.branch as unknown as Branch)?.uid,
         password: '',
-        name: '',
-        surname: '',
-        email: '',
-        phone: '',
-        photoURL: '',
-        accessLevel: AccessLevel.USER,
-        status: AccountStatus.ACTIVE,
-        userref: generateUserRef(),
-        branchId: initialData?.branchId,
-        ...initialData,
     };
 
     // Initialize form
@@ -106,11 +106,10 @@ export const UserForm: React.FC<UserFormProps> = ({
         control,
         register,
         handleSubmit,
-        reset,
-        formState: { errors },
+        formState: { errors, dirtyFields },
         watch,
-    } = useForm<UserFormValues>({
-        resolver: zodResolver(userFormSchema),
+    } = useForm<UserEditFormValues>({
+        resolver: zodResolver(userEditFormSchema),
         defaultValues,
     });
 
@@ -163,55 +162,58 @@ export const UserForm: React.FC<UserFormProps> = ({
     };
 
     // Form submission handler
-    const onFormSubmit = async (data: UserFormValues) => {
+    const onFormSubmit = async (data: UserEditFormValues) => {
         try {
             setIsSubmitting(true);
-            let photoURL = data.photoURL || '';
 
-            // Upload the image if one was selected
+            // Initialize with only changed fields
+            const changedData: UserEditServerData = {};
+
+            // Add only dirty (changed) fields to the update data
+            Object.keys(dirtyFields).forEach((key) => {
+                const fieldKey = key as keyof UserEditFormValues;
+                // Use type assertion to handle the typing issue
+                changedData[fieldKey] = data[fieldKey] as any;
+            });
+
+            // Special handling for photo upload
             if (selectedFile) {
                 const uploadedUrl = await uploadImage(selectedFile);
                 if (uploadedUrl) {
-                    photoURL = uploadedUrl;
+                    changedData.photoURL = uploadedUrl;
                 }
             }
 
-            // If no image was uploaded or upload failed, use a default avatar
-            if (!photoURL) {
-                photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    data.name + ' ' + data.surname,
-                )}&background=random`;
+            // Only include password if it was changed and not empty
+            if (data.password && dirtyFields.password) {
+                changedData.password = data.password;
+            } else {
+                delete changedData.password;
+            }
+
+            // Special handling for branch - only include if changed
+            if (dirtyFields.branchId && changedData.branchId) {
+                changedData.branch = { uid: changedData.branchId };
+                delete changedData.branchId; // Remove branchId as we're using branch object
             }
 
             // Get auth store data for organisational context
             const profileData = useAuthStore.getState().profileData;
 
-            // Create user with organizational context if available
-            const userData = {
-                ...data,
-                photoURL,
-                ...(profileData?.organisationRef
-                    ? {
-                          organisation: {
-                              uid: parseInt(profileData.organisationRef, 10),
-                          },
-                      }
-                    : {}),
+            // Add organization if needed and it doesn't exist
+            if (profileData?.organisationRef && !initialData.organisation && Object.keys(changedData).length > 0) {
+                changedData.organisation = {
+                    uid: parseInt(profileData.organisationRef, 10),
+                };
+            }
 
-                // Add branch from the selector
-                ...(data.branchId
-                    ? {
-                          branch: { uid: data.branchId },
-                      }
-                    : {}),
-            };
-
-            // Submit the data to the parent component
-            await onSubmit(userData);
-
-            reset();
-            setUserImage(null);
-            setSelectedFile(null);
+            // Only submit if there are changes
+            if (Object.keys(changedData).length > 0) {
+                // Submit the data to the parent component
+                await onSubmit(changedData);
+            } else {
+                // Show message if no changes were made
+            }
         } catch (error) {
         } finally {
             setIsSubmitting(false);
@@ -237,7 +239,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <UserPlus className="w-4 h-4" strokeWidth={1.5} />
+                            <UserIcon className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Profile Photo
                             </span>
@@ -287,7 +289,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <User className="w-4 h-4" strokeWidth={1.5} />
+                            <UserIcon className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Basic Information
                             </span>
@@ -306,7 +308,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                 <Input
                                     id="name"
                                     {...register('name')}
-                                    placeholder="brandon"
+                                    placeholder="Brandon"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
                                 {errors.name && (
@@ -327,7 +329,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                 <Input
                                     id="surname"
                                     {...register('surname')}
-                                    placeholder="nelson"
+                                    placeholder="Nelson"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
                                 {errors.surname && (
@@ -354,7 +356,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                         id="email"
                                         type="email"
                                         {...register('email')}
-                                        placeholder="brandonn@gmail.com"
+                                        placeholder="brandon@gmail.com"
                                         className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     />
                                 </div>
@@ -370,8 +372,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                     htmlFor="phone"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Phone{' '}
-                                    <span className="text-red-500">*</span>
+                                    Phone
                                 </Label>
                                 <div className="relative">
                                     <Phone
@@ -399,7 +400,10 @@ export const UserForm: React.FC<UserFormProps> = ({
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <Key className="w-4 h-4" strokeWidth={1.5} />
+                            <ShieldCheck
+                                className="w-4 h-4"
+                                strokeWidth={1.5}
+                            />
                             <span className="font-light uppercase font-body">
                                 Account Information
                             </span>
@@ -412,8 +416,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                     htmlFor="username"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Username{' '}
-                                    <span className="text-red-500">*</span>
+                                    Username
                                 </Label>
                                 <Input
                                     id="username"
@@ -430,37 +433,72 @@ export const UserForm: React.FC<UserFormProps> = ({
 
                             <div className="space-y-1">
                                 <Label
+                                    htmlFor="userref"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    User Reference
+                                </Label>
+                                <Input
+                                    id="userref"
+                                    {...register('userref')}
+                                    disabled={true}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                            {/* Password Field */}
+                            <div className="space-y-1">
+                                <Label
                                     htmlFor="password"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Password{' '}
-                                    <span className="text-red-500">*</span>
+                                    Change Password
                                 </Label>
                                 <div className="relative">
-                                    <Input
-                                        id="password"
-                                        type={showPassword ? "text" : "password"}
-                                        {...register('password')}
-                                        placeholder="***********************"
-                                        className="pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    />
-                                    <button
-                                        type="button"
-                                        className="absolute inset-y-0 right-0 flex items-center pr-3"
-                                        onClick={togglePasswordVisibility}
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-                                        ) : (
-                                            <Eye className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-                                        )}
-                                    </button>
+                                    <div className="relative">
+                                        <Key
+                                            className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <Input
+                                            id="password"
+                                            type={
+                                                showPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            {...register('password')}
+                                            placeholder="leave blank to keep current password"
+                                            className="pl-10 pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                            onClick={togglePasswordVisibility}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff
+                                                    className="w-4 h-4 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                            ) : (
+                                                <Eye
+                                                    className="w-4 h-4 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                                 {errors.password && (
                                     <p className="mt-1 text-xs text-red-500">
                                         {errors.password.message}
                                     </p>
                                 )}
+                                <p className="text-[9px] font-thin text-muted-foreground uppercase">
+                                    Only fill this if you want to change the
+                                    password
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -468,13 +506,12 @@ export const UserForm: React.FC<UserFormProps> = ({
                                     htmlFor="accessLevel"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Access Level{' '}
-                                    <span className="text-red-500">*</span>
+                                    Access Level
                                 </Label>
                                 <Controller
                                     control={control}
                                     name="accessLevel"
-                                    render={({ field }: { field: any }) => (
+                                    render={({ field }) => (
                                         <div className="relative">
                                             <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                                                 <div className="flex items-center gap-2">
@@ -538,13 +575,12 @@ export const UserForm: React.FC<UserFormProps> = ({
                                     htmlFor="status"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Status{' '}
-                                    <span className="text-red-500">*</span>
+                                    Status
                                 </Label>
                                 <Controller
                                     control={control}
                                     name="status"
-                                    render={({ field }: { field: any }) => (
+                                    render={({ field }) => (
                                         <div className="relative">
                                             <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                                                 <div className="flex items-center gap-2">
@@ -574,7 +610,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                                 <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                                 <SelectContent>
                                                     {Object.values(
-                                                        AccountStatus,
+                                                        UserStatus,
                                                     ).map((status) => (
                                                         <SelectItem
                                                             key={status}
@@ -604,7 +640,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                             </div>
 
                             {/* Branch Selector */}
-                            <div className="space-y-1 md:col-span-2">
+                            <div className="space-y-1">
                                 <Label
                                     htmlFor="branchId"
                                     className="block text-xs font-light uppercase font-body"
@@ -614,7 +650,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                                 <Controller
                                     control={control}
                                     name="branchId"
-                                    render={({ field }: { field: any }) => (
+                                    render={({ field }) => (
                                         <div className="relative">
                                             <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                                                 <div className="flex items-center gap-2">
@@ -629,7 +665,8 @@ export const UserForm: React.FC<UserFormProps> = ({
                                                                   (b) =>
                                                                       b.uid ===
                                                                       parseInt(
-                                                                          field.value,
+                                                                          field.value?.toString() ||
+                                                                              '0',
                                                                       ),
                                                               )?.name ||
                                                               'SELECT BRANCH'}
@@ -714,33 +751,20 @@ export const UserForm: React.FC<UserFormProps> = ({
             {/* Submit Button */}
             <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border">
                 <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 text-[10px] font-light uppercase font-body"
-                    onClick={() => {
-                        reset();
-                        setUserImage(null);
-                        setSelectedFile(null);
-                    }}
-                    disabled={isSubmitting}
-                >
-                    Reset Form
-                </Button>
-                <Button
                     type="submit"
                     variant="outline"
                     disabled={isLoading || isSubmitting}
                     className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                 >
                     {isSubmitting
-                        ? 'Creating...'
+                        ? 'Saving...'
                         : isLoading
                           ? 'Loading...'
-                          : 'Create User'}
+                          : 'Save Changes'}
                 </Button>
             </div>
         </form>
     );
 };
 
-export default UserForm;
+export default UserEditForm;

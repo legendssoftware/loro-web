@@ -27,13 +27,12 @@ import {
     AtSign,
 } from 'lucide-react';
 import { User, UserStatus, AccessLevel } from '@/lib/types/user';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { showErrorToast } from '@/lib/utils/toast-config';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/badge';
+import UserEditForm, { UserEditFormValues } from './user-edit-form';
+import { useUsersQuery } from '@/hooks/use-users-query';
 
 interface UserDetailsModalProps {
     user: User;
@@ -50,8 +49,6 @@ export function UserDetailsModal({
     onUpdateStatus,
     onDelete,
 }: UserDetailsModalProps) {
-    const [editedUser, setEditedUser] = useState<User>({ ...user });
-    const [isEditing, setIsEditing] = useState<boolean>(false);
     const [showDeleteConfirmation, setShowDeleteConfirmation] =
         useState<boolean>(false);
     const [showStatusConfirmation, setShowStatusConfirmation] =
@@ -60,6 +57,9 @@ export function UserDetailsModal({
         useState<UserStatus | null>(null);
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
+
+    // Get the updateUser function from our hook
+    const { updateUser } = useUsersQuery({});
 
     // Format dates
     const formatDate = (date?: Date) => {
@@ -103,11 +103,33 @@ export function UserDetailsModal({
         }
     };
 
+    // Handle form submission from the UserEditForm
+    const handleUpdateUser = async (formData: UserEditFormValues) => {
+        try {
+            await updateUser(user.uid, formData);
+            setShowEditModal(false);
+            // No need to show another toast as the mutation already handles it
+        } catch (error) {
+            // Error is handled by the mutation
+            console.error("Error updating user:", error);
+        }
+    };
+
     // Handle tab change
     const handleTabChange = (tabId: string) => {
         if (activeTab !== tabId) {
             setActiveTab(tabId);
         }
+    };
+
+    // Show the edit modal when Edit is clicked
+    const handleEditClick = () => {
+        setShowEditModal(true);
+    };
+
+    // Close the edit modal
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
     };
 
     // Get status badge color
@@ -146,33 +168,7 @@ export function UserDetailsModal({
         }
     };
 
-    // Show the "Activating Soon" modal when Edit is clicked
-    const handleEditClick = () => {
-        setShowEditModal(true);
-    };
-
-    // Close the edit modal
-    const handleCloseEditModal = () => {
-        setShowEditModal(false);
-    };
-
-    // Get status action message
-    const getStatusActionMessage = (status: UserStatus | null): string => {
-        if (!status) return '';
-
-        switch (status) {
-            case UserStatus.ACTIVE:
-                return 'activate';
-            case UserStatus.INACTIVE:
-                return 'deactivate';
-            case UserStatus.SUSPENDED:
-                return 'suspend';
-            default:
-                return 'update';
-        }
-    };
-
-    // Get user-friendly status name
+    // Get status display name
     const getStatusDisplayName = (status: UserStatus | null): string => {
         if (!status) return '';
 
@@ -597,16 +593,23 @@ export function UserDetailsModal({
                 </Dialog>
             )}
 
-            {/* Edit User Modal - "Activating Soon" */}
+            {/* Edit User Modal with UserEditForm */}
             <Dialog open={showEditModal} onOpenChange={handleCloseEditModal}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            Edit User: {user.name} {user.surname}
+                        </DialogTitle>
+                        <DialogDescription className="text-xs font-thin font-body">
+                            Update user information and settings
+                        </DialogDescription>
                     </DialogHeader>
-                    <div className="flex items-center justify-center h-64">
-                        <h2 className="text-xs font-thin uppercase font-body">
-                            Activating Soon
-                        </h2>
+                    <div className="py-4">
+                        <UserEditForm
+                            initialData={user}
+                            onSubmit={handleUpdateUser}
+                            isLoading={false}
+                        />
                     </div>
                 </DialogContent>
             </Dialog>

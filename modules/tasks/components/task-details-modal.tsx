@@ -115,7 +115,6 @@ export function TaskDetailsModal({
     isOpen,
     onClose,
     onUpdateStatus,
-    onUpdateTask,
     onDelete,
     onUpdateSubtaskStatus,
 }: TaskDetailsModalProps) {
@@ -253,7 +252,10 @@ export function TaskDetailsModal({
     const confirmStatusChange = () => {
         if (pendingStatusChange) {
             // Double-check if trying to complete a task with incomplete subtasks
-            if (pendingStatusChange === TaskStatus.COMPLETED && hasIncompleteSubtasks()) {
+            if (
+                pendingStatusChange === TaskStatus.COMPLETED &&
+                hasIncompleteSubtasks()
+            ) {
                 showIncompleteSubtasksToast();
                 setConfirmStatusChangeOpen(false);
                 return;
@@ -344,7 +346,8 @@ export function TaskDetailsModal({
 
     // Helper function to check if task has incomplete subtasks
     const hasIncompleteSubtasks = useCallback(() => {
-        const validSubtasks = task?.subtasks?.filter((st) => !st?.isDeleted) || [];
+        const validSubtasks =
+            task?.subtasks?.filter((st) => !st?.isDeleted) || [];
 
         if (validSubtasks.length === 0) {
             return false; // No subtasks means no incomplete subtasks
@@ -358,7 +361,7 @@ export function TaskDetailsModal({
     const showIncompleteSubtasksToast = () => {
         showErrorToast(
             'Cannot complete task with incomplete subtasks. Please complete all subtasks first.',
-            toast
+            toast,
         );
     };
 
@@ -1243,7 +1246,6 @@ export function TaskDetailsModal({
                         <h3 className="mb-4 text-xs font-normal uppercase font-body">
                             Files & Attachments
                         </h3>
-
                         {extendedTask.attachments &&
                         extendedTask.attachments.length > 0 ? (
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -1341,44 +1343,14 @@ export function TaskDetailsModal({
                                 <FolderMinus strokeWidth={1} size={50} />
                                 <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
                                     No attachments found for this task
-                            </p>
-                        </div>
+                                </p>
+                            </div>
                         )}
                     </div>
                 );
             default:
                 return null;
         }
-    };
-
-    const handleEditFormSubmit = (taskId: number, taskData: Partial<Task>) => {
-        // First, determine if we need to update the status separately
-        if (taskData.status && taskData.status !== task.status) {
-            // If we're postponing with a new deadline, it will be handled by onUpdateStatus
-            if (taskData.status === TaskStatus.POSTPONED && taskData.deadline) {
-                onUpdateStatus(
-                    taskId,
-                    taskData.status,
-                    new Date(taskData.deadline),
-                );
-            } else {
-                onUpdateStatus(taskId, taskData.status);
-            }
-        }
-
-        // Create an updates object excluding status if it was already handled
-        const updates: Partial<Task> = { ...taskData };
-        if (updates.status && updates.status !== task.status) {
-            delete updates.status; // Remove status as it's already handled
-        }
-
-        // Only proceed if there are other fields to update and we have the onUpdateTask function
-        if (Object.keys(updates).length > 0 && onUpdateTask) {
-            onUpdateTask(taskId, updates);
-        }
-
-        // Close the edit modal
-        setIsEditModalOpen(false);
     };
 
     return (
@@ -1692,7 +1664,7 @@ export function TaskDetailsModal({
                                 className="w-1/2 text-xs h-9 dark:bg-transparent dark:text-gray-300 dark:border-gray-800 dark:hover:bg-gray-900"
                             >
                                 <span className="text-xs font-thin uppercase font-body">
-                                Cancel
+                                    Cancel
                                 </span>
                             </Button>
                             <Button
@@ -1704,7 +1676,7 @@ export function TaskDetailsModal({
                                 className="w-1/2 text-xs h-9 bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
                             >
                                 <span className="text-xs font-thin uppercase font-body">
-                                Confirm
+                                    Confirm
                                 </span>
                             </Button>
                         </div>

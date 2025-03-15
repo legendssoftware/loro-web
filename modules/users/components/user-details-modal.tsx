@@ -31,7 +31,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/badge';
-import UserEditForm, { UserEditFormValues } from './user-edit-form';
+import UserEditForm, { UserEditServerData } from './user-edit-form';
 import { useUsersQuery } from '@/hooks/use-users-query';
 
 interface UserDetailsModalProps {
@@ -104,13 +104,12 @@ export function UserDetailsModal({
     };
 
     // Handle form submission from the UserEditForm
-    const handleUpdateUser = async (formData: UserEditFormValues) => {
+    const handleUpdateUser = async (userData: UserEditServerData) => {
         try {
-            await updateUser(user.uid, formData);
+            // Use a type assertion to handle the type incompatibility
+            await updateUser(user.uid, userData as any);
             setShowEditModal(false);
-            // No need to show another toast as the mutation already handles it
         } catch (error) {
-            // Error is handled by the mutation
             console.error("Error updating user:", error);
         }
     };

@@ -41,8 +41,11 @@ import {
     FolderMinus,
     Waypoints,
     Flag,
+    Timer,
+    PlayIcon,
+    StopCircle,
 } from 'lucide-react';
-import { Task, TaskStatus, TaskPriority, TaskType } from '@/lib/types/task';
+import { Task, TaskStatus, TaskPriority, TaskType, JobStatus, JobStatusColors } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -170,22 +173,18 @@ export function TaskDetailsModal({
         }
     };
 
-    const getStatusButtonVariant = (status: TaskStatus) => {
+    const getJobStatusBadgeColor = (status?: JobStatus) => {
+        if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+
         switch (status) {
-            case TaskStatus.PENDING:
-                return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${currentStatus === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
-            case TaskStatus.IN_PROGRESS:
-                return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${currentStatus === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
-            case TaskStatus.COMPLETED:
-                return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${currentStatus === status ? 'bg-green-100 dark:bg-green-900/30' : ''}`;
-            case TaskStatus.CANCELLED:
-                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
-            case TaskStatus.POSTPONED:
-                return `text-purple-800 border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30 ${currentStatus === status ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`;
-            case TaskStatus.MISSED:
-                return `text-orange-800 border-orange-200 hover:bg-orange-50 hover:border-orange-300 dark:text-orange-300 dark:hover:bg-orange-900/20 dark:border-orange-900/30 ${currentStatus === status ? 'bg-orange-100 dark:bg-orange-900/30' : ''}`;
+            case JobStatus.QUEUED:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+            case JobStatus.RUNNING:
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+            case JobStatus.COMPLETED:
+                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
             default:
-                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
+                return 'bg-gray-100 text-gray-800';
         }
     };
 
@@ -368,6 +367,39 @@ export function TaskDetailsModal({
         );
     };
 
+    // Calculate job duration in a readable format
+    const formatDuration = (minutes?: number) => {
+        if (!minutes) return 'N/A';
+
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+
+        if (hours > 0) {
+            return `${hours}h ${remainingMinutes}m`;
+        }
+
+        return `${remainingMinutes}m`;
+    };
+
+    const getStatusButtonVariant = (status: TaskStatus) => {
+        switch (status) {
+            case TaskStatus.PENDING:
+                return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${currentStatus === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
+            case TaskStatus.IN_PROGRESS:
+                return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${currentStatus === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
+            case TaskStatus.COMPLETED:
+                return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${currentStatus === status ? 'bg-green-100 dark:bg-green-900/30' : ''}`;
+            case TaskStatus.CANCELLED:
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
+            case TaskStatus.POSTPONED:
+                return `text-purple-800 border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30 ${currentStatus === status ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`;
+            case TaskStatus.MISSED:
+                return `text-orange-800 border-orange-200 hover:bg-orange-50 hover:border-orange-300 dark:text-orange-300 dark:hover:bg-orange-900/20 dark:border-orange-900/30 ${currentStatus === status ? 'bg-orange-100 dark:bg-orange-900/30' : ''}`;
+            default:
+                return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
+        }
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'details':
@@ -408,6 +440,82 @@ export function TaskDetailsModal({
                                     </div>
                                 </div>
                             )}
+
+                        {/* Job Information Section */}
+                        {task.jobStatus && (
+                            <div>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Job Status
+                                </h3>
+                                <div className="p-4 space-y-3 rounded-lg bg-card">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <Timer className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                            <span className="text-[10px] font-thin uppercase font-body">
+                                                Status
+                                            </span>
+                                        </div>
+                                        <Badge
+                                            variant="outline"
+                                            className={`text-[10px] font-normal uppercase font-body px-4 py-1 border-0 ${getJobStatusBadgeColor(
+                                                task?.jobStatus,
+                                            )}`}
+                                        >
+                                            {task?.jobStatus?.replace('_', ' ')}
+                                        </Badge>
+                                    </div>
+
+                                    {task.jobStartTime && (
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <PlayIcon className="w-4 h-4 mr-2 text-blue-500" />
+                                                <span className="text-[10px] font-thin uppercase font-body">
+                                                    Started
+                                                </span>
+                                            </div>
+                                            <span className="text-xs font-thin font-body">
+                                                {formatDate(task?.jobStartTime)}{' '}
+                                                {formatTime(task?.jobStartTime)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {task.jobEndTime && (
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <StopCircle className="w-4 h-4 mr-2 text-green-500" />
+                                                <span className="text-[10px] font-thin uppercase font-body">
+                                                    Completed
+                                                </span>
+                                            </div>
+                                            <span className="text-xs font-thin font-body">
+                                                {formatDate(task?.jobEndTime)}{' '}
+                                                {formatTime(task?.jobEndTime)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {(task.jobDuration || (task.jobStartTime && task.jobEndTime)) && (
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <Clock className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                                <span className="text-[10px] font-thin uppercase font-body">
+                                                    Duration
+                                                </span>
+                                            </div>
+                                            <span className="text-xs font-thin font-body">
+                                                {formatDuration(
+                                                    task.jobDuration ||
+                                                    (task.jobStartTime && task.jobEndTime
+                                                        ? Math.round((new Date(task.jobEndTime).getTime() - new Date(task.jobStartTime).getTime()) / (1000 * 60))
+                                                        : undefined)
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>

@@ -1,13 +1,14 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Task, TaskStatus } from '@/lib/types/task';
+import { Task, TaskStatus, JobStatus, JobStatusColors } from '@/lib/types/task';
 import {
     AlertCircle,
     Calendar,
     Clock,
     CheckCircle2,
     ChartSpline,
+    Timer,
 } from 'lucide-react';
 import { useState, useCallback, memo } from 'react';
 import { Progress } from '@/components/ui/progress';
@@ -97,6 +98,21 @@ function TaskCardComponent({
         }
     };
 
+    const getJobStatusBadgeColor = (status?: JobStatus) => {
+        if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+
+        switch (status) {
+            case JobStatus.QUEUED:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+            case JobStatus.RUNNING:
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+            case JobStatus.COMPLETED:
+                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     const getPriorityColor = () => {
         switch (task.priority) {
             case 'LOW':
@@ -169,6 +185,17 @@ function TaskCardComponent({
                                     className="text-[10px] px-4 py-1 border-0 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                                 >
                                     OVERDUE
+                                </Badge>
+                            )}
+                            {task.jobStatus && (
+                                <Badge
+                                    variant="outline"
+                                    className={`text-[9px] font-normal uppercase font-body px-3 py-1 border-0 ${getJobStatusBadgeColor(
+                                        task?.jobStatus,
+                                    )}`}
+                                >
+                                    <Timer className="w-3 h-3 mr-1" />
+                                    JOB: {task?.jobStatus?.replace('_', ' ')}
                                 </Badge>
                             )}
                         </div>

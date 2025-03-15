@@ -38,6 +38,12 @@ export enum TaskType {
     OTHER = 'OTHER',
 }
 
+export enum JobStatus {
+    QUEUED = 'QUEUED',
+    RUNNING = 'RUNNING',
+    COMPLETED = 'COMPLETED',
+}
+
 export interface StatusColorConfig {
     bg: string;
     text: string;
@@ -82,6 +88,24 @@ export const StatusColors: Record<TaskStatus, StatusColorConfig> = {
     },
 };
 
+export const JobStatusColors: Record<JobStatus, StatusColorConfig> = {
+    [JobStatus.QUEUED]: {
+        bg: 'bg-gray-100 dark:bg-gray-950/50',
+        text: 'text-gray-800 dark:text-gray-300',
+        border: 'border-gray-200 dark:border-gray-800',
+    },
+    [JobStatus.RUNNING]: {
+        bg: 'bg-blue-100 dark:bg-blue-950/50',
+        text: 'text-blue-800 dark:text-blue-300',
+        border: 'border-blue-200 dark:border-blue-800',
+    },
+    [JobStatus.COMPLETED]: {
+        bg: 'bg-green-100 dark:bg-green-950/50',
+        text: 'text-green-800 dark:text-green-300',
+        border: 'border-green-200 dark:border-green-800',
+    },
+};
+
 export interface Task {
     uid: number;
     title: string;
@@ -99,6 +123,10 @@ export interface Task {
     createdAt: Date;
     updatedAt: Date;
     isDeleted: boolean;
+    jobStatus?: JobStatus;
+    jobStartTime?: Date;
+    jobEndTime?: Date;
+    jobDuration?: number;
     creator?: {
         uid: number;
         name: string;

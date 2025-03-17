@@ -89,4 +89,4 @@ export const createCustomIcon = (type: MarkerType, isHighlighted = false) => {
         iconAnchor: [size / 2, size + 10],
         popupAnchor: [0, -(size + 10)],
     });
-}; 
+};

@@ -31,6 +31,7 @@ export interface WorkerType {
   }
   location: {
     address: string
+    imageUrl?: string
   }
   schedule: {
     current: string

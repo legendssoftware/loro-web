@@ -29,8 +29,16 @@ interface MarkerPopupProps {
 function MarkerPopup({ worker }: MarkerPopupProps) {
     if (!worker) return null;
 
+    // Get a placeholder image for the location - prioritize backend imageUrl if available
+    const locationImage = worker?.location?.imageUrl
+        ? worker.location.imageUrl
+        : worker?.location?.address
+            ? `https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(worker.location.address)}&key=YOUR_API_KEY&fallback=true`
+            : '/placeholder.svg?height=200&width=400';
+
     return (
         <div className="p-3 font-body">
+            {/* Header with worker info */}
             <div className="flex flex-col items-center mb-4">
                 <div className="w-16 h-16 mb-2 overflow-hidden border-2 rounded-full border-primary/20">
                     <img
@@ -63,6 +71,15 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                 </div>
             </div>
 
+            {/* Location image */}
+            <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+                <img
+                    src={locationImage}
+                    alt={worker?.location?.address || 'Location'}
+                    className="object-cover w-full h-full"
+                />
+            </div>
+
             {worker?.canAddTask && (
                 <button className="w-full mb-4 flex items-center justify-center gap-2 text-primary text-[10px] uppercase font-thin border border-border rounded-md py-2 hover:bg-accent/10 transition-colors">
                     <PlusSquare size={14} />
@@ -70,7 +87,8 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                 </button>
             )}
 
-            <div className="space-y-2">
+            {/* Make the content area scrollable with fixed height */}
+            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                 <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                     <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
                         <MapPin size={15} strokeWidth={1.5} />
@@ -152,23 +170,25 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             <Coffee size={15} strokeWidth={1.5} />
                             On Break
                         </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <PlayCircle size={15} strokeWidth={1.5} />
-                            From: {worker.breakData.startTime}
-                        </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <TimerOff size={15} strokeWidth={1.5} />
-                            To: {worker.breakData.endTime}
-                        </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <TimerReset size={15} strokeWidth={1.5} />
-                            Total: {worker.breakData.duration}
-                        </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <Clock size={15} strokeWidth={1.5} />
-                            Remaining: {worker.breakData.remainingTime}
-                        </p>
-                        <p className="text-[9px] flex items-center gap-1">
+                        <div className="grid grid-cols-2 gap-x-2">
+                            <p className="text-[9px] flex items-center gap-1">
+                                <PlayCircle size={15} strokeWidth={1.5} />
+                                From: {worker.breakData.startTime}
+                            </p>
+                            <p className="text-[9px] flex items-center gap-1">
+                                <TimerOff size={15} strokeWidth={1.5} />
+                                To: {worker.breakData.endTime}
+                            </p>
+                            <p className="text-[9px] flex items-center gap-1">
+                                <TimerReset size={15} strokeWidth={1.5} />
+                                Total: {worker.breakData.duration}
+                            </p>
+                            <p className="text-[9px] flex items-center gap-1">
+                                <Clock size={15} strokeWidth={1.5} />
+                                Remaining: {worker.breakData.remainingTime}
+                            </p>
+                        </div>
+                        <p className="text-[9px] flex items-center gap-1 mt-1">
                             <MapPin size={15} strokeWidth={1.5} />
                             Location: {worker.breakData.location}
                         </p>
@@ -181,14 +201,16 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             <Clock size={15} strokeWidth={1.5} />
                             Schedule
                         </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <Calendar size={15} strokeWidth={1.5} />
-                            Current: {worker.schedule.current}
-                        </p>
-                        <p className="text-[9px] flex items-center gap-1">
-                            <CalendarCheck size={15} strokeWidth={1.5} />
-                            Next: {worker.schedule.next}
-                        </p>
+                        <div className="grid grid-cols-2 gap-x-2">
+                            <p className="text-[9px] flex items-center gap-1">
+                                <Calendar size={15} strokeWidth={1.5} />
+                                Current: {worker.schedule.current}
+                            </p>
+                            <p className="text-[9px] flex items-center gap-1">
+                                <CalendarCheck size={15} strokeWidth={1.5} />
+                                Next: {worker.schedule.next}
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>
@@ -247,8 +269,11 @@ export default function MarkersLayer({
                             <Popup
                                 closeButton={false}
                                 className="custom-popup"
-                                minWidth={300}
-                                maxWidth={300}
+                                minWidth={400}
+                                maxWidth={450}
+                                maxHeight={550}
+                                autoClose={false}
+                                autoPan={true}
                             >
                                 <MarkerPopup worker={worker} />
                             </Popup>

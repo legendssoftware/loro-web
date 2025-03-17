@@ -254,7 +254,7 @@ export function ClaimDetailsModal({
                                             <div className="flex-1 overflow-hidden">
                                                 <p className="text-xs font-normal truncate font-body">
                                                     {claim.documentUrl
-                                                        .split('/')
+                                                        ?.split('/')
                                                         .pop() || 'Document'}
                                                 </p>
                                                 <p className="text-[10px] text-muted-foreground font-thin font-body">

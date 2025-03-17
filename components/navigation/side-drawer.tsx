@@ -37,7 +37,7 @@ interface SideDrawerProps {
 // Navigation items with role-based access control information
 const navigationItems = [
     {
-        title: 'Home',
+        title: 'Dashboard',
         icon: <ChartSpline size={18} strokeWidth={1.5} />,
         href: '/',
         description: 'Overview dashboard and statistics',

@@ -5,13 +5,13 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import dynamic from 'next/dynamic';
 import {
-    workers,
     type WorkerType,
     type MarkerType,
     type EventType,
 } from '@/lib/data';
-import { Filter, List, ChevronDown, MapPin } from 'lucide-react';
+import { Filter, List, ChevronDown, MapPin, Clock, Users, FileText, CalendarClock, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { mapApi } from '@/lib/services/map-api';
 
 // Dynamically import Leaflet components to avoid SSR issues with no SSR option
 const MapComponent = dynamic(
@@ -40,7 +40,32 @@ export default function MapPage() {
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showEventsDropdown, setShowEventsDropdown] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [workers, setWorkers] = useState<WorkerType[]>([]);
+    const [events, setEvents] = useState<EventType[]>([]);
+    const [mapConfig, setMapConfig] = useState<any>(null);
     const mapRef = useRef<any>(null);
+
+    // Fetch map data when component mounts
+    useEffect(() => {
+        const fetchMapData = async () => {
+            setLoading(true);
+            try {
+                const { workers: workerData, events: eventData, mapConfig: configData } = await mapApi.getMapData();
+                setWorkers(workerData);
+                setEvents(eventData);
+                setMapConfig(configData);
+            } catch (error) {
+                console.error('Failed to fetch map data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isClient) {
+            fetchMapData();
+        }
+    }, [isClient]);
 
     // Set isClient to true when component mounts
     useEffect(() => {
@@ -55,7 +80,7 @@ export default function MapPage() {
 
     const handleEventClick = (event: EventType) => {
         if (!event || !event.user) return;
-        
+
         // Find the worker associated with this event
         const worker = workers.find((w) => w?.name === event.user);
         if (worker) {
@@ -67,7 +92,7 @@ export default function MapPage() {
     };
 
     // Filter workers based on active filter
-    const filteredWorkers = Array.isArray(workers) 
+    const filteredWorkers = Array.isArray(workers)
         ? workers.filter((worker) => {
             if (!worker) return false;
             if (activeFilter === 'all') return true;
@@ -93,15 +118,22 @@ export default function MapPage() {
     return (
         <ProtectedRoute>
             <PageTransition type="fade">
-                <div className="relative w-[98%] mx-auto h-[90vh] p-1 border-border/20 rounded">
+                <div className="relative w-[98%] mx-auto h-[90vh] p-1 rounded border border-card">
                     {isClient ? (
-                        <MapComponent
-                            filteredWorkers={filteredWorkers}
-                            selectedMarker={selectedMarker}
-                            highlightedMarkerId={highlightedMarkerId}
-                            handleMarkerClick={handleMarkerClick}
-                            mapRef={mapRef}
-                        />
+                        loading ? (
+                            <div className="flex items-center justify-center h-screen">
+                                <MapPin className="w-16 h-16 animate-pulse text-primary/50" />
+                            </div>
+                        ) : (
+                            <MapComponent
+                                filteredWorkers={filteredWorkers}
+                                selectedMarker={selectedMarker}
+                                highlightedMarkerId={highlightedMarkerId}
+                                handleMarkerClick={handleMarkerClick}
+                                mapRef={mapRef}
+                                mapConfig={mapConfig}
+                            />
+                        )
                     ) : (
                         <div className="flex items-center justify-center h-screen">
                             <MapPin className="w-16 h-16 animate-pulse text-primary/50" />
@@ -210,15 +242,70 @@ export default function MapPage() {
                                 />
                             </button>
 
-                            {showEventsDropdown && isClient && (
-                                <div className="absolute right-0 z-[2501] w-80 mt-1 overflow-hidden rounded-lg shadow-lg top-full bg-card font-body max-h-[calc(100vh-6rem)] overflow-y-auto">
-                                    <DynamicEventsSidebar
-                                        onEventClick={(event) => {
-                                            handleEventClick(event);
-                                            setShowEventsDropdown(false);
-                                        }}
-                                        highlightedMarkerId={highlightedMarkerId}
-                                    />
+                            {showEventsDropdown && (
+                                <div className="absolute right-0 top-16 z-[2501] w-full sm:max-w-xs h-[calc(100%-5rem)] bg-card/95 backdrop-blur-sm border border-border rounded-l-lg shadow-lg overflow-y-auto">
+                                    <div className="p-4">
+                                        <h3 className="mb-4 text-sm font-medium uppercase">Recent Events</h3>
+                                        <div className="space-y-3">
+                                            {events.map((event) => (
+                                                <button
+                                                    key={event.id}
+                                                    onClick={() => handleEventClick(event)}
+                                                    className="flex w-full gap-3 p-2 text-left transition-colors rounded-md hover:bg-accent/10"
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            'w-8 h-8 rounded-md flex items-center justify-center text-white',
+                                                            event.type === 'check-in'
+                                                                ? 'bg-blue-500'
+                                                                : event.type === 'task'
+                                                                    ? 'bg-purple-500'
+                                                                    : event.type === 'journal'
+                                                                        ? 'bg-red-500'
+                                                                        : event.type === 'shift-start'
+                                                                            ? 'bg-green-500'
+                                                                            : 'bg-orange-500',
+                                                        )}
+                                                    >
+                                                        {event.type === 'check-in' && <MapPin size={14} />}
+                                                        {event.type === 'task' && <CalendarClock size={14} />}
+                                                        {event.type === 'journal' && <FileText size={14} />}
+                                                        {event.type === 'shift-start' && <Clock size={14} />}
+                                                        {event.type === 'lead' && <UserPlus size={14} />}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="text-[10px] text-muted-foreground uppercase">
+                                                            {event.type.replace('-', ' ')}
+                                                        </div>
+                                                        <div className="text-xs font-thin uppercase">
+                                                            {event.title}
+                                                        </div>
+                                                        <div className="text-[10px] text-muted-foreground mt-1">
+                                                            {event.time}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 mt-1">
+                                                            <MapPin size={10} className="text-muted-foreground" />
+                                                            <span className="text-[10px] uppercase">{event.location}</span>
+                                                        </div>
+                                                        {event.user && (
+                                                            <div className="flex items-center gap-2 pt-1 mt-1 border-t border-border/10">
+                                                                <div className="w-5 h-5 overflow-hidden rounded-full bg-accent">
+                                                                    <img
+                                                                        src="/placeholder.svg?height=20&width=20"
+                                                                        alt={event.user}
+                                                                        className="object-cover w-full h-full"
+                                                                    />
+                                                                </div>
+                                                                <div className="text-[10px] uppercase">
+                                                                    {event.user}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

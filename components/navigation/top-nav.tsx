@@ -67,7 +67,7 @@ export function TopNav() {
 
     return (
         <>
-            <div className='fixed top-0 left-0 right-0 z-[2000] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mb-5'>
+            <div className='fixed top-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-transparent mb-5'>
                 <div className='flex items-center justify-between h-16 px-2'>
                     <div className='flex items-center justify-between w-full gap-2 md:w-auto'>
                         <Button

@@ -1364,7 +1364,7 @@ export function TaskDetailsModal({
                                     (attachment, index) => {
                                         // Determine file type from URL
                                         const fileName =
-                                            attachment.split('/').pop() ||
+                                            attachment?.split('/').pop() ||
                                             'file';
                                         const fileExtension =
                                             fileName

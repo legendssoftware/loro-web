@@ -1,5 +1,21 @@
 export type MarkerType = "check-in" | "shift-start" | "lead" | "journal" | "task"
 
+export interface JobStatusType {
+  startTime: string;
+  endTime: string;
+  duration: string;
+  status: string;
+  completionPercentage: number;
+}
+
+export interface BreakDataType {
+  startTime: string;
+  endTime: string;
+  duration: string;
+  location: string;
+  remainingTime: string;
+}
+
 export interface WorkerType {
   id: string
   name: string
@@ -20,6 +36,8 @@ export interface WorkerType {
     current: string
     next: string
   }
+  jobStatus?: JobStatusType
+  breakData?: BreakDataType
 }
 
 // Updated worker data with Johannesburg coordinates

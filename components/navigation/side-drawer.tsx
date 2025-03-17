@@ -13,7 +13,8 @@ import {
     ShoppingBag,
     KeySquare,
     BriefcaseBusiness,
-    Images
+    Images,
+    MapPin,
 } from 'lucide-react';
 import {
     Sheet,
@@ -87,6 +88,14 @@ const navigationItems = [
         description: 'Manage journal entries',
         // All authenticated users can access journals
         feature: 'journal',
+    },
+    {
+        title: 'Map View',
+        icon: <MapPin size={18} strokeWidth={1.5} />,
+        href: '/map',
+        description: 'View check-ins, tasks, events and team locations',
+        // All authenticated users can access the map
+        feature: 'dashboard',
     },
     {
         title: 'Quotations',

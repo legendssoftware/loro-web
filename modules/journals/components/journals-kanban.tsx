@@ -41,8 +41,8 @@ export function JournalsKanban({
                         <div
                             className={cn(
                                 'px-2 py-0.5 rounded text-xs font-medium flex items-center flex-row justify-between',
-                                colors.bg,
-                                colors.text,
+                                colors?.bg,
+                                colors?.text,
                             )}
                         >
                             <span className="uppercase font-body">{title}</span>
@@ -79,24 +79,24 @@ export function JournalsKanban({
     return (
         <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden">
             {renderColumn(
-                JournalStatus.PENDING,
+                JournalStatus.PENDING_REVIEW,
                 'Pending',
-                journalsByStatus[JournalStatus.PENDING]?.length || 0,
+                journalsByStatus[JournalStatus.PENDING_REVIEW]?.length || 0,
             )}
             {renderColumn(
-                JournalStatus.APPROVED,
-                'Approved',
-                journalsByStatus[JournalStatus.APPROVED]?.length || 0,
+                JournalStatus.PUBLISHED,
+                'Published',
+                journalsByStatus[JournalStatus.PUBLISHED]?.length || 0,
             )}
             {renderColumn(
-                JournalStatus.REVIEW,
-                'Review',
-                journalsByStatus[JournalStatus.REVIEW]?.length || 0,
+                JournalStatus.DRAFT,
+                'Draft',
+                journalsByStatus[JournalStatus.DRAFT]?.length || 0,
             )}
             {renderColumn(
-                JournalStatus.DECLINED,
-                'Declined',
-                journalsByStatus[JournalStatus.DECLINED]?.length || 0,
+                JournalStatus.REJECTED,
+                'Rejected',
+                journalsByStatus[JournalStatus.REJECTED]?.length || 0,
             )}
             {renderColumn(
                 JournalStatus.ARCHIVED,

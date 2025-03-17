@@ -87,13 +87,13 @@ export function JournalDetailsModal({
     // Get status badge colors
     const getStatusBadgeColor = (status: JournalStatus) => {
         switch (status) {
-            case JournalStatus.PENDING:
+            case JournalStatus.PENDING_REVIEW:
                 return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-            case JournalStatus.APPROVED:
+            case JournalStatus.PUBLISHED:
                 return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-            case JournalStatus.REVIEW:
+            case JournalStatus.DRAFT:
                 return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-            case JournalStatus.DECLINED:
+            case JournalStatus.REJECTED:
                 return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
             case JournalStatus.ARCHIVED:
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
@@ -105,13 +105,13 @@ export function JournalDetailsModal({
     // Get status button styling
     const getStatusButtonVariant = (status: JournalStatus) => {
         switch (status) {
-            case JournalStatus.PENDING:
+            case JournalStatus.PENDING_REVIEW:
                 return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${currentStatus === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
-            case JournalStatus.APPROVED:
+            case JournalStatus.PUBLISHED:
                 return `text-green-800 border-green-200 hover:bg-green-50 hover:border-green-300 dark:text-green-300 dark:hover:bg-green-900/20 dark:border-green-900/30 ${currentStatus === status ? 'bg-green-100 dark:bg-green-900/30' : ''}`;
-            case JournalStatus.REVIEW:
+            case JournalStatus.DRAFT:
                 return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${currentStatus === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
-            case JournalStatus.DECLINED:
+            case JournalStatus.REJECTED:
                 return `text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${currentStatus === status ? 'bg-red-100 dark:bg-red-900/30' : ''}`;
             case JournalStatus.ARCHIVED:
                 return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${currentStatus === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
@@ -618,13 +618,11 @@ export function JournalDetailsModal({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.PENDING)}`}
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.PENDING_REVIEW)}`}
                                     onClick={() =>
-                                        handleStatusChange(
-                                            JournalStatus.PENDING,
-                                        )
+                                        handleStatusChange(JournalStatus.PENDING_REVIEW)
                                     }
-                                    title="Set as Pending"
+                                    title="Set to Pending Review"
                                 >
                                     <Clock
                                         strokeWidth={1.2}
@@ -634,13 +632,11 @@ export function JournalDetailsModal({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.APPROVED)}`}
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.PUBLISHED)}`}
                                     onClick={() =>
-                                        handleStatusChange(
-                                            JournalStatus.APPROVED,
-                                        )
+                                        handleStatusChange(JournalStatus.PUBLISHED)
                                     }
-                                    title="Set as Approved"
+                                    title="Set as Published"
                                 >
                                     <CheckCircle2
                                         strokeWidth={1.2}
@@ -650,11 +646,11 @@ export function JournalDetailsModal({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.REVIEW)}`}
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.DRAFT)}`}
                                     onClick={() =>
-                                        handleStatusChange(JournalStatus.REVIEW)
+                                        handleStatusChange(JournalStatus.DRAFT)
                                     }
-                                    title="Set to Review"
+                                    title="Set as Draft"
                                 >
                                     <RefreshCw
                                         strokeWidth={1.2}
@@ -664,13 +660,11 @@ export function JournalDetailsModal({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.DECLINED)}`}
+                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.REJECTED)}`}
                                     onClick={() =>
-                                        handleStatusChange(
-                                            JournalStatus.DECLINED,
-                                        )
+                                        handleStatusChange(JournalStatus.REJECTED)
                                     }
-                                    title="Set as Declined"
+                                    title="Set as Rejected"
                                 >
                                     <XCircle
                                         strokeWidth={1.2}
@@ -682,9 +676,7 @@ export function JournalDetailsModal({
                                     size="icon"
                                     className={`w-14 h-14 rounded-full ${getStatusButtonVariant(JournalStatus.ARCHIVED)}`}
                                     onClick={() =>
-                                        handleStatusChange(
-                                            JournalStatus.ARCHIVED,
-                                        )
+                                        handleStatusChange(JournalStatus.ARCHIVED)
                                     }
                                     title="Set as Archived"
                                 >

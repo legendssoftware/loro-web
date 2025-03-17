@@ -43,10 +43,10 @@ export default function JournalsPage() {
     // Group journals by status
     const journalsByStatus = useMemo(() => {
         const grouped: Record<JournalStatus, Journal[]> = {
-            [JournalStatus.PENDING]: [],
-            [JournalStatus.APPROVED]: [],
-            [JournalStatus.REVIEW]: [],
-            [JournalStatus.DECLINED]: [],
+            [JournalStatus.PENDING_REVIEW]: [],
+            [JournalStatus.PUBLISHED]: [],
+            [JournalStatus.DRAFT]: [],
+            [JournalStatus.REJECTED]: [],
             [JournalStatus.ARCHIVED]: [],
         };
 
@@ -55,8 +55,8 @@ export default function JournalsPage() {
             if (grouped[status]) {
                 grouped[status].push(journal);
             } else {
-                // Default to PENDING if status is not recognized
-                grouped[JournalStatus.PENDING].push(journal);
+                // Default to PENDING_REVIEW if status is not recognized
+                grouped[JournalStatus.PENDING_REVIEW].push(journal);
             }
         });
 

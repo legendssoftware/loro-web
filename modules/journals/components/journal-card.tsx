@@ -4,9 +4,8 @@ import { JournalStatus, Journal } from '@/lib/types/journal';
 import { Calendar, ExternalLink, Clock, FileText } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { format } from 'date-fns';
-import { useAuthStore } from '@/store/auth-store';
-import { AccessLevel } from '@/lib/types/user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 // Extend the Journal interface to include the missing properties
 interface ExtendedJournal extends Journal {
@@ -57,6 +56,23 @@ export const JournalCard = memo(function JournalCard({
         return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase() || 'U';
     };
 
+    const getStatusBadgeColor = (status: JournalStatus) => {
+        switch (status) {
+            case JournalStatus.PENDING_REVIEW:
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+            case JournalStatus.PUBLISHED:
+                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+            case JournalStatus.DRAFT:
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+            case JournalStatus.REJECTED:
+                return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+            case JournalStatus.ARCHIVED:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     return (
         <div
             className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
@@ -69,6 +85,14 @@ export const JournalCard = memo(function JournalCard({
                     <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
                         {journal.title || journal.clientRef}
                     </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                        <Badge
+                            variant="outline"
+                            className={`text-[9px] font-normal uppercase font-body px-4 py-1 border-0 ${getStatusBadgeColor(journal.status)}`}
+                        >
+                            {journal.status.replace('_', ' ')}
+                        </Badge>
+                    </div>
                 </div>
             </div>
 

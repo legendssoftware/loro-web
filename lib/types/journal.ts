@@ -3,11 +3,11 @@ import { Branch } from './branch';
 import { Organisation } from './organisation';
 
 export enum JournalStatus {
-    PENDING = 'pending',
-    APPROVED = 'approved',
-    REVIEW = 'review',
-    DECLINED = 'declined',
-    ARCHIVED = 'archived',
+    PENDING_REVIEW = 'PENDING_REVIEW',
+    PUBLISHED = 'PUBLISHED',
+    ARCHIVED = 'ARCHIVED',
+    REJECTED = 'REJECTED',
+    DRAFT = 'DRAFT',
 }
 
 export interface StatusColorConfig {
@@ -17,22 +17,22 @@ export interface StatusColorConfig {
 }
 
 export const StatusColors: Record<JournalStatus, StatusColorConfig> = {
-    [JournalStatus.PENDING]: {
+    [JournalStatus.PENDING_REVIEW]: {
         bg: 'bg-yellow-100 dark:bg-yellow-950/50',
         text: 'text-yellow-800 dark:text-yellow-300',
         border: 'border-yellow-200 dark:border-yellow-800',
     },
-    [JournalStatus.APPROVED]: {
+    [JournalStatus.PUBLISHED]: {
         bg: 'bg-green-100 dark:bg-green-950/50',
         text: 'text-green-800 dark:text-green-300',
         border: 'border-green-200 dark:border-green-800',
     },
-    [JournalStatus.REVIEW]: {
+    [JournalStatus.DRAFT]: {
         bg: 'bg-blue-100 dark:bg-blue-950/50',
         text: 'text-blue-800 dark:text-blue-300',
         border: 'border-blue-200 dark:border-blue-800',
     },
-    [JournalStatus.DECLINED]: {
+    [JournalStatus.REJECTED]: {
         bg: 'bg-red-100 dark:bg-red-950/50',
         text: 'text-red-800 dark:text-red-300',
         border: 'border-red-200 dark:border-red-800',
@@ -95,6 +95,7 @@ export interface CreateJournalDto {
     comments: string;
     owner: { uid: number };
     branch: { uid: number };
+    status?: JournalStatus;
 }
 
 export interface UpdateJournalDto {
@@ -106,9 +107,9 @@ export interface UpdateJournalDto {
 
 export interface JournalStats {
     total: number;
-    pending: number;
-    approved: number;
-    review: number;
-    declined: number;
+    pending_review: number;
+    published: number;
+    draft: number;
+    rejected: number;
     archived: number;
 }

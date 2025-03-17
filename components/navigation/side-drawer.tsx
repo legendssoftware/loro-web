@@ -13,6 +13,7 @@ import {
     ShoppingBag,
     KeySquare,
     BriefcaseBusiness,
+    Images
 } from 'lucide-react';
 import {
     Sheet,
@@ -78,6 +79,14 @@ const navigationItems = [
         description: 'Handle employee claims',
         // Basic users can access claims
         feature: 'claims',
+    },
+    {
+        title: 'Journals',
+        icon: <Images size={18} strokeWidth={1.5} />,
+        href: '/journals',
+        description: 'Manage journal entries',
+        // All authenticated users can access journals
+        feature: 'journal',
     },
     {
         title: 'Quotations',

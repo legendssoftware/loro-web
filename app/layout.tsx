@@ -29,11 +29,23 @@ export const metadata: Metadata = {
         'attendance tracking',
         'location tracking',
         'CRM South Africa',
+        'time management',
+        'field management',
+        'field service management',
+        'field service automation',
+        'field service software',
+        'field service management software',
     ],
-    authors: [{ name: 'Brandon Nhlanhla Nkawu' }],
+    authors: [
+        {
+            name: 'Brandon Nhlanhla Nkawu',
+            url: 'https://www.linkedin.com/in/brandonnkawu/',
+        },
+    ],
     openGraph: {
         title: 'CRM Dashboard | Modern Customer Management',
-        description: 'Streamline your customer relationships with our powerful CRM platform',
+        description:
+            'Streamline your customer relationships with our powerful CRM platform',
         type: 'website',
         siteName: 'CRM Dashboard',
         locale: 'en_US',
@@ -41,7 +53,8 @@ export const metadata: Metadata = {
     twitter: {
         card: 'summary_large_image',
         title: 'CRM Dashboard | Modern Customer Management',
-        description: 'Streamline your customer relationships with our powerful CRM platform',
+        description:
+            'Streamline your customer relationships with our powerful CRM platform',
     },
     robots: {
         index: true,
@@ -65,15 +78,27 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang='en' suppressHydrationWarning>
-            <body className={`${unbounded.variable} font-unbounded antialiased bg-background relative`}>
-                <ThemeProvider attribute='class' disableTransitionOnChange>
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <link
+                    rel="stylesheet"
+                    href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+                    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+                    crossOrigin=""
+                />
+            </head>
+            <body
+                className={`${unbounded.variable} font-unbounded antialiased bg-background relative overflow-y-scroll`}
+            >
+                <ThemeProvider attribute="class" disableTransitionOnChange>
                     <LayoutProvider>
-                        <TopNav />
+                        <div className="z-[2000] relative">
+                            <TopNav />
+                        </div>
                         <main>{children}</main>
                     </LayoutProvider>
                     <Toaster
-                        position='top-right'
+                        position="top-right"
                         toastOptions={{
                             duration: 3000,
                             style: {

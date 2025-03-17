@@ -40,9 +40,9 @@ export function JournalsKanban({
                     <div className="flex items-center justify-between mb-2">
                         <div
                             className={cn(
-                                'px-2 py-0.5 rounded text-xs font-medium flex items-center flex-row justify-between',
-                                colors?.bg,
-                                colors?.text,
+                                'px-2 py-0.5 rounded text-[10px] font-normal flex items-center flex-row justify-between',
+                                colors.bg,
+                                colors.text,
                             )}
                         >
                             <span className="uppercase font-body">{title}</span>

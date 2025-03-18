@@ -1,9 +1,9 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState, useRef } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
-import dynamic from 'next/dynamic';
 import { type WorkerType, type EventType } from '@/lib/data';
 import {
     Filter,
@@ -140,17 +140,6 @@ export default function MapPage() {
         return <MapError onRetry={refetch} message={error?.message} />;
     }
 
-    if (!isClient) {
-        return <MapLoading message="Initializing map..." />;
-    }
-
-    console.log(
-        showEventsDropdown,
-        'showEventsDropdown',
-        events,
-        'events to show',
-    );
-
     return (
         <ProtectedRoute>
             <PageTransition type="fade">
@@ -263,7 +252,9 @@ export default function MapPage() {
                                 disabled={isLoading || isError}
                             >
                                 <List size={14} />
-                                <span className="hidden sm:inline">Recent Events</span>
+                                <span className="hidden sm:inline">
+                                    Recent Events
+                                </span>
                                 <span className="inline-flex items-center justify-center w-4 h-4 text-[9px] bg-primary/10 text-primary rounded-full">
                                     {events?.length || 0}
                                 </span>
@@ -276,63 +267,117 @@ export default function MapPage() {
                             {showEventsDropdown && (
                                 <div className="absolute right-0 z-[2501] w-72 mt-1 overflow-hidden rounded-lg shadow-lg top-full bg-card font-body">
                                     <div className="p-1">
-                                        <h3 className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">Recent Events</h3>
+                                        <h3 className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">
+                                            Recent Events
+                                        </h3>
 
                                         {events?.length === 0 ? (
-                                            <p className="px-3 py-2 text-[10px] text-muted-foreground">No recent events found.</p>
+                                            <p className="px-3 py-2 text-[10px] text-muted-foreground">
+                                                No recent events found.
+                                            </p>
                                         ) : (
                                             <div className="max-h-[350px] overflow-y-auto">
                                                 {events.map((event) => (
                                                     <button
                                                         key={event.id}
-                                                        onClick={() => handleEventClick(event)}
+                                                        onClick={() =>
+                                                            handleEventClick(
+                                                                event,
+                                                            )
+                                                        }
                                                         className="w-full text-left px-3 py-2 text-[10px] rounded-md hover:bg-accent/20 flex items-start gap-2"
                                                     >
                                                         <div
                                                             className={cn(
                                                                 'w-6 h-6 rounded-md flex items-center justify-center text-white shrink-0 mt-0.5',
-                                                                event.type === 'check-in'
+                                                                event.type ===
+                                                                    'check-in'
                                                                     ? 'bg-blue-500'
-                                                                    : event.type === 'task'
-                                                                        ? 'bg-purple-500'
-                                                                        : event.type === 'journal'
-                                                                            ? 'bg-red-500'
-                                                                            : event.type === 'shift-start'
-                                                                                ? 'bg-green-500'
-                                                                                : 'bg-orange-500',
+                                                                    : event.type ===
+                                                                        'task'
+                                                                      ? 'bg-purple-500'
+                                                                      : event.type ===
+                                                                          'journal'
+                                                                        ? 'bg-red-500'
+                                                                        : event.type ===
+                                                                            'shift-start'
+                                                                          ? 'bg-green-500'
+                                                                          : 'bg-orange-500',
                                                             )}
                                                         >
-                                                            {event.type === 'check-in' && <MapPin size={12} />}
-                                                            {event.type === 'task' && <CalendarClock size={12} />}
-                                                            {event.type === 'journal' && <FileText size={12} />}
-                                                            {event.type === 'shift-start' && <Clock size={12} />}
-                                                            {event.type === 'lead' && <UserPlus size={12} />}
+                                                            {event.type ===
+                                                                'check-in' && (
+                                                                <MapPin
+                                                                    size={12}
+                                                                />
+                                                            )}
+                                                            {event.type ===
+                                                                'task' && (
+                                                                <CalendarClock
+                                                                    size={12}
+                                                                />
+                                                            )}
+                                                            {event.type ===
+                                                                'journal' && (
+                                                                <FileText
+                                                                    size={12}
+                                                                />
+                                                            )}
+                                                            {event.type ===
+                                                                'shift-start' && (
+                                                                <Clock
+                                                                    size={12}
+                                                                />
+                                                            )}
+                                                            {event.type ===
+                                                                'lead' && (
+                                                                <UserPlus
+                                                                    size={12}
+                                                                />
+                                                            )}
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="font-medium uppercase text-[9px] text-primary">
-                                                                {event.type.replace('-', ' ')}
+                                                                {event.type.replace(
+                                                                    '-',
+                                                                    ' ',
+                                                                )}
                                                             </div>
                                                             <div className="font-thin uppercase">
                                                                 {event.title}
                                                             </div>
                                                             <div className="text-[9px] text-muted-foreground mt-1 flex items-center gap-1">
-                                                                <Clock size={8} />
+                                                                <Clock
+                                                                    size={8}
+                                                                />
                                                                 {event.time}
                                                             </div>
                                                             <div className="text-[9px] text-muted-foreground flex items-center gap-1">
-                                                                <MapPin size={8} />
-                                                                <span className="truncate">{event.location}</span>
+                                                                <MapPin
+                                                                    size={8}
+                                                                />
+                                                                <span className="truncate">
+                                                                    {
+                                                                        event.location
+                                                                    }
+                                                                </span>
                                                             </div>
                                                             {event.user && (
                                                                 <div className="flex items-center gap-1 pt-1 mt-1 border-t border-border/10">
                                                                     <div className="w-4 h-4 overflow-hidden rounded-full bg-accent">
                                                                         <img
                                                                             src="/placeholder.svg?height=16&width=16"
-                                                                            alt={event.user}
+                                                                            alt={
+                                                                                event.user
+                                                                            }
                                                                             className="object-cover w-full h-full"
                                                                         />
                                                                     </div>
-                                                                    <div className="truncate">{event.user}</div>
+                                                                    <div className="truncate">
+                                                                        {
+                                                                            event.user
+                                                                        }
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>

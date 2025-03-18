@@ -2,6 +2,7 @@
 
 import { events, type EventType, workers } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface EventsSidebarProps {
     onEventClick: (event: EventType) => void;
@@ -218,10 +219,12 @@ export default function EventsSidebar({
                             {event.user && (
                                 <div className="flex items-center gap-2 pt-1 mt-1 border-t border-border/10">
                                     <div className="w-5 h-5 overflow-hidden rounded-full bg-accent">
-                                        <img
+                                        <Image
                                             src="/placeholder.svg?height=20&width=20"
                                             alt={event.user}
                                             className="object-cover w-full h-full"
+                                            width={20}
+                                            height={20}
                                         />
                                     </div>
                                     <div className="text-[10px] uppercase">

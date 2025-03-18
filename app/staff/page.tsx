@@ -6,16 +6,54 @@ import { UserFilterParams, UserStatus, User } from '@/lib/types/user';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { UsersTabGroup } from '@/modules/users/components/users-tab-group';
-import { UsersTabContent } from '@/modules/users/components/users-tab-content';
 import { UsersHeader } from '@/modules/users/components/users-header';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import UserForm, { UserFormValues } from '@/modules/users/components/user-form';
+import { UserFormValues } from '@/modules/users/components/user-form';
+
+// Dynamic imports for components that don't need to be loaded immediately
+const UsersTabContent = dynamic(
+    () =>
+        import('@/modules/users/components/users-tab-content').then((mod) => ({
+            default: mod.UsersTabContent,
+        })),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
+);
+
+// Dynamically import UI components
+const Dialog = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({ default: mod.Dialog })),
+);
+const DialogContent = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogContent,
+    })),
+);
+const DialogHeader = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogHeader,
+    })),
+);
+const DialogTitle = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogTitle,
+    })),
+);
+
+// Dynamically import UserForm
+const UserForm = dynamic(
+    () =>
+        import('@/modules/users/components/user-form').then((mod) => ({
+            default: mod.default,
+        })),
+    { ssr: false },
+);
 
 // Tab configuration
 const tabs = [

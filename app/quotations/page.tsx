@@ -7,11 +7,33 @@ import { OrderStatus } from '@/lib/enums/status.enums';
 import { useQuotationsQuery } from '@/hooks/use-quotations-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-tab-group';
-import { QuotationsTabContent } from '@/modules/quotations/components/quotations-tab-content';
 // import { QuotationsHeader } from '@/modules/quotations/components/quotations-header';
-import { QuotationDetailsModal } from '@/modules/quotations/components/quotation-details-modal';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
+
+// Dynamic imports for components that don't need to be loaded immediately
+const QuotationsTabContent = dynamic(
+    () =>
+        import('@/modules/quotations/components/quotations-tab-content').then(
+            (mod) => ({ default: mod.QuotationsTabContent }),
+        ),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
+);
+
+const QuotationDetailsModal = dynamic(
+    () =>
+        import('@/modules/quotations/components/quotation-details-modal').then(
+            (mod) => ({ default: mod.QuotationDetailsModal }),
+        ),
+    { ssr: false },
+);
 
 // Tab configuration
 const tabs = [

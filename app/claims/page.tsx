@@ -6,10 +6,31 @@ import { ClaimStatus, ClaimFilterParams } from '@/lib/types/claim';
 import { useClaimsQuery } from '@/hooks/use-claims-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
-import { ClaimsTabContent } from '@/modules/claims/components/claims-tab-content';
-import { ClaimDetailsModal } from '@/modules/claims/components/claim-details-modal';
-// import { ClaimsHeader } from '@/modules/claims/components/claims-header';
+
+// Dynamic imports for components that don't need to be loaded immediately
+const ClaimsTabContent = dynamic(
+    () =>
+        import('@/modules/claims/components/claims-tab-content').then(
+            (mod) => ({ default: mod.ClaimsTabContent }),
+        ),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
+);
+
+const ClaimDetailsModal = dynamic(
+    () =>
+        import('@/modules/claims/components/claim-details-modal').then(
+            (mod) => ({ default: mod.ClaimDetailsModal }),
+        ),
+    { ssr: false },
+);
 
 // Tab configuration
 const tabs = [

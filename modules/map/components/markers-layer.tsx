@@ -4,6 +4,7 @@ import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import { WorkerType } from '@/lib/data';
 import { createCustomIcon } from './marker-icon';
+import Image from 'next/image';
 import {
     MapPin,
     Kanban,
@@ -41,13 +42,15 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             {/* Header with worker info */}
             <div className="flex flex-col items-center mb-4">
                 <div className="w-16 h-16 mb-2 overflow-hidden border-2 rounded-full border-primary/20">
-                    <img
+                    <Image
                         src={
                             worker?.image ||
                             '/placeholder.svg?height=64&width=64'
                         }
                         alt={worker?.name || 'Worker'}
                         className="object-cover w-full h-full"
+                        width={64}
+                        height={64}
                     />
                 </div>
                 <h3 className="text-xs font-normal uppercase">
@@ -72,11 +75,14 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             </div>
 
             {/* Location image */}
-            <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
-                <img
+            <div className="w-full mb-4 overflow-hidden rounded-md h-44">
+                <Image
                     src={locationImage}
                     alt={worker?.location?.address || 'Location'}
                     className="object-cover w-full h-full"
+                    width={400}
+                    height={400}
+                    priority={false}
                 />
             </div>
 

@@ -9,17 +9,29 @@ import {
 } from '@/hooks/use-clients-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import dynamic from 'next/dynamic';
 import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group';
 import { ClientsHeader } from '@/modules/clients/components/clients-header';
-import { ClientsTabContent } from '@/modules/clients/components/clients-tab-content';
-import { ClientForm, ClientFormValues } from '@/modules/clients/components/client-form';
+import { ClientFormValues } from '@/modules/clients/components/client-form';
 import { toast } from 'react-hot-toast';
+
+// Dynamic imports for components that don't need to be loaded immediately
+const ClientsTabContent = dynamic(
+    () => import('@/modules/clients/components/clients-tab-content').then(mod => ({ default: mod.ClientsTabContent })),
+    { loading: () => <div className="flex items-center justify-center w-full h-full">Loading...</div> }
+);
+
+// Dynamically import UI components
+const Dialog = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.Dialog })));
+const DialogContent = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogContent })));
+const DialogHeader = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogHeader })));
+const DialogTitle = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogTitle })));
+
+// Dynamically import ClientForm
+const ClientForm = dynamic(
+    () => import('@/modules/clients/components/client-form').then(mod => ({ default: mod.ClientForm })),
+    { ssr: false }
+);
 
 // Tab configuration
 const tabs = [

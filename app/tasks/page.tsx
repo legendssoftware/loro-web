@@ -6,18 +6,53 @@ import { TaskStatus, TaskFilterParams, Task } from '@/lib/types/task';
 import { useTasksQuery } from '@/hooks/use-tasks-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { TasksTabGroup } from '@/modules/tasks/components/tasks-tab-group';
-import { TasksTabContent } from '@/modules/tasks/components/tasks-tab-content';
 import { TasksHeader } from '@/modules/tasks/components/tasks-header';
-import TaskForm from '@/modules/tasks/components/task-form';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-hot-toast';
+
+// Dynamic imports for components that don't need to be loaded immediately
+const TasksTabContent = dynamic(
+    () =>
+        import('@/modules/tasks/components/tasks-tab-content').then((mod) => ({
+            default: mod.TasksTabContent,
+        })),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
+);
+
+// Dynamically import UI components
+const Dialog = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({ default: mod.Dialog })),
+);
+const DialogContent = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogContent,
+    })),
+);
+const DialogHeader = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogHeader,
+    })),
+);
+const DialogTitle = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogTitle,
+    })),
+);
+
+// Dynamically import TaskForm
+const TaskForm = dynamic(
+    () =>
+        import('@/modules/tasks/components/task-form').then((mod) => ({
+            default: mod.default,
+        })),
+    { ssr: false },
+);
 
 // Tab configuration
 const tabs = [
@@ -262,15 +297,17 @@ export default function TasksPage() {
                 // Convert date fields if they exist, but maintain the correct Task type
                 if (updates.deadline) {
                     // If it's already a Date object, keep it; otherwise convert it
-                    formattedUpdates.deadline = updates.deadline instanceof Date
-                        ? updates.deadline
-                        : new Date(updates.deadline);
+                    formattedUpdates.deadline =
+                        updates.deadline instanceof Date
+                            ? updates.deadline
+                            : new Date(updates.deadline);
                 }
 
                 if (updates.repetitionDeadline) {
-                    formattedUpdates.repetitionDeadline = updates.repetitionDeadline instanceof Date
-                        ? updates.repetitionDeadline
-                        : new Date(updates.repetitionDeadline);
+                    formattedUpdates.repetitionDeadline =
+                        updates.repetitionDeadline instanceof Date
+                            ? updates.repetitionDeadline
+                            : new Date(updates.repetitionDeadline);
                 }
 
                 // Use the updateTask function to apply the updates

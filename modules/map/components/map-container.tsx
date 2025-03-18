@@ -11,7 +11,8 @@ import { useLeafletInit } from '../hooks/use-leaflet-init';
 
 // Utility function to validate coordinates
 const isValidPosition = (position: any): position is [number, number] => {
-    return Array.isArray(position) &&
+    return (
+        Array.isArray(position) &&
         position.length === 2 &&
         typeof position[0] === 'number' &&
         typeof position[1] === 'number' &&
@@ -20,7 +21,8 @@ const isValidPosition = (position: any): position is [number, number] => {
         position[0] >= -90 &&
         position[0] <= 90 &&
         position[1] >= -180 &&
-        position[1] <= 180;
+        position[1] <= 180
+    );
 };
 
 interface MapComponentProps {
@@ -62,13 +64,13 @@ export default function MapComponent({
     const defaultCenter: [number, number] = mapConfig?.defaultCenter
         ? [mapConfig.defaultCenter.lat, mapConfig.defaultCenter.lng]
         : [
-            process.env.NEXT_PUBLIC_MAP_DEFAULT_LAT
-                ? parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LAT)
-                : -26.2041,
-            process.env.NEXT_PUBLIC_MAP_DEFAULT_LNG
-                ? parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LNG)
-                : 28.0473
-        ];
+              process.env.NEXT_PUBLIC_MAP_DEFAULT_LAT
+                  ? parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LAT)
+                  : -26.2041,
+              process.env.NEXT_PUBLIC_MAP_DEFAULT_LNG
+                  ? parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LNG)
+                  : 28.0473,
+          ];
 
     const defaultZoom = process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM
         ? parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM)
@@ -86,7 +88,9 @@ export default function MapComponent({
 
     // Safely validate and filter workers with valid coordinates
     const safeWorkers = Array.isArray(filteredWorkers)
-        ? filteredWorkers.filter(worker => worker && isValidPosition(worker.position))
+        ? filteredWorkers.filter(
+              (worker) => worker && isValidPosition(worker.position),
+          )
         : [];
 
     return (

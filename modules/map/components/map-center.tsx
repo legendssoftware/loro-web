@@ -8,9 +8,9 @@ interface MapCenterProps {
     zoom?: number;
 }
 
-export default function MapCenter({ 
+export default function MapCenter({
     center = [-26.2041, 28.0473], // Default: Johannesburg, South Africa
-    zoom = 13 
+    zoom = 13
 }: MapCenterProps) {
     const map = useMap();
 
@@ -19,4 +19,4 @@ export default function MapCenter({
     }, [map, center, zoom]);
 
     return null;
-} 
+}

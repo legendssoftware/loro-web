@@ -62,11 +62,7 @@ const ensureCorrectProductType = (products: any[]): Product[] => {
 };
 
 // Tab configuration, similar to users
-const tabs = [
-    { id: 'grid', label: 'Inventory' },
-    { id: 'kanban', label: 'Reports' },
-    { id: 'chart', label: 'Analytics' },
-];
+const tabs = [{ id: 'grid', label: 'Inventory' }];
 
 // Create Product Modal Component using our ProductForm
 function CreateProductModal({
@@ -131,7 +127,6 @@ export default function InventoryPage() {
         productsByStatus,
         isLoading,
         isError,
-        error,
         createProduct,
         deleteProduct,
         updateProductStatus,
@@ -142,7 +137,6 @@ export default function InventoryPage() {
 
     // Handle applying filters
     const handleApplyFilters = (newFilters: ProductFilterParams) => {
-        console.log('Applying filters:', newFilters);
         setFilters((prev) => ({
             ...prev,
             ...newFilters,
@@ -153,7 +147,6 @@ export default function InventoryPage() {
 
     // Handle clearing filters
     const handleClearFilters = () => {
-        console.log('Clearing all filters');
         setFilters({
             page: 1,
             limit: 20,
@@ -192,7 +185,6 @@ export default function InventoryPage() {
 
     // Handle page change for pagination
     const handlePageChange = (page: number) => {
-        console.log(`Changing to page ${page}`);
         setFilters((prev) => ({ ...prev, page }));
     };
 

@@ -8,7 +8,6 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { LeadsTabGroup } from '@/modules/leads/components/leads-tab-group';
 import { LeadsTabContent } from '@/modules/leads/components/leads-tab-content';
-// import { LeadsHeader } from '@/modules/leads/components/leads-header';
 import {
     Dialog,
     DialogContent,
@@ -17,11 +16,7 @@ import {
 } from '@/components/ui/dialog';
 
 // Tab configuration
-const tabs = [
-    { id: 'leads', label: 'Leads' },
-    { id: 'reports', label: 'Reports' },
-    { id: 'analytics', label: 'Analytics' },
-];
+const tabs = [{ id: 'leads', label: 'Leads' }];
 
 // Create Lead Modal Component
 function CreateLeadModal({
@@ -116,23 +111,6 @@ export default function LeadsPage() {
         [createLead],
     );
 
-    // // Apply filters handler
-    // const handleApplyFilters = useCallback((newFilters: LeadFilterParams) => {
-    //     setFilterParams((prev) => ({
-    //         ...prev,
-    //         ...newFilters,
-    //         limit: 500, // Always keep the limit at 500
-    //     }));
-    // }, []);
-
-    // // Clear filters handler
-    // const handleClearFilters = useCallback(() => {
-    //     setFilterParams({
-    //         page: 1,
-    //         limit: 500,
-    //     });
-    // }, []);
-
     return (
         <PageTransition>
             <div className="flex flex-col h-screen gap-2 overflow-hidden">
@@ -142,13 +120,6 @@ export default function LeadsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {/* {activeTab === 'leads' && (
-                        <LeadsHeader
-                            onApplyFilters={handleApplyFilters}
-                            onClearFilters={handleClearFilters}
-                            onAddLead={handleCreateLead}
-                        />
-                    )} */}
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <LeadsTabContent
                             activeTab={activeTab}

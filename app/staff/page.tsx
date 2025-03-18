@@ -56,11 +56,7 @@ const UserForm = dynamic(
 );
 
 // Tab configuration
-const tabs = [
-    { id: 'users', label: 'Users' },
-    { id: 'reports', label: 'Reports' },
-    { id: 'analytics', label: 'Analytics' },
-];
+const tabs = [{ id: 'users', label: 'Users' }];
 
 // Create User Modal Component
 function CreateUserModal({

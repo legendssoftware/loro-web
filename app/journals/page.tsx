@@ -1,22 +1,30 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { JournalsTabGroup, JournalsTab } from '@/modules/journals/components/journals-tab-group';
+import {
+    JournalsTabGroup,
+    JournalsTab,
+} from '@/modules/journals/components/journals-tab-group';
 import { JournalsTabContent } from '@/modules/journals/components/journals-tab-content';
 import { JournalsHeader } from '@/modules/journals/components/journals-header';
 import { JournalForm } from '@/modules/journals/components/journal-form';
 import { JournalDetailsModal } from '@/modules/journals/components/journal-details-modal';
-import { getJournals, updateJournal, deleteJournal, createJournal } from '@/lib/services/journal-api';
-import { Journal, JournalStatus, JournalFilterParams, CreateJournalDto } from '@/lib/types/journal';
-import { useRouter } from 'next/navigation';
+import {
+    getJournals,
+    updateJournal,
+    deleteJournal,
+    createJournal,
+} from '@/lib/services/journal-api';
+import {
+    Journal,
+    JournalStatus,
+    JournalFilterParams,
+    CreateJournalDto,
+} from '@/lib/types/journal';
 import { PageTransition } from '@/components/animations/page-transition';
 import toast from 'react-hot-toast';
-import { useAuthStore } from '@/store/auth-store';
 
 export default function JournalsPage() {
-    const router = useRouter();
-    const { profileData } = useAuthStore();
-
     // State
     const [isLoading, setIsLoading] = useState(true);
     const [journals, setJournals] = useState<Journal[]>([]);
@@ -27,16 +35,14 @@ export default function JournalsPage() {
         limit: 500,
     });
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [selectedJournal, setSelectedJournal] = useState<Journal | null>(null);
+    const [selectedJournal, setSelectedJournal] = useState<Journal | null>(
+        null,
+    );
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     // Define tabs for the journals page
     const tabs: JournalsTab[] = useMemo(
-        () => [
-            { id: 'journals', label: 'Journals' },
-            { id: 'reports', label: 'Reports' },
-            { id: 'analytics', label: 'Analytics' },
-        ],
+        () => [{ id: 'journals', label: 'Journals' }],
         [],
     );
 
@@ -95,7 +101,10 @@ export default function JournalsPage() {
                     setJournals((prevJournals) =>
                         prevJournals.map((journal) =>
                             journal.uid === journalId
-                                ? { ...journal, status: newStatus as JournalStatus }
+                                ? {
+                                      ...journal,
+                                      status: newStatus as JournalStatus,
+                                  }
                                 : journal,
                         ),
                     );
@@ -144,7 +153,10 @@ export default function JournalsPage() {
             const result = await createJournal(data);
             if (result.data) {
                 // Add the new journal to the list
-                setJournals((prevJournals) => [result.data as Journal, ...prevJournals]);
+                setJournals((prevJournals) => [
+                    result.data as Journal,
+                    ...prevJournals,
+                ]);
                 toast.success('Journal created successfully');
             }
         } catch (err) {

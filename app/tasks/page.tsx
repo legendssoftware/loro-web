@@ -55,11 +55,7 @@ const TaskForm = dynamic(
 );
 
 // Tab configuration
-const tabs = [
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'reports', label: 'Reports' },
-    { id: 'analytics', label: 'Analytics' },
-];
+const tabs = [{ id: 'tasks', label: 'Tasks' }];
 
 // Create Task Modal Component
 function CreateTaskModal({

@@ -33,11 +33,7 @@ const ClaimDetailsModal = dynamic(
 );
 
 // Tab configuration
-const tabs = [
-    { id: 'claims', label: 'Claims' },
-    { id: 'reports', label: 'Reports' },
-    { id: 'analytics', label: 'Analytics' },
-];
+const tabs = [{ id: 'claims', label: 'Claims' }];
 
 export default function ClaimsPage() {
     const router = useRouter();
@@ -107,23 +103,6 @@ export default function ClaimsPage() {
         [createClaim],
     );
 
-    // // Apply filters handler
-    // const handleApplyFilters = useCallback((newFilters: ClaimFilterParams) => {
-    //     setFilterParams((prev) => ({
-    //         ...prev,
-    //         ...newFilters,
-    //         limit: 500, // Always keep the limit at 500
-    //     }));
-    // }, []);
-
-    // // Clear filters handler
-    // const handleClearFilters = useCallback(() => {
-    //     setFilterParams({
-    //         page: 1,
-    //         limit: 500,
-    //     });
-    // }, []);
-
     return (
         <PageTransition>
             <div className="flex flex-col h-screen gap-2 overflow-hidden">
@@ -133,13 +112,6 @@ export default function ClaimsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {/* {activeTab === 'claims' && (
-                        <ClaimsHeader
-                            onApplyFilters={handleApplyFilters}
-                            onClearFilters={handleClearFilters}
-                            onAddClaim={handleCreateClaim}
-                        />
-                    )} */}
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <ClaimsTabContent
                             activeTab={activeTab}

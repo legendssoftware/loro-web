@@ -2,11 +2,7 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import {
-    useClientsQuery,
-    ClientFilterParams,
-    ClientStatus,
-} from '@/hooks/use-clients-query';
+import { useClientsQuery, ClientFilterParams } from '@/hooks/use-clients-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -17,28 +13,50 @@ import { toast } from 'react-hot-toast';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ClientsTabContent = dynamic(
-    () => import('@/modules/clients/components/clients-tab-content').then(mod => ({ default: mod.ClientsTabContent })),
-    { loading: () => <div className="flex items-center justify-center w-full h-full">Loading...</div> }
+    () =>
+        import('@/modules/clients/components/clients-tab-content').then(
+            (mod) => ({ default: mod.ClientsTabContent }),
+        ),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
 );
 
 // Dynamically import UI components
-const Dialog = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.Dialog })));
-const DialogContent = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogContent })));
-const DialogHeader = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogHeader })));
-const DialogTitle = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogTitle })));
+const Dialog = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({ default: mod.Dialog })),
+);
+const DialogContent = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogContent,
+    })),
+);
+const DialogHeader = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogHeader,
+    })),
+);
+const DialogTitle = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogTitle,
+    })),
+);
 
 // Dynamically import ClientForm
 const ClientForm = dynamic(
-    () => import('@/modules/clients/components/client-form').then(mod => ({ default: mod.ClientForm })),
-    { ssr: false }
+    () =>
+        import('@/modules/clients/components/client-form').then((mod) => ({
+            default: mod.ClientForm,
+        })),
+    { ssr: false },
 );
 
 // Tab configuration
-const tabs = [
-    { id: 'clients', label: 'CLIENTS' },
-    { id: 'reports', label: 'REPORTS' },
-    { id: 'analytics', label: 'ANALYTICS' },
-];
+const tabs = [{ id: 'clients', label: 'CLIENTS' }];
 
 // Create Client Modal Component
 function CreateClientModal({
@@ -66,14 +84,18 @@ function CreateClientModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">Create New Client</DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        Create New Client
+                    </DialogTitle>
                 </DialogHeader>
                 <div className="px-1 py-4">
                     {/* Import and use our ClientForm component */}
-                    {isOpen && <ClientForm
-                        onSubmit={handleSubmit}
-                        isLoading={isSubmitting}
-                    />}
+                    {isOpen && (
+                        <ClientForm
+                            onSubmit={handleSubmit}
+                            isLoading={isSubmitting}
+                        />
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

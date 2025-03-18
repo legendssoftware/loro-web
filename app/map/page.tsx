@@ -272,7 +272,7 @@ export default function MapPage() {
                                         </h3>
 
                                         {events?.length === 0 ? (
-                                            <p className="px-3 py-2 text-[10px] text-muted-foreground">
+                                            <p className="px-3 py-2 text-[10px] text-muted-foreground font-body uppercase font-thin">
                                                 No recent events found.
                                             </p>
                                         ) : (

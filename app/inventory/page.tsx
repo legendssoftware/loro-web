@@ -14,20 +14,46 @@ import { ProductFormValues } from '@/modules/inventory/components/product-form';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ProductsTabContent = dynamic(
-    () => import('@/modules/inventory/components/products-tab-content').then(mod => ({ default: mod.ProductsTabContent })),
-    { loading: () => <div className="flex items-center justify-center w-full h-full">Loading...</div> }
+    () =>
+        import('@/modules/inventory/components/products-tab-content').then(
+            (mod) => ({ default: mod.ProductsTabContent }),
+        ),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-full">
+                Loading...
+            </div>
+        ),
+    },
 );
 
 // Dynamically import UI components
-const Dialog = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.Dialog })));
-const DialogContent = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogContent })));
-const DialogHeader = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogHeader })));
-const DialogTitle = dynamic(() => import('@/components/ui/dialog').then(mod => ({ default: mod.DialogTitle })));
+const Dialog = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({ default: mod.Dialog })),
+);
+const DialogContent = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogContent,
+    })),
+);
+const DialogHeader = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogHeader,
+    })),
+);
+const DialogTitle = dynamic(() =>
+    import('@/components/ui/dialog').then((mod) => ({
+        default: mod.DialogTitle,
+    })),
+);
 
 // Dynamically import ProductForm
 const ProductForm = dynamic(
-    () => import('@/modules/inventory/components/product-form').then(mod => ({ default: mod.ProductForm })),
-    { ssr: false }
+    () =>
+        import('@/modules/inventory/components/product-form').then((mod) => ({
+            default: mod.ProductForm,
+        })),
+    { ssr: false },
 );
 
 // Utility function to safely convert products
@@ -140,7 +166,9 @@ export default function InventoryPage() {
     };
 
     // Handle submitting a new product
-    const handleSubmitCreateProduct = async (productData: ProductFormValues) => {
+    const handleSubmitCreateProduct = async (
+        productData: ProductFormValues,
+    ) => {
         await createProduct(productData);
     };
 

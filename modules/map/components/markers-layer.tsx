@@ -125,7 +125,8 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                     </div>
                 )}
 
-                {worker?.jobStatus && (
+                {worker?.jobStatus &&
+                 !(worker.jobStatus.startTime === "--:--" && worker.jobStatus.endTime === "--:--") && (
                     <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                         <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
                             <LucideTimer size={15} strokeWidth={1.5} />
@@ -207,15 +208,33 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             <Clock size={15} strokeWidth={1.5} />
                             Schedule
                         </p>
-                        <div className="grid grid-cols-2 gap-x-2">
+                        <div className="grid grid-cols-1 gap-y-2">
                             <p className="text-[9px] flex items-center gap-1">
                                 <Calendar size={15} strokeWidth={1.5} />
                                 Current: {worker.schedule.current}
                             </p>
-                            <p className="text-[9px] flex items-center gap-1">
-                                <CalendarCheck size={15} strokeWidth={1.5} />
-                                Next: {worker.schedule.next}
-                            </p>
+                            {worker.schedule.next && (
+                                <div className="text-[9px]">
+                                    <p className="flex items-center gap-1 mb-1">
+                                        <CalendarCheck size={15} strokeWidth={1.5} />
+                                        Next Task:
+                                    </p>
+                                    {worker.schedule.next.includes(':') ? (
+                                        <>
+                                            <p className="ml-5 font-medium">
+                                                {/* Extract task title, format: "04:56 PM: Test S01 E04 - Mar 18, 2025" */}
+                                                {worker.schedule.next.substring(worker.schedule.next.indexOf(': ') + 2)}
+                                            </p>
+                                            <p className="ml-5 text-muted-foreground">
+                                                {/* Extract deadline time */}
+                                                Deadline: {worker.schedule.next.substring(0, worker.schedule.next.indexOf(':') + 6)}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="ml-5">{worker.schedule.next}</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

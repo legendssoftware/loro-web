@@ -10,13 +10,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { ClientStatus, ClientFilterParams } from '@/hooks/use-clients-query';
 import {
-    Search,
     X,
     ChevronDown,
-    Building,
+    Users,
     Check,
     UserCheck,
     UserX,
@@ -24,7 +22,7 @@ import {
     Tag,
     Trash,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import React from 'react';
 
@@ -60,15 +58,16 @@ export function ClientsFilter({
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     // Get unique categories from clients
-    const categories = clients
-        ? Array.from(
-              new Set(
-                  clients
-                      .filter((client) => client.category)
-                      .map((client) => client.category),
-              ),
-          )
-        : [];
+    const categories = useMemo(() => {
+        if (!clients || clients.length === 0) return [];
+        return Array.from(
+            new Set(
+                clients
+                    .filter((client) => client.category)
+                    .map((client) => client.category),
+            ),
+        ).sort();
+    }, [clients]);
 
     // Apply filters
     const handleApplyFilters = useCallback(() => {
@@ -102,6 +101,68 @@ export function ClientsFilter({
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
     }, [search, status, category, startDate, endDate, onApplyFilters]);
+
+    // Adding direct filter application helper to avoid setTimeout issues
+    const applyFilter = useCallback(
+        (
+            filterType: 'status' | 'category' | 'dateRange' | 'search',
+            value: any,
+            startValue?: Date,
+            endValue?: Date
+        ) => {
+            const filters: ClientFilterParams = {};
+            const newActiveFilters: string[] = [];
+
+            // Preserve existing filters
+            if (search && filterType !== 'search') {
+                filters.search = search;
+                newActiveFilters.push('Search');
+            }
+
+            if (status && filterType !== 'status') {
+                filters.status = status;
+                newActiveFilters.push('Status');
+            }
+
+            if (category && filterType !== 'category') {
+                filters.category = category;
+                newActiveFilters.push('Category');
+            }
+
+            if (startDate && filterType !== 'dateRange') {
+                filters.from = format(startDate, 'yyyy-MM-dd');
+                newActiveFilters.push('Date Range');
+            }
+
+            if (endDate && filterType !== 'dateRange') {
+                filters.to = format(endDate, 'yyyy-MM-dd');
+            }
+
+            // Add the new filter value
+            if (filterType === 'search' && value) {
+                filters.search = value;
+                newActiveFilters.push('Search');
+            } else if (filterType === 'status' && value) {
+                filters.status = value;
+                newActiveFilters.push('Status');
+            } else if (filterType === 'category' && value) {
+                filters.category = value;
+                newActiveFilters.push('Category');
+            } else if (filterType === 'dateRange') {
+                if (startValue) {
+                    filters.from = format(startValue, 'yyyy-MM-dd');
+                    newActiveFilters.push('Date Range');
+                }
+                if (endValue) {
+                    filters.to = format(endValue, 'yyyy-MM-dd');
+                }
+            }
+
+            setActiveFilters(newActiveFilters);
+            onApplyFilters(filters);
+        },
+        [search, status, category, startDate, endDate, onApplyFilters]
+    );
 
     // Clear all filters
     const handleClearFilters = useCallback(() => {
@@ -138,43 +199,7 @@ export function ClientsFilter({
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2">
-            {/* Search Box */}
-            <div className="relative flex-1 max-w-sm">
-                <Search
-                    className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
-                    strokeWidth={1.5}
-                />
-                <Input
-                    placeholder="search..."
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        if (e.target.value) {
-                            handleApplyFilters();
-                        } else if (activeFilters.includes('Search')) {
-                            handleApplyFilters();
-                        }
-                    }}
-                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
-                />
-                {search && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
-                        onClick={() => {
-                            setSearch('');
-                            if (activeFilters.includes('Search')) {
-                                handleApplyFilters();
-                            }
-                        }}
-                    >
-                        <X className="w-4 h-4" strokeWidth={1.5} />
-                        <span className="sr-only">Clear search</span>
-                    </Button>
-                )}
-            </div>
+        <div className="flex items-center justify-end flex-1 gap-2 px-2">
             {/* Status Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
@@ -191,14 +216,14 @@ export function ClientsFilter({
                                             },
                                         )}
                                         <span
-                                            className={`text-xs font-thin font-body ${statusColors[status]}`}
+                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
                                         >
                                             {statusLabels[status]}
                                         </span>
                                     </>
                                 ) : (
                                     <>
-                                        <Building
+                                        <Users
                                             className="w-4 h-4 text-muted-foreground"
                                             strokeWidth={1.5}
                                         />
@@ -227,14 +252,15 @@ export function ClientsFilter({
                                     return (
                                         <DropdownMenuItem
                                             key={key}
+                                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                             onClick={() => {
-                                                setStatus(key as ClientStatus);
-                                                setTimeout(
-                                                    handleApplyFilters,
-                                                    0,
-                                                );
+                                                const newStatus =
+                                                    status === (key as ClientStatus)
+                                                        ? undefined
+                                                        : (key as ClientStatus);
+                                                setStatus(newStatus);
+                                                applyFilter('status', newStatus);
                                             }}
-                                            className="text-xs font-normal font-body"
                                         >
                                             <Icon
                                                 className={`w-4 h-4 mr-2 ${
@@ -244,12 +270,18 @@ export function ClientsFilter({
                                                 }`}
                                                 strokeWidth={1.5}
                                             />
-                                            <span className="text-[10px] font-normal font-body">
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    status === key
+                                                        ? statusColors[key as ClientStatus]
+                                                        : ''
+                                                }`}
+                                            >
                                                 {label}
                                             </span>
                                             {status === key && (
                                                 <Check
-                                                    className="w-4 h-4 ml-auto"
+                                                    className="w-4 h-4 ml-auto text-primary"
                                                     strokeWidth={1.5}
                                                 />
                                             )}
@@ -258,19 +290,6 @@ export function ClientsFilter({
                                 },
                             )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setStatus(undefined);
-                                    if (activeFilters.includes('Status')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
-                            >
-                                <span className="text-[10px] font-normal text-red-500 font-body">
-                                    Clear Status Filter
-                                </span>
-                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -315,78 +334,67 @@ export function ClientsFilter({
                             Filter by Category
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
+                        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
                             {categories.length > 0 ? (
                                 categories.map((cat) => (
                                     <DropdownMenuItem
                                         key={cat}
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
-                                            setCategory(cat);
-                                            setTimeout(handleApplyFilters, 0);
+                                            const newCategory =
+                                                category === cat
+                                                    ? undefined
+                                                    : cat;
+                                            setCategory(newCategory);
+                                            applyFilter('category', newCategory);
                                         }}
-                                        className="text-xs font-normal font-body"
                                     >
                                         <Tag
                                             className="w-4 h-4 mr-2 text-blue-600"
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-normal font-body">
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                category === cat
+                                                    ? 'text-blue-600'
+                                                    : ''
+                                            }`}
+                                        >
                                             {cat.toUpperCase()}
                                         </span>
                                         {category === cat && (
                                             <Check
-                                                className="w-4 h-4 ml-auto"
+                                                className="w-4 h-4 ml-auto text-primary"
                                                 strokeWidth={1.5}
                                             />
                                         )}
                                     </DropdownMenuItem>
                                 ))
                             ) : (
-                                <div className="px-2 py-1 text-xs text-muted-foreground">
-                                    <span className="text-[10px] font-normal text-red-500 font-body uppercase">
+                                <div className="px-2 py-1 text-xs text-gray-400">
+                                    <span className="text-[10px] font-normal font-body uppercase">
                                         No categories available
                                     </span>
                                 </div>
                             )}
-                            {category && (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setCategory(undefined);
-                                            if (
-                                                activeFilters.includes(
-                                                    'Category',
-                                                )
-                                            ) {
-                                                handleApplyFilters();
-                                            }
-                                        }}
-                                        className="text-xs font-normal font-body"
-                                    >
-                                        Clear Category Filter
-                                    </DropdownMenuItem>
-                                </>
-                            )}
+                            <DropdownMenuSeparator />
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            {/* Filter Controls */}
-            <div className="flex items-center gap-2">
-                {activeFilters.length > 0 && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleClearFilters}
-                        className="h-10 text-xs font-normal font-body"
-                    >
-                        <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                        Clear All ({activeFilters.length})
-                    </Button>
-                )}
-            </div>
+            {/* Clear Filters Button - Only show when filters are active */}
+            {activeFilters.length > 0 && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-[10px] hover:text-red-500 font-normal uppercase border border-red-500 rounded h-9 font-body text-red-400"
+                    onClick={handleClearFilters}
+                >
+                    <X className="w-4 h-4 mr-1" strokeWidth={1.5} />
+                    Clear All
+                </Button>
+            )}
         </div>
     );
 }

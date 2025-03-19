@@ -10,14 +10,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import {
-    Product,
     ProductStatus,
     ProductFilterParams,
 } from '@/hooks/use-products-query';
 import {
-    Search,
     X,
     ChevronDown,
     Package,
@@ -30,36 +27,19 @@ import {
     PackageMinus,
 } from 'lucide-react';
 import { useCallback, useState, useMemo } from 'react';
-import {
-    format,
-    subDays,
-    startOfWeek,
-    endOfWeek,
-    startOfMonth,
-    endOfMonth,
-} from 'date-fns';
 import React from 'react';
-
-// Date range presets
-enum DateRangePreset {
-    TODAY = 'TODAY',
-    YESTERDAY = 'YESTERDAY',
-    LAST_WEEK = 'LAST_WEEK',
-    LAST_MONTH = 'LAST_MONTH',
-    CUSTOM = 'CUSTOM',
-}
 
 // Mapping of status values to their display labels
 const statusLabels: Record<string, string> = {
-    [ProductStatus.ACTIVE]: 'Active',
-    [ProductStatus.INACTIVE]: 'Inactive',
-    [ProductStatus.OUTOFSTOCK]: 'Out of Stock',
-    [ProductStatus.NEW]: 'New',
-    [ProductStatus.DISCONTINUED]: 'Discontinued',
-    [ProductStatus.BEST_SELLER]: 'Best Seller',
-    [ProductStatus.HOTDEALS]: 'Hot Deals',
-    [ProductStatus.SPECIAL]: 'Special',
-    [ProductStatus.HIDDEN]: 'Hidden',
+    [ProductStatus.ACTIVE]: 'ACTIVE',
+    [ProductStatus.INACTIVE]: 'INACTIVE',
+    [ProductStatus.OUTOFSTOCK]: 'OUT OF STOCK',
+    [ProductStatus.NEW]: 'NEW',
+    [ProductStatus.DISCONTINUED]: 'DISCONTINUED',
+    [ProductStatus.BEST_SELLER]: 'BEST SELLER',
+    [ProductStatus.HOTDEALS]: 'HOT DEALS',
+    [ProductStatus.SPECIAL]: 'SPECIAL',
+    [ProductStatus.HIDDEN]: 'HIDDEN',
 };
 
 // Mapping of status values to their icons
@@ -91,7 +71,7 @@ const statusColors: Record<string, string> = {
 interface ProductsFilterProps {
     onApplyFilters: (filters: ProductFilterParams) => void;
     onClearFilters: () => void;
-    products?: Product[];
+    products?: any[];
 }
 
 export function ProductsFilter({
@@ -99,23 +79,14 @@ export function ProductsFilter({
     onClearFilters,
     products = [],
 }: ProductsFilterProps) {
-    const [search, setSearch] = useState<string>('');
+    // State for filter values
     const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
     const [category, setCategory] = useState<string | undefined>(undefined);
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
-    const [inStock, setInStock] = useState<boolean | undefined>(undefined);
-    const [onPromotion, setOnPromotion] = useState<boolean | undefined>(
-        undefined,
-    );
-    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-    const [dateRangePreset, setDateRangePreset] = useState<
-        DateRangePreset | undefined
-    >(undefined);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-    // Collect unique categories from products
+    // Get unique categories from products
     const categories = useMemo(() => {
         if (!products) return [];
         return Array.from(
@@ -127,14 +98,10 @@ export function ProductsFilter({
         ).sort();
     }, [products]);
 
+    // Apply filters
     const handleApplyFilters = useCallback(() => {
         const filters: ProductFilterParams = {};
         const newActiveFilters: string[] = [];
-
-        if (search) {
-            filters.search = search;
-            newActiveFilters.push('Search');
-        }
 
         if (status) {
             filters.status = status;
@@ -160,56 +127,80 @@ export function ProductsFilter({
             }
         }
 
-        if (inStock !== undefined) {
-            filters.inStock = inStock;
-            newActiveFilters.push('In Stock');
-        }
-
-        if (onPromotion !== undefined) {
-            filters.onPromotion = onPromotion;
-            newActiveFilters.push('On Promotion');
-        }
-
-        if (startDate) {
-            filters.from = format(startDate, 'yyyy-MM-dd');
-            if (!newActiveFilters.includes('Date Range')) {
-                newActiveFilters.push('Date Range');
-            }
-        }
-
-        if (endDate) {
-            filters.to = format(endDate, 'yyyy-MM-dd');
-            if (!newActiveFilters.includes('Date Range')) {
-                newActiveFilters.push('Date Range');
-            }
-        }
-
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
-    }, [
-        search,
-        status,
-        category,
-        minPrice,
-        maxPrice,
-        inStock,
-        onPromotion,
-        startDate,
-        endDate,
-        onApplyFilters,
-    ]);
+    }, [status, category, minPrice, maxPrice, onApplyFilters]);
 
+    // Adding direct filter application helper to avoid setTimeout issues
+    const applyFilter = useCallback(
+        (
+            filterType: 'status' | 'category' | 'price',
+            value: any,
+            minVal?: number,
+            maxVal?: number,
+        ) => {
+            const filters: ProductFilterParams = {};
+            const newActiveFilters: string[] = [];
+
+            // Preserve existing filters
+            if (status && filterType !== 'status') {
+                filters.status = status;
+                newActiveFilters.push('Status');
+            }
+
+            if (category && filterType !== 'category') {
+                filters.category = category;
+                newActiveFilters.push('Category');
+            }
+
+            if (minPrice !== undefined && filterType !== 'price') {
+                filters.minPrice = minPrice;
+                if (!newActiveFilters.includes('Price')) {
+                    newActiveFilters.push('Price');
+                }
+            }
+
+            if (maxPrice !== undefined && filterType !== 'price') {
+                filters.maxPrice = maxPrice;
+                if (!newActiveFilters.includes('Price')) {
+                    newActiveFilters.push('Price');
+                }
+            }
+
+            // Add the new filter value
+            if (filterType === 'status' && value) {
+                filters.status = value;
+                newActiveFilters.push('Status');
+            } else if (filterType === 'category' && value) {
+                filters.category = value;
+                newActiveFilters.push('Category');
+            } else if (filterType === 'price') {
+                if (minVal !== undefined) {
+                    filters.minPrice = minVal;
+                    if (!newActiveFilters.includes('Price')) {
+                        newActiveFilters.push('Price');
+                    }
+                }
+                if (maxVal !== undefined) {
+                    filters.maxPrice = maxVal;
+                    if (!newActiveFilters.includes('Price')) {
+                        newActiveFilters.push('Price');
+                    }
+                }
+            }
+
+            setActiveFilters(newActiveFilters);
+            onApplyFilters(filters);
+        },
+        [status, category, minPrice, maxPrice, onApplyFilters],
+    );
+
+    // Clear all filters
     const handleClearFilters = useCallback(() => {
-        setSearch('');
         setStatus(undefined);
         setCategory(undefined);
         setMinPrice(undefined);
         setMaxPrice(undefined);
-        setInStock(undefined);
-        setOnPromotion(undefined);
-        setStartDate(undefined);
-        setEndDate(undefined);
-        setDateRangePreset(undefined);
         setActiveFilters([]);
         onClearFilters();
     }, [onClearFilters]);
@@ -225,38 +216,7 @@ export function ProductsFilter({
     ];
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2">
-            {/* Search input */}
-            <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
-                <Input
-                    type="search"
-                    placeholder="search..."
-                    className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            handleApplyFilters();
-                        }
-                    }}
-                />
-                {search && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
-                        onClick={() => {
-                            setSearch('');
-                            setTimeout(handleApplyFilters, 0);
-                        }}
-                    >
-                        <X className="w-4 h-4" strokeWidth={1.5} />
-                        <span className="sr-only">Clear search</span>
-                    </Button>
-                )}
-            </div>
-
+        <div className="flex items-center justify-end flex-1 gap-2 px-2">
             {/* Status Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
@@ -265,14 +225,13 @@ export function ProductsFilter({
                             <div className="flex items-center gap-2">
                                 {status ? (
                                     <>
-                                        {statusIcons[status] &&
-                                            React.createElement(
-                                                statusIcons[status],
-                                                {
-                                                    className: `w-4 h-4 ${statusColors[status]}`,
-                                                    strokeWidth: 1.5
-                                                },
-                                            )}
+                                        {React.createElement(
+                                            statusIcons[status],
+                                            {
+                                                className: `w-4 h-4 ${statusColors[status]}`,
+                                                strokeWidth: 1.5,
+                                            },
+                                        )}
                                         <span
                                             className={`text-[10px] font-thin font-body ${statusColors[status]}`}
                                         >
@@ -291,7 +250,10 @@ export function ProductsFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -299,115 +261,144 @@ export function ProductsFilter({
                             Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
-                            {Object.keys(statusLabels).map((statusOption) => {
-                                const StatusIcon = statusIcons[statusOption];
-                                return (
-                                    <DropdownMenuItem
-                                        key={statusOption}
-                                        className="text-xs font-normal font-body"
-                                        onClick={() => {
-                                            setStatus(
-                                                statusOption as ProductStatus,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
-                                    >
-                                        <StatusIcon
-                                            className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
-                                            strokeWidth={1.5}
-                                        />
-                                        <span className="text-[10px] font-normal font-body">
-                                            {statusLabels[statusOption]}
-                                        </span>
-                                        {status === statusOption && (
-                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
-                                        )}
-                                    </DropdownMenuItem>
-                                );
-                            })}
+                        <DropdownMenuGroup>
+                            {Object.entries(statusLabels).map(
+                                ([key, label]) => {
+                                    const Icon =
+                                        statusIcons[key as ProductStatus];
+                                    return (
+                                        <DropdownMenuItem
+                                            key={key}
+                                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                            onClick={() => {
+                                                const newStatus =
+                                                    status === (key as ProductStatus)
+                                                        ? undefined
+                                                        : (key as ProductStatus);
+                                                setStatus(newStatus);
+                                                applyFilter('status', newStatus);
+                                            }}
+                                        >
+                                            <Icon
+                                                className={`w-4 h-4 mr-2 ${
+                                                    statusColors[
+                                                        key as ProductStatus
+                                                    ]
+                                                }`}
+                                                strokeWidth={1.5}
+                                            />
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    status === key
+                                                        ? statusColors[key as ProductStatus]
+                                                        : ''
+                                                }`}
+                                            >
+                                                {label}
+                                            </span>
+                                            {status === key && (
+                                                <Check
+                                                    className="w-4 h-4 ml-auto text-primary"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                },
+                            )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setStatus(undefined);
-                                    if (activeFilters.includes('Status')) {
-                                        setTimeout(handleApplyFilters, 0);
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
-                            >
-                                <span className="text-[10px] font-normal text-red-500 font-body">
-                                    Clear Status Filter
-                                </span>
-                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
             {/* Category Filter */}
-            {categories.length > 0 && (
-                <div className="w-[180px]">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                <div className="flex items-center gap-2">
-                                    <Tag
-                                        className="w-4 h-4 text-muted-foreground"
-                                        strokeWidth={1.5}
-                                    />
-                                    <span className="text-[10px] font-thin font-body">
-                                        {category || 'CATEGORY'}
-                                    </span>
-                                </div>
-                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+            <div className="w-[180px]">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                            <div className="flex items-center gap-2">
+                                {category ? (
+                                    <>
+                                        <Tag
+                                            className="w-4 h-4 text-blue-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin text-blue-600 font-body">
+                                            {category.toUpperCase()}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Tag
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            CATEGORY
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56" align="start">
-                            <DropdownMenuLabel className="text-[10px] font-thin font-body">
-                                Filter by Category
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
-                                {categories.map((cat) => (
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Category
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            {categories.length > 0 ? (
+                                categories.map((cat) => (
                                     <DropdownMenuItem
                                         key={cat}
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                         onClick={() => {
-                                            setCategory(cat);
-                                            setTimeout(handleApplyFilters, 0);
+                                            const newCategory =
+                                                category === cat
+                                                    ? undefined
+                                                    : cat;
+                                            setCategory(newCategory);
+                                            applyFilter('category', newCategory);
                                         }}
-                                        className="text-xs font-normal font-body"
                                     >
-                                        <Tag className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
-                                        <span className="text-[10px] font-normal font-body">
-                                            {cat}
+                                        <Tag
+                                            className="w-4 h-4 mr-2 text-blue-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                category === cat
+                                                    ? 'text-blue-600'
+                                                    : ''
+                                            }`}
+                                        >
+                                            {cat.toUpperCase()}
                                         </span>
                                         {category === cat && (
-                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                            <Check
+                                                className="w-4 h-4 ml-auto text-primary"
+                                                strokeWidth={1.5}
+                                            />
                                         )}
                                     </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => {
-                                        setCategory(undefined);
-                                        if (
-                                            activeFilters.includes('Category')
-                                        ) {
-                                            setTimeout(handleApplyFilters, 0);
-                                        }
-                                    }}
-                                    className="flex items-center justify-center w-full"
-                                >
-                                    <span className="text-[10px] font-normal text-red-500 font-body">
-                                        Clear Category Filter
+                                ))
+                            ) : (
+                                <div className="px-2 py-1 text-xs text-gray-400">
+                                    <span className="text-[10px] font-normal font-body uppercase">
+                                        No categories available
                                     </span>
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            )}
+                                </div>
+                            )}
+                            <DropdownMenuSeparator />
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             {/* Price Range Filter */}
             <div className="w-[180px]">
@@ -415,18 +406,32 @@ export function ProductsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                <DollarSign
-                                    className="w-4 h-4 text-muted-foreground"
-                                    strokeWidth={1.5}
-                                />
-                                <span className="text-[10px] font-thin font-body">
-                                    {minPrice !== undefined ||
-                                    maxPrice !== undefined
-                                        ? `${minPrice || 0} - ${maxPrice || '∞'}`
-                                        : 'PRICE RANGE'}
-                                </span>
+                                {minPrice !== undefined || maxPrice !== undefined ? (
+                                    <>
+                                        <DollarSign
+                                            className="w-4 h-4 text-purple-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin text-purple-600 font-body">
+                                            {`R${minPrice || 0} - R${maxPrice || '∞'}`}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <DollarSign
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            PRICE RANGE
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -438,49 +443,54 @@ export function ProductsFilter({
                             {priceRanges.map((range, index) => (
                                 <DropdownMenuItem
                                     key={index}
+                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                     onClick={() => {
-                                        setMinPrice(range.min);
-                                        setMaxPrice(range.max);
-                                        setTimeout(handleApplyFilters, 0);
+                                        const newMinPrice =
+                                            minPrice === range.min && maxPrice === range.max
+                                                ? undefined
+                                                : range.min;
+                                        const newMaxPrice =
+                                            minPrice === range.min && maxPrice === range.max
+                                                ? undefined
+                                                : range.max;
+                                        setMinPrice(newMinPrice);
+                                        setMaxPrice(newMaxPrice);
+                                        applyFilter('price', null, newMinPrice, newMaxPrice);
                                     }}
-                                    className="text-[10px] font-normal font-body"
                                 >
-                                    {range.label}
-                                    {minPrice === range.min &&
-                                        maxPrice === range.max && (
-                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
-                                        )}
+                                    <span
+                                        className={`text-[10px] font-normal font-body ${
+                                            minPrice === range.min && maxPrice === range.max
+                                                ? 'text-purple-600'
+                                                : ''
+                                        }`}
+                                    >
+                                        {range.label}
+                                    </span>
+                                    {minPrice === range.min && maxPrice === range.max && (
+                                        <Check
+                                            className="w-4 h-4 ml-auto text-primary"
+                                            strokeWidth={1.5}
+                                        />
+                                    )}
                                 </DropdownMenuItem>
                             ))}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setMinPrice(undefined);
-                                    setMaxPrice(undefined);
-                                    if (activeFilters.includes('Price')) {
-                                        setTimeout(handleApplyFilters, 0);
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
-                            >
-                                <span className="text-[10px] font-normal text-red-500 font-body">
-                                    Clear Price Filter
-                                </span>
-                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            {/* Clear All Filters */}
+            {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
                 <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
+                    className="text-[10px] hover:text-red-500 font-normal uppercase border border-red-500 rounded h-9 font-body text-red-400"
                     onClick={handleClearFilters}
-                    className="h-10 px-3 text-[10px] font-thin font-body text-red-500"
                 >
-                    CLEAR ALL
+                    <X className="w-4 h-4 mr-1" strokeWidth={1.5} />
+                    Clear All
                 </Button>
             )}
         </div>

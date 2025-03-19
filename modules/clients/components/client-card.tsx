@@ -108,7 +108,7 @@ function ClientCardComponent({
             >
                 <div className="flex items-center justify-between mb-2">
                     {/* Client Avatar */}
-                    <Avatar className="w-10 h-10 mr-3 border border-primary">
+                    <Avatar className="w-12 h-12 mr-3 border border-primary">
                         <AvatarImage src={client?.logo} alt={client?.name} />
                         <AvatarFallback className="text-xs font-normal uppercase font-body">
                             {client?.name?.charAt(0) || 'C'}

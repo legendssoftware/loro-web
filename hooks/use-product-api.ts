@@ -41,25 +41,22 @@ export const useProductApi = () => {
                 if (filters.inStock !== undefined)
                     queryParams.append('inStock', String(filters.inStock));
                 if (filters.onPromotion !== undefined)
-                    queryParams.append('onPromotion', String(filters.onPromotion));
+                    queryParams.append(
+                        'onPromotion',
+                        String(filters.onPromotion),
+                    );
 
                 // The backend expects these specific parameter names based on the controller
                 // Always ensure page and limit are included, even if they're default values
                 queryParams.append('page', String(filters.page || 1));
                 queryParams.append('limit', String(filters.limit || 20));
 
-                console.log(
-                    `API call: Fetching products with params: ${queryParams.toString()}`,
-                );
-
                 const response = await axiosInstance.get(
                     `/products?${queryParams.toString()}`,
                 );
 
-                console.log(`API response meta: ${JSON.stringify(response.data.meta)}`);
                 return response.data;
             } catch (error) {
-                console.error('Error fetching products:', error);
                 throw error;
             }
         },
@@ -67,21 +64,28 @@ export const useProductApi = () => {
     );
 
     // Get a single product by ID
-    const getProductById = useCallback(async (productId: number): Promise<Product> => {
-        try {
-            const response = await axiosInstance.get(`/products/${productId}`);
-            return response.data.data;
-        } catch (error) {
-            console.error(`Error fetching product ${productId}:`, error);
-            throw error;
-        }
-    }, []);
+    const getProductById = useCallback(
+        async (productId: number): Promise<Product> => {
+            try {
+                const response = await axiosInstance.get(
+                    `/products/${productId}`,
+                );
+                return response.data.data;
+            } catch (error) {
+                throw error;
+            }
+        },
+        [],
+    );
 
     // Create a new product
     const createProduct = useCallback(
         async (productData: Partial<Product>): Promise<Product> => {
             try {
-                const response = await axiosInstance.post('/products', productData);
+                const response = await axiosInstance.post(
+                    '/products',
+                    productData,
+                );
                 return response.data.data;
             } catch (error) {
                 console.error('Error creating product:', error);
@@ -93,7 +97,10 @@ export const useProductApi = () => {
 
     // Update a product
     const updateProduct = useCallback(
-        async (productId: number, productData: Partial<Product>): Promise<Product> => {
+        async (
+            productId: number,
+            productData: Partial<Product>,
+        ): Promise<Product> => {
             try {
                 const response = await axiosInstance.patch(
                     `/products/${productId}`,
@@ -101,7 +108,6 @@ export const useProductApi = () => {
                 );
                 return response.data.data;
             } catch (error) {
-                console.error(`Error updating product ${productId}:`, error);
                 throw error;
             }
         },
@@ -114,7 +120,6 @@ export const useProductApi = () => {
             try {
                 await axiosInstance.delete(`/products/${productId}`);
             } catch (error) {
-                console.error(`Error deleting product ${productId}:`, error);
                 throw error;
             }
         },
@@ -123,21 +128,14 @@ export const useProductApi = () => {
 
     // Update product status
     const updateProductStatus = useCallback(
-        async (
-            productId: number,
-            status: string,
-        ): Promise<Product> => {
+        async (productId: number, status: string): Promise<Product> => {
             try {
                 const response = await axiosInstance.patch(
-                    `/products/${productId}/status`,
+                    `/products/${productId}`,
                     { status },
                 );
                 return response.data.data;
             } catch (error) {
-                console.error(
-                    `Error updating product ${productId} status:`,
-                    error,
-                );
                 throw error;
             }
         },

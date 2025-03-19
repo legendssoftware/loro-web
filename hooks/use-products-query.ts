@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import {
+    showTokenSuccessToast,
+    showTokenErrorToast,
+} from '@/lib/utils/toast-config';
 import { useProductApi } from './use-product-api';
 
 // Product status enum matching the server's enum
@@ -176,10 +179,10 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         mutationFn: async (productData: Partial<Product>) => {
             try {
                 const result = await productApi.createProduct(productData);
-                showSuccessToast('Product created successfully.', toast);
+                showTokenSuccessToast('Product created successfully.', toast);
                 return result;
             } catch (error) {
-                showErrorToast(
+                showTokenErrorToast(
                     'Failed to create product. Please try again.',
                     toast,
                 );
@@ -205,10 +208,10 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
                     productId,
                     product,
                 );
-                showSuccessToast('Product updated successfully.', toast);
+                showTokenSuccessToast('Product updated successfully.', toast);
                 return result;
             } catch (error) {
-                showErrorToast(
+                showTokenErrorToast(
                     'Failed to update product. Please try again.',
                     toast,
                 );
@@ -225,9 +228,9 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
         mutationFn: async (productId: number) => {
             try {
                 await productApi.deleteProduct(productId);
-                showSuccessToast('Product deleted successfully.', toast);
+                showTokenSuccessToast('Product deleted successfully.', toast);
             } catch (error) {
-                showErrorToast(
+                showTokenErrorToast(
                     'Failed to delete product. Please try again.',
                     toast,
                 );
@@ -253,10 +256,13 @@ export function useProductsQuery(options: ProductFilterParams = {}) {
                     productId,
                     status,
                 );
-                showSuccessToast('Product status updated successfully.', toast);
+                showTokenSuccessToast(
+                    'Product status updated successfully.',
+                    toast,
+                );
                 return result;
             } catch (error) {
-                showErrorToast(
+                showTokenErrorToast(
                     'Failed to update product status. Please try again.',
                     toast,
                 );

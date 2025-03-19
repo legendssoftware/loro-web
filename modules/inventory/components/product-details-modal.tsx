@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Product, ProductStatus } from '@/hooks/use-products-query';
 import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
-import { showErrorToast } from '@/lib/utils/toast-config';
+import { showErrorToast, showTokenSuccessToast, showTokenErrorToast } from '@/lib/utils/toast-config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import toast from 'react-hot-toast';
 import {
@@ -70,9 +70,9 @@ export function ProductDetailsModal({
     // Format price for display
     const formatPrice = (price?: number) => {
         if (price === undefined || price === null) return 'N/A';
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-ZA', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'ZAR',
         }).format(price);
     };
 
@@ -92,7 +92,7 @@ export function ProductDetailsModal({
                 onUpdateStatus(product.uid, pendingStatus);
                 setShowStatusChangeConfirmation(false);
                 setPendingStatus(null);
-                toast.success(`Product status updated to ${pendingStatus.replace('_', ' ')}`);
+                showTokenSuccessToast(`Product status updated to ${pendingStatus.replace('_', ' ')}`, toast);
 
                 // Close the modal if this was a delete action
                 if (pendingStatus === ProductStatus.DELETED) {
@@ -100,12 +100,12 @@ export function ProductDetailsModal({
                 }
             } catch (error) {
                 console.error('Error updating product status:', error);
-                toast.error('Failed to update product status');
+                showTokenErrorToast('Failed to update product status', toast);
                 setShowStatusChangeConfirmation(false);
                 setPendingStatus(null);
             }
         } else {
-            toast.error('Update status function not available');
+            showTokenErrorToast('Update status function not available', toast);
             setShowStatusChangeConfirmation(false);
             setPendingStatus(null);
         }
@@ -195,11 +195,11 @@ export function ProductDetailsModal({
             try {
                 onDelete(product.uid);
                 setShowDeleteConfirmation(false);
-                toast.success('Product deleted successfully');
+                showTokenSuccessToast('Product deleted successfully', toast);
                 onClose();
             } catch (error) {
                 console.error('Error deleting product:', error);
-                toast.error('Failed to delete product. Please try again.');
+                showTokenErrorToast('Failed to delete product. Please try again.', toast);
             }
         }
     }, [product.uid, onDelete, onClose]);
@@ -224,6 +224,8 @@ export function ProductDetailsModal({
         { id: 'inventory', label: 'Inventory' },
         { id: 'analytics', label: 'Analytics' },
     ];
+
+    console.log(product);
 
     const renderTabContent = () => {
         switch (activeTab) {

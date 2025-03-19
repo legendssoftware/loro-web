@@ -1,6 +1,5 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Product } from '@/hooks/use-products-query';
 import { Tag, Box, Package, Barcode, DollarSign } from 'lucide-react';
 import { useState, useCallback, memo } from 'react';
@@ -17,6 +16,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ProductDetailsModal } from './product-details-modal';
+import Image from 'next/image';
 
 // Define enum that matches the server's ProductStatus
 enum ProductStatus {
@@ -91,9 +91,9 @@ function ProductCardComponent({
 
     const formatPrice = (price?: number) => {
         if (price === undefined || price === null) return 'N/A';
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-ZA', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'ZAR',
         }).format(price);
     };
 
@@ -130,11 +130,13 @@ function ProductCardComponent({
             >
                 {/* Product image */}
                 <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 mr-3 overflow-hidden rounded-md">
+                    <div className="w-[100px] h-[100px] mr-3 overflow-hidden rounded-md">
                         {product.imageUrl ? (
-                            <img
+                            <Image
                                 src={product.imageUrl}
                                 alt={product.name}
+                                width={100}
+                                height={100}
                                 className="object-cover w-full h-full"
                             />
                         ) : (
@@ -174,7 +176,7 @@ function ProductCardComponent({
                 <div className="mt-2 space-y-4 text-xs text-muted-foreground">
                     {/* Product Meta Information */}
                     <div className="grid grid-cols-2 gap-1">
-                        {/* Price */}
+                        {/* Category */}
                         <div className="flex items-center col-span-2">
                             <Tag className="w-4 h-4 mr-1" />
                             <span className="text-[10px] font-normal font-body">
@@ -186,7 +188,15 @@ function ProductCardComponent({
                         <div className="flex items-center">
                             <DollarSign className="w-4 h-4 mr-1" />
                             <span className="text-[10px] font-normal font-body">
-                                {formatPrice(product.price)}
+                                Sale: {formatPrice(product.price)}
+                            </span>
+                        </div>
+
+                        {/* Cost Price */}
+                        <div className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1 text-muted-foreground" />
+                            <span className="text-[10px] font-normal font-body">
+                                Cost: {formatPrice((product as any).costPrice)}
                             </span>
                         </div>
 
@@ -195,6 +205,30 @@ function ProductCardComponent({
                             <Box className="w-4 h-4 mr-1" />
                             <span className="text-[10px] font-normal font-body">
                                 Stock: {product.stockQuantity || 0}
+                            </span>
+                        </div>
+
+                        {/* Supplier */}
+                        <div className="flex items-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4 mr-1"
+                            >
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span className="text-[10px] font-normal font-body truncate">
+                                {(product as any).supplier || 'No Supplier'}
                             </span>
                         </div>
 
@@ -250,9 +284,12 @@ function ProductCardComponent({
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Are you absolutely sure?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the product &quot;{product.name}
+                            This will permanently delete the product &quot;
+                            {product.name}
                             &quot; and remove it from the system.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

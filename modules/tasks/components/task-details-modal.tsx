@@ -45,7 +45,14 @@ import {
     PlayIcon,
     StopCircle,
 } from 'lucide-react';
-import { Task, TaskStatus, TaskPriority, TaskType, JobStatus, JobStatusColors } from '@/lib/types/task';
+import {
+    Task,
+    TaskStatus,
+    TaskPriority,
+    TaskType,
+    JobStatus,
+    JobStatusColors,
+} from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -174,7 +181,8 @@ export function TaskDetailsModal({
     };
 
     const getJobStatusBadgeColor = (status?: JobStatus) => {
-        if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+        if (!status)
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
 
         switch (status) {
             case JobStatus.QUEUED:
@@ -495,7 +503,9 @@ export function TaskDetailsModal({
                                         </div>
                                     )}
 
-                                    {(task.jobDuration || (task.jobStartTime && task.jobEndTime)) && (
+                                    {(task.jobDuration ||
+                                        (task.jobStartTime &&
+                                            task.jobEndTime)) && (
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
                                                 <Clock className="w-4 h-4 mr-2 text-card-foreground/60" />
@@ -506,9 +516,19 @@ export function TaskDetailsModal({
                                             <span className="text-xs font-thin font-body">
                                                 {formatDuration(
                                                     task.jobDuration ||
-                                                    (task.jobStartTime && task.jobEndTime
-                                                        ? Math.round((new Date(task.jobEndTime).getTime() - new Date(task.jobStartTime).getTime()) / (1000 * 60))
-                                                        : undefined)
+                                                        (task.jobStartTime &&
+                                                        task.jobEndTime
+                                                            ? Math.round(
+                                                                  (new Date(
+                                                                      task.jobEndTime,
+                                                                  ).getTime() -
+                                                                      new Date(
+                                                                          task.jobStartTime,
+                                                                      ).getTime()) /
+                                                                      (1000 *
+                                                                          60),
+                                                              )
+                                                            : undefined),
                                                 )}
                                             </span>
                                         </div>
@@ -1667,15 +1687,16 @@ export function TaskDetailsModal({
                 open={isEditModalOpen}
                 onOpenChange={() => setIsEditModalOpen(false)}
             >
-                <DialogContent className="w-[39vw] max-w-[1200px] border-border/50 max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="w-[39vw] max-w-[1200px] border-border/50 max-h-[90vh] overflow-y-auto bg-card flex items-center justify-center flex-col">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-thin uppercase font-body">
                             {modalMode === 'edit' ? 'Edit Task' : ''}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="flex items-center justify-center h-64">
+                    <div className="flex items-center justify-center">
                         <h2 className="text-xs font-thin uppercase font-body">
-                            Activatings Soon
+                            Activating Soon, but you can edit the task on your
+                            loro app
                         </h2>
                     </div>
                 </DialogContent>

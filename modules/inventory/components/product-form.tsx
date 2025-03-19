@@ -6,6 +6,10 @@ import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '@/lib/services/api-client';
 import { format } from 'date-fns';
+import {
+    showTokenSuccessToast,
+    showTokenErrorToast,
+} from '@/lib/utils/toast-config';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +46,10 @@ export enum ProductCategory {
     FROZEN_FOODS = 'FROZEN_FOODS',
     CLEANING = 'CLEANING',
     PERSONAL_CARE = 'PERSONAL_CARE',
+    HARDWARE = 'HARDWARE',
+    ELECTRONICS = 'ELECTRONICS',
+    TOYS = 'TOYS',
+    PET_CARE = 'PET_CARE',
     OTHER = 'OTHER',
 }
 
@@ -225,12 +233,12 @@ export const ProductForm: React.FunctionComponent<ProductFormProps> = ({
             if (response.data && response.data.url) {
                 return response.data.url;
             } else {
-                toast.error('Invalid image upload response');
+                showTokenErrorToast('Invalid image upload response', toast);
                 return null;
             }
         } catch (error) {
             console.error('Error uploading image:', error);
-            toast.error('Failed to upload image');
+            showTokenErrorToast('Failed to upload image', toast);
             return null;
         } finally {
             setTimeout(() => setUploadProgress(0), 1000);
@@ -265,10 +273,10 @@ export const ProductForm: React.FunctionComponent<ProductFormProps> = ({
 
             // Call the parent onSubmit function
             onSubmit(apiData);
-            toast.success('Product data submitted successfully');
+            showTokenSuccessToast('Product data submitted successfully', toast);
         } catch (error) {
             console.error('Error submitting form:', error);
-            toast.error('Failed to submit product data');
+            showTokenErrorToast('Failed to submit product data', toast);
         } finally {
             setIsSubmitting(false);
         }

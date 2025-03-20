@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '@/lib/services/api-client';
 import { FeedbackType } from '@/lib/types/feedback';
+import axios from 'axios';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ import {
     ChevronDown,
 } from 'lucide-react';
 import { StarRating } from '@/components/ui/star-rating';
+import { cn } from '@/lib/utils';
 
 // Form schema definition
 const feedbackFormSchema = z.object({
@@ -141,12 +143,33 @@ export const FeedbackForm: React.FC = () => {
 
     // Handle file selection
     const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
-        // Convert FileList to array and append to existing files
-        const newFiles = Array.from(files);
-        setSelectedFiles((prev) => [...prev, ...newFiles]);
+        // Convert FileList to Array
+        const newFiles = Array.from(files).filter(
+            (file) => !selectedFiles.some((f) => f.name === file.name)
+        );
+
+        // Check file count
+        if (selectedFiles.length + newFiles.length > 5) {
+            toast.error('Maximum 5 files allowed');
+            return;
+        }
+
+        // Check file size (5MB limit)
+        const oversizedFiles = newFiles.filter(file => file.size > 5 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            toast.error(`File(s) too large. Maximum size is 5MB per file.`);
+            return;
+        }
+
+        setSelectedFiles([...selectedFiles, ...newFiles]);
+
+        // Reset input value to allow selecting the same file again
+        e.target.value = '';
     };
 
     // Remove a selected file
@@ -156,46 +179,62 @@ export const FeedbackForm: React.FC = () => {
 
     // Upload files
     const uploadFiles = async (files: File[]): Promise<string[]> => {
-        const uploadedUrls: string[] = [];
+        const uploadedFileUrls: string[] = [];
 
         try {
             // Upload each file sequentially
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            for (const file of files) {
+                // Create form data
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('fileType', file.type || 'application/octet-stream');
 
-                // Set file type based on MIME type
-                const fileType = file.type.split('/')[0]; // Gets 'image' from 'image/png'
-                formData.append('type', fileType);
+                // Track progress and update state
+                setUploadProgress(prev => ({
+                    ...prev,
+                    [file.name]: 0
+                }));
 
-                // Upload file
-                const response = await axiosInstance.post(
-                    '/docs/upload',
-                    formData,
-                    {
-                        onUploadProgress: (progressEvent) => {
-                            const progress = Math.round(
-                                (progressEvent.loaded * 100) /
-                                    (progressEvent.total || 100),
+                // Authorization headers
+                const headers: Record<string, string> = {
+                    'Content-Type': 'multipart/form-data',
+                };
+
+                // Add token if available
+                const accessToken = localStorage.getItem('access_token');
+                if (accessToken) {
+                    headers['Authorization'] = `Bearer ${accessToken}`;
+                }
+
+                // Upload the file
+                const response = await axiosInstance.post('/docs/upload', formData, {
+                    headers,
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            const percentCompleted = Math.round(
+                                (progressEvent.loaded * 100) / progressEvent.total
                             );
-                            setUploadProgress((prev) => ({
+                            setUploadProgress(prev => ({
                                 ...prev,
-                                [file.name]: progress,
+                                [file.name]: percentCompleted
                             }));
-                        },
+                        }
                     },
-                );
+                });
 
-                if (response.data.publicUrl) {
-                    uploadedUrls.push(response.data.publicUrl);
+                // Add the uploaded file URL to our array
+                if (response.data?.url) {
+                    uploadedFileUrls.push(response.data.url);
                 }
             }
 
-            return uploadedUrls;
+            // Clear progress after all uploads
+            setUploadProgress({});
+            return uploadedFileUrls;
         } catch (error) {
             console.error('Error uploading files:', error);
-            toast.error('Failed to upload file(s). Please try again.');
+            toast.error('Error uploading files. Please try again.');
+            setUploadProgress({});
             return [];
         }
     };
@@ -206,35 +245,38 @@ export const FeedbackForm: React.FC = () => {
             setIsSubmitting(true);
 
             // Upload files if any are selected
+            let fileUrls: string[] = [];
             if (selectedFiles.length > 0) {
-                const attachmentUrls = await uploadFiles(selectedFiles);
-
-                // Add new uploads to any existing attachments
-                data.attachments = [
-                    ...(data.attachments || []),
-                    ...attachmentUrls,
-                ];
+                fileUrls = await uploadFiles(selectedFiles);
             }
 
             // Choose the appropriate API endpoint based on whether we have a token
-            const endpoint = token
-                ? '/feedback/submit-with-token'
+            const apiUrl = token
+                ? `/feedback/token/${token}`
                 : '/feedback';
 
-            const response = await axiosInstance.post(endpoint, data);
+            const payload = {
+                ...data,
+                attachments: fileUrls,
+            };
+
+            const response = await axiosInstance.post(apiUrl, payload);
 
             toast.success('Your feedback has been submitted successfully!');
+
+            // Reset form and clear selected files
             reset();
             setSelectedFiles([]);
 
-            // Redirect to success page
-            setTimeout(() => {
-                router.push('/feedback/thank-you');
-            }, 1500);
-        } catch (error: any) {
-            toast.error(
-                error?.response?.data?.message || 'Failed to submit feedback',
-            );
+            // Redirect after successful submission
+            if (response.data?.redirectUrl) {
+                window.location.href = response.data.redirectUrl;
+            } else {
+                window.location.href = '/feedback/thank-you';
+            }
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            toast.error('Failed to submit feedback. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -281,82 +323,72 @@ export const FeedbackForm: React.FC = () => {
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="max-w-2xl mx-auto space-y-6"
+            className="max-w-2xl mx-auto"
         >
-            <fieldset disabled={isSubmitting} className="space-y-6">
-                {tokenData && (
-                    <Card className="border-border/50">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                                <BadgeCheck
-                                    className="w-4 h-4 text-primary"
-                                    strokeWidth={1.5}
-                                />
-                                <span className="font-light uppercase font-body">
-                                    Task Information
-                                </span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div>
-                                <span className="text-xs font-light uppercase font-body text-muted-foreground">
-                                    Task:
-                                </span>
-                                <p className="text-sm font-medium">
-                                    {tokenData.task?.title}
-                                </p>
+            <div className="w-full p-6 space-y-6 shadow-lg sm:p-8 bg-white/10 backdrop-blur-lg rounded-xl">
+                <fieldset disabled={isSubmitting} className="space-y-6">
+                    {tokenData && (
+                        <div className="p-4 border rounded-lg border-white/20 bg-white/5">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <BadgeCheck
+                                        className="w-4 h-4 text-primary"
+                                        strokeWidth={1.5}
+                                    />
+                                    <span className="text-xs font-light text-white uppercase font-body">
+                                        Task Information
+                                    </span>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-xs font-light uppercase text-white/60 font-body">
+                                        Task:
+                                    </span>
+                                    <p className="text-sm text-white">
+                                        {tokenData.task?.title}
+                                    </p>
+                                </div>
+                                {tokenData.task?.description && (
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-light uppercase text-white/60 font-body">
+                                            Description:
+                                        </span>
+                                        <p className="text-sm text-white">
+                                            {tokenData.task?.description}
+                                        </p>
+                                    </div>
+                                )}
+                                {tokenData.client && (
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-light uppercase text-white/60 font-body">
+                                            Client:
+                                        </span>
+                                        <p className="text-sm text-white">
+                                            {tokenData.client.name}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                            {tokenData.task?.description && (
-                                <div>
-                                    <span className="text-xs font-light uppercase font-body text-muted-foreground">
-                                        Description:
-                                    </span>
-                                    <p className="text-sm">
-                                        {tokenData.task?.description}
-                                    </p>
-                                </div>
-                            )}
-                            {tokenData.client && (
-                                <div>
-                                    <span className="text-xs font-light uppercase font-body text-muted-foreground">
-                                        Client:
-                                    </span>
-                                    <p className="text-sm">
-                                        {tokenData.client.name}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                        </div>
+                    )}
 
-                <Card className="border-border/50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <MessageSquare
-                                className="w-4 h-4"
-                                strokeWidth={1.5}
-                            />
-                            <span className="font-light uppercase font-body">
-                                Your Feedback
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                    <div className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
-                                <Label
+                                <label
                                     htmlFor="name"
-                                    className="block text-xs font-light uppercase font-body"
+                                    className="block text-xs font-light text-white uppercase font-body"
                                 >
                                     Your Name{' '}
                                     <span className="text-red-500">*</span>
-                                </Label>
+                                </label>
                                 <Input
                                     id="name"
                                     {...register('name')}
                                     placeholder="John Doe"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={cn(
+                                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                                        errors.name && 'border-red-500 focus-visible:ring-red-500'
+                                    )}
                                 />
                                 {errors.name && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -366,19 +398,22 @@ export const FeedbackForm: React.FC = () => {
                             </div>
 
                             <div className="space-y-1">
-                                <Label
+                                <label
                                     htmlFor="email"
-                                    className="block text-xs font-light uppercase font-body"
+                                    className="block text-xs font-light text-white uppercase font-body"
                                 >
                                     Email{' '}
                                     <span className="text-red-500">*</span>
-                                </Label>
+                                </label>
                                 <Input
                                     id="email"
                                     type="email"
                                     {...register('email')}
                                     placeholder="john.doe@example.com"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={cn(
+                                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                                        errors.email && 'border-red-500 focus-visible:ring-red-500'
+                                    )}
                                 />
                                 {errors.email && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -389,17 +424,20 @@ export const FeedbackForm: React.FC = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <Label
+                            <label
                                 htmlFor="title"
-                                className="block text-xs font-light uppercase font-body"
+                                className="block text-xs font-light text-white uppercase font-body"
                             >
                                 Title <span className="text-red-500">*</span>
-                            </Label>
+                            </label>
                             <Input
                                 id="title"
                                 {...register('title')}
                                 placeholder="Feedback Title"
-                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                className={cn(
+                                    'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                                    errors.title && 'border-red-500 focus-visible:ring-red-500'
+                                )}
                             />
                             {errors.title && (
                                 <p className="mt-1 text-xs text-red-500">
@@ -410,19 +448,19 @@ export const FeedbackForm: React.FC = () => {
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
-                                <Label
+                                <label
                                     htmlFor="type"
-                                    className="block text-xs font-light uppercase font-body"
+                                    className="block text-xs font-light text-white uppercase font-body"
                                 >
                                     Feedback Type{' '}
                                     <span className="text-red-500">*</span>
-                                </Label>
+                                </label>
                                 <Controller
                                     control={control}
                                     name="type"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-white/10 border-white/20">
                                                 <div className="flex items-center gap-2">
                                                     {field.value &&
                                                         React.createElement(
@@ -431,11 +469,11 @@ export const FeedbackForm: React.FC = () => {
                                                             ] || Tag,
                                                             {
                                                                 className:
-                                                                    'w-4 h-4 text-muted-foreground',
+                                                                    'w-4 h-4 text-white/70',
                                                                 strokeWidth: 1.5,
                                                             },
                                                         )}
-                                                    <span className="text-[10px] font-thin font-body">
+                                                    <span className="text-[10px] font-thin text-white font-body">
                                                         {field.value
                                                             ? field.value.replace(
                                                                   /_/g,
@@ -445,7 +483,7 @@ export const FeedbackForm: React.FC = () => {
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="w-4 h-4 ml-2 text-white opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -496,13 +534,13 @@ export const FeedbackForm: React.FC = () => {
                             </div>
 
                             <div className="space-y-1">
-                                <Label
+                                <label
                                     htmlFor="rating"
-                                    className="block text-xs font-light uppercase font-body"
+                                    className="block text-xs font-light text-white uppercase font-body"
                                 >
                                     Rating{' '}
                                     <span className="text-red-500">*</span>
-                                </Label>
+                                </label>
                                 <Controller
                                     control={control}
                                     name="rating"
@@ -525,19 +563,22 @@ export const FeedbackForm: React.FC = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <Label
+                            <label
                                 htmlFor="comments"
-                                className="block text-xs font-light uppercase font-body"
+                                className="block text-xs font-light text-white uppercase font-body"
                             >
                                 Your Feedback{' '}
                                 <span className="text-red-500">*</span>
-                            </Label>
+                            </label>
                             <Textarea
                                 id="comments"
                                 {...register('comments')}
                                 placeholder="Please share your thoughts, suggestions, or any issues you've experienced..."
                                 rows={5}
-                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                className={cn(
+                                    'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light resize-none',
+                                    errors.comments && 'border-red-500 focus-visible:ring-red-500'
+                                )}
                             />
                             {errors.comments && (
                                 <p className="mt-1 text-xs text-red-500">
@@ -545,149 +586,126 @@ export const FeedbackForm: React.FC = () => {
                                 </p>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
 
-                {/* File Attachments Section */}
-                <Card className="border-border/50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <Paperclip className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="font-light uppercase font-body">
+                        {/* File Attachments Section */}
+                        <div className="space-y-1">
+                            <label className="block text-xs font-light text-white uppercase font-body">
                                 Attachments
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {/* File input button */}
-                            <div className="flex flex-col items-center">
-                                <label
-                                    htmlFor="feedback-files-upload"
-                                    className="flex items-center gap-2 px-4 py-2 transition-colors rounded cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary"
-                                >
-                                    <Upload
-                                        className="w-4 h-4"
-                                        strokeWidth={1.5}
+                            </label>
+                            <div className="p-4 space-y-4 border rounded border-white/20 bg-white/5">
+                                {/* File input button */}
+                                <div className="flex flex-col items-center">
+                                    <label
+                                        htmlFor="feedback-files-upload"
+                                        className="flex items-center gap-2 px-4 py-2 text-white transition-colors rounded cursor-pointer bg-white/10 hover:bg-white/20"
+                                    >
+                                        <Upload className="w-4 h-4" strokeWidth={1.5} />
+                                        <span className="text-xs font-light uppercase font-body">
+                                            Select Files
+                                        </span>
+                                    </label>
+                                    <input
+                                        id="feedback-files-upload"
+                                        type="file"
+                                        multiple
+                                        className="hidden"
+                                        onChange={handleFileSelection}
+                                        disabled={isSubmitting}
                                     />
-                                    <span className="text-xs font-light uppercase font-body">
-                                        Add Files
-                                    </span>
-                                </label>
-                                <input
-                                    id="feedback-files-upload"
-                                    type="file"
-                                    multiple
-                                    className="hidden"
-                                    onChange={handleFileSelection}
-                                    disabled={isSubmitting}
-                                />
-                                <p className="mt-2 text-[10px] text-muted-foreground font-body uppercase font-thin">
-                                    You can upload screenshots, documents, or
-                                    any other relevant files.
-                                </p>
-                            </div>
-
-                            {/* Selected files list */}
-                            {selectedFiles.length > 0 && (
-                                <div className="mt-4 space-y-2">
-                                    <p className="text-[9px] font-normal uppercase text-muted-foreground font-body">
-                                        Selected Files ({selectedFiles?.length})
+                                    <p className="mt-2 text-[10px] text-white/50 font-light">
+                                        Max 5 files, 5MB each (PDF, Images, Documents)
                                     </p>
-                                    <div className="p-2 space-y-2 border rounded border-border">
-                                        {selectedFiles.map((file, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center justify-between"
-                                            >
-                                                <div className="flex items-center">
-                                                    <FileIcon
-                                                        className="w-4 h-4 mr-2 text-muted-foreground"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                    <span className="text-xs font-light font-body truncate max-w-[150px]">
-                                                        {file.name}
-                                                    </span>
-                                                    <span className="ml-2 text-xs text-muted-foreground">
-                                                        (
-                                                        {Math.round(
-                                                            file.size / 1024,
-                                                        )}{' '}
-                                                        KB)
-                                                    </span>
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-6 h-6 p-0"
-                                                    onClick={() =>
-                                                        removeFile(index)
-                                                    }
-                                                >
-                                                    <X
-                                                        className="w-4 h-4 text-muted-foreground"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                </Button>
-                                                {uploadProgress[file.name] &&
-                                                    uploadProgress[file.name] <
-                                                        100 && (
-                                                        <Progress
-                                                            value={
-                                                                uploadProgress[
-                                                                    file.name
-                                                                ]
-                                                            }
-                                                            className="w-full h-1 mt-1"
-                                                        />
-                                                    )}
-                                            </div>
-                                        ))}
-                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </fieldset>
 
-            {/* Submit Button */}
-            <Button
-                type="submit"
-                className="w-full text-xs font-light text-white uppercase font-body"
-                disabled={isSubmitting}
-            >
-                {isSubmitting ? (
-                    <div className="flex items-center justify-center gap-2">
-                        <span className="animate-spin">
-                            <svg
-                                className="w-4 h-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                ></circle>
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
-                        </span>
-                        <span>Submitting Feedback...</span>
+                                {/* Selected files list */}
+                                {selectedFiles.length > 0 && (
+                                    <div className="mt-4 space-y-2">
+                                        <p className="text-[10px] font-normal uppercase text-white/70 font-body">
+                                            Selected Files ({selectedFiles?.length})
+                                        </p>
+                                        <div className="space-y-2">
+                                            {selectedFiles.map((file, index) => (
+                                                <div key={index} className="flex flex-col p-2 border rounded bg-white/5 border-white/10">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center max-w-[80%]">
+                                                            <FileIcon className="w-4 h-4 mr-2 text-white/70" strokeWidth={1.5} />
+                                                            <span className="text-xs font-light text-white truncate max-w-[200px]">
+                                                                {file.name}
+                                                            </span>
+                                                            <span className="ml-2 text-[10px] text-white/50">
+                                                                ({Math.round(file.size / 1024)} KB)
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeFile(index)}
+                                                            className="p-1 transition-colors rounded-full hover:bg-white/10 text-white/70 hover:text-white"
+                                                        >
+                                                            <X className="w-3 h-3" strokeWidth={1.5} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Upload progress indicator */}
+                                                    {uploadProgress[file.name] !== undefined && uploadProgress[file.name] < 100 && (
+                                                        <div className="w-full mt-2 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-primary"
+                                                                style={{ width: `${uploadProgress[file.name]}%` }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                ) : (
-                    'Submit Feedback'
-                )}
-            </Button>
+                </fieldset>
+
+                {/* Submit Button */}
+                <Button
+                    type="submit"
+                    className={cn(
+                        "w-full h-10 font-light text-white uppercase font-body bg-primary hover:bg-primary/90",
+                        isSubmitting && "opacity-50 cursor-not-allowed"
+                    )}
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-xs font-light uppercase">
+                                Submitting Feedback
+                            </span>
+                            <span className="animate-spin">
+                                <svg
+                                    className="w-4 h-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                </svg>
+                            </span>
+                        </div>
+                    ) : (
+                        'Submit Feedback'
+                    )}
+                </Button>
+            </div>
         </form>
     );
 };

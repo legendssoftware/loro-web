@@ -50,7 +50,7 @@ export function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export const authRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/onboarding', '/new-password', '/landing-page'];
+export const authRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/onboarding', '/new-password', '/landing-page', '/feedback'];
 
 export const isAuthRoute = (pathname: string) => {
     return authRoutes.some(route => pathname.startsWith(route));

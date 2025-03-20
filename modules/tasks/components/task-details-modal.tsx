@@ -1489,7 +1489,7 @@ export function TaskDetailsModal({
                         ) : (
                             <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
                                 <FileIcon className="w-8 h-8 mb-2 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs font-normal upercase font-body text-muted-foreground">
                                     No attachments for this task
                                 </p>
                             </div>

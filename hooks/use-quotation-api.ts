@@ -101,9 +101,9 @@ export const useQuotationApi = () => {
     const getQuotation = useCallback(
         async (quotationId: number): Promise<Quotation> => {
             try {
-                // The controller endpoint is /shop/quotations/:ref
+                // The controller endpoint is /shop/quotation/:ref
                 const response = await axiosInstance.get(
-                    `/shop/quotations/${quotationId}`,
+                    `/shop/quotation/${quotationId}`,
                 );
 
                 // From shop.controller.ts, the response should contain { message, quotation }
@@ -131,9 +131,9 @@ export const useQuotationApi = () => {
     const updateQuotationStatus = useCallback(
         async (quotationId: number, status: OrderStatus): Promise<void> => {
             try {
-                // The controller endpoint is /shop/quotations/:ref/status for PATCH
+                // The controller endpoint is /shop/quotation/:ref/status for PATCH
                 const response = await axiosInstance.patch(
-                    `/shop/quotations/${quotationId}/status`,
+                    `/shop/quotation/${quotationId}/status`,
                     { status },
                 );
 
@@ -164,9 +164,9 @@ export const useQuotationApi = () => {
     const createQuotation = useCallback(
         async (quotationData: Partial<Quotation>): Promise<void> => {
             try {
-                // The controller endpoint is /shop/quotations for POST
+                // The controller endpoint is /shop/quotation for POST
                 const response = await axiosInstance.post(
-                    '/shop/quotations',
+                    '/shop/quotation',
                     quotationData,
                 );
 

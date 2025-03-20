@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { Suspense } from 'react';
 import { FeedbackForm } from './components/feedback-form';
 
 const FeedbackPage: React.FC = () => {
@@ -14,7 +16,9 @@ const FeedbackPage: React.FC = () => {
                 </p>
             </div>
 
-            <FeedbackForm />
+            <Suspense fallback={<div className="flex items-center justify-center w-full h-64"><div className="w-8 h-8 border-4 rounded-full border-primary border-t-transparent animate-spin"></div></div>}>
+                <FeedbackForm />
+            </Suspense>
         </div>
     );
 };

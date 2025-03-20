@@ -15,6 +15,21 @@ export const axiosInstance = axios.create({
 // Add request interceptor to include auth token
 axiosInstance.interceptors.request.use(
     (config) => {
+        // Define public endpoints that don't need authentication
+        const publicEndpoints = [
+            '/feedback/validate-token',
+            '/feedback'
+        ];
+
+        // Skip token for public endpoints
+        const isPublicEndpoint = publicEndpoints.some(endpoint =>
+            config.url?.includes(endpoint)
+        );
+
+        if (isPublicEndpoint) {
+            return config;
+        }
+
         // Get token from sessionStorage in client-side only
         if (typeof window !== 'undefined') {
             let accessToken = null;

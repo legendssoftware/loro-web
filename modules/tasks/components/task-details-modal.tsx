@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { showErrorToast } from '@/lib/utils/toast-config';
+import { showErrorToast, showSuccessToast } from '@/lib/utils/toast-config';
 import {
     X,
     Calendar,
@@ -52,6 +52,7 @@ import {
     TaskType,
     JobStatus,
     JobStatusColors,
+    TaskFlag,
 } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -75,6 +76,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Calendar as UiCalendar } from '@/components/ui/calendar';
+import { TaskFlagModal } from './task-flag-modal';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -126,6 +128,7 @@ export function TaskDetailsModal({
     isOpen,
     onClose,
     onUpdateStatus,
+    onUpdateTask,
     onDelete,
     onUpdateSubtaskStatus,
 }: TaskDetailsModalProps) {
@@ -320,6 +323,8 @@ export function TaskDetailsModal({
         { id: 'activity', label: 'Activity' },
         { id: 'routes', label: 'Routes' },
         { id: 'attachments', label: 'Attachments' },
+        { id: 'flags', label: 'Flags' },
+        { id: 'feedback', label: 'Feedback' },
     ];
 
     const formatAddress = (address?: any) => {
@@ -1362,7 +1367,7 @@ export function TaskDetailsModal({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center p-8 border rounded-lg border-border/30">
+                            <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
                                 <Waypoints strokeWidth={1} size={50} />
                                 <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
                                     No routes planned as yet
@@ -1373,20 +1378,20 @@ export function TaskDetailsModal({
                 );
             case 'attachments':
                 return (
-                    <div className="space-y-4">
-                        <h3 className="mb-4 text-xs font-normal uppercase font-body">
-                            Files & Attachments
+                    <div className="p-4 rounded-lg">
+                        <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                            Attachments
                         </h3>
-                        {extendedTask.attachments &&
+
+                        {extendedTask?.attachments &&
                         extendedTask.attachments.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 {extendedTask.attachments.map(
                                     (attachment, index) => {
-                                        // Determine file type from URL
                                         const fileName =
-                                            attachment?.split('/').pop() ||
-                                            'file';
-                                        const fileExtension =
+                                            attachment.split('/').pop() ||
+                                            `File ${index + 1}`;
+                                        const fileExt =
                                             fileName
                                                 .split('.')
                                                 .pop()
@@ -1398,89 +1403,299 @@ export function TaskDetailsModal({
                                             'gif',
                                             'webp',
                                             'svg',
-                                        ].includes(fileExtension);
-                                        const isPdf = fileExtension === 'pdf';
-
-                                        // Trim filename if too long
-                                        const trimmedFileName =
-                                            fileName.length > 20
-                                                ? `${fileName.substring(0, 17)}...${fileExtension}`
-                                                : fileName;
+                                        ].includes(fileExt);
+                                        const isPdf = fileExt === 'pdf';
+                                        const isDoc = [
+                                            'doc',
+                                            'docx',
+                                            'txt',
+                                            'rtf',
+                                        ].includes(fileExt);
+                                        const isSpreadsheet = [
+                                            'xls',
+                                            'xlsx',
+                                            'csv',
+                                        ].includes(fileExt);
+                                        const isPresentation = [
+                                            'ppt',
+                                            'pptx',
+                                        ].includes(fileExt);
 
                                         return (
-                                            <div
+                                            <Link
                                                 key={index}
-                                                className="overflow-hidden border rounded-lg shadow-sm border-border/50 bg-card/50"
+                                                href={attachment}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex flex-col overflow-hidden transition-colors border rounded-lg hover:bg-accent group"
                                             >
                                                 {isImage ? (
-                                                    <div className="relative">
-                                                        <div className="relative aspect-square">
-                                                            <Image
-                                                                src={attachment}
-                                                                alt={fileName}
-                                                                fill
-                                                                className="object-cover w-full h-full"
-                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                            />
-                                                        </div>
-                                                        <Link
-                                                            href={attachment}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/60 hover:opacity-100"
-                                                        >
-                                                            <span className="px-3 py-1 text-[10px] font-normal text-white rounded uppercase font-body bg-primary/80">
-                                                                View Full Size
+                                                    <div className="relative w-full overflow-hidden aspect-video bg-black/5">
+                                                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                                            <span className="text-xs">
+                                                                Loading...
                                                             </span>
-                                                        </Link>
+                                                        </div>
+                                                        <Image
+                                                            src={attachment}
+                                                            alt={fileName}
+                                                            className="object-cover w-full h-full"
+                                                            width={300}
+                                                            height={200}
+                                                        />
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center justify-center p-6 bg-muted/20">
-                                                        {isPdf ? (
-                                                            <FileText className="w-10 h-10 text-primary/70" />
-                                                        ) : (
-                                                            <FileIcon className="w-10 h-10 text-muted-foreground/70" />
-                                                        )}
+                                                    <div className="flex items-center p-3 space-x-3">
+                                                        <div
+                                                            className={`flex items-center justify-center w-10 h-10 text-white rounded-md ${
+                                                                isPdf
+                                                                    ? 'bg-red-500'
+                                                                    : isDoc
+                                                                      ? 'bg-blue-500'
+                                                                      : isSpreadsheet
+                                                                        ? 'bg-green-500'
+                                                                        : isPresentation
+                                                                          ? 'bg-orange-500'
+                                                                          : 'bg-primary'
+                                                            }`}
+                                                        >
+                                                            <FileIcon className="w-5 h-5" />
+                                                        </div>
+                                                        <div className="overflow-hidden">
+                                                            <p className="text-sm font-medium truncate font-body">
+                                                                {fileName}
+                                                            </p>
+                                                            <p className="text-xs uppercase text-muted-foreground">
+                                                                {fileExt}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 )}
-
-                                                <div className="p-3">
-                                                    <div
-                                                        className="mb-2 text-xs font-thin truncate font-body"
-                                                        title={fileName}
-                                                    >
-                                                        {trimmedFileName}
+                                                {isImage && (
+                                                    <div className="p-2">
+                                                        <p className="text-sm font-medium truncate font-body">
+                                                            {fileName}
+                                                        </p>
+                                                        <p className="text-xs uppercase text-muted-foreground">
+                                                            {fileExt}
+                                                        </p>
                                                     </div>
-                                                    <Link
-                                                        href={attachment}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center text-[10px] font-thin uppercase text-primary hover:underline font-body"
-                                                    >
-                                                        {isImage
-                                                            ? 'View Image'
-                                                            : isPdf
-                                                              ? 'Open PDF'
-                                                              : 'Download File'}
-                                                    </Link>
-                                                </div>
-                                            </div>
+                                                )}
+                                            </Link>
                                         );
                                     },
                                 )}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center p-8 border rounded-lg border-border/30">
-                                <FolderMinus strokeWidth={1} size={50} />
-                                <p className="text-xs font-thin text-center uppercase text-muted-foreground font-body">
-                                    No attachments found for this task
+                            <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
+                                <FileIcon className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                    No attachments for this task
                                 </p>
                             </div>
                         )}
                     </div>
                 );
+            case 'flags':
+                return (
+                    <div className="p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xs font-normal uppercase font-body">
+                                Task Flags
+                            </h3>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex items-center gap-1"
+                                onClick={() => setIsFlagModalOpen(true)}
+                            >
+                                <Flag className="w-4 h-4 text-amber-500" />
+                                <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">
+                                    Add Flag
+                                </span>
+                            </Button>
+                        </div>
+
+                        {extendedTask?.flags &&
+                        extendedTask.flags.length > 0 ? (
+                            <div className="space-y-3">
+                                {extendedTask.flags.map((flag) => (
+                                    <div
+                                        key={flag.uid}
+                                        className="p-3 border rounded-lg"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Flag
+                                                    className={`w-4 h-4 ${
+                                                        flag.status === 'OPEN'
+                                                            ? 'text-amber-500'
+                                                            : flag.status ===
+                                                                'IN_PROGRESS'
+                                                              ? 'text-blue-500'
+                                                              : flag.status ===
+                                                                  'RESOLVED'
+                                                                ? 'text-green-500'
+                                                                : 'text-gray-500'
+                                                    }`}
+                                                />
+                                                <h4 className="text-xs uppercase font-norma font-body">
+                                                    {flag.title}
+                                                </h4>
+                                            </div>
+                                            <Badge
+                                                variant="outline"
+                                                className={`text-[10px] uppercase font-body font-normal ${
+                                                    flag.status === 'OPEN'
+                                                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                                        : flag.status ===
+                                                            'IN_PROGRESS'
+                                                          ? 'bg-blue-100 text-blue-800 border-blue-200'
+                                                          : flag.status ===
+                                                              'RESOLVED'
+                                                            ? 'bg-green-100 text-green-800 border-green-200'
+                                                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                                                }`}
+                                            >
+                                                {flag.status}
+                                            </Badge>
+                                        </div>
+
+                                        <p className="mt-2 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            {flag.description}
+                                        </p>
+
+                                        {flag.deadline && (
+                                            <div className="flex items-center mt-2 text-xs">
+                                                <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
+                                                <span className="text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                                    Due:{' '}
+                                                    {formatDate(
+                                                        new Date(flag.deadline),
+                                                    )}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {flag.items &&
+                                            flag.items.length > 0 && (
+                                                <div className="mt-3">
+                                                    <h5 className="mb-1 text-xs font-medium font-body">
+                                                        Checklist:
+                                                    </h5>
+                                                    <div className="space-y-1">
+                                                        {flag.items.map(
+                                                            (item) => (
+                                                                <div
+                                                                    key={
+                                                                        item.uid
+                                                                    }
+                                                                    className="flex items-center gap-2 text-xs"
+                                                                >
+                                                                    {item.status ===
+                                                                    'COMPLETED' ? (
+                                                                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                                                    ) : item.status ===
+                                                                      'SKIPPED' ? (
+                                                                        <FolderMinus className="w-3 h-3 text-gray-500" />
+                                                                    ) : (
+                                                                        <div className="w-3 h-3 border border-gray-300 rounded-full" />
+                                                                    )}
+                                                                    <span
+                                                                        className={
+                                                                            item.status ===
+                                                                            'COMPLETED'
+                                                                                ? 'line-through text-muted-foreground'
+                                                                                : ''
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            item.title
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                        {flag.comments &&
+                                            flag.comments.length > 0 && (
+                                                <div className="pt-2 mt-3 border-t border-border">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <MessageSquare className="w-3 h-3 text-muted-foreground" />
+                                                        <span className="text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                                            {
+                                                                flag.comments
+                                                                    .length
+                                                            }{' '}
+                                                            comment
+                                                            {flag.comments
+                                                                .length > 1
+                                                                ? 's'
+                                                                : ''}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[10px] italic text-muted-foreground font-body uppercase font-normal">
+                                                        {flag.comments[0]
+                                                            .content.length > 40
+                                                            ? `${flag.comments[0].content.substring(0, 40)}...`
+                                                            : flag.comments[0]
+                                                                  .content}
+                                                    </span>
+                                                </div>
+                                            )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
+                                <Flag className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                    No flags for this task
+                                </p>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="mt-2 uppercase border cursor-pointer font-body text-muted-foreground"
+                                    onClick={() => setIsFlagModalOpen(true)}
+                                >
+                                    <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">
+                                        Add Flag
+                                    </span>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                );
+            case 'feedback':
+                return (
+                    <div className="p-4 rounded-lg">
+                        <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                            Client Feedback
+                        </h3>
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
+                            <MessageSquare className="w-8 h-8 mb-2 text-muted-foreground" />
+                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                Client feedback will be displayed here when
+                                available
+                            </p>
+                            <p className="mt-2 text-[10px] text-center uppercase text-muted-foreground font-body">
+                                Clients can provide feedback once the task is
+                                marked as completed
+                            </p>
+                        </div>
+                    </div>
+                );
             default:
-                return null;
+                return (
+                    <div className="p-4 text-center rounded-lg">
+                        <p className="text-muted-foreground font-body">
+                            Select a tab to view details
+                        </p>
+                    </div>
+                );
         }
     };
 
@@ -1489,7 +1704,7 @@ export function TaskDetailsModal({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={() => onClose()}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
                             <DialogTitle className="text-xl font-semibold uppercase font-body">
@@ -1703,31 +1918,33 @@ export function TaskDetailsModal({
             </Dialog>
 
             {/* Flag Task Modal */}
-            <Dialog
-                open={isFlagModalOpen}
-                onOpenChange={() => setIsFlagModalOpen(false)}
-            >
-                <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card flex items-center justify-center flex-col">
-                    <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body">
-                            Flag This Task
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                        <Flag
-                            className="w-12 h-12 text-amber-500"
-                            strokeWidth={1.5}
-                        />
-                        <h2 className="text-sm font-thin uppercase font-body">
-                            Activating Soon
-                        </h2>
-                        <p className="max-w-md text-[10px] text-center uppercase text-muted-foreground font-body">
-                            Flag functionality will allow you to mark completed
-                            tasks for follow-up, escalation, or review.
-                        </p>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {isFlagModalOpen && (
+                <TaskFlagModal
+                    task={task}
+                    isOpen={isFlagModalOpen}
+                    onClose={() => setIsFlagModalOpen(false)}
+                    onFlagCreated={(taskId) => {
+                        showSuccessToast('Task flagged successfully', toast);
+
+                        // Close the modal first to prevent any UI glitches
+                        setIsFlagModalOpen(false);
+
+                        // If we have an onUpdateTask handler, use it to trigger a refresh of the task data
+                        if (onUpdateTask) {
+                            // Send a minimal update to trigger a refresh
+                            onUpdateTask(taskId, { uid: taskId });
+                        }
+
+                        // Navigate to the flags tab to show the new flag
+                        if (activeTab !== 'flags') {
+                            handleTabChange('flags');
+                        } else {
+                            // If already on flags tab, we may need to manually refresh
+                            // This will be handled by the parent component through onUpdateTask
+                        }
+                    }}
+                />
+            )}
 
             {/* Status Change Confirmation Dialog */}
             <AlertDialog

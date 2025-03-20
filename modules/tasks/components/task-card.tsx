@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Task, TaskStatus, JobStatus, JobStatusColors } from '@/lib/types/task';
+import { Task, TaskStatus, JobStatus } from '@/lib/types/task';
 import {
     AlertCircle,
     Calendar,
@@ -9,6 +9,9 @@ import {
     CheckCircle2,
     ChartSpline,
     Timer,
+    Flag,
+    Bell,
+    MessageCircle,
 } from 'lucide-react';
 import { useState, useCallback, memo } from 'react';
 import { Progress } from '@/components/ui/progress';
@@ -99,7 +102,8 @@ function TaskCardComponent({
     };
 
     const getJobStatusBadgeColor = (status?: JobStatus) => {
-        if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+        if (!status)
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
 
         switch (status) {
             case JobStatus.QUEUED:
@@ -195,7 +199,10 @@ function TaskCardComponent({
                                     )}`}
                                 >
                                     <Timer className="w-3 h-3 mr-1" />
-                                    JOB: {task?.jobStatus?.replace('_', ' ')}
+                                    <span className="text-[9px] font-normal uppercase font-body">
+                                        JOB:{' '}
+                                        {task?.jobStatus?.replace('_', ' ')}
+                                    </span>
                                 </Badge>
                             )}
                         </div>
@@ -297,38 +304,74 @@ function TaskCardComponent({
                         </span>
                     </div>
                 )}
-
-                {/* Assignees */}
-                {task?.assignees && task?.assignees?.length > 0 && (
-                    <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
-                        <div className="flex -space-x-2">
-                            {task?.assignees
-                                ?.slice(0, 3)
-                                .map((assignee, index) => (
-                                    <Avatar
-                                        key={index}
-                                        className="border w-7 h-7 border-primary"
-                                    >
-                                        <AvatarImage
-                                            src={assignee?.photoURL}
-                                            alt={assignee?.name}
-                                        />
-                                        <AvatarFallback className="text-[7px] font-normal uppercase font-body">
-                                            {`${assignee?.name?.charAt(0)} ${assignee?.surname?.charAt(0)}`}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                ))}
-                        </div>
-                        {task?.assignees?.length > 3 && (
-                            <div className=" flex items-center justify-center text-[10px]">
-                                <span className="text-[10px] font-normal font-body text-muted-foreground">
-                                    {' '}
-                                    +{task?.assignees?.length - 2} more
-                                </span>
+                <div className="flex items-center justify-between w-full mt-4">
+                    {/* Assignees */}
+                    {task?.assignees && task?.assignees?.length > 0 && (
+                        <div className="flex items-center justify-start gap-1 border-t border-border/20">
+                            <div className="flex -space-x-2">
+                                {task?.assignees
+                                    ?.slice(0, 3)
+                                    .map((assignee, index) => (
+                                        <Avatar
+                                            key={index}
+                                            className="border w-7 h-7 border-primary"
+                                        >
+                                            <AvatarImage
+                                                src={assignee?.photoURL}
+                                                alt={assignee?.name}
+                                            />
+                                            <AvatarFallback className="text-[7px] font-normal uppercase font-body">
+                                                {`${assignee?.name?.charAt(0)} ${assignee?.surname?.charAt(0)}`}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    ))}
                             </div>
+                            {task?.assignees?.length > 3 && (
+                                <div className=" flex items-center justify-center text-[10px]">
+                                    <span className="text-[10px] font-normal font-body text-muted-foreground">
+                                        {' '}
+                                        +{task?.assignees?.length - 2} more
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                        {/* Feedback counter - Using temporary dummy data until backend integrates feedback */}
+                        {(task as any).feedback && (task as any).feedback.length > 0 && (
+                            <Badge
+                                variant="outline"
+                                className="flex items-center justify-center gap-1 px-3 py-1 bg-green-500 border-0"
+                            >
+                                <MessageCircle
+                                    strokeWidth={1.5}
+                                    size={16}
+                                    color="white"
+                                />
+                                <span className="text-[10px] font-normal uppercase text-white font-body">
+                                    {(task as any).feedback.length}
+                                </span>
+                            </Badge>
+                        )}
+
+                        {/* Flag indicator */}
+                        {task.flags && task.flags.length > 0 && (
+                            <Badge
+                                variant="outline"
+                                className="flex items-center justify-center gap-1 px-3 py-1 bg-red-500 border-0"
+                            >
+                                <Flag
+                                    strokeWidth={1.5}
+                                    size={16}
+                                    color="white"
+                                />
+                                <span className="text-[10px] font-normal uppercase text-white font-body">
+                                    {task.flags.length}
+                                </span>
+                            </Badge>
                         )}
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Task Details Modal */}

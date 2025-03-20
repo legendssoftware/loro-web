@@ -12,6 +12,7 @@ export const toastConfig = {
     },
     duration: 4000,
     position: 'bottom-center' as const,
+    zIndex: 100000, //has to be the highest z-index to be on top of all other elements
 };
 
 // Token toast ID to ensure only one token toast is visible at a time

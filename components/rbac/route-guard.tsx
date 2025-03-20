@@ -26,7 +26,10 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
             pathname === '/verify-email' ||
             pathname === '/verify-otp' ||
             pathname === '/landing-page' ||
-            pathname === '/new-password'
+            pathname === '/new-password' ||
+            pathname === '/feedback' ||
+            pathname === '/feedback/thank-you' ||
+            pathname.startsWith('/feedback')
         ) {
             setIsCheckingAuth(false);
             return;

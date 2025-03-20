@@ -12,6 +12,8 @@ const publicPaths = [
     '/verify-email',
     '/verify-otp',
     '/landing-page',
+    '/feedback',
+    '/feedback/thank-you',
 ];
 
 // Define path patterns that should be protected

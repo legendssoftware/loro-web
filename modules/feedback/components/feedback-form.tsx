@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +18,6 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +43,9 @@ const feedbackFormSchema = z.object({
     title: z.string().min(1, { message: 'Title is required' }),
     type: z.nativeEnum(FeedbackType).default(FeedbackType.GENERAL),
     rating: z.number().min(1, { message: 'Rating is required' }).max(5),
-    comments: z.string().min(3, { message: 'Comment must be at least 3 characters' }),
+    comments: z
+        .string()
+        .min(3, { message: 'Comment must be at least 3 characters' }),
     token: z.string().optional(),
     attachments: z.array(z.string()).optional(),
 });
@@ -60,7 +63,9 @@ export const FeedbackForm: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
     const [tokenData, setTokenData] = useState<any>(null);
-    const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+    const [uploadProgress, setUploadProgress] = useState<{
+        [key: string]: number;
+    }>({});
 
     const typeIcons = {
         [FeedbackType.GENERAL]: HelpCircle,
@@ -96,15 +101,28 @@ export const FeedbackForm: React.FC = () => {
         if (token) {
             const validateToken = async () => {
                 try {
-                    const response = await axiosInstance.get(`/feedback/validate-token/${token}`);
+                    const response = await axiosInstance.get(
+                        `/feedback/validate-token/${token}`,
+                    );
                     setIsTokenValid(true);
                     setTokenData(response.data.data);
 
                     // Pre-fill form with data from token
                     if (response.data.data) {
-                        setValue('name', response.data.data.client?.contactPerson || response.data.data.client?.name || '');
-                        setValue('email', response.data.data.client?.email || '');
-                        setValue('title', `Feedback for: ${response.data.data.task?.title || 'Service'}`);
+                        setValue(
+                            'name',
+                            response.data.data.client?.contactPerson ||
+                                response.data.data.client?.name ||
+                                '',
+                        );
+                        setValue(
+                            'email',
+                            response.data.data.client?.email || '',
+                        );
+                        setValue(
+                            'title',
+                            `Feedback for: ${response.data.data.task?.title || 'Service'}`,
+                        );
                         if (response.data.data.task) {
                             setValue('type', FeedbackType.TASK);
                         }
@@ -152,17 +170,22 @@ export const FeedbackForm: React.FC = () => {
                 formData.append('type', fileType);
 
                 // Upload file
-                const response = await axiosInstance.post('/docs/upload', formData, {
-                    onUploadProgress: (progressEvent) => {
-                        const progress = Math.round(
-                            (progressEvent.loaded * 100) / (progressEvent.total || 100)
-                        );
-                        setUploadProgress((prev) => ({
-                            ...prev,
-                            [file.name]: progress,
-                        }));
+                const response = await axiosInstance.post(
+                    '/docs/upload',
+                    formData,
+                    {
+                        onUploadProgress: (progressEvent) => {
+                            const progress = Math.round(
+                                (progressEvent.loaded * 100) /
+                                    (progressEvent.total || 100),
+                            );
+                            setUploadProgress((prev) => ({
+                                ...prev,
+                                [file.name]: progress,
+                            }));
+                        },
                     },
-                });
+                );
 
                 if (response.data.publicUrl) {
                     uploadedUrls.push(response.data.publicUrl);
@@ -189,7 +212,7 @@ export const FeedbackForm: React.FC = () => {
                 // Add new uploads to any existing attachments
                 data.attachments = [
                     ...(data.attachments || []),
-                    ...attachmentUrls
+                    ...attachmentUrls,
                 ];
             }
 
@@ -208,9 +231,10 @@ export const FeedbackForm: React.FC = () => {
             setTimeout(() => {
                 router.push('/feedback/thank-you');
             }, 1500);
-
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || 'Failed to submit feedback');
+            toast.error(
+                error?.response?.data?.message || 'Failed to submit feedback',
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -220,10 +244,16 @@ export const FeedbackForm: React.FC = () => {
     if (isTokenValid === false) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-                <AlertTriangle className="w-16 h-16 mb-4 text-red-500" strokeWidth={1.5} />
-                <h2 className="mb-2 text-xl font-semibold">Invalid or Expired Token</h2>
+                <AlertTriangle
+                    className="w-16 h-16 mb-4 text-red-500"
+                    strokeWidth={1.5}
+                />
+                <h2 className="mb-2 text-xl font-semibold">
+                    Invalid or Expired Token
+                </h2>
                 <p className="mb-6 text-muted-foreground">
-                    The feedback link you used is either invalid or has expired. Please contact support for assistance.
+                    The feedback link you used is either invalid or has expired.
+                    Please contact support for assistance.
                 </p>
                 <Button
                     variant="outline"
@@ -241,19 +271,27 @@ export const FeedbackForm: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-16 h-16 border-4 border-t-4 rounded-full border-primary border-t-transparent animate-spin"></div>
-                <p className="mt-4 text-sm font-light text-center">Validating your feedback link...</p>
+                <p className="mt-4 text-sm font-light text-center">
+                    Validating your feedback link...
+                </p>
             </div>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-6">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="max-w-2xl mx-auto space-y-6"
+        >
             <fieldset disabled={isSubmitting} className="space-y-6">
                 {tokenData && (
                     <Card className="border-border/50">
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                                <BadgeCheck className="w-4 h-4 text-primary" strokeWidth={1.5} />
+                                <BadgeCheck
+                                    className="w-4 h-4 text-primary"
+                                    strokeWidth={1.5}
+                                />
                                 <span className="font-light uppercase font-body">
                                     Task Information
                                 </span>
@@ -264,14 +302,18 @@ export const FeedbackForm: React.FC = () => {
                                 <span className="text-xs font-light uppercase font-body text-muted-foreground">
                                     Task:
                                 </span>
-                                <p className="text-sm font-medium">{tokenData.task?.title}</p>
+                                <p className="text-sm font-medium">
+                                    {tokenData.task?.title}
+                                </p>
                             </div>
                             {tokenData.task?.description && (
                                 <div>
                                     <span className="text-xs font-light uppercase font-body text-muted-foreground">
                                         Description:
                                     </span>
-                                    <p className="text-sm">{tokenData.task?.description}</p>
+                                    <p className="text-sm">
+                                        {tokenData.task?.description}
+                                    </p>
                                 </div>
                             )}
                             {tokenData.client && (
@@ -279,7 +321,9 @@ export const FeedbackForm: React.FC = () => {
                                     <span className="text-xs font-light uppercase font-body text-muted-foreground">
                                         Client:
                                     </span>
-                                    <p className="text-sm">{tokenData.client.name}</p>
+                                    <p className="text-sm">
+                                        {tokenData.client.name}
+                                    </p>
                                 </div>
                             )}
                         </CardContent>
@@ -289,7 +333,10 @@ export const FeedbackForm: React.FC = () => {
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <MessageSquare className="w-4 h-4" strokeWidth={1.5} />
+                            <MessageSquare
+                                className="w-4 h-4"
+                                strokeWidth={1.5}
+                            />
                             <span className="font-light uppercase font-body">
                                 Your Feedback
                             </span>
@@ -302,7 +349,8 @@ export const FeedbackForm: React.FC = () => {
                                     htmlFor="name"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Your Name <span className="text-red-500">*</span>
+                                    Your Name{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="name"
@@ -322,7 +370,8 @@ export const FeedbackForm: React.FC = () => {
                                     htmlFor="email"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Email <span className="text-red-500">*</span>
+                                    Email{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="email"
@@ -365,7 +414,8 @@ export const FeedbackForm: React.FC = () => {
                                     htmlFor="type"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Feedback Type <span className="text-red-500">*</span>
+                                    Feedback Type{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                     control={control}
@@ -374,12 +424,24 @@ export const FeedbackForm: React.FC = () => {
                                         <div className="relative">
                                             <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                                                 <div className="flex items-center gap-2">
-                                                    {field.value && React.createElement(
-                                                        typeIcons[field.value as keyof typeof typeIcons] || Tag,
-                                                        { className: "w-4 h-4 text-muted-foreground", strokeWidth: 1.5 }
-                                                    )}
+                                                    {field.value &&
+                                                        React.createElement(
+                                                            typeIcons[
+                                                                field.value as keyof typeof typeIcons
+                                                            ] || Tag,
+                                                            {
+                                                                className:
+                                                                    'w-4 h-4 text-muted-foreground',
+                                                                strokeWidth: 1.5,
+                                                            },
+                                                        )}
                                                     <span className="text-[10px] font-thin font-body">
-                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT TYPE'}
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT TYPE'}
                                                     </span>
                                                 </div>
                                                 <ChevronDown
@@ -394,15 +456,29 @@ export const FeedbackForm: React.FC = () => {
                                             >
                                                 <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
                                                 <SelectContent>
-                                                    {Object.values(FeedbackType).map((type) => (
-                                                        <SelectItem key={type} value={type}>
+                                                    {Object.values(
+                                                        FeedbackType,
+                                                    ).map((type) => (
+                                                        <SelectItem
+                                                            key={type}
+                                                            value={type}
+                                                        >
                                                             <div className="flex items-center gap-2">
                                                                 {React.createElement(
-                                                                    typeIcons[type as keyof typeof typeIcons] || Tag,
-                                                                    { className: "w-4 h-4", strokeWidth: 1.5 }
+                                                                    typeIcons[
+                                                                        type as keyof typeof typeIcons
+                                                                    ] || Tag,
+                                                                    {
+                                                                        className:
+                                                                            'w-4 h-4',
+                                                                        strokeWidth: 1.5,
+                                                                    },
                                                                 )}
                                                                 <span className="text-[10px] font-normal font-body">
-                                                                    {type.replace(/_/g, ' ')}
+                                                                    {type.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
                                                                 </span>
                                                             </div>
                                                         </SelectItem>
@@ -424,7 +500,8 @@ export const FeedbackForm: React.FC = () => {
                                     htmlFor="rating"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Rating <span className="text-red-500">*</span>
+                                    Rating{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                     control={control}
@@ -452,7 +529,8 @@ export const FeedbackForm: React.FC = () => {
                                 htmlFor="comments"
                                 className="block text-xs font-light uppercase font-body"
                             >
-                                Your Feedback <span className="text-red-500">*</span>
+                                Your Feedback{' '}
+                                <span className="text-red-500">*</span>
                             </Label>
                             <Textarea
                                 id="comments"
@@ -488,7 +566,10 @@ export const FeedbackForm: React.FC = () => {
                                     htmlFor="feedback-files-upload"
                                     className="flex items-center gap-2 px-4 py-2 transition-colors rounded cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary"
                                 >
-                                    <Upload className="w-4 h-4" strokeWidth={1.5} />
+                                    <Upload
+                                        className="w-4 h-4"
+                                        strokeWidth={1.5}
+                                    />
                                     <span className="text-xs font-light uppercase font-body">
                                         Add Files
                                     </span>
@@ -501,8 +582,9 @@ export const FeedbackForm: React.FC = () => {
                                     onChange={handleFileSelection}
                                     disabled={isSubmitting}
                                 />
-                                <p className="mt-2 text-[10px] text-muted-foreground">
-                                    You can upload screenshots, documents, or any other relevant files.
+                                <p className="mt-2 text-[10px] text-muted-foreground font-body uppercase font-thin">
+                                    You can upload screenshots, documents, or
+                                    any other relevant files.
                                 </p>
                             </div>
 
@@ -514,14 +596,24 @@ export const FeedbackForm: React.FC = () => {
                                     </p>
                                     <div className="p-2 space-y-2 border rounded border-border">
                                         {selectedFiles.map((file, index) => (
-                                            <div key={index} className="flex items-center justify-between">
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between"
+                                            >
                                                 <div className="flex items-center">
-                                                    <FileIcon className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
+                                                    <FileIcon
+                                                        className="w-4 h-4 mr-2 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
                                                     <span className="text-xs font-light font-body truncate max-w-[150px]">
                                                         {file.name}
                                                     </span>
                                                     <span className="ml-2 text-xs text-muted-foreground">
-                                                        ({Math.round(file.size / 1024)} KB)
+                                                        (
+                                                        {Math.round(
+                                                            file.size / 1024,
+                                                        )}{' '}
+                                                        KB)
                                                     </span>
                                                 </div>
                                                 <Button
@@ -529,13 +621,27 @@ export const FeedbackForm: React.FC = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="w-6 h-6 p-0"
-                                                    onClick={() => removeFile(index)}
+                                                    onClick={() =>
+                                                        removeFile(index)
+                                                    }
                                                 >
-                                                    <X className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <X
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
                                                 </Button>
-                                                {uploadProgress[file.name] && uploadProgress[file.name] < 100 && (
-                                                    <Progress value={uploadProgress[file.name]} className="w-full h-1 mt-1" />
-                                                )}
+                                                {uploadProgress[file.name] &&
+                                                    uploadProgress[file.name] <
+                                                        100 && (
+                                                        <Progress
+                                                            value={
+                                                                uploadProgress[
+                                                                    file.name
+                                                                ]
+                                                            }
+                                                            className="w-full h-1 mt-1"
+                                                        />
+                                                    )}
                                             </div>
                                         ))}
                                     </div>

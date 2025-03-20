@@ -1,3 +1,5 @@
+import { Feedback } from './feedback';
+
 export enum TaskStatus {
     PENDING = 'PENDING',
     IN_PROGRESS = 'IN_PROGRESS',
@@ -42,6 +44,19 @@ export enum JobStatus {
     QUEUED = 'QUEUED',
     RUNNING = 'RUNNING',
     COMPLETED = 'COMPLETED',
+}
+
+export enum TaskFlagStatus {
+    OPEN = 'OPEN',
+    IN_PROGRESS = 'IN_PROGRESS',
+    RESOLVED = 'RESOLVED',
+    CLOSED = 'CLOSED',
+}
+
+export enum TaskFlagItemStatus {
+    PENDING = 'PENDING',
+    COMPLETED = 'COMPLETED',
+    SKIPPED = 'SKIPPED',
 }
 
 export interface StatusColorConfig {
@@ -127,6 +142,8 @@ export interface Task {
     jobStartTime?: Date;
     jobEndTime?: Date;
     jobDuration?: number;
+    flags?: TaskFlag[];
+    feedback?: Feedback[];
     creator?: {
         uid: number;
         name: string;
@@ -237,4 +254,40 @@ export interface TasksByStatus {
     [TaskStatus.OVERDUE]: Task[];
     [TaskStatus.POSTPONED]: Task[];
     [TaskStatus.MISSED]: Task[];
+}
+
+export interface TaskFlag {
+    uid: number;
+    title: string;
+    description: string;
+    status: TaskFlagStatus;
+    deadline?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    isDeleted: boolean;
+    comments?: {
+        uid: number;
+        content: string;
+        createdAt: Date;
+        createdBy: { uid: number; name: string };
+    }[];
+    task: { uid: number; title: string };
+    createdBy: {
+        uid: number;
+        name: string;
+        email: string;
+        avatarUrl?: string;
+    };
+    items: TaskFlagItem[];
+}
+
+export interface TaskFlagItem {
+    uid: number;
+    title: string;
+    description?: string;
+    status: TaskFlagItemStatus;
+    createdAt: Date;
+    updatedAt: Date;
+    isDeleted: boolean;
+    taskFlag: { uid: number };
 }

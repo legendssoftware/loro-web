@@ -110,14 +110,25 @@ function LeadsTabContentComponent({
     onDeleteLead,
     onAddLead,
 }: LeadsTabContentProps) {
-    console.log('leadsByStatus', leadsByStatus, error);
-
+    // If loading, show loader
     if (isLoading) {
-        return <LoadingContent />;
+        return (
+            <div className="flex items-center justify-center w-full h-96">
+                <AppHoneycombLoader />
+            </div>
+        );
     }
 
+    // If error, show error message
     if (error) {
-        return <ErrorContent />;
+        return (
+            <div className="flex flex-col items-center justify-center w-full h-96">
+                <FolderMinus className="w-16 h-16 text-muted" />
+                <p className="mt-4 text-sm text-muted">
+                    {error.message || 'Failed to load leads data.'}
+                </p>
+            </div>
+        );
     }
 
     switch (activeTab) {

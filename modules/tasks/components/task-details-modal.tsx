@@ -1704,7 +1704,7 @@ export function TaskDetailsModal({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={() => onClose()}>
-                <DialogContent className="max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="max-w-3xl xl:max-w-6xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
                             <DialogTitle className="text-xl font-semibold uppercase font-body">

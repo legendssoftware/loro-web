@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ClientType } from '@/lib/types/client-enums';
+import {
+    ClientType,
+    ClientContactPreference,
+    PriceTier,
+    AcquisitionChannel,
+    ClientRiskLevel,
+    PaymentMethod,
+    GeofenceType,
+    ClientLanguage,
+} from '@/lib/types/client-enums';
 import { ClientStatus } from '@/hooks/use-clients-query';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { useUsersQuery } from '@/hooks/use-users-query';
@@ -34,8 +43,15 @@ import {
     Users,
     ToggleLeft,
     LayoutGrid,
+    CreditCard,
+    AlertTriangle,
+    Calendar,
+    X,
+    Plus,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 // Form schema definition with improved validation
 const clientFormSchema = z.object({
@@ -73,6 +89,57 @@ const clientFormSchema = z.object({
             uid: z.number(),
         })
         .optional(),
+    // Financial Information
+    creditLimit: z.number().optional(),
+    outstandingBalance: z.number().optional(),
+    priceTier: z.nativeEnum(PriceTier).default(PriceTier.STANDARD).optional(),
+    discountPercentage: z.number().min(0).max(100).optional(),
+    paymentTerms: z.string().optional(),
+    lifetimeValue: z.number().optional(),
+    preferredPaymentMethod: z.nativeEnum(PaymentMethod).optional(),
+    // Contact preferences and dates
+    preferredContactMethod: z
+        .nativeEnum(ClientContactPreference)
+        .default(ClientContactPreference.EMAIL)
+        .optional(),
+    preferredLanguage: z.string().optional(),
+    lastVisitDate: z.date().optional(),
+    nextContactDate: z.date().optional(),
+    birthday: z.date().optional(),
+    anniversaryDate: z.date().optional(),
+    // Business information
+    industry: z.string().optional(),
+    companySize: z.number().optional(),
+    annualRevenue: z.number().optional(),
+    // Customer insights
+    acquisitionChannel: z.nativeEnum(AcquisitionChannel).optional(),
+    acquisitionDate: z.date().optional(),
+    riskLevel: z
+        .nativeEnum(ClientRiskLevel)
+        .default(ClientRiskLevel.LOW)
+        .optional(),
+    satisfactionScore: z.number().min(0).max(10).optional(),
+    npsScore: z.number().min(-10).max(10).optional(),
+    // Categorization and geofencing
+    tags: z.array(z.string()).optional(),
+    visibleCategories: z.array(z.string()).optional(),
+    customFields: z.record(z.string(), z.any()).optional(),
+    socialProfiles: z
+        .object({
+            linkedin: z.string().url().optional(),
+            twitter: z.string().url().optional(),
+            facebook: z.string().url().optional(),
+            instagram: z.string().url().optional(),
+        })
+        .optional(),
+    geofenceType: z
+        .nativeEnum(GeofenceType)
+        .default(GeofenceType.NONE)
+        .optional(),
+    geofenceRadius: z.number().min(100).max(5000).default(500).optional(),
+    enableGeofence: z.boolean().default(false).optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -132,6 +199,27 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
         type: ClientType.STANDARD, // Default type
         status: ClientStatus.ACTIVE, // Default status
         ref: generateClientRef(), // Generate a unique reference
+        // Additional fields
+        creditLimit: 0,
+        outstandingBalance: 0,
+        priceTier: PriceTier.STANDARD,
+        discountPercentage: 0,
+        paymentTerms: 'Net 30',
+        preferredContactMethod: ClientContactPreference.EMAIL,
+        preferredLanguage: 'English',
+        riskLevel: ClientRiskLevel.LOW,
+        tags: [],
+        visibleCategories: [],
+        customFields: {},
+        socialProfiles: {
+            linkedin: '',
+            twitter: '',
+            facebook: '',
+            instagram: '',
+        },
+        geofenceType: GeofenceType.NONE,
+        geofenceRadius: 500,
+        enableGeofence: false,
         ...initialData, // Override with any provided initial data
     };
 
@@ -1031,6 +1119,1424 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     )}
                                 />
                             </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="industry"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Industry
+                                </Label>
+                                <Input
+                                    id="industry"
+                                    {...register('industry')}
+                                    placeholder="Technology"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.industry && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.industry.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    The industry sector this client operates in
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="companySize"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Company Size
+                                </Label>
+                                <Input
+                                    id="companySize"
+                                    type="number"
+                                    {...register('companySize', {
+                                        valueAsNumber: true,
+                                    })}
+                                    placeholder="250"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.companySize && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.companySize.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Number of employees
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="creditLimit"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Credit Limit
+                                </Label>
+                                <Input
+                                    id="creditLimit"
+                                    type="number"
+                                    {...register('creditLimit', {
+                                        valueAsNumber: true,
+                                    })}
+                                    placeholder="50000"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.creditLimit && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.creditLimit.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="outstandingBalance"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Outstanding Balance
+                                </Label>
+                                <Input
+                                    id="outstandingBalance"
+                                    type="number"
+                                    {...register('outstandingBalance', {
+                                        valueAsNumber: true,
+                                    })}
+                                    placeholder="5000"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.outstandingBalance && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.outstandingBalance.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="paymentTerms"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Payment Terms
+                                </Label>
+                                <Input
+                                    id="paymentTerms"
+                                    {...register('paymentTerms')}
+                                    placeholder="Net 30"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.paymentTerms && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.paymentTerms.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="discountPercentage"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Discount (%)
+                                </Label>
+                                <Input
+                                    id="discountPercentage"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    {...register('discountPercentage', {
+                                        valueAsNumber: true,
+                                        min: 0,
+                                        max: 100,
+                                    })}
+                                    placeholder="10"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.discountPercentage && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.discountPercentage.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Discount percentage (0-100%)
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="preferredPaymentMethod"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Preferred Payment Method
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="preferredPaymentMethod"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <CreditCard
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT PAYMENT METHOD'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        PaymentMethod,
+                                                    ).map((method) => (
+                                                        <SelectItem
+                                                            key={method}
+                                                            value={method}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <CreditCard
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {method.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="priceTier"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Price Tier
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="priceTier"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Tag
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT PRICE TIER'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        PriceTier,
+                                                    ).map((tier) => (
+                                                        <SelectItem
+                                                            key={tier}
+                                                            value={tier}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Tag
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {tier.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Tags & Categories */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Tag className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Tags & Categories
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="tags"
+                                className="block text-xs font-light uppercase font-body"
+                            >
+                                Tags
+                            </Label>
+                            <Controller
+                                control={control}
+                                name="tags"
+                                render={({ field }) => (
+                                    <div className="space-y-2">
+                                        <div className="flex flex-wrap gap-2">
+                                            {field.value?.map((tag, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="secondary"
+                                                    className="flex items-center gap-1 text-[10px] h-6 bg-card border border-border"
+                                                >
+                                                    {tag}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTags = [
+                                                                ...(field.value || []),
+                                                            ];
+                                                            newTags.splice(
+                                                                index,
+                                                                1,
+                                                            );
+                                                            field.onChange(
+                                                                newTags,
+                                                            );
+                                                        }}
+                                                        className="ml-1 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                id="tag-input"
+                                                placeholder="Add tag and press Enter"
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body h-9"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const input =
+                                                            e.currentTarget;
+                                                        const tag =
+                                                            input.value.trim();
+                                                        if (
+                                                            tag &&
+                                                            (!field.value ||
+                                                                !field.value.includes(
+                                                                    tag,
+                                                                ))
+                                                        ) {
+                                                            const newTags = [
+                                                                ...(field.value ||
+                                                                    []),
+                                                                tag,
+                                                            ];
+                                                            field.onChange(
+                                                                newTags,
+                                                            );
+                                                            input.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-9"
+                                                onClick={() => {
+                                                    const input =
+                                                        document.getElementById(
+                                                            'tag-input',
+                                                        ) as HTMLInputElement;
+                                                    const tag =
+                                                        input.value.trim();
+                                                    if (
+                                                        tag &&
+                                                        (!field.value ||
+                                                            !field.value.includes(
+                                                                tag,
+                                                            ))
+                                                    ) {
+                                                        const newTags = [
+                                                            ...(field.value ||
+                                                                []),
+                                                            tag,
+                                                        ];
+                                                        field.onChange(newTags);
+                                                        input.value = '';
+                                                    }
+                                                }}
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            />
+                            <p className="text-[10px] text-muted-foreground">
+                                Add tags to categorize this client (e.g., VIP,
+                                Regular, Bulk Buyer)
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="visibleCategories"
+                                className="block text-xs font-light uppercase font-body"
+                            >
+                                Visible Product Categories
+                            </Label>
+                            <Controller
+                                control={control}
+                                name="visibleCategories"
+                                render={({ field }) => (
+                                    <div className="space-y-2">
+                                        <div className="flex flex-wrap gap-2">
+                                            {field.value?.map(
+                                                (category, index) => (
+                                                    <Badge
+                                                        key={index}
+                                                        variant="secondary"
+                                                        className="flex items-center gap-1 text-[10px] h-6 bg-card border border-border"
+                                                    >
+                                                        {category}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newCategories = [
+                                                                    ...(field.value || []),
+                                                                ];
+                                                                newCategories.splice(
+                                                                    index,
+                                                                    1,
+                                                                );
+                                                                field.onChange(
+                                                                    newCategories,
+                                                                );
+                                                            }}
+                                                            className="ml-1 text-muted-foreground hover:text-foreground"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </Badge>
+                                                ),
+                                            )}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                id="category-input"
+                                                placeholder="Add product category and press Enter"
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body h-9"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const input =
+                                                            e.currentTarget;
+                                                        const category =
+                                                            input.value.trim();
+                                                        if (
+                                                            category &&
+                                                            (!field.value ||
+                                                                !field.value.includes(
+                                                                    category,
+                                                                ))
+                                                        ) {
+                                                            const newCategories = [
+                                                                ...(field.value ||
+                                                                    []),
+                                                                category,
+                                                            ];
+                                                            field.onChange(
+                                                                newCategories,
+                                                            );
+                                                            input.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-9"
+                                                onClick={() => {
+                                                    const input =
+                                                        document.getElementById(
+                                                            'category-input',
+                                                        ) as HTMLInputElement;
+                                                    const category =
+                                                        input.value.trim();
+                                                    if (
+                                                        category &&
+                                                        (!field.value ||
+                                                            !field.value.includes(
+                                                                category,
+                                                            ))
+                                                    ) {
+                                                        const newCategories = [
+                                                            ...(field.value ||
+                                                                []),
+                                                            category,
+                                                        ];
+                                                        field.onChange(
+                                                            newCategories,
+                                                        );
+                                                        input.value = '';
+                                                    }
+                                                }}
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            />
+                            <p className="text-[10px] text-muted-foreground">
+                                Product categories this client can access (e.g.,
+                                Electronics, Software, Services)
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Customer Insights */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Users className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Customer Insights
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="satisfactionScore"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Satisfaction Score (0-10)
+                                </Label>
+                                <Input
+                                    id="satisfactionScore"
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    {...register('satisfactionScore', {
+                                        valueAsNumber: true,
+                                        min: 0,
+                                        max: 10,
+                                    })}
+                                    placeholder="8.5"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.satisfactionScore && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.satisfactionScore.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Overall customer satisfaction score
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="npsScore"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    NPS Score (-10 to 10)
+                                </Label>
+                                <Input
+                                    id="npsScore"
+                                    type="number"
+                                    min="-10"
+                                    max="10"
+                                    {...register('npsScore', {
+                                        valueAsNumber: true,
+                                        min: -10,
+                                        max: 10,
+                                    })}
+                                    placeholder="8"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.npsScore && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.npsScore.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Net Promoter Score
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="acquisitionChannel"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Acquisition Channel
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="acquisitionChannel"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Users
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT ACQUISITION CHANNEL'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        AcquisitionChannel,
+                                                    ).map((channel) => (
+                                                        <SelectItem
+                                                            key={channel}
+                                                            value={channel}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Users
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {channel.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="acquisitionDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Acquisition Date
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="acquisitionDate"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
+                                                <Calendar
+                                                    className="w-4 h-4 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                                <Input
+                                                    id="acquisitionDate"
+                                                    type="date"
+                                                    value={
+                                                        field.value
+                                                            ? new Date(
+                                                                  field.value,
+                                                              )
+                                                                  .toISOString()
+                                                                  .split('T')[0]
+                                                            : ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            e.target.value
+                                                                ? new Date(
+                                                                      e.target.value,
+                                                                  )
+                                                                : null,
+                                                        )
+                                                    }
+                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                                {errors.acquisitionDate && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.acquisitionDate
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Date when client was acquired
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="riskLevel"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Risk Level
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="riskLevel"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <AlertTriangle
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT RISK LEVEL'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        ClientRiskLevel,
+                                                    ).map((level) => (
+                                                        <SelectItem
+                                                            key={level}
+                                                            value={level}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <AlertTriangle
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {level.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="lifetimeValue"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Lifetime Value
+                                </Label>
+                                <Input
+                                    id="lifetimeValue"
+                                    type="number"
+                                    {...register('lifetimeValue', {
+                                        valueAsNumber: true,
+                                    })}
+                                    placeholder="250000"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.lifetimeValue && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.lifetimeValue.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Total value of the client relationship
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="annualRevenue"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Annual Revenue
+                                </Label>
+                                <Input
+                                    id="annualRevenue"
+                                    type="number"
+                                    {...register('annualRevenue', {
+                                        valueAsNumber: true,
+                                    })}
+                                    placeholder="5000000"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.annualRevenue && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.annualRevenue.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Client's annual revenue
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Contact Preferences & Dates */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Calendar className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Contact Preferences & Important Dates
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="preferredContactMethod"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Preferred Contact Method
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="preferredContactMethod"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT CONTACT METHOD'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        ClientContactPreference,
+                                                    ).map((method) => (
+                                                        <SelectItem
+                                                            key={method}
+                                                            value={method}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Mail
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {method.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="preferredLanguage"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Preferred Language
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="preferredLanguage"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Globe
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT LANGUAGE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        ClientLanguage,
+                                                    ).map((language) => (
+                                                        <SelectItem
+                                                            key={language}
+                                                            value={language}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Globe
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {language.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="anniversaryDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Anniversary Date
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="anniversaryDate"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
+                                                <Calendar
+                                                    className="w-4 h-4 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                                <Input
+                                                    id="anniversaryDate"
+                                                    type="date"
+                                                    value={
+                                                        field.value
+                                                            ? new Date(
+                                                                  field.value,
+                                                              )
+                                                                  .toISOString()
+                                                                  .split('T')[0]
+                                                            : ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            e.target.value
+                                                                ? new Date(
+                                                                      e.target.value,
+                                                                  )
+                                                                : null,
+                                                        )
+                                                    }
+                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                                {errors.anniversaryDate && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.anniversaryDate
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    When the client relationship began
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="birthday"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Birthday
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="birthday"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
+                                                <Calendar
+                                                    className="w-4 h-4 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                                <Input
+                                                    id="birthday"
+                                                    type="date"
+                                                    value={
+                                                        field.value
+                                                            ? new Date(
+                                                                  field.value,
+                                                              )
+                                                                  .toISOString()
+                                                                  .split('T')[0]
+                                                            : ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            e.target.value
+                                                                ? new Date(
+                                                                      e.target.value,
+                                                                  )
+                                                                : null,
+                                                        )
+                                                    }
+                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                                {errors.birthday && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.birthday.message as string}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    For sending special offers and greetings
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Social Media Profiles */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Globe className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Social Media Profiles
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="socialProfiles.linkedin"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    LinkedIn
+                                </Label>
+                                <Input
+                                    id="socialProfiles.linkedin"
+                                    {...register('socialProfiles.linkedin')}
+                                    placeholder="https://www.linkedin.com/company/acme"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.socialProfiles?.linkedin && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.socialProfiles.linkedin
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="socialProfiles.twitter"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Twitter/X
+                                </Label>
+                                <Input
+                                    id="socialProfiles.twitter"
+                                    {...register('socialProfiles.twitter')}
+                                    placeholder="https://twitter.com/acme"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.socialProfiles?.twitter && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.socialProfiles.twitter
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="socialProfiles.facebook"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Facebook
+                                </Label>
+                                <Input
+                                    id="socialProfiles.facebook"
+                                    {...register('socialProfiles.facebook')}
+                                    placeholder="https://www.facebook.com/acme"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.socialProfiles?.facebook && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.socialProfiles.facebook
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="socialProfiles.instagram"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Instagram
+                                </Label>
+                                <Input
+                                    id="socialProfiles.instagram"
+                                    {...register('socialProfiles.instagram')}
+                                    placeholder="https://www.instagram.com/acme"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.socialProfiles?.instagram && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {
+                                            errors.socialProfiles.instagram
+                                                .message as string
+                                        }
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Geofencing */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <MapPin className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Geofencing Settings
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <Label
+                                        htmlFor="enableGeofence"
+                                        className="text-xs font-light uppercase font-body"
+                                    >
+                                        Enable Geofencing
+                                    </Label>
+                                    <Controller
+                                        control={control}
+                                        name="enableGeofence"
+                                        render={({ field }) => (
+                                            <Switch
+                                                id="enableGeofence"
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Track and notify when users are near this
+                                    client's location
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="geofenceType"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Geofence Type
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="geofenceType"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <MapPin
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT GEOFENCE TYPE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(
+                                                        GeofenceType,
+                                                    ).map((type) => (
+                                                        <SelectItem
+                                                            key={type}
+                                                            value={type}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <MapPin
+                                                                    className="w-4 h-4"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="uppercase text-[10px] font-thin font-body">
+                                                                    {type.replace(
+                                                                        /_/g,
+                                                                        ' ',
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="geofenceRadius"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Geofence Radius (m)
+                                </Label>
+                                <Input
+                                    id="geofenceRadius"
+                                    type="number"
+                                    min="100"
+                                    max="5000"
+                                    {...register('geofenceRadius', {
+                                        valueAsNumber: true,
+                                        min: 100,
+                                        max: 5000,
+                                    })}
+                                    placeholder="500"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.geofenceRadius && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.geofenceRadius.message}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Radius in meters (100-5000)
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="latitude"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Latitude
+                                    </Label>
+                                    <Input
+                                        id="latitude"
+                                        type="number"
+                                        step="0.0000001"
+                                        {...register('latitude', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="51.5074"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.latitude && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.latitude.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="longitude"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Longitude
+                                    </Label>
+                                    <Input
+                                        id="longitude"
+                                        type="number"
+                                        step="0.0000001"
+                                        {...register('longitude', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="-0.1278"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.longitude && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.longitude.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -1077,5 +2583,3 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
         </form>
     );
 };
-
-export default ClientForm;

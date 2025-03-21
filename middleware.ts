@@ -14,6 +14,8 @@ const publicPaths = [
     '/landing-page',
     '/feedback',
     '/feedback/thank-you',
+    '/review-quotation',
+    '/review-quotation/thank-you',
 ];
 
 // Define path patterns that should be protected

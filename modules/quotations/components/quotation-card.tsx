@@ -238,7 +238,10 @@ function QuotationCardComponent({
                 {quotation.client && (
                     <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
                         <Avatar className="border h-9 w-9 border-primary">
-                            <AvatarImage src={quotation.client?.photo || ''} />
+                            <AvatarImage
+                                src={quotation.client?.logo || ''}
+                                className="object-contain p-1"
+                            />
                             <AvatarFallback className="text-[10px] font-thin font-body">
                                 {getClientInitials()}
                             </AvatarFallback>

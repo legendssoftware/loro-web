@@ -853,6 +853,7 @@ export function TaskDetailsModal({
                                                                     alt={
                                                                         client?.name
                                                                     }
+                                                                    className="object-contain p-1"
                                                                 />
                                                             ) : (
                                                                 <AvatarFallback className="text-xs text-blue-800 bg-blue-100">
@@ -1073,6 +1074,7 @@ export function TaskDetailsModal({
                                                             task?.organisation
                                                                 ?.name
                                                         }
+                                                        className="object-contain p-1"
                                                     />
                                                 ) : (
                                                     <AvatarFallback className="text-orange-800 bg-orange-100">

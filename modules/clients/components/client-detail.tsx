@@ -277,11 +277,42 @@ export function ClientDetail({
     };
 
     const tabs = [
-        { id: 'details', label: 'Details' },
-        { id: 'quotes', label: 'Quotations' },
-        { id: 'checkins', label: 'Check-ins' },
-        { id: 'organisation', label: 'Organisation' },
-        { id: 'activity', label: 'Activity' },
+        {
+            id: 'reports',
+            label: 'Reports',
+            icon: <BarChart2 className="w-4 h-4 mr-1" />,
+        },
+
+        {
+            id: 'details',
+            label: 'Details',
+            icon: <FileText className="w-4 h-4 mr-1" />,
+        },
+        {
+            id: 'organisation',
+            label: 'Organisation',
+            icon: <Building className="w-4 h-4 mr-1" />,
+        },
+        {
+            id: 'quotes',
+            label: 'Quotations',
+            icon: <FileText className="w-4 h-4 mr-1" />,
+        },
+        {
+            id: 'checkins',
+            label: 'Check-ins',
+            icon: <MapPin className="w-4 h-4 mr-1" />,
+        },
+        {
+            id: 'tasks',
+            label: 'Tasks',
+            icon: <CheckCircle className="w-4 h-4 mr-1" />,
+        },
+        {
+            id: 'assignees',
+            label: 'Assignees',
+            icon: <Users className="w-4 h-4 mr-1" />,
+        },
     ];
 
     const renderTabContent = () => {
@@ -289,15 +320,15 @@ export function ClientDetail({
             case 'details':
                 return (
                     <div className="space-y-6">
-                        {/* Contact Information */}
+                        {/* Contact Information - Updated to match Communication Preferences style */}
                         <div className="p-4 rounded-lg bg-card/50">
-                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
                                 Contact Information
                             </h3>
-                            <div className="grid gap-3">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 {client.email && (
-                                    <div className="flex items-center">
-                                        <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                                    <div className="flex items-start">
+                                        <Mail className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.email}
@@ -310,8 +341,8 @@ export function ClientDetail({
                                 )}
 
                                 {client.phone && (
-                                    <div className="flex items-center">
-                                        <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                                    <div className="flex items-start">
+                                        <Phone className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.phone}
@@ -324,8 +355,8 @@ export function ClientDetail({
                                 )}
 
                                 {client.alternativePhone && (
-                                    <div className="flex items-center">
-                                        <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                                    <div className="flex items-start">
+                                        <Phone className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.alternativePhone}
@@ -338,8 +369,8 @@ export function ClientDetail({
                                 )}
 
                                 {client.website && (
-                                    <div className="flex items-center">
-                                        <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+                                    <div className="flex items-start">
+                                        <Globe className="w-4 h-4 mr-2 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.website}
@@ -471,7 +502,7 @@ export function ClientDetail({
                                                         </a>
                                                     )}
                                                 </div>
-                                                <p className="text-[10px] text-muted-foreground font-body mt-1">
+                                                <p className="text-[10px] text-muted-foreground font-body">
                                                     Social Profiles
                                                 </p>
                                             </div>
@@ -1188,6 +1219,7 @@ export function ClientDetail({
                                             <AvatarImage
                                                 src={client.organisation.logo}
                                                 alt={client.organisation.name}
+                                                className="object-contain p-1"
                                             />
                                             <AvatarFallback className="text-xl font-body">
                                                 {client.organisation.name
@@ -1298,8 +1330,12 @@ export function ClientDetail({
                                                                 : ''}
                                                             {client.branch
                                                                 .address.city
-                                                                ? `${client.branch.address.city}`
+                                                                ? `${client.branch.address.city}, `
                                                                 : ''}
+                                                            {client.branch
+                                                                .address
+                                                                .postalCode ||
+                                                                ''}
                                                         </p>
                                                         <p className="text-[10px] text-muted-foreground font-body">
                                                             Branch Address
@@ -1405,6 +1441,26 @@ export function ClientDetail({
                 return (
                     <div className="flex flex-col items-center justify-center h-40 gap-1">
                         <div className="p-4 text-center rounded-full bg-muted/20">
+                            <Calendar
+                                className="w-8 h-8 text-muted-foreground"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                ACTIVATING SOON
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body">
+                                Activity log functionality will be available
+                                soon
+                            </p>
+                        </div>
+                    </div>
+                );
+            case 'reports':
+                return (
+                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                        <div className="p-4 text-center rounded-full bg-muted/20">
                             <BarChart2
                                 className="w-8 h-8 text-muted-foreground"
                                 strokeWidth={1.5}
@@ -1412,23 +1468,97 @@ export function ClientDetail({
                         </div>
                         <div className="text-center">
                             <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                Activity Log Coming Soon
+                                ACTIVATING SOON
                             </h3>
                             <p className="text-xs text-muted-foreground font-body">
-                                This feature will be available in a future
-                                update.
+                                Client reporting functionality will be available
+                                soon
+                            </p>
+                        </div>
+                    </div>
+                );
+            case 'leads':
+                return (
+                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                        <div className="p-4 text-center rounded-full bg-muted/20">
+                            <TrendingUp
+                                className="w-8 h-8 text-muted-foreground"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                ACTIVATING SOON
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body">
+                                Leads management functionality will be available
+                                soon
+                            </p>
+                        </div>
+                    </div>
+                );
+            case 'tasks':
+                return (
+                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                        <div className="p-4 text-center rounded-full bg-muted/20">
+                            <CheckCircle
+                                className="w-8 h-8 text-muted-foreground"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                ACTIVATING SOON
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body">
+                                Tasks management functionality will be available
+                                soon
+                            </p>
+                        </div>
+                    </div>
+                );
+            case 'documents':
+                return (
+                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                        <div className="p-4 text-center rounded-full bg-muted/20">
+                            <FileText
+                                className="w-8 h-8 text-muted-foreground"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                ACTIVATING SOON
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body">
+                                Documents management functionality will be
+                                available soon
+                            </p>
+                        </div>
+                    </div>
+                );
+            case 'assignees':
+                return (
+                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                        <div className="p-4 text-center rounded-full bg-muted/20">
+                            <Users
+                                className="w-8 h-8 text-muted-foreground"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                ACTIVATING SOON
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-body">
+                                Assignees management functionality will be
+                                available soon
                             </p>
                         </div>
                     </div>
                 );
             default:
-                return (
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-sm text-muted-foreground">
-                            Select a tab to view details
-                        </p>
-                    </div>
-                );
+                return null;
         }
     };
 
@@ -1507,7 +1637,7 @@ export function ClientDetail({
                                         className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28 md:w-36"
                                     >
                                         <div
-                                            className={`mb-3 font-body px-0 font-normal ${
+                                            className={`mb-3 font-body px-0 font-normal flex items-center ${
                                                 activeTab === tab?.id
                                                     ? 'text-primary dark:text-primary'
                                                     : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
@@ -1516,6 +1646,7 @@ export function ClientDetail({
                                                 handleTabChange(tab?.id)
                                             }
                                         >
+                                            {tab.icon}
                                             <span className="text-xs font-thin uppercase font-body">
                                                 {tab?.label}
                                             </span>

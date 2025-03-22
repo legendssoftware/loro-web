@@ -598,12 +598,13 @@ export function QuotationDetailsModal({
                         {activeTab === 'client' && (
                             <div className="space-y-4">
                                 <div className="p-4 space-y-4 rounded-lg bg-card/50">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="w-12 h-12">
+                                    <div className="flex items-center gap-3 rounded-md border-primary">
+                                        <Avatar className="w-12 h-12 border rounded-full border-primary">
                                             <AvatarImage
                                                 src={
                                                     quotation.client?.logo || ''
                                                 }
+                                                className="object-contain p-1"
                                             />
                                             <AvatarFallback
                                                 className={cn(

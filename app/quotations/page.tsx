@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-tab-group';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const QuotationsTabContent = dynamic(
@@ -20,7 +21,7 @@ const QuotationsTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },

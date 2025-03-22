@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { UsersTabGroup } from '@/modules/users/components/users-tab-group';
 import { UsersHeader } from '@/modules/users/components/users-header';
 import { UserFormValues } from '@/modules/users/components/user-form';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const UsersTabContent = dynamic(
@@ -20,7 +21,7 @@ const UsersTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },

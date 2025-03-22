@@ -14,7 +14,7 @@ export default function Dashboard() {
                         className="text-xs font-normal uppercase font-body"
                         variants={itemVariants}
                     >
-                        reporting activating soon
+                        activating soon
                     </motion.p>
                 </div>
             </PageTransition>

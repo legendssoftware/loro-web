@@ -11,6 +11,7 @@ import {
 import dynamic from 'next/dynamic';
 import { UsersTabGroup } from '@/modules/users/components/users-tab-group';
 import { ProductFormValues } from '@/modules/inventory/components/product-form';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ProductsTabContent = dynamic(
@@ -21,7 +22,7 @@ const ProductsTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },

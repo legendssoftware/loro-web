@@ -17,6 +17,7 @@ import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '@/lib/services/api-client';
+import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,12 @@ import {
     SelectItem,
     SelectTrigger,
 } from '@/components/ui/select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Building2,
@@ -45,13 +52,231 @@ import {
     LayoutGrid,
     CreditCard,
     AlertTriangle,
-    Calendar,
+    Calendar as CalendarIcon,
     X,
     Plus,
+    Clock,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+
+// List of countries for dropdown
+const COUNTRIES = [
+    'Afghanistan',
+    'Albania',
+    'Algeria',
+    'Andorra',
+    'Angola',
+    'Antigua and Barbuda',
+    'Argentina',
+    'Armenia',
+    'Australia',
+    'Austria',
+    'Azerbaijan',
+    'Bahamas',
+    'Bahrain',
+    'Bangladesh',
+    'Barbados',
+    'Belarus',
+    'Belgium',
+    'Belize',
+    'Benin',
+    'Bhutan',
+    'Bolivia',
+    'Bosnia and Herzegovina',
+    'Botswana',
+    'Brazil',
+    'Brunei',
+    'Bulgaria',
+    'Burkina Faso',
+    'Burundi',
+    'Cabo Verde',
+    'Cambodia',
+    'Cameroon',
+    'Canada',
+    'Central African Republic',
+    'Chad',
+    'Chile',
+    'China',
+    'Colombia',
+    'Comoros',
+    'Congo',
+    'Costa Rica',
+    'Croatia',
+    'Cuba',
+    'Cyprus',
+    'Czech Republic',
+    'Denmark',
+    'Djibouti',
+    'Dominica',
+    'Dominican Republic',
+    'East Timor',
+    'Ecuador',
+    'Egypt',
+    'El Salvador',
+    'Equatorial Guinea',
+    'Eritrea',
+    'Estonia',
+    'Eswatini',
+    'Ethiopia',
+    'Fiji',
+    'Finland',
+    'France',
+    'Gabon',
+    'Gambia',
+    'Georgia',
+    'Germany',
+    'Ghana',
+    'Greece',
+    'Grenada',
+    'Guatemala',
+    'Guinea',
+    'Guinea-Bissau',
+    'Guyana',
+    'Haiti',
+    'Honduras',
+    'Hungary',
+    'Iceland',
+    'India',
+    'Indonesia',
+    'Iran',
+    'Iraq',
+    'Ireland',
+    'Israel',
+    'Italy',
+    'Jamaica',
+    'Japan',
+    'Jordan',
+    'Kazakhstan',
+    'Kenya',
+    'Kiribati',
+    'Korea, North',
+    'Korea, South',
+    'Kosovo',
+    'Kuwait',
+    'Kyrgyzstan',
+    'Laos',
+    'Latvia',
+    'Lebanon',
+    'Lesotho',
+    'Liberia',
+    'Libya',
+    'Liechtenstein',
+    'Lithuania',
+    'Luxembourg',
+    'Madagascar',
+    'Malawi',
+    'Malaysia',
+    'Maldives',
+    'Mali',
+    'Malta',
+    'Marshall Islands',
+    'Mauritania',
+    'Mauritius',
+    'Mexico',
+    'Micronesia',
+    'Moldova',
+    'Monaco',
+    'Mongolia',
+    'Montenegro',
+    'Morocco',
+    'Mozambique',
+    'Myanmar',
+    'Namibia',
+    'Nauru',
+    'Nepal',
+    'Netherlands',
+    'New Zealand',
+    'Nicaragua',
+    'Niger',
+    'Nigeria',
+    'North Macedonia',
+    'Norway',
+    'Oman',
+    'Pakistan',
+    'Palau',
+    'Palestine',
+    'Panama',
+    'Papua New Guinea',
+    'Paraguay',
+    'Peru',
+    'Philippines',
+    'Poland',
+    'Portugal',
+    'Qatar',
+    'Romania',
+    'Russia',
+    'Rwanda',
+    'Saint Kitts and Nevis',
+    'Saint Lucia',
+    'Saint Vincent and the Grenadines',
+    'Samoa',
+    'San Marino',
+    'Sao Tome and Principe',
+    'Saudi Arabia',
+    'Senegal',
+    'Serbia',
+    'Seychelles',
+    'Sierra Leone',
+    'Singapore',
+    'Slovakia',
+    'Slovenia',
+    'Solomon Islands',
+    'Somalia',
+    'South Africa',
+    'South Sudan',
+    'Spain',
+    'Sri Lanka',
+    'Sudan',
+    'Suriname',
+    'Sweden',
+    'Switzerland',
+    'Syria',
+    'Taiwan',
+    'Tajikistan',
+    'Tanzania',
+    'Thailand',
+    'Togo',
+    'Tonga',
+    'Trinidad and Tobago',
+    'Tunisia',
+    'Turkey',
+    'Turkmenistan',
+    'Tuvalu',
+    'Uganda',
+    'Ukraine',
+    'United Arab Emirates',
+    'United Kingdom',
+    'United States',
+    'Uruguay',
+    'Uzbekistan',
+    'Vanuatu',
+    'Vatican City',
+    'Venezuela',
+    'Vietnam',
+    'Yemen',
+    'Zambia',
+    'Zimbabwe',
+];
+
+// List of payment terms
+const PAYMENT_TERMS = [
+    'Net 15',
+    'Net 30',
+    'Net 45',
+    'Net 60',
+    'Net 90',
+    'Due on Receipt',
+    'End of Month',
+    'EOM 15',
+    'EOM 30',
+    'EOM 45',
+    'EOM 60',
+    'Cash on Delivery',
+    'Advance Payment',
+    'Other',
+];
 
 // Form schema definition with improved validation
 const clientFormSchema = z.object({
@@ -745,11 +970,50 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     Country{' '}
                                     <span className="text-red-500">*</span>
                                 </Label>
-                                <Input
-                                    id="address.country"
-                                    {...register('address.country')}
-                                    placeholder="South Africa"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                <Controller
+                                    control={control}
+                                    name="address.country"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Globe
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ||
+                                                            'SELECT COUNTRY'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent className="max-h-[300px] overflow-y-auto">
+                                                    {COUNTRIES.map(
+                                                        (country) => (
+                                                            <SelectItem
+                                                                key={country}
+                                                                value={country}
+                                                            >
+                                                                <span className="text-[10px] font-normal font-body">
+                                                                    {country}
+                                                                </span>
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                 />
                                 {errors.address?.country && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -1226,17 +1490,54 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 >
                                     Payment Terms
                                 </Label>
-                                <Input
-                                    id="paymentTerms"
-                                    {...register('paymentTerms')}
-                                    placeholder="Net 30"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                <Controller
+                                    control={control}
+                                    name="paymentTerms"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <CreditCard
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ||
+                                                            'SELECT PAYMENT TERMS'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {PAYMENT_TERMS.map(
+                                                        (term) => (
+                                                            <SelectItem
+                                                                key={term}
+                                                                value={term}
+                                                            >
+                                                                <span className="text-[10px] font-normal font-body">
+                                                                    {term}
+                                                                </span>
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                 />
-                                {errors.paymentTerms && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.paymentTerms.message}
-                                    </p>
-                                )}
+                                <p className="text-[10px] text-muted-foreground">
+                                    Standard payment terms for this client
+                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -1447,7 +1748,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         type="button"
                                                         onClick={() => {
                                                             const newTags = [
-                                                                ...(field.value || []),
+                                                                ...(field.value ||
+                                                                    []),
                                                             ];
                                                             newTags.splice(
                                                                 index,
@@ -1561,9 +1863,11 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         <button
                                                             type="button"
                                                             onClick={() => {
-                                                                const newCategories = [
-                                                                    ...(field.value || []),
-                                                                ];
+                                                                const newCategories =
+                                                                    [
+                                                                        ...(field.value ||
+                                                                            []),
+                                                                    ];
                                                                 newCategories.splice(
                                                                     index,
                                                                     1,
@@ -1599,11 +1903,12 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                     category,
                                                                 ))
                                                         ) {
-                                                            const newCategories = [
-                                                                ...(field.value ||
-                                                                    []),
-                                                                category,
-                                                            ];
+                                                            const newCategories =
+                                                                [
+                                                                    ...(field.value ||
+                                                                        []),
+                                                                    category,
+                                                                ];
                                                             field.onChange(
                                                                 newCategories,
                                                             );
@@ -1809,39 +2114,165 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 <Controller
                                     control={control}
                                     name="acquisitionDate"
-                                    render={({ field }) => (
-                                        <div className="relative">
-                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
-                                                <Calendar
-                                                    className="w-4 h-4 text-muted-foreground"
-                                                    strokeWidth={1.5}
-                                                />
-                                                <Input
-                                                    id="acquisitionDate"
-                                                    type="date"
-                                                    value={
-                                                        field.value
-                                                            ? new Date(
-                                                                  field.value,
-                                                              )
-                                                                  .toISOString()
-                                                                  .split('T')[0]
-                                                            : ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        field.onChange(
-                                                            e.target.value
-                                                                ? new Date(
-                                                                      e.target.value,
-                                                                  )
-                                                                : null,
-                                                        )
-                                                    }
-                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
-                                                />
+                                    render={({ field }) => {
+                                        const [selectedTime, setSelectedTime] =
+                                            useState<string>(
+                                                field.value
+                                                    ? format(
+                                                          new Date(field.value),
+                                                          'HH:mm',
+                                                      )
+                                                    : '12:00',
+                                            );
+
+                                        const updateDateWithTime = (
+                                            date: Date | undefined,
+                                            timeString: string,
+                                        ) => {
+                                            if (!date) return;
+
+                                            const [hours, minutes] = timeString
+                                                .split(':')
+                                                .map(Number);
+                                            const newDate = new Date(date);
+                                            newDate.setHours(hours, minutes);
+                                            field.onChange(newDate);
+                                        };
+
+                                        return (
+                                            <div className="relative">
+                                                <div className="flex space-x-2">
+                                                    <div className="relative w-3/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <CalendarIcon
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'MMM d, yyyy',
+                                                                          )
+                                                                        : 'SELECT DATE'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-0">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={
+                                                                        field.value
+                                                                            ? new Date(
+                                                                                  field.value,
+                                                                              )
+                                                                            : undefined
+                                                                    }
+                                                                    onSelect={(
+                                                                        date,
+                                                                    ) => {
+                                                                        if (
+                                                                            date
+                                                                        ) {
+                                                                            updateDateWithTime(
+                                                                                date,
+                                                                                selectedTime,
+                                                                            );
+                                                                        } else {
+                                                                            field.onChange(
+                                                                                undefined,
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+
+                                                    <div className="relative w-2/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <Clock
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'h:mm a',
+                                                                          )
+                                                                        : 'TIME'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-3">
+                                                                <div className="space-y-2">
+                                                                    <div className="text-[10px] font-thin uppercase font-body">
+                                                                        Time
+                                                                    </div>
+                                                                    <input
+                                                                        type="time"
+                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        value={
+                                                                            selectedTime
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            const newTime =
+                                                                                e
+                                                                                    .target
+                                                                                    .value;
+                                                                            setSelectedTime(
+                                                                                newTime,
+                                                                            );
+                                                                            if (
+                                                                                field.value
+                                                                            ) {
+                                                                                updateDateWithTime(
+                                                                                    new Date(
+                                                                                        field.value,
+                                                                                    ),
+                                                                                    newTime,
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        );
+                                    }}
                                 />
                                 {errors.acquisitionDate && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -1984,7 +2415,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                            <Calendar className="w-4 h-4" strokeWidth={1.5} />
+                            <CalendarIcon
+                                className="w-4 h-4"
+                                strokeWidth={1.5}
+                            />
                             <span className="font-light uppercase font-body">
                                 Contact Preferences & Important Dates
                             </span>
@@ -2140,51 +2574,171 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 <Controller
                                     control={control}
                                     name="anniversaryDate"
-                                    render={({ field }) => (
-                                        <div className="relative">
-                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
-                                                <Calendar
-                                                    className="w-4 h-4 text-muted-foreground"
-                                                    strokeWidth={1.5}
-                                                />
-                                                <Input
-                                                    id="anniversaryDate"
-                                                    type="date"
-                                                    value={
-                                                        field.value
-                                                            ? new Date(
-                                                                  field.value,
-                                                              )
-                                                                  .toISOString()
-                                                                  .split('T')[0]
-                                                            : ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        field.onChange(
-                                                            e.target.value
-                                                                ? new Date(
-                                                                      e.target.value,
-                                                                  )
-                                                                : null,
-                                                        )
-                                                    }
-                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
-                                                />
+                                    render={({ field }) => {
+                                        const [selectedTime, setSelectedTime] =
+                                            useState<string>(
+                                                field.value
+                                                    ? format(
+                                                          new Date(field.value),
+                                                          'HH:mm',
+                                                      )
+                                                    : '12:00',
+                                            );
+
+                                        const updateDateWithTime = (
+                                            date: Date | undefined,
+                                            timeString: string,
+                                        ) => {
+                                            if (!date) return;
+
+                                            const [hours, minutes] = timeString
+                                                .split(':')
+                                                .map(Number);
+                                            const newDate = new Date(date);
+                                            newDate.setHours(hours, minutes);
+                                            field.onChange(newDate);
+                                        };
+
+                                        return (
+                                            <div className="relative">
+                                                <div className="flex space-x-2">
+                                                    <div className="relative w-3/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <CalendarIcon
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'MMM d, yyyy',
+                                                                          )
+                                                                        : 'SELECT DATE'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-0">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={
+                                                                        field.value
+                                                                            ? new Date(
+                                                                                  field.value,
+                                                                              )
+                                                                            : undefined
+                                                                    }
+                                                                    onSelect={(
+                                                                        date,
+                                                                    ) => {
+                                                                        if (
+                                                                            date
+                                                                        ) {
+                                                                            updateDateWithTime(
+                                                                                date,
+                                                                                selectedTime,
+                                                                            );
+                                                                        } else {
+                                                                            field.onChange(
+                                                                                undefined,
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+
+                                                    <div className="relative w-2/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <Clock
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'h:mm a',
+                                                                          )
+                                                                        : 'TIME'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-3">
+                                                                <div className="space-y-2">
+                                                                    <div className="text-[10px] font-thin uppercase font-body">
+                                                                        Time
+                                                                    </div>
+                                                                    <input
+                                                                        type="time"
+                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        value={
+                                                                            selectedTime
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            const newTime =
+                                                                                e
+                                                                                    .target
+                                                                                    .value;
+                                                                            setSelectedTime(
+                                                                                newTime,
+                                                                            );
+                                                                            if (
+                                                                                field.value
+                                                                            ) {
+                                                                                updateDateWithTime(
+                                                                                    new Date(
+                                                                                        field.value,
+                                                                                    ),
+                                                                                    newTime,
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        );
+                                    }}
                                 />
                                 {errors.anniversaryDate && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {
-                                            errors.anniversaryDate
-                                                .message as string
-                                        }
+                                        {errors.anniversaryDate.message}
                                     </p>
                                 )}
-                                <p className="text-[10px] text-muted-foreground">
-                                    When the client relationship began
-                                </p>
                             </div>
 
                             <div className="space-y-1">
@@ -2197,39 +2751,165 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 <Controller
                                     control={control}
                                     name="birthday"
-                                    render={({ field }) => (
-                                        <div className="relative">
-                                            <div className="flex items-center w-full h-10 gap-2 px-3 border rounded bg-card border-border">
-                                                <Calendar
-                                                    className="w-4 h-4 text-muted-foreground"
-                                                    strokeWidth={1.5}
-                                                />
-                                                <Input
-                                                    id="birthday"
-                                                    type="date"
-                                                    value={
-                                                        field.value
-                                                            ? new Date(
-                                                                  field.value,
-                                                              )
-                                                                  .toISOString()
-                                                                  .split('T')[0]
-                                                            : ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        field.onChange(
-                                                            e.target.value
-                                                                ? new Date(
-                                                                      e.target.value,
-                                                                  )
-                                                                : null,
-                                                        )
-                                                    }
-                                                    className="p-0 m-0 font-light border-0 focus-visible:ring-0 placeholder:text-xs placeholder:font-body"
-                                                />
+                                    render={({ field }) => {
+                                        const [selectedTime, setSelectedTime] =
+                                            useState<string>(
+                                                field.value
+                                                    ? format(
+                                                          new Date(field.value),
+                                                          'HH:mm',
+                                                      )
+                                                    : '12:00',
+                                            );
+
+                                        const updateDateWithTime = (
+                                            date: Date | undefined,
+                                            timeString: string,
+                                        ) => {
+                                            if (!date) return;
+
+                                            const [hours, minutes] = timeString
+                                                .split(':')
+                                                .map(Number);
+                                            const newDate = new Date(date);
+                                            newDate.setHours(hours, minutes);
+                                            field.onChange(newDate);
+                                        };
+
+                                        return (
+                                            <div className="relative">
+                                                <div className="flex space-x-2">
+                                                    <div className="relative w-3/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <CalendarIcon
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'MMM d, yyyy',
+                                                                          )
+                                                                        : 'SELECT DATE'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-0">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={
+                                                                        field.value
+                                                                            ? new Date(
+                                                                                  field.value,
+                                                                              )
+                                                                            : undefined
+                                                                    }
+                                                                    onSelect={(
+                                                                        date,
+                                                                    ) => {
+                                                                        if (
+                                                                            date
+                                                                        ) {
+                                                                            updateDateWithTime(
+                                                                                date,
+                                                                                selectedTime,
+                                                                            );
+                                                                        } else {
+                                                                            field.onChange(
+                                                                                undefined,
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+
+                                                    <div className="relative w-2/5">
+                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                            <div className="flex items-center gap-2">
+                                                                <Clock
+                                                                    className="w-4 h-4 text-muted-foreground"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
+                                                                <span className="text-[10px] font-thin font-body">
+                                                                    {field.value
+                                                                        ? format(
+                                                                              new Date(
+                                                                                  field.value,
+                                                                              ),
+                                                                              'h:mm a',
+                                                                          )
+                                                                        : ' TIME'}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronDown
+                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <Popover>
+                                                            <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
+                                                            <PopoverContent className="w-auto p-3">
+                                                                <div className="space-y-2">
+                                                                    <div className="text-[10px] font-thin uppercase font-body">
+                                                                        Time
+                                                                    </div>
+                                                                    <input
+                                                                        type="time"
+                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        value={
+                                                                            selectedTime
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            const newTime =
+                                                                                e
+                                                                                    .target
+                                                                                    .value;
+                                                                            setSelectedTime(
+                                                                                newTime,
+                                                                            );
+                                                                            if (
+                                                                                field.value
+                                                                            ) {
+                                                                                updateDateWithTime(
+                                                                                    new Date(
+                                                                                        field.value,
+                                                                                    ),
+                                                                                    newTime,
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        );
+                                    }}
                                 />
                                 {errors.birthday && (
                                     <p className="mt-1 text-xs text-red-500">

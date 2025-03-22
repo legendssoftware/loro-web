@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { TasksTabGroup } from '@/modules/tasks/components/tasks-tab-group';
 import { TasksHeader } from '@/modules/tasks/components/tasks-header';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const TasksTabContent = dynamic(
@@ -19,7 +20,7 @@ const TasksTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },

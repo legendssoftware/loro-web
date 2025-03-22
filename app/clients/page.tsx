@@ -2,7 +2,7 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useClientsQuery, ClientFilterParams } from '@/hooks/use-clients-query';
+import { useClientsQuery, ClientFilterParams, Client } from '@/hooks/use-clients-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -10,6 +10,7 @@ import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group'
 import { ClientsHeader } from '@/modules/clients/components/clients-header';
 import { ClientFormValues } from '@/modules/clients/components/client-form';
 import { toast } from 'react-hot-toast';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ClientsTabContent = dynamic(
@@ -20,7 +21,7 @@ const ClientsTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },
@@ -181,6 +182,14 @@ export default function ClientsPage() {
         [deleteClient],
     );
 
+    // Add handler for editing a client (navigating to detail page)
+    const handleEditClient = useCallback(
+        (client: Client) => {
+            router.push(`/clients/${client.uid}`);
+        },
+        [router]
+    );
+
     // Apply filters handler
     const handleApplyFilters = useCallback((newFilters: ClientFilterParams) => {
         setFilterParams((prev) => ({
@@ -232,9 +241,7 @@ export default function ClientsPage() {
                             clients={filterParams.status ? clients : []}
                             clientsByStatus={clientsByStatus}
                             onAddClient={handleCreateClient}
-                            onEditClient={(client) =>
-                                console.log('Edit client', client)
-                            }
+                            onEditClient={handleEditClient}
                             onDeleteClient={handleDeleteClient}
                             onUpdateClientStatus={handleUpdateClientStatus}
                             pagination={{

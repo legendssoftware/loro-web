@@ -21,6 +21,8 @@ import {
     AlertCircle,
     Tag,
     Trash,
+    Building,
+    AlertTriangle,
 } from 'lucide-react';
 import { useCallback, useState, useMemo } from 'react';
 import { format } from 'date-fns';
@@ -33,6 +35,13 @@ enum DateRangePreset {
     LAST_WEEK = 'LAST_WEEK',
     LAST_MONTH = 'LAST_MONTH',
     CUSTOM = 'CUSTOM',
+}
+
+// Risk level options
+enum RiskLevel {
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
 }
 
 interface ClientsFilterProps {
@@ -50,6 +59,8 @@ export function ClientsFilter({
     const [search, setSearch] = useState<string>('');
     const [status, setStatus] = useState<ClientStatus | undefined>(undefined);
     const [category, setCategory] = useState<string | undefined>(undefined);
+    const [industry, setIndustry] = useState<string | undefined>(undefined);
+    const [riskLevel, setRiskLevel] = useState<RiskLevel | undefined>(undefined);
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
     const [dateRangePreset, setDateRangePreset] = useState<
@@ -65,6 +76,18 @@ export function ClientsFilter({
                 clients
                     .filter((client) => client.category)
                     .map((client) => client.category),
+            ),
+        ).sort();
+    }, [clients]);
+
+    // Get unique industries from clients
+    const industries = useMemo(() => {
+        if (!clients || clients.length === 0) return [];
+        return Array.from(
+            new Set(
+                clients
+                    .filter((client) => client.industry)
+                    .map((client) => client.industry),
             ),
         ).sort();
     }, [clients]);
@@ -89,6 +112,16 @@ export function ClientsFilter({
             newActiveFilters.push('Category');
         }
 
+        if (industry) {
+            filters.industry = industry;
+            newActiveFilters.push('Industry');
+        }
+
+        if (riskLevel) {
+            filters.riskLevel = riskLevel;
+            newActiveFilters.push('Risk Level');
+        }
+
         if (startDate) {
             filters.from = format(startDate, 'yyyy-MM-dd');
             newActiveFilters.push('Date Range');
@@ -100,12 +133,12 @@ export function ClientsFilter({
 
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
-    }, [search, status, category, startDate, endDate, onApplyFilters]);
+    }, [search, status, category, industry, riskLevel, startDate, endDate, onApplyFilters]);
 
     // Adding direct filter application helper to avoid setTimeout issues
     const applyFilter = useCallback(
         (
-            filterType: 'status' | 'category' | 'dateRange' | 'search',
+            filterType: 'status' | 'category' | 'industry' | 'riskLevel' | 'dateRange' | 'search',
             value: any,
             startValue?: Date,
             endValue?: Date
@@ -129,6 +162,16 @@ export function ClientsFilter({
                 newActiveFilters.push('Category');
             }
 
+            if (industry && filterType !== 'industry') {
+                filters.industry = industry;
+                newActiveFilters.push('Industry');
+            }
+
+            if (riskLevel && filterType !== 'riskLevel') {
+                filters.riskLevel = riskLevel;
+                newActiveFilters.push('Risk Level');
+            }
+
             if (startDate && filterType !== 'dateRange') {
                 filters.from = format(startDate, 'yyyy-MM-dd');
                 newActiveFilters.push('Date Range');
@@ -148,6 +191,12 @@ export function ClientsFilter({
             } else if (filterType === 'category' && value) {
                 filters.category = value;
                 newActiveFilters.push('Category');
+            } else if (filterType === 'industry' && value) {
+                filters.industry = value;
+                newActiveFilters.push('Industry');
+            } else if (filterType === 'riskLevel' && value) {
+                filters.riskLevel = value;
+                newActiveFilters.push('Risk Level');
             } else if (filterType === 'dateRange') {
                 if (startValue) {
                     filters.from = format(startValue, 'yyyy-MM-dd');
@@ -161,7 +210,7 @@ export function ClientsFilter({
             setActiveFilters(newActiveFilters);
             onApplyFilters(filters);
         },
-        [search, status, category, startDate, endDate, onApplyFilters]
+        [search, status, category, industry, riskLevel, startDate, endDate, onApplyFilters]
     );
 
     // Clear all filters
@@ -169,6 +218,8 @@ export function ClientsFilter({
         setSearch('');
         setStatus(undefined);
         setCategory(undefined);
+        setIndustry(undefined);
+        setRiskLevel(undefined);
         setStartDate(undefined);
         setEndDate(undefined);
         setDateRangePreset(undefined);
@@ -196,6 +247,13 @@ export function ClientsFilter({
         [ClientStatus.INACTIVE]: 'text-gray-600',
         [ClientStatus.PENDING]: 'text-yellow-600',
         [ClientStatus.DELETED]: 'text-red-600',
+    };
+
+    // Risk level colors
+    const riskLevelColors = {
+        [RiskLevel.LOW]: 'text-green-600',
+        [RiskLevel.MEDIUM]: 'text-yellow-600',
+        [RiskLevel.HIGH]: 'text-red-600',
     };
 
     return (
@@ -377,6 +435,178 @@ export function ClientsFilter({
                                     </span>
                                 </div>
                             )}
+                            <DropdownMenuSeparator />
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            {/* Industry Filter */}
+            <div className="w-[180px]">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                            <div className="flex items-center gap-2">
+                                {industry ? (
+                                    <>
+                                        <Building
+                                            className="w-4 h-4 text-purple-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin text-purple-600 font-body">
+                                            {industry.toUpperCase()}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Building
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            INDUSTRY
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Industry
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
+                            {industries.length > 0 ? (
+                                industries.map((ind) => (
+                                    <DropdownMenuItem
+                                        key={ind}
+                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                        onClick={() => {
+                                            const newIndustry =
+                                                industry === ind
+                                                    ? undefined
+                                                    : ind;
+                                            setIndustry(newIndustry);
+                                            applyFilter('industry', newIndustry);
+                                        }}
+                                    >
+                                        <Building
+                                            className="w-4 h-4 mr-2 text-purple-600"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                industry === ind
+                                                    ? 'text-purple-600'
+                                                    : ''
+                                            }`}
+                                        >
+                                            {ind.toUpperCase()}
+                                        </span>
+                                        {industry === ind && (
+                                            <Check
+                                                className="w-4 h-4 ml-auto text-primary"
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                    </DropdownMenuItem>
+                                ))
+                            ) : (
+                                <div className="px-2 py-1 text-xs text-gray-400">
+                                    <span className="text-[10px] font-normal font-body uppercase">
+                                        No industries available
+                                    </span>
+                                </div>
+                            )}
+                            <DropdownMenuSeparator />
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            {/* Risk Level Filter */}
+            <div className="w-[180px]">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                            <div className="flex items-center gap-2">
+                                {riskLevel ? (
+                                    <>
+                                        <AlertTriangle
+                                            className={`w-4 h-4 ${riskLevelColors[riskLevel]}`}
+                                            strokeWidth={1.5}
+                                        />
+                                        <span
+                                            className={`text-[10px] font-thin font-body ${riskLevelColors[riskLevel]}`}
+                                        >
+                                            {riskLevel.toUpperCase()}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <AlertTriangle
+                                            className="w-4 h-4 text-muted-foreground"
+                                            strokeWidth={1.5}
+                                        />
+                                        <span className="text-[10px] font-thin font-body">
+                                            RISK LEVEL
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Filter by Risk Level
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            {Object.entries(RiskLevel).map(([key, value]) => (
+                                <DropdownMenuItem
+                                    key={value}
+                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                    onClick={() => {
+                                        const newRiskLevel =
+                                            riskLevel === value
+                                                ? undefined
+                                                : value;
+                                        setRiskLevel(newRiskLevel);
+                                        applyFilter('riskLevel', newRiskLevel);
+                                    }}
+                                >
+                                    <AlertTriangle
+                                        className={`w-4 h-4 mr-2 ${
+                                            riskLevelColors[value as RiskLevel]
+                                        }`}
+                                        strokeWidth={1.5}
+                                    />
+                                    <span
+                                        className={`text-[10px] font-normal font-body ${
+                                            riskLevel === value
+                                                ? riskLevelColors[value as RiskLevel]
+                                                : ''
+                                        }`}
+                                    >
+                                        {value.toUpperCase()}
+                                    </span>
+                                    {riskLevel === value && (
+                                        <Check
+                                            className="w-4 h-4 ml-auto text-primary"
+                                            strokeWidth={1.5}
+                                        />
+                                    )}
+                                </DropdownMenuItem>
+                            ))}
                             <DropdownMenuSeparator />
                         </DropdownMenuGroup>
                     </DropdownMenuContent>

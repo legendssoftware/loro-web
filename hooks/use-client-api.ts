@@ -71,10 +71,17 @@ export const useClientApi = () => {
         [],
     );
 
-    // Get a single client by ID
+    // Get a single client by ID with comprehensive data
     const getClient = useCallback(async (clientId: number): Promise<Client | null> => {
         try {
+            // The server-side findOne method already includes relations for
+            // branch, organisation, assignedSalesRep, quotations, checkIns
             const response = await axiosInstance.get(`/clients/${clientId}`);
+
+            // If we need additional related data that isn't included by default,
+            // we could make additional requests here, but for now the backend
+            // already provides the necessary relations
+
             return response.data.client;
         } catch (error) {
             console.error(`Error fetching client ${clientId}:`, error);

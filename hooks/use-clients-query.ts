@@ -17,6 +17,49 @@ export enum ClientStatus {
 export interface Client extends Omit<ClientBase, 'status'> {
     status?: ClientStatus;
     address?: ClientAddress;
+    quotations?: Array<{
+        uid: number;
+        title?: string;
+        status?: string;
+        createdAt: Date;
+        expiryDate?: Date;
+        total?: number;
+        currency?: string;
+    }>;
+    checkIns?: Array<{
+        uid: number;
+        type?: string;
+        checkInTime?: Date;
+        notes?: string;
+        location?: string;
+        owner?: {
+            uid: number;
+            name?: string;
+            email?: string;
+        };
+    }>;
+    branch?: {
+        uid: number;
+        name: string;
+        address?: ClientAddress;
+        email?: string;
+        phone?: string;
+    };
+    organisation?: {
+        uid: number;
+        name: string;
+        email?: string;
+        phone?: string;
+        website?: string;
+        logo?: string;
+        description?: string;
+    };
+    assignedSalesRep?: {
+        uid: number;
+        name?: string;
+        surname?: string;
+        email?: string;
+    };
 }
 
 // Client filter params interface
@@ -26,6 +69,8 @@ export interface ClientFilterParams {
     search?: string;
     status?: ClientStatus;
     category?: string;
+    industry?: string;
+    riskLevel?: string;
     from?: string; // Date range start
     to?: string;   // Date range end
 }

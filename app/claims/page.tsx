@@ -8,6 +8,7 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
+import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ClaimsTabContent = dynamic(
@@ -18,7 +19,7 @@ const ClaimsTabContent = dynamic(
     {
         loading: () => (
             <div className="flex items-center justify-center w-full h-full">
-                Loading...
+                <AppLoader />
             </div>
         ),
     },

@@ -25,7 +25,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ClientDetailsModal } from './client-details-modal';
+import { useRouter } from 'next/navigation';
 
 interface ClientCardProps {
     client: Client;
@@ -43,6 +43,7 @@ function ClientCardComponent({
     onUpdateStatus,
     index = 0,
 }: ClientCardProps) {
+    const router = useRouter();
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -113,12 +114,16 @@ function ClientCardComponent({
             <div
                 className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
                 style={cardStyle}
-                onClick={openModal}
+                onClick={() => router.push(`/clients/${String(client?.uid)}`)}
             >
                 <div className="flex items-center justify-between mb-2">
                     {/* Client Avatar */}
                     <Avatar className="w-12 h-12 mr-3 border border-primary">
-                        <AvatarImage src={client?.logo} alt={client?.name} />
+                        <AvatarImage
+                            src={client?.logo}
+                            alt={client?.name}
+                            className="object-contain p-1"
+                        />
                         <AvatarFallback className="text-xs font-normal uppercase font-body">
                             {client?.name?.charAt(0) || 'C'}
                         </AvatarFallback>
@@ -305,15 +310,6 @@ function ClientCardComponent({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {/* Client Details Modal */}
-            <ClientDetailsModal
-                client={client}
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onUpdateStatus={onUpdateStatus}
-                onDelete={onDelete}
-            />
         </>
     );
 }

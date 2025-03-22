@@ -139,19 +139,37 @@ export default function RootLayout({
                             style: {
                                 background: '#333',
                                 color: '#fff',
+                                zIndex: 9999999,
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                padding: '12px 16px',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                             },
                             success: {
+                                style: {
+                                    background: '#10B981',
+                                },
                                 iconTheme: {
-                                    primary: '#22c55e',
-                                    secondary: '#fff',
+                                    primary: '#ffffff',
+                                    secondary: '#10B981',
                                 },
                             },
                             error: {
+                                style: {
+                                    background: '#EF4444',
+                                },
                                 iconTheme: {
-                                    primary: '#ef4444',
-                                    secondary: '#fff',
+                                    primary: '#ffffff',
+                                    secondary: '#EF4444',
                                 },
                             },
+                        }}
+                        containerStyle={{
+                            zIndex: 9999999,
+                            position: 'fixed',
+                            top: '1.5rem',
+                            right: '1.5rem',
                         }}
                     />
                 </ThemeProvider>

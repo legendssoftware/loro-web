@@ -9,12 +9,15 @@ import {
     Users,
     HandCoins,
     Handshake,
-    Package,
     ShoppingBag,
     KeySquare,
     BriefcaseBusiness,
     Images,
     MapPin,
+    Settings,
+    LayoutList,
+    Warehouse,
+    CalendarRange,
 } from 'lucide-react';
 import {
     Sheet,
@@ -45,12 +48,32 @@ const navigationItems = [
         feature: 'dashboard',
     },
     {
+        title: 'Assets',
+        icon: <LayoutList size={18} strokeWidth={1.5} />,
+        href: '/assets',
+        description: 'View & manage company assets',
+        // Only admin can access assets
+        allowedRoles: [AccessLevel.ADMIN],
+    },
+    {
         title: 'Leads',
         icon: <Handshake size={18} strokeWidth={1.5} />,
         href: '/leads',
         description: 'Manage potential customers',
         // Basic users can access leads
         feature: 'leads',
+    },
+    {
+        title: 'Attendance',
+        icon: <CalendarRange size={18} strokeWidth={1.5} />,
+        href: '/attendance',
+        description: 'View & manage employee attendance',
+        // Only admin, manager, supervisor can access attendance
+        allowedRoles: [
+            AccessLevel.ADMIN,
+            AccessLevel.MANAGER,
+            AccessLevel.SUPERVISOR,
+        ],
     },
     {
         title: 'Staff',
@@ -98,10 +121,10 @@ const navigationItems = [
         feature: 'dashboard',
     },
     {
-        title: 'Quotations',
+        title: 'Shop',
         icon: <ShoppingBag size={18} strokeWidth={1.5} />,
         href: '/quotations',
-        description: 'Manage purchase transactions',
+        description: 'Manage purchase transactions, orders and payments',
         // Basic users can access quotations
         feature: 'quotations',
     },
@@ -109,7 +132,7 @@ const navigationItems = [
         title: 'Clients',
         icon: <BriefcaseBusiness size={18} strokeWidth={1.5} />,
         href: '/clients',
-        description: 'View active customers',
+        description: 'View & manage clients',
         // Only admin, manager, supervisor can access clients
         allowedRoles: [
             AccessLevel.ADMIN,
@@ -119,11 +142,19 @@ const navigationItems = [
     },
     {
         title: 'Inventory',
-        icon: <Package size={18} strokeWidth={1.5} />,
+        icon: <Warehouse size={18} strokeWidth={1.5} />,
         href: '/inventory',
         description: 'Track product stock levels',
         // Only admin, manager can access inventory
         allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
+    },
+    {
+        title: 'Settings',
+        icon: <Settings size={18} strokeWidth={1.5} />,
+        href: '/settings',
+        description: 'Manage system settings',
+        // Only admin can access settings
+        allowedRoles: [AccessLevel.ADMIN],
     },
 ];
 

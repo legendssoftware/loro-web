@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { PageTransition } from '@/components/animations/page-transition';
-import { itemVariants } from '@/lib/utils/animations';
 
 export default function NotFound() {
     const router = useRouter();

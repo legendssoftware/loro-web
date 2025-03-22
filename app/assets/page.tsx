@@ -14,7 +14,7 @@ export default function Assets() {
                         className="text-xs font-normal uppercase font-body"
                         variants={itemVariants}
                     >
-                        activating soon
+                        assets activating soon
                     </motion.p>
                 </div>
             </PageTransition>

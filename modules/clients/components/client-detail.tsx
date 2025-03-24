@@ -53,6 +53,7 @@ import { Badge } from '@/components/ui/badge';
 import { EditClientModal } from './edit-client-modal';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { useQueryClient } from '@tanstack/react-query';
+import { StatusColors } from '@/lib/types/quotation';
 import {
     BarChart,
     Bar,
@@ -89,7 +90,7 @@ export function ClientDetail({
     onViewQuotation,
     errors,
 }: ClientDetailsModalProps) {
-    const [activeTab, setActiveTab] = useState<string>('details');
+    const [activeTab, setActiveTab] = useState<string>('reports');
     const [showDeleteConfirmation, setShowDeleteConfirmation] =
         useState<boolean>(false);
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
@@ -1802,26 +1803,17 @@ export function ClientDetail({
                                                     >
                                                         <PieChart>
                                                             <Pie
-                                                                data={client.quotations.map(
-                                                                    (
-                                                                        quote,
-                                                                    ) => ({
-                                                                        name:
-                                                                            quote.quotationNumber?.substring(
-                                                                                quote
-                                                                                    .quotationNumber
-                                                                                    .length -
-                                                                                    8,
-                                                                            ) ||
-                                                                            `#${quote.uid}`,
-                                                                        value:
-                                                                            quote.totalItems ||
-                                                                            0,
-                                                                        fullNumber: quote.quotationNumber,
-                                                                        date: quote.quotationDate || quote.createdAt,
-                                                                        status: quote.status,
-                                                                    }),
-                                                                )}
+                                                                data={Object.entries(
+                                                                    client.quotations.reduce((acc, quote) => {
+                                                                        const status = quote.status || 'pending';
+                                                                        acc[status] = (acc[status] || 0) + 1;
+                                                                        return acc;
+                                                                    }, {} as Record<string, number>)
+                                                                ).map(([status, count]) => ({
+                                                                    name: status.replace(/_/g, ' ').toLowerCase(),
+                                                                    value: count,
+                                                                    status: status,
+                                                                }))}
                                                                 cx="50%"
                                                                 cy="50%"
                                                                 outerRadius={80}
@@ -1831,67 +1823,36 @@ export function ClientDetail({
                                                                 paddingAngle={1}
                                                                 cornerRadius={4}
                                                             >
-                                                                {client.quotations.map(
-                                                                    (
-                                                                        _,
-                                                                        index,
-                                                                    ) => (
+                                                                {Object.entries(StatusColors).map(
+                                                                    ([status, colors]) => (
                                                                         <Cell
-                                                                            key={`cell-${index}`}
-                                                                            fill={`rgb(${130 + index * 20}, ${180 - index * 15}, ${250 - index * 10})`}
+                                                                            key={`cell-${status}`}
+                                                                            fill={colors.text.includes('green') ? '#22c55e' : 
+                                                                                  colors.text.includes('red') ? '#ef4444' :
+                                                                                  colors.text.includes('yellow') ? '#eab308' :
+                                                                                  colors.text.includes('blue') ? '#3b82f6' :
+                                                                                  colors.text.includes('purple') ? '#a855f7' :
+                                                                                  colors.text.includes('orange') ? '#f97316' :
+                                                                                  colors.text.includes('teal') ? '#14b8a6' :
+                                                                                  '#6b7280'}
                                                                         />
                                                                     ),
                                                                 )}
                                                             </Pie>
-                                                            <Legend
-                                                                verticalAlign="top"
-                                                                height={36}
-                                                                formatter={(value) => (
-                                                                    <span className="text-[8px] uppercase font-body">
-                                                                        Item Distribution
-                                                                    </span>
-                                                                )}
-                                                                style={{
-                                                                    fontSize: '10px',
-                                                                    fontFamily: 'var(--font-body)',
-                                                                    textTransform: 'uppercase'
-                                                                }}
-                                                            />
                                                             <Tooltip
-                                                                cursor={false}
                                                                 content={({active, payload}) => {
                                                                     if (active && payload && payload.length) {
                                                                         const data = payload[0].payload;
                                                                         return (
-                                                                            <div className="p-3 bg-white border rounded shadow-md">
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <FileText className="inline-block w-3 h-3" />
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {data.fullNumber || `Quotation ${data.name}`}
+                                                                            <div className="p-2 bg-white border rounded-lg shadow-sm">
+                                                                                <div className="mb-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded">
+                                                                                        {data.name}
                                                                                     </p>
                                                                                 </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Items:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {data.value}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Date:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {data.date ? new Date(data.date).toLocaleDateString() : 'Unknown date'}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Status:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {(data.status || 'pending').toUpperCase()}
+                                                                                <div className="mb-1">
+                                                                                    <p className="text-[10px] uppercase font-body">
+                                                                                        Count: {data.value}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
@@ -1900,13 +1861,22 @@ export function ClientDetail({
                                                                     return null;
                                                                 }}
                                                             />
+                                                            <Legend
+                                                                verticalAlign="bottom"
+                                                                height={36}
+                                                                formatter={(value) => (
+                                                                    <span className="text-[8px] uppercase font-body">
+                                                                        {value}
+                                                                    </span>
+                                                                )}
+                                                            />
                                                         </PieChart>
                                                     </ResponsiveContainer>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-center h-64 text-muted-foreground">
                                                     <p className="text-xs">
-                                                        No items data available
+                                                        No quotation data available
                                                     </p>
                                                 </div>
                                             )}
@@ -3098,11 +3068,11 @@ export function ClientDetail({
                     <div className="flex flex-col justify-start gap-4">
                         {/* Overview Cards */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Quotation Value
                                 </h3>
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-row items-center justify-between">
                                     <div>
                                         <p className="text-2xl font-semibold font-body">
                                             R{' '}
@@ -3127,7 +3097,7 @@ export function ClientDetail({
                                     <DollarSign size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Items
                                 </h3>
@@ -3163,7 +3133,7 @@ export function ClientDetail({
                                     <ShoppingBag size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Latest Quotation
                                 </h3>
@@ -3185,7 +3155,7 @@ export function ClientDetail({
                                     <FileText size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Average Quotation Value
                                 </h3>

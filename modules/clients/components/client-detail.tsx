@@ -54,8 +54,6 @@ import { EditClientModal } from './edit-client-modal';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-    AreaChart,
-    Area,
     BarChart,
     Bar,
     LineChart,
@@ -1819,6 +1817,9 @@ export function ClientDetail({
                                                                         value:
                                                                             quote.totalItems ||
                                                                             0,
+                                                                        fullNumber: quote.quotationNumber,
+                                                                        date: quote.quotationDate || quote.createdAt,
+                                                                        status: quote.status,
                                                                     }),
                                                                 )}
                                                                 cx="50%"
@@ -1828,6 +1829,7 @@ export function ClientDetail({
                                                                 fill="#8884d8"
                                                                 dataKey="value"
                                                                 paddingAngle={1}
+                                                                cornerRadius={4}
                                                             >
                                                                 {client.quotations.map(
                                                                     (
@@ -1841,6 +1843,63 @@ export function ClientDetail({
                                                                     ),
                                                                 )}
                                                             </Pie>
+                                                            <Legend
+                                                                verticalAlign="top"
+                                                                height={36}
+                                                                formatter={(value) => (
+                                                                    <span className="text-[8px] uppercase font-body">
+                                                                        Item Distribution
+                                                                    </span>
+                                                                )}
+                                                                style={{
+                                                                    fontSize: '10px',
+                                                                    fontFamily: 'var(--font-body)',
+                                                                    textTransform: 'uppercase'
+                                                                }}
+                                                            />
+                                                            <Tooltip
+                                                                cursor={false}
+                                                                content={({active, payload}) => {
+                                                                    if (active && payload && payload.length) {
+                                                                        const data = payload[0].payload;
+                                                                        return (
+                                                                            <div className="p-3 bg-white border rounded shadow-md">
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <FileText className="inline-block w-3 h-3" />
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.fullNumber || `Quotation ${data.name}`}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Items:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.value}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Date:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.date ? new Date(data.date).toLocaleDateString() : 'Unknown date'}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Status:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {(data.status || 'pending').toUpperCase()}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                }}
+                                                            />
                                                         </PieChart>
                                                     </ResponsiveContainer>
                                                 </div>
@@ -1851,101 +1910,6 @@ export function ClientDetail({
                                                     </p>
                                                 </div>
                                             )}
-                                        </div>
-                                    </div>
-                                    {/* Second row of charts for "Visitor Trends" */}
-                                    <div className="p-6 border rounded border-border/80 bg-card">
-                                        <h3 className="text-sm font-normal uppercase font-body">
-                                            Visitor Trends
-                                        </h3>
-                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                            Showing total visitors for the last
-                                            6 months
-                                        </p>
-                                        {/* Mock data for visitor trends since this isn't in the client data */}
-                                        <div className="h-64">
-                                            <ResponsiveContainer
-                                                width="100%"
-                                                height="100%"
-                                            >
-                                                <AreaChart
-                                                    data={[
-                                                        {
-                                                            name: 'Jan',
-                                                            inStore: 120,
-                                                            online: 80,
-                                                        },
-                                                        {
-                                                            name: 'Feb',
-                                                            inStore: 180,
-                                                            online: 100,
-                                                        },
-                                                        {
-                                                            name: 'Mar',
-                                                            inStore: 170,
-                                                            online: 110,
-                                                        },
-                                                        {
-                                                            name: 'Apr',
-                                                            inStore: 130,
-                                                            online: 90,
-                                                        },
-                                                        {
-                                                            name: 'May',
-                                                            inStore: 150,
-                                                            online: 120,
-                                                        },
-                                                        {
-                                                            name: 'Jun',
-                                                            inStore: 170,
-                                                            online: 110,
-                                                        },
-                                                    ]}
-                                                    margin={{
-                                                        top: 10,
-                                                        right: 10,
-                                                        left: 10,
-                                                        bottom: 20,
-                                                    }}
-                                                >
-                                                    <CartesianGrid
-                                                        strokeDasharray="3 3"
-                                                        vertical={false}
-                                                        opacity={0.1}
-                                                    />
-                                                    <XAxis
-                                                        dataKey="name"
-                                                        tick={{ fontSize: 10 }}
-                                                        axisLine={{
-                                                            stroke: '#e5e7eb',
-                                                            strokeWidth: 0.5,
-                                                        }}
-                                                        tickLine={false}
-                                                    />
-                                                    <YAxis
-                                                        tick={{ fontSize: 10 }}
-                                                        axisLine={{
-                                                            stroke: '#e5e7eb',
-                                                            strokeWidth: 0.5,
-                                                        }}
-                                                        tickLine={false}
-                                                    />
-                                                    <Area
-                                                        type="monotone"
-                                                        dataKey="online"
-                                                        stackId="1"
-                                                        stroke="#60a5fa"
-                                                        fill="#60a5fa"
-                                                    />
-                                                    <Area
-                                                        type="monotone"
-                                                        dataKey="inStore"
-                                                        stackId="1"
-                                                        stroke="#f472b6"
-                                                        fill="#f472b6"
-                                                    />
-                                                </AreaChart>
-                                            </ResponsiveContainer>
                                         </div>
                                     </div>
                                 </>
@@ -1984,12 +1948,15 @@ export function ClientDetail({
                                                                     quote.totalAmount ||
                                                                         0,
                                                                 ),
+                                                                fullNumber: quote.quotationNumber,
+                                                                status: quote.status,
+                                                                itemCount: quote.quotationItems?.length || 0,
                                                             }),
                                                         )}
                                                         margin={{
                                                             top: 10,
-                                                            right: 10,
-                                                            left: 10,
+                                                            right: 30,
+                                                            left: 0,
                                                             bottom: 20,
                                                         }}
                                                     >
@@ -2000,34 +1967,150 @@ export function ClientDetail({
                                                         />
                                                         <XAxis
                                                             dataKey="name"
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            dy={16}
+                                                                            textAnchor="middle"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {payload.value}
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'DATE',
+                                                                position: 'insideBottom',
+                                                                offset: -10,
+                                                                className: 'text-[10px] font-unbounded uppercase font-body',
+                                                            }}
                                                         />
                                                         <YAxis
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={-5}
+                                                                            textAnchor="end"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {payload.value}
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'AMOUNT (R)',
+                                                                angle: -90,
+                                                                position: 'insideLeft',
+                                                                style: {
+                                                                    textAnchor: 'middle',
+                                                                    fontSize: '10px',
+                                                                    fontFamily: 'var(--font-unbounded)',
+                                                                    textTransform: 'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Tooltip
+                                                            cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
+                                                            content={({active, payload}) => {
+                                                                if (active && payload && payload.length) {
+                                                                    const data = payload[0].payload;
+                                                                    return (
+                                                                        <div className="p-3 bg-white border rounded shadow-md">
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <FileText className="inline-block w-3 h-3" />
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.fullNumber || `Quotation on ${data.name}`}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Amount (R):
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.value.toFixed(2)}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Date:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.name}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Status:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {(data.status || 'pending').toUpperCase()}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Items:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.itemCount}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            verticalAlign="top"
+                                                            height={36}
+                                                            formatter={(value) => (
+                                                                <span className="text-[8px] uppercase font-body">
+                                                                    Quotation Value
+                                                                </span>
+                                                            )}
+                                                            style={{
+                                                                fontSize: '10px',
+                                                                fontFamily: 'var(--font-body)',
+                                                                textTransform: 'uppercase'
+                                                            }}
                                                         />
                                                         <Line
                                                             type="monotone"
                                                             dataKey="value"
                                                             stroke="#3b82f6"
                                                             strokeWidth={2}
-                                                            dot={{
-                                                                r: 4,
-                                                                fill: '#3b82f6',
-                                                            }}
+                                                            dot={{ r: 4, fill: "#3b82f6", stroke: "#3b82f6", strokeWidth: 1 }}
+                                                            activeDot={{ r: 6, fill: "#60a5fa", stroke: "#3b82f6", strokeWidth: 1 }}
                                                         />
                                                     </LineChart>
                                                 </ResponsiveContainer>

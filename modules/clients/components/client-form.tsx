@@ -18,6 +18,7 @@ import { useUsersQuery } from '@/hooks/use-users-query';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '@/lib/services/api-client';
 import { format } from 'date-fns';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -279,7 +280,7 @@ const PAYMENT_TERMS = [
 ];
 
 // Form schema definition with improved validation
-const clientFormSchema = z.object({
+export const clientFormSchema = z.object({
     name: z.string().min(1, { message: 'A client name is required' }),
     contactPerson: z
         .string()
@@ -517,15 +518,15 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             const data = response.data;
 
             if (data.publicUrl) {
-                toast.success('Logo uploaded successfully');
+                showSuccessToast('Logo uploaded successfully', toast);
                 return data.publicUrl;
             } else {
-                toast.error('Failed to upload logo image');
+                showErrorToast('Failed to upload logo image', toast);
                 return null;
             }
         } catch (error) {
             console.error('Error uploading image:', error);
-            toast.error('Error uploading logo image');
+            showErrorToast('Error uploading logo image', toast);
             return null;
         } finally {
             setUploadProgress(0);
@@ -552,10 +553,29 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             // Get auth store data for organisational context
             const profileData = useAuthStore.getState().profileData;
 
-            // Prepare client data - ensure data is formatted exactly as the backend expects
-            const clientData = {
+            // Format dates to YYYY-MM-DD to prevent database errors
+            const formatDateToYYYYMMDD = (date: Date | undefined) => {
+                if (!date) return undefined;
+                return format(new Date(date), 'yyyy-MM-dd');
+            };
+
+            // Convert formatted dates back to Date objects for type compatibility
+            const parseFormattedDateToDate = (dateStr: string | undefined) => {
+                if (!dateStr) return undefined;
+                const [year, month, day] = dateStr.split('-').map(Number);
+                return new Date(year, month - 1, day);
+            };
+
+            // Prepare client data for API submission
+            const apiClientData = {
                 ...data,
                 logo: logoUrl,
+                // Format date fields to YYYY-MM-DD for API
+                birthday: data.birthday ? formatDateToYYYYMMDD(data.birthday) : undefined,
+                anniversaryDate: data.anniversaryDate ? formatDateToYYYYMMDD(data.anniversaryDate) : undefined,
+                acquisitionDate: data.acquisitionDate ? formatDateToYYYYMMDD(data.acquisitionDate) : undefined,
+                lastVisitDate: data.lastVisitDate ? formatDateToYYYYMMDD(data.lastVisitDate) : undefined,
+                nextContactDate: data.nextContactDate ? formatDateToYYYYMMDD(data.nextContactDate) : undefined,
                 // Ensure status is passed as a string matching the backend's enum values
                 status: data.status,
                 // Ensure the ref is set and follows the pattern
@@ -576,17 +596,26 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                     : {}),
             };
 
-            // Submit the data to the parent component
-            await onSubmit(clientData);
+            // Create type-compatible client data for onSubmit (with Date objects)
+            const clientData: ClientFormValues = {
+                ...data,
+                logo: logoUrl,
+                ref: data.ref || generateClientRef(),
+                // Other fields remain unchanged
+            };
+
+            // Submit the data to the parent component with API-formatted data
+            // This allows the parent component to directly use the properly formatted data for the API
+            await onSubmit(apiClientData as any as ClientFormValues);
 
             // Reset form after successful submission
-            toast.success('Client created successfully');
+            showSuccessToast('Client created successfully', toast);
             reset(defaultValues);
             setLogoImage(null);
             setSelectedFile(null);
         } catch (error) {
             console.error('Error submitting client form:', error);
-            toast.error('Failed to create client');
+            showErrorToast('Failed to create client. Please check required fields and try again.', toast);
         } finally {
             setIsSubmitting(false);
         }
@@ -603,6 +632,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
 
     return (
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+            <p className="mb-2 text-xs text-muted-foreground">
+                <span className="text-red-500">*</span> indicates required fields
+            </p>
             <fieldset
                 disabled={isLoading || isSubmitting}
                 className="space-y-6"
@@ -680,7 +712,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="name"
                                     {...register('name')}
                                     placeholder="ACME Inc."
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.name ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.name && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -706,7 +741,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         id="contactPerson"
                                         {...register('contactPerson')}
                                         placeholder="John Doe"
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                            errors.contactPerson ? 'border-red-500 focus:ring-red-500' : ''
+                                        }`}
+                                        aria-required="true"
                                     />
                                 </div>
                                 {errors.contactPerson && (
@@ -734,7 +772,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         type="email"
                                         {...register('email')}
                                         placeholder="john.doe@example.co.za"
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                            errors.email ? 'border-red-500 focus:ring-red-500' : ''
+                                        }`}
+                                        aria-required="true"
                                     />
                                 </div>
                                 {errors.email && (
@@ -791,7 +832,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         id="phone"
                                         {...register('phone')}
                                         placeholder="+27 64 123 4567"
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                            errors.phone ? 'border-red-500 focus:ring-red-500' : ''
+                                        }`}
+                                        aria-required="true"
                                     />
                                 </div>
                                 {errors.phone && (
@@ -882,7 +926,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="address.street"
                                     {...register('address.street')}
                                     placeholder="123 Main St"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.address?.street ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.address?.street && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -909,7 +956,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="address.suburb"
                                     {...register('address.suburb')}
                                     placeholder="Halfway House"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.address?.suburb ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.address?.suburb && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -932,7 +982,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="address.city"
                                     {...register('address.city')}
                                     placeholder="Cape Town"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.address?.city ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.address?.city && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -953,7 +1006,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="address.state"
                                     {...register('address.state')}
                                     placeholder="Western Cape"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.address?.state ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.address?.state && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -967,15 +1023,18 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     htmlFor="address.country"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Country{' '}
-                                    <span className="text-red-500">*</span>
+                                    Country <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                     control={control}
                                     name="address.country"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                            <div className={`flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card ${
+                                                errors.address?.country
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-border'
+                                            }`}>
                                                 <div className="flex items-center gap-2">
                                                     <Globe
                                                         className="w-4 h-4 text-muted-foreground"
@@ -1017,10 +1076,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.address?.country && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {
-                                            errors.address.country
-                                                .message as string
-                                        }
+                                        {errors.address.country.message as string}
                                     </p>
                                 )}
                             </div>
@@ -1037,7 +1093,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     id="address.postalCode"
                                     {...register('address.postalCode')}
                                     placeholder="8001"
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
+                                        errors.address?.postalCode ? 'border-red-500 focus:ring-red-500' : ''
+                                    }`}
+                                    aria-required="true"
                                 />
                                 {errors.address?.postalCode && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -1744,7 +1803,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     className="flex items-center gap-1 text-[10px] h-6 bg-card border border-border"
                                                 >
                                                     {tag}
-                                                    <button
+                                                    <Button
                                                         type="button"
                                                         onClick={() => {
                                                             const newTags = [
@@ -1759,10 +1818,12 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 newTags,
                                                             );
                                                         }}
-                                                        className="ml-1 text-muted-foreground hover:text-foreground"
+                                                        className="h-auto p-0 ml-1 bg-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
+                                                        variant="ghost"
+                                                        size="sm"
                                                     >
                                                         <X className="w-3 h-3" />
-                                                    </button>
+                                                    </Button>
                                                 </Badge>
                                             ))}
                                         </div>
@@ -3223,42 +3284,66 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             </fieldset>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border">
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 text-[10px] font-light uppercase font-body"
-                    onClick={() => {
-                        if (
-                            window.confirm(
-                                'Are you sure you want to reset the form? All entered data will be lost.',
-                            )
-                        ) {
-                            reset();
-                            setLogoImage(null);
-                            setSelectedFile(null);
-                        }
-                    }}
-                    disabled={isSubmitting}
-                >
-                    Reset Form
-                </Button>
-                <Button
-                    type="submit"
-                    disabled={isLoading || isSubmitting}
-                    className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
-                >
-                    {isSubmitting ? (
+            <div className="pt-4 mt-6 border-t border-border">
+                {Object.keys(errors).length > 0 && (
+                    <div className="p-3 mb-4 text-xs text-red-800 bg-red-100 rounded-md">
                         <div className="flex items-center gap-2">
-                            <span className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></span>
-                            <span>Creating...</span>
+                            <AlertTriangle className="w-4 h-4" />
+                            <p className="text-xs font-semibold uppercase font-body">Please fix the following errors:</p>
                         </div>
-                    ) : isLoading ? (
-                        'Loading...'
-                    ) : (
-                        'Create Client'
-                    )}
-                </Button>
+                        <ul className="pl-4 mt-1 list-disc">
+                            {errors.name && <li>Company Name is required</li>}
+                            {errors.contactPerson && <li>Contact Person is required</li>}
+                            {errors.email && <li>Valid Email is required</li>}
+                            {errors.phone && <li>Valid Phone is required</li>}
+                            {errors.address?.street && <li>Street Address is required</li>}
+                            {errors.address?.suburb && <li>Suburb is required</li>}
+                            {errors.address?.city && <li>City is required</li>}
+                            {errors.address?.state && <li>State/Province is required</li>}
+                            {errors.address?.country && <li>Country is required</li>}
+                            {errors.address?.postalCode && <li>Postal Code is required</li>}
+                            {errors.website && <li>Website must be a valid URL format</li>}
+                            {errors.discountPercentage && <li>Discount must be between 0-100%</li>}
+                        </ul>
+                    </div>
+                )}
+                <div className="flex justify-end gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 text-[10px] font-light uppercase font-body"
+                        onClick={() => {
+                            if (
+                                window.confirm(
+                                    'Are you sure you want to reset the form? All entered data will be lost.',
+                                )
+                            ) {
+                                reset();
+                                setLogoImage(null);
+                                setSelectedFile(null);
+                            }
+                        }}
+                        disabled={isSubmitting}
+                    >
+                        Reset Form
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isLoading || isSubmitting}
+                        className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
+                    >
+                        {isSubmitting ? (
+                            <div className="flex items-center gap-2">
+                                <span className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></span>
+                                <span>Creating...</span>
+                            </div>
+                        ) : isLoading ? (
+                            'Loading...'
+                        ) : (
+                            'Create Client'
+                        )}
+                    </Button>
+                </div>
             </div>
         </form>
     );

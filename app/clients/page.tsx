@@ -11,6 +11,7 @@ import { ClientsHeader } from '@/modules/clients/components/clients-header';
 import { ClientFormValues } from '@/modules/clients/components/client-form';
 import { toast } from 'react-hot-toast';
 import { AppLoader } from '@/components/ui/app-loader';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ClientsTabContent = dynamic(
@@ -83,7 +84,7 @@ function CreateClientModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
+            <DialogContent className="max-w-4xl md:max-w-6xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-thin uppercase font-body">
                         Create New Client
@@ -155,14 +156,17 @@ export default function ClientsPage() {
     const handleSubmitCreateClient = useCallback(
         async (clientData: ClientFormValues) => {
             try {
-                await createClient(clientData);
-                toast.success('Client created successfully');
-                // Refetch clients to update the list
+                const result = await createClient(clientData);
+                
+                // Toast messages are now handled in the createClient function in the useClientsQuery hook
+                
+                // Invalidate clients query to ensure UI is updated with the new client
                 refetch();
+                
                 setIsCreateDialogOpen(false);
             } catch (error) {
                 console.error('Error creating client:', error);
-                toast.error('Failed to create client. Please try again.');
+                // Error toast is already shown in the mutation
             }
         },
         [createClient, refetch],
@@ -170,16 +174,36 @@ export default function ClientsPage() {
 
     const handleUpdateClientStatus = useCallback(
         async (clientId: number, newStatus: string) => {
-            await updateClientStatus(clientId, newStatus);
+            try {
+                await updateClientStatus(clientId, newStatus);
+                
+                // Toast messages are now handled in the updateClientStatus function in the useClientsQuery hook
+                
+                // Explicitly refetch to ensure UI is updated
+                refetch();
+            } catch (error) {
+                console.error('Error updating client status:', error);
+                // Error toast is already shown in the mutation
+            }
         },
-        [updateClientStatus],
+        [updateClientStatus, refetch],
     );
 
     const handleDeleteClient = useCallback(
         async (clientId: number) => {
-            await deleteClient(clientId);
+            try {
+                await deleteClient(clientId);
+                
+                // Toast messages are now handled in the deleteClient function in the useClientsQuery hook
+                
+                // Explicitly refetch to ensure UI is updated
+                refetch();
+            } catch (error) {
+                console.error('Error deleting client:', error);
+                // Error toast is already shown in the mutation
+            }
         },
-        [deleteClient],
+        [deleteClient, refetch],
     );
 
     // Add handler for editing a client (navigating to detail page)

@@ -43,12 +43,16 @@ import {
     Linkedin,
     Twitter,
     Instagram,
+    AlertTriangle,
 } from 'lucide-react';
 import { Client, ClientStatus } from '@/hooks/use-clients-query';
 import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/badge';
+import { EditClientModal } from './edit-client-modal';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ClientDetailsModalProps {
     client: Client;
@@ -57,6 +61,7 @@ interface ClientDetailsModalProps {
     onUpdateStatus?: (clientId: number, newStatus: string) => void;
     onDelete?: (clientId: number) => void;
     onViewQuotation?: (quotationId: number) => void;
+    errors?: Record<string, { message: string }>;
 }
 
 export function ClientDetail({
@@ -66,6 +71,7 @@ export function ClientDetail({
     onUpdateStatus,
     onDelete,
     onViewQuotation,
+    errors,
 }: ClientDetailsModalProps) {
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showDeleteConfirmation, setShowDeleteConfirmation] =
@@ -75,6 +81,7 @@ export function ClientDetail({
         useState<boolean>(false);
     const [pendingStatusChange, setPendingStatusChange] =
         useState<ClientStatus | null>(null);
+    const queryClient = useQueryClient();
 
     // Format dates
     const formatDate = (date?: Date | string | null) => {
@@ -85,18 +92,12 @@ export function ClientDetail({
     // Handle status change
     const initiateStatusChange = (status: ClientStatus) => {
         if (!onUpdateStatus) {
-            toast('Status update functionality is not available', {
-                icon: '⚠️',
-                duration: 2000,
-            });
+            showErrorToast('Status update functionality is not available', toast);
             return;
         }
 
         if (client.status === status) {
-            toast(`Client is already ${status.toUpperCase()}`, {
-                icon: '📌',
-                duration: 2000,
-            });
+            showSuccessToast(`Client is already ${status.toUpperCase()}`, toast);
             return;
         }
 
@@ -106,29 +107,29 @@ export function ClientDetail({
 
     const confirmStatusChange = () => {
         if (!pendingStatusChange || !onUpdateStatus) {
-            toast.error(
-                'Cannot update client status. Missing required information.',
-                {
-                    duration: 3000,
-                },
-            );
+            showErrorToast('Cannot update client status. Missing required information.', toast);
             setShowStatusChangeConfirmation(false);
             setPendingStatusChange(null);
             return;
         }
 
         try {
+            // onUpdateStatus will show appropriate toast messages based on server response
             onUpdateStatus(client.uid, pendingStatusChange);
+
+            // Invalidate queries to refresh the UI
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            queryClient.invalidateQueries({ queryKey: ['client', client.uid] });
+
+            // Refetch the specific client data
+            queryClient.refetchQueries({ queryKey: ['client', client.uid], type: 'active' });
+
             setShowStatusChangeConfirmation(false);
             setPendingStatusChange(null);
-            toast.success(
-                `Client status updated to ${pendingStatusChange.toUpperCase()}`,
-                { duration: 3000 },
-            );
-        } catch (error) {
-            toast.error('Failed to update client status. Please try again.', {
-                duration: 4000,
-            });
+
+            // The toast will be shown in handleUpdateClientStatus in the clients/page.tsx
+        } catch (error: any) {
+            showErrorToast(error?.message || 'Failed to update client status. Please try again.', toast);
             console.error('Error updating client status:', error);
         }
     };
@@ -198,31 +199,49 @@ export function ClientDetail({
         if (onDelete) {
             try {
                 onDelete(client.uid);
+
+                // Invalidate queries after deletion
+                queryClient.invalidateQueries({ queryKey: ['clients'] });
+
                 setShowDeleteConfirmation(false);
-                toast.success('Client deleted successfully');
+                showSuccessToast('Client deleted successfully', toast);
                 onClose();
             } catch (error) {
-                toast.error('Failed to delete client. Please try again.');
+                showErrorToast('Failed to delete client. Please try again.', toast);
                 console.error('Error deleting client:', error);
             }
         }
-    }, [client.uid, onDelete, onClose]);
+    }, [client.uid, onDelete, onClose, queryClient]);
 
     // Show the "Activating Soon" modal when Edit is clicked
     const handleEditClick = () => {
-        toast.success('Opening client editor...', {
-            duration: 2000,
-            icon: '✏️',
-        });
-
-        // This is a placeholder for future implementation
-        // In a real implementation, this would open a form with the client data
         setShowEditModal(true);
     };
 
     // Close the edit modal
     const handleCloseEditModal = () => {
         setShowEditModal(false);
+    };
+
+    // Add the client updated handler
+    const handleClientUpdated = (updatedClient: Client) => {
+        // If there's an onUpdateStatus handler, we can use it to update the UI
+        if (onUpdateStatus && updatedClient?.status !== client?.status) {
+            onUpdateStatus(updatedClient?.uid, updatedClient?.status as string);
+        }
+
+        // Invalidate queries to refresh the UI with updated data
+        queryClient.invalidateQueries({ queryKey: ['clients'] });
+        queryClient.invalidateQueries({ queryKey: ['client', client.uid] });
+
+        // Refetch the specific client data
+        queryClient.refetchQueries({ queryKey: ['client', client.uid], type: 'active' });
+
+        // Close the edit modal
+        setShowEditModal(false);
+
+        // Show success toast using standardized config
+        showSuccessToast('Client updated successfully', toast);
     };
 
     // Update the delete confirmation logic to use a separate Dialog
@@ -232,36 +251,31 @@ export function ClientDetail({
 
     const handleConfirmDelete = () => {
         if (!onDelete) {
-            toast.error('Delete functionality is not available', {
-                duration: 3000,
-                icon: '⚠️',
-            });
+            showErrorToast('Delete functionality is not available', toast);
             setShowDeleteConfirmation(false);
             return;
         }
 
         try {
+            // onDelete will show appropriate toast messages based on server response
             onDelete(client.uid);
+
+            // Invalidate queries after deletion
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+
             setShowDeleteConfirmation(false);
             onClose();
-            toast.success('Client successfully deleted', {
-                duration: 3000,
-                icon: '🗑️',
-            });
-        } catch (error) {
-            toast.error('Failed to delete client. Please try again.', {
-                duration: 4000,
-            });
+
+            // The toast will be shown in handleDeleteClient in the clients/page.tsx
+        } catch (error: any) {
+            showErrorToast(error?.message || 'Failed to delete client. Please try again.', toast);
             console.error('Error deleting client:', error);
         }
     };
 
     // Calendar action handler
     const handleCalendarAction = () => {
-        toast.success('Opening calendar for client...', {
-            icon: '📅',
-            duration: 3000,
-        });
+        showSuccessToast('Opening calendar for client...', toast);
         // Additional calendar functionality would go here
     };
 
@@ -272,6 +286,7 @@ export function ClientDetail({
         return (
             <span className="text-xs uppercase text-muted-foreground font-body">
                 {client.branch.name || 'Branch'}
+                {client.branch.uid && ` (${client.branch.uid})`}
             </span>
         );
     };
@@ -305,7 +320,7 @@ export function ClientDetail({
         },
         {
             id: 'tasks',
-            label: 'Tasks',
+            label: 'Job History',
             icon: <CheckCircle className="w-4 h-4 mr-1" />,
         },
         {
@@ -315,7 +330,7 @@ export function ClientDetail({
         },
     ];
 
-    const renderTabContent = () => {
+    const contentTabs = () => {
         switch (activeTab) {
             case 'details':
                 return (
@@ -417,13 +432,14 @@ export function ClientDetail({
                                             <p className="text-xs font-body">
                                                 Lat: {client.latitude}, Long:{' '}
                                                 {client.longitude}
-                                                {client.enableGeofence && (
-                                                    <Badge className="ml-2 text-[9px] bg-blue-100 text-blue-800">
-                                                        Geofence:{' '}
-                                                        {client.geofenceRadius}m
-                                                    </Badge>
-                                                )}
                                             </p>
+                                            {client.enableGeofence && (
+                                                <div className="mt-1">
+                                                    <Badge className="text-[9px] bg-blue-100 text-blue-800">
+                                                        Geofence: {client.geofenceRadius}m
+                                                    </Badge>
+                                                </div>
+                                            )}
                                             <p className="text-[10px] text-muted-foreground font-body">
                                                 GPS Coordinates
                                             </p>
@@ -838,13 +854,13 @@ export function ClientDetail({
                                     </div>
                                 )}
 
-                                {client.acquisitionDate && (
+                                {client?.acquisitionDate && (
                                     <div className="flex items-center">
                                         <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(
-                                                    client.acquisitionDate,
+                                                    client?.acquisitionDate,
                                                 )}
                                             </p>
                                             <p className="text-[10px] text-muted-foreground font-body">
@@ -854,14 +870,14 @@ export function ClientDetail({
                                     </div>
                                 )}
 
-                                {client.geofenceType &&
-                                    client.geofenceType !== 'none' && (
+                                {client?.geofenceType &&
+                                    client?.geofenceType !== 'none' && (
                                         <div className="flex items-center">
                                             <Map className="w-4 h-4 mr-2 text-muted-foreground" />
                                             <div>
                                                 <p className="text-xs font-body">
-                                                    {client.geofenceType.toUpperCase()}
-                                                    {client.enableGeofence && (
+                                                    {client?.geofenceType?.toUpperCase()}
+                                                    {client?.enableGeofence && (
                                                         <span className="ml-1">
                                                             (Radius:{' '}
                                                             {
@@ -910,11 +926,11 @@ export function ClientDetail({
                                         Client Quotations
                                     </h3>
                                     <div className="space-y-4">
-                                        {client.quotations.map(
+                                        {client?.quotations.map(
                                             (quotation: any, index: number) => (
                                                 <div
-                                                    key={index}
-                                                    className="p-3 border rounded-md border-border/30"
+                                                    key={quotation?.uid || index}
+                                                    className="p-3 border rounded-md border-primary/20"
                                                 >
                                                     <div className="flex items-center justify-between mb-3">
                                                         <h4 className="text-sm font-medium font-body">
@@ -923,7 +939,7 @@ export function ClientDetail({
                                                         </h4>
                                                         <Badge
                                                             variant="outline"
-                                                            className={`text-[10px] px-2 py-0.5 font-body border-0 ${
+                                                            className={`text-[10px] px-4 py-1 font-body border-0 ${
                                                                 quotation.status ===
                                                                 'approved'
                                                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
@@ -1105,7 +1121,7 @@ export function ClientDetail({
                                         {client.checkIns.map(
                                             (checkIn: any, index: number) => (
                                                 <div
-                                                    key={index}
+                                                    key={checkIn?.uid || index}
                                                     className="p-3 border rounded-md border-border/30"
                                                 >
                                                     <div className="flex items-center justify-between mb-2">
@@ -1306,9 +1322,23 @@ export function ClientDetail({
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {client.branch.name}
+                                                        {client.branch.uid && (
+                                                            <span className="ml-1 text-[10px] text-muted-foreground">
+                                                                (Ref:{' '}
+                                                                {
+                                                                    client
+                                                                        .branch
+                                                                        .uid
+                                                                }
+                                                                )
+                                                            </span>
+                                                        )}
                                                     </p>
                                                     <p className="text-[10px] text-muted-foreground font-body">
                                                         Branch
+                                                        {client.branch
+                                                            .contactPerson &&
+                                                            ` • Contact: ${client.branch?.contactPerson}`}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1395,8 +1425,19 @@ export function ClientDetail({
                                                             .surname &&
                                                             ` ${client.assignedSalesRep.surname}`}
                                                     </p>
+                                                    {client.assignedSalesRep
+                                                        .role && (
+                                                        <div className="mt-1">
+                                                            <Badge className="text-[9px] bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                                                {client.assignedSalesRep.role.toUpperCase()}
+                                                            </Badge>
+                                                        </div>
+                                                    )}
                                                     <p className="text-[10px] text-muted-foreground font-body">
                                                         Assigned Sales Rep
+                                                        {client.assignedSalesRep
+                                                            .phone &&
+                                                            ` • ${client.assignedSalesRep.phone}`}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1437,26 +1478,6 @@ export function ClientDetail({
                         </div>
                     </div>
                 );
-            case 'activity':
-                return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
-                        <div className="p-4 text-center rounded-full bg-muted/20">
-                            <Calendar
-                                className="w-8 h-8 text-muted-foreground"
-                                strokeWidth={1.5}
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                ACTIVATING SOON
-                            </h3>
-                            <p className="text-xs text-muted-foreground font-body">
-                                Activity log functionality will be available
-                                soon
-                            </p>
-                        </div>
-                    </div>
-                );
             case 'reports':
                 return (
                     <div className="flex flex-col items-center justify-center h-40 gap-1">
@@ -1472,26 +1493,6 @@ export function ClientDetail({
                             </h3>
                             <p className="text-xs text-muted-foreground font-body">
                                 Client reporting functionality will be available
-                                soon
-                            </p>
-                        </div>
-                    </div>
-                );
-            case 'leads':
-                return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
-                        <div className="p-4 text-center rounded-full bg-muted/20">
-                            <TrendingUp
-                                className="w-8 h-8 text-muted-foreground"
-                                strokeWidth={1.5}
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                ACTIVATING SOON
-                            </h3>
-                            <p className="text-xs text-muted-foreground font-body">
-                                Leads management functionality will be available
                                 soon
                             </p>
                         </div>
@@ -1517,44 +1518,113 @@ export function ClientDetail({
                         </div>
                     </div>
                 );
-            case 'documents':
-                return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
-                        <div className="p-4 text-center rounded-full bg-muted/20">
-                            <FileText
-                                className="w-8 h-8 text-muted-foreground"
-                                strokeWidth={1.5}
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                ACTIVATING SOON
-                            </h3>
-                            <p className="text-xs text-muted-foreground font-body">
-                                Documents management functionality will be
-                                available soon
-                            </p>
-                        </div>
-                    </div>
-                );
             case 'assignees':
                 return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
-                        <div className="p-4 text-center rounded-full bg-muted/20">
-                            <Users
-                                className="w-8 h-8 text-muted-foreground"
-                                strokeWidth={1.5}
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                ACTIVATING SOON
-                            </h3>
-                            <p className="text-xs text-muted-foreground font-body">
-                                Assignees management functionality will be
-                                available soon
-                            </p>
-                        </div>
+                    <div className="space-y-6">
+                        {client.assignedSalesRep ? (
+                            <div className="p-4 border rounded-lg bg-card/50 border-primary/30">
+                                <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                    Assigned Team Members
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="p-3 border rounded-md border-border/30">
+                                        <div className="flex items-start gap-3">
+                                            <Avatar className="w-10 h-10 border border-primary">
+                                                <AvatarImage
+                                                    src={
+                                                        client.assignedSalesRep
+                                                            .photoURL
+                                                    }
+                                                    alt={
+                                                        client.assignedSalesRep
+                                                            .name || 'Sales Rep'
+                                                    }
+                                                />
+                                                <AvatarFallback className="text-xs font-body">
+                                                    {client.assignedSalesRep
+                                                        .name
+                                                        ? client.assignedSalesRep.name
+                                                              .slice(0, 2)
+                                                              .toUpperCase()
+                                                        : 'SR'}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-medium uppercase font-body">
+                                                        {client.assignedSalesRep
+                                                            .name ||
+                                                            'Unnamed'}{' '}
+                                                        {client.assignedSalesRep
+                                                            .surname || ''}
+                                                    </h4>
+                                                    {client.assignedSalesRep
+                                                        .role && (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-[10px] px-2 py-0.5 font-body border-0 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 font-thin"
+                                                        >
+                                                            {client?.assignedSalesRep?.role?.toUpperCase()}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-2 mt-2">
+                                                    <div className="flex items-center text-xs text-muted-foreground">
+                                                        <Mail className="w-3 h-3 mr-1" />
+                                                        <span className="text-[10px] font-normal uppercase font-body">
+                                                            {
+                                                                client
+                                                                    .assignedSalesRep
+                                                                    .email
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center text-xs text-muted-foreground">
+                                                        <Phone className="w-3 h-3 mr-1" />
+                                                        <span className="text-[10px] font-normal uppercase font-body">
+                                                            {
+                                                                client
+                                                                    .assignedSalesRep
+                                                                    .phone
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center text-xs text-muted-foreground">
+                                                        <Users className="w-3 h-3 mr-1" />
+                                                        <span className="text-[10px] font-normal uppercase font-body">
+                                                            Access Level:{' '}
+                                                            {
+                                                                client
+                                                                    .assignedSalesRep
+                                                                    .accessLevel
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-40 gap-1">
+                                <div className="p-4 text-center rounded-full bg-muted/20">
+                                    <Users
+                                        className="w-8 h-8 text-muted-foreground"
+                                        strokeWidth={1.5}
+                                    />
+                                </div>
+                                <div className="text-center">
+                                    <h3 className="mb-1 text-xs font-normal uppercase font-body">
+                                        No Assigned Team Members
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground font-body">
+                                        This client has no team members assigned
+                                        yet.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
             default:
@@ -1567,8 +1637,8 @@ export function ClientDetail({
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="min-w-[100vw] h-[100vh] overflow-hidden bg-card sm:rounded-none p-4 flex flex-col justify-between gap-4">
-                    <div className="flex flex-col justify-start gap-4 h-[80vh]">
-                        <DialogHeader className="flex flex-row items-start justify-between h-[10vh]">
+                    <div className="flex flex-col justify-start gap-4 h-[90vh] overflow-hidden">
+                        <DialogHeader className="flex flex-row items-start justify-between h-[7vh]">
                             <div className="flex flex-row items-center gap-3">
                                 <Avatar className="w-16 h-16 border-2 border-primary">
                                     <AvatarImage
@@ -1629,8 +1699,8 @@ export function ClientDetail({
                         </DialogHeader>
 
                         {/* Tabs */}
-                        <div className="h-[82vh] overflow-y-scroll">
-                            <div className="flex items-center overflow-x-auto border-b border-border/10">
+                        <div className="h-[83vh]">
+                            <div className="flex items-center h-[5vh] overflow-x-auto border-b border-border/10">
                                 {tabs.map((tab) => (
                                     <div
                                         key={tab?.id}
@@ -1657,15 +1727,15 @@ export function ClientDetail({
                                     </div>
                                 ))}
                             </div>
-                            <div className="overflow-y-auto">
-                                {renderTabContent()}
+                            <div className="overflow-y-auto h-[78vh]">
+                                {contentTabs()}
                             </div>
                         </div>
                     </div>
                     {/* Action Buttons */}
-                    <DialogFooter className="flex flex-col flex-wrap gap-4 h-[12vh] border-t dark:border-gray-700 p-2">
+                    <DialogFooter className="flex flex-col flex-wrap gap-4 h-[10vh] border-t dark:border-gray-700 p-2">
                         <div className="flex flex-col items-center justify-center w-full">
-                            <p className="text-xs font-thin uppercase font-body">
+                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
                                 Quick Actions
                             </p>
                         </div>
@@ -1778,23 +1848,14 @@ export function ClientDetail({
                 </DialogContent>
             </Dialog>
 
-            {/* Edit Modal (Placeholder) */}
+            {/* Edit Client Modal */}
             {showEditModal && (
-                <Dialog
-                    open={showEditModal}
-                    onOpenChange={handleCloseEditModal}
-                >
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
-                        <DialogHeader>
-                            <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
-                        </DialogHeader>
-                        <div className="flex items-center justify-center h-64">
-                            <h2 className="text-xs font-thin uppercase font-body">
-                                Activating Soon
-                            </h2>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                <EditClientModal
+                    client={client}
+                    isOpen={showEditModal}
+                    onClose={handleCloseEditModal}
+                    onClientUpdated={handleClientUpdated}
+                />
             )}
 
             {/* Status Change Confirmation Dialog */}
@@ -1883,6 +1944,31 @@ export function ClientDetail({
                     </DialogContent>
                 </Dialog>
             )}
+
+            {errors && Object.keys(errors).length > 0 && (
+                <div className="p-3 mb-4 rounded-md bg-red-100/10">
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                        <p className="text-[8px] font-normal uppercase text-red-500 font-body">
+                            Please fix the following errors:
+                        </p>
+                    </div>
+                    <ul className="mt-2 space-y-1">
+                        {Object.entries(errors).map(([key, value]) => (
+                            <li
+                                key={key}
+                                className="text-[8px] font-normal uppercase text-red-500 font-body"
+                            >
+                                {value.message}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            <p className="text-[8px] font-normal uppercase text-muted-foreground font-body">
+                * indicates required fields
+            </p>
         </>
     );
 }

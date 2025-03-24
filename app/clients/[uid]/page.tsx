@@ -6,20 +6,28 @@ import { useParams, useRouter } from 'next/navigation';
 import { useClientQuery } from '@/hooks/use-client-query';
 import { AppLoader } from '@/components/ui/app-loader';
 import { FolderMinus } from 'lucide-react';
-import { ClientDetail } from '@/modules/clients/components/client-detail';
+import dynamic from 'next/dynamic';
+
+const ClientDetail = dynamic(
+    () =>
+        import('@/modules/clients/components/client-detail').then((mod) => ({
+            default: mod.ClientDetail,
+        })),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center w-full h-screen">
+                <AppLoader />
+            </div>
+        ),
+    },
+);
 
 export default function ClientDetailPage() {
     const params = useParams();
     const router = useRouter();
     const clientId = params.uid ? String(params.uid) : '';
-    const {
-        client,
-        loading,
-        error,
-        updateClient,
-        deleteClient,
-        updateClientStatus
-    } = useClientQuery(clientId);
+    const { client, loading, error, deleteClient, updateClientStatus } =
+        useClientQuery(clientId);
 
     const handleClose = () => {
         router.push('/clients');

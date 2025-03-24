@@ -44,6 +44,13 @@ export interface Client extends Omit<ClientBase, 'status'> {
         address?: ClientAddress;
         email?: string;
         phone?: string;
+        contactPerson?: string;
+        ref?: string;
+        website?: string;
+        status?: string;
+        isDeleted?: boolean;
+        createdAt?: Date | string;
+        updatedAt?: Date | string;
     };
     organisation?: {
         uid: number;
@@ -53,12 +60,32 @@ export interface Client extends Omit<ClientBase, 'status'> {
         website?: string;
         logo?: string;
         description?: string;
+        address?: ClientAddress;
+        status?: string;
+        isDeleted?: boolean;
+        ref?: string;
+        createdAt?: Date | string;
+        updatedAt?: Date | string;
     };
     assignedSalesRep?: {
         uid: number;
         name?: string;
         surname?: string;
         email?: string;
+        username?: string;
+        phone?: string;
+        photoURL?: string;
+        role?: string;
+        status?: string;
+        departmentId?: number;
+        createdAt?: Date | string;
+        updatedAt?: Date | string;
+        accessLevel?: string;
+        organisationRef?: number;
+        verificationToken?: string | null;
+        resetToken?: string | null;
+        tokenExpires?: Date | string | null;
+        isDeleted?: boolean;
     };
 }
 
@@ -154,13 +181,16 @@ export function useClientsQuery(options: ClientFilterParams = {}) {
         mutationFn: async (clientData: Partial<Client>) => {
             try {
                 const result = await clientApi.createClient(clientData);
-                showSuccessToast('Client created successfully.', toast);
-                return result;
-            } catch (error) {
-                showErrorToast(
-                    'Failed to create client. Please try again.',
-                    toast,
-                );
+                if (result.success) {
+                    showSuccessToast(result.message, toast);
+                    return result.data;
+                } else {
+                    showErrorToast(result.message, toast);
+                    throw new Error(result.message);
+                }
+            } catch (error: any) {
+                const errorMessage = error?.message || 'Failed to create client. Please try again.';
+                showErrorToast(errorMessage, toast);
                 console.error('Create client error:', error);
                 throw error;
             }
@@ -181,14 +211,17 @@ export function useClientsQuery(options: ClientFilterParams = {}) {
             updates: Partial<Client>;
         }) => {
             try {
-                await clientApi.updateClient(clientId, updates);
-                showSuccessToast('Client updated successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to update client. Please try again.',
-                    toast,
-                );
+                const result = await clientApi.updateClient(clientId, updates);
+                if (result.success) {
+                    showSuccessToast(result.message, toast);
+                    return { success: true, message: result.message };
+                } else {
+                    showErrorToast(result.message, toast);
+                    throw new Error(result.message);
+                }
+            } catch (error: any) {
+                const errorMessage = error?.message || 'Failed to update client. Please try again.';
+                showErrorToast(errorMessage, toast);
                 console.error('Update client error:', error);
                 throw error;
             }
@@ -203,14 +236,17 @@ export function useClientsQuery(options: ClientFilterParams = {}) {
     const deleteClientMutation = useMutation({
         mutationFn: async (clientId: number) => {
             try {
-                await clientApi.deleteClient(clientId);
-                showSuccessToast('Client deleted successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to delete client. Please try again.',
-                    toast,
-                );
+                const result = await clientApi.deleteClient(clientId);
+                if (result.success) {
+                    showSuccessToast(result.message, toast);
+                    return { success: true, message: result.message };
+                } else {
+                    showErrorToast(result.message, toast);
+                    throw new Error(result.message);
+                }
+            } catch (error: any) {
+                const errorMessage = error?.message || 'Failed to delete client. Please try again.';
+                showErrorToast(errorMessage, toast);
                 console.error('Delete client error:', error);
                 throw error;
             }
@@ -225,14 +261,17 @@ export function useClientsQuery(options: ClientFilterParams = {}) {
     const restoreClientMutation = useMutation({
         mutationFn: async (clientId: number) => {
             try {
-                await clientApi.restoreClient(clientId);
-                showSuccessToast('Client restored successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to restore client. Please try again.',
-                    toast,
-                );
+                const result = await clientApi.restoreClient(clientId);
+                if (result.success) {
+                    showSuccessToast(result.message, toast);
+                    return { success: true, message: result.message };
+                } else {
+                    showErrorToast(result.message, toast);
+                    throw new Error(result.message);
+                }
+            } catch (error: any) {
+                const errorMessage = error?.message || 'Failed to restore client. Please try again.';
+                showErrorToast(errorMessage, toast);
                 console.error('Restore client error:', error);
                 throw error;
             }

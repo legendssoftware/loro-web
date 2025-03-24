@@ -52,8 +52,6 @@ export function useUsersQuery(filters: UserFilterParams = {}) {
             [UserStatus.DECLINED]: [],
         } as UsersByStatus;
 
-        console.log(data?.items);
-
         if (data?.items) {
             // Group users by status
             data.items.forEach((user) => {

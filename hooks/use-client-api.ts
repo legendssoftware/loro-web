@@ -13,6 +13,12 @@ interface PaginatedClientsResponse {
     message: string;
 }
 
+interface ApiResponse<T> {
+    data: T | null;
+    message: string;
+    success: boolean;
+}
+
 /**
  * A hook that provides client API methods
  * Relies on axios interceptors for token handling
@@ -53,7 +59,7 @@ export const useClientApi = () => {
                 }
 
                 return response.data;
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching clients:', error);
                 // Return empty data structure on error
                 return {
@@ -64,7 +70,7 @@ export const useClientApi = () => {
                         limit: 10,
                         totalPages: 0,
                     },
-                    message: error instanceof Error ? error.message : 'Unknown error',
+                    message: error?.response?.data?.message || (error instanceof Error ? error.message : 'Unknown error'),
                 };
             }
         },
@@ -90,49 +96,81 @@ export const useClientApi = () => {
     }, []);
 
     // Create a new client
-    const createClient = useCallback(async (clientData: Partial<Client>): Promise<Client | null> => {
+    const createClient = useCallback(async (clientData: Partial<Client>): Promise<ApiResponse<Client>> => {
         try {
             const response = await axiosInstance.post('/clients', clientData);
-            return response.data;
-        } catch (error) {
+            return {
+                data: response.data.client || null,
+                message: response.data.message || 'Client created successfully',
+                success: true
+            };
+        } catch (error: any) {
             console.error('Error creating client:', error);
-            return null;
+            return {
+                data: null,
+                message: error?.response?.data?.message || 'Failed to create client',
+                success: false
+            };
         }
     }, []);
 
     // Update an existing client
     const updateClient = useCallback(
-        async (clientId: number, clientData: Partial<Client>): Promise<boolean> => {
+        async (clientId: number, clientData: Partial<Client>): Promise<ApiResponse<Client>> => {
             try {
-                await axiosInstance.patch(`/clients/${clientId}`, clientData);
-                return true;
-            } catch (error) {
+                const response = await axiosInstance.patch(`/clients/${clientId}`, clientData);
+                return {
+                    data: response.data.client || null,
+                    message: response.data.message || 'Client updated successfully',
+                    success: true
+                };
+            } catch (error: any) {
                 console.error(`Error updating client ${clientId}:`, error);
-                return false;
+                return {
+                    data: null,
+                    message: error?.response?.data?.message || 'Failed to update client',
+                    success: false
+                };
             }
         },
         [],
     );
 
     // Delete a client
-    const deleteClient = useCallback(async (clientId: number): Promise<boolean> => {
+    const deleteClient = useCallback(async (clientId: number): Promise<ApiResponse<null>> => {
         try {
-            await axiosInstance.delete(`/clients/${clientId}`);
-            return true;
-        } catch (error) {
+            const response = await axiosInstance.delete(`/clients/${clientId}`);
+            return {
+                data: null,
+                message: response.data.message || 'Client deleted successfully',
+                success: true
+            };
+        } catch (error: any) {
             console.error(`Error deleting client ${clientId}:`, error);
-            return false;
+            return {
+                data: null,
+                message: error?.response?.data?.message || 'Failed to delete client',
+                success: false
+            };
         }
     }, []);
 
     // Restore a deleted client
-    const restoreClient = useCallback(async (clientId: number): Promise<boolean> => {
+    const restoreClient = useCallback(async (clientId: number): Promise<ApiResponse<null>> => {
         try {
-            await axiosInstance.patch(`/clients/restore/${clientId}`);
-            return true;
-        } catch (error) {
+            const response = await axiosInstance.patch(`/clients/restore/${clientId}`);
+            return {
+                data: null,
+                message: response.data.message || 'Client restored successfully',
+                success: true
+            };
+        } catch (error: any) {
             console.error(`Error restoring client ${clientId}:`, error);
-            return false;
+            return {
+                data: null,
+                message: error?.response?.data?.message || 'Failed to restore client',
+                success: false
+            };
         }
     }, []);
 

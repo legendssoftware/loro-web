@@ -977,7 +977,7 @@ export function ClientDetail({
                                                     key={
                                                         quotation?.uid || index
                                                     }
-                                                    className="p-3 border rounded-md border-primary/20"
+                                                    className="p-3 border rounded-md border-border/80"
                                                 >
                                                     <div className="flex items-center justify-between mb-3">
                                                         <h4 className="text-sm font-medium font-body">
@@ -1533,7 +1533,7 @@ export function ClientDetail({
                                 <>
                                     {/* Charts Section */}
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <div className="p-6 border rounded border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
                                                 Quotation Values
                                             </h3>
@@ -1562,14 +1562,26 @@ export function ClientDetail({
                                                                         quote.totalAmount ||
                                                                             0,
                                                                     ),
+                                                                    fullNumber:
+                                                                        quote.quotationNumber,
+                                                                    date:
+                                                                        quote.quotationDate ||
+                                                                        quote.createdAt,
+                                                                    status: quote.status,
+                                                                    itemCount:
+                                                                        quote
+                                                                            .quotationItems
+                                                                            ?.length ||
+                                                                        0,
                                                                 }),
                                                             )}
                                                             margin={{
                                                                 top: 10,
-                                                                right: 10,
-                                                                left: 10,
+                                                                right: 30,
+                                                                left: 0,
                                                                 bottom: 20,
                                                             }}
+                                                            barSize={25}
                                                         >
                                                             <CartesianGrid
                                                                 strokeDasharray="3 3"
@@ -1578,8 +1590,90 @@ export function ClientDetail({
                                                             />
                                                             <XAxis
                                                                 dataKey="name"
-                                                                tick={{
-                                                                    fontSize: 10,
+                                                                axisLine={{
+                                                                    stroke: '#e5e7eb',
+                                                                    strokeWidth: 0.5,
+                                                                }}
+                                                                tickLine={false}
+                                                                tick={(
+                                                                    props,
+                                                                ) => {
+                                                                    const {
+                                                                        x,
+                                                                        y,
+                                                                        payload,
+                                                                    } = props;
+                                                                    return (
+                                                                        <g
+                                                                            transform={`translate(${x},${y})`}
+                                                                        >
+                                                                            <text
+                                                                                dy={
+                                                                                    16
+                                                                                }
+                                                                                textAnchor="middle"
+                                                                                fill="#888"
+                                                                                className="text-[8px] font-body uppercase"
+                                                                            >
+                                                                                {
+                                                                                    payload.value
+                                                                                }
+                                                                            </text>
+                                                                        </g>
+                                                                    );
+                                                                }}
+                                                                label={{
+                                                                    value: 'QUOTATIONS',
+                                                                    position:
+                                                                        'insideBottom',
+                                                                    offset: -10,
+                                                                    className:
+                                                                        'text-[10px] font-unbounded uppercase font-body',
+                                                                }}
+                                                            />
+                                                            <YAxis
+                                                                tick={(
+                                                                    props,
+                                                                ) => {
+                                                                    const {
+                                                                        x,
+                                                                        y,
+                                                                        payload,
+                                                                    } = props;
+                                                                    return (
+                                                                        <g
+                                                                            transform={`translate(${x},${y})`}
+                                                                        >
+                                                                            <text
+                                                                                x={
+                                                                                    -5
+                                                                                }
+                                                                                textAnchor="end"
+                                                                                fill="#888"
+                                                                                className="text-[8px] font-body uppercase"
+                                                                            >
+                                                                                {
+                                                                                    payload.value
+                                                                                }
+                                                                            </text>
+                                                                        </g>
+                                                                    );
+                                                                }}
+                                                                label={{
+                                                                    value: 'AMOUNT (R)',
+                                                                    angle: -90,
+                                                                    position:
+                                                                        'insideLeft',
+                                                                    style: {
+                                                                        textAnchor:
+                                                                            'middle',
+                                                                        fontSize:
+                                                                            '10px',
+                                                                        fontFamily:
+                                                                            'var(--font-unbounded)',
+                                                                        textTransform:
+                                                                            'uppercase',
+                                                                    },
                                                                 }}
                                                                 axisLine={{
                                                                     stroke: '#e5e7eb',
@@ -1587,18 +1681,96 @@ export function ClientDetail({
                                                                 }}
                                                                 tickLine={false}
                                                             />
-                                                            <YAxis
-                                                                tick={{
-                                                                    fontSize: 10,
+                                                            <Tooltip
+                                                                cursor={false}
+                                                                content={({
+                                                                    active,
+                                                                    payload,
+                                                                }) => {
+                                                                    if (
+                                                                        active &&
+                                                                        payload &&
+                                                                        payload.length
+                                                                    ) {
+                                                                        const data =
+                                                                            payload[0]
+                                                                                .payload;
+                                                                        return (
+                                                                            <div className="p-3 bg-white border rounded shadow-md">
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <FileText className="inline-block w-3 h-3" />
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.fullNumber ||
+                                                                                            `Quotation #${data.name}`}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Amount
+                                                                                        (R):
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.value.toFixed(
+                                                                                            2,
+                                                                                        )}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Items:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {
+                                                                                            data.itemCount
+                                                                                        }
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Date:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {data.date
+                                                                                            ? new Date(
+                                                                                                  data.date,
+                                                                                              ).toLocaleDateString()
+                                                                                            : 'Unknown date'}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                        Status:
+                                                                                    </p>
+                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                        {(
+                                                                                            data.status ||
+                                                                                            'pending'
+                                                                                        ).toUpperCase()}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return null;
                                                                 }}
-                                                                axisLine={{
-                                                                    stroke: '#e5e7eb',
-                                                                    strokeWidth: 0.5,
+                                                            />
+                                                            <Legend
+                                                                verticalAlign="top"
+                                                                height={36}
+                                                                formatter={(value) => (
+                                                                    <span className="text-[8px] uppercase font-body">
+                                                                        Quotation Amount
+                                                                    </span>
+                                                                )}
+                                                                style={{
+                                                                    fontSize: '10px',
+                                                                    fontFamily: 'var(--font-body)',
+                                                                    textTransform: 'uppercase'
                                                                 }}
-                                                                tickLine={false}
                                                             />
                                                             <Bar
                                                                 dataKey="value"
+                                                                name="Amount"
                                                                 fill="#3b82f6"
                                                                 radius={[
                                                                     4, 4, 4, 4,
@@ -1616,7 +1788,7 @@ export function ClientDetail({
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <div className="p-6 border rounded border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
                                                 Items Distribution
                                             </h3>
@@ -1682,7 +1854,7 @@ export function ClientDetail({
                                         </div>
                                     </div>
                                     {/* Second row of charts for "Visitor Trends" */}
-                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                    <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Visitor Trends
                                         </h3>
@@ -1781,7 +1953,7 @@ export function ClientDetail({
                         case 'quotations':
                             return (
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                    <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Quotation Timeline
                                         </h3>
@@ -1869,7 +2041,7 @@ export function ClientDetail({
                                         )}
                                     </div>
 
-                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                    <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Quotation Comparison
                                         </h3>
@@ -2155,10 +2327,12 @@ export function ClientDetail({
                                                                 </span>
                                                             )}
                                                             style={{
-                                                                fontSize: '10px',
+                                                                fontSize:
+                                                                    '10px',
                                                                 fontFamily:
                                                                     'var(--font-body)',
-                                                                textTransform: 'uppercase'
+                                                                textTransform:
+                                                                    'uppercase',
                                                             }}
                                                         />
                                                         <Bar
@@ -2195,7 +2369,7 @@ export function ClientDetail({
                         case 'items':
                             return (
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                    <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Item Quantity by Quotation
                                         </h3>
@@ -2212,35 +2386,53 @@ export function ClientDetail({
                                                     height="100%"
                                                 >
                                                     <BarChart
-                                                        data={client.quotations.flatMap(
-                                                            (quote) =>
-                                                                (
+                                                        // Group items by quotation to prevent duplications
+                                                        data={client.quotations.map(
+                                                            (quote) => {
+                                                                const items =
                                                                     quote.quotationItems ||
-                                                                    []
-                                                                ).map(
-                                                                    (
-                                                                        item: any,
-                                                                    ) => ({
-                                                                        name:
-                                                                            quote.quotationNumber?.substring(
-                                                                                quote
-                                                                                    .quotationNumber
-                                                                                    .length -
-                                                                                    8,
-                                                                            ) ||
-                                                                            `#${quote.uid}`,
-                                                                        quantity:
-                                                                            item.quantity ||
-                                                                            0,
-                                                                    }),
-                                                                ),
+                                                                    [];
+                                                                const totalQuantity =
+                                                                    items.reduce(
+                                                                        (
+                                                                            sum,
+                                                                            item,
+                                                                        ) =>
+                                                                            sum +
+                                                                            (item.quantity ||
+                                                                                0),
+                                                                        0,
+                                                                    );
+
+                                                                return {
+                                                                    name:
+                                                                        quote.quotationNumber?.substring(
+                                                                            quote
+                                                                                .quotationNumber
+                                                                                .length -
+                                                                                8,
+                                                                        ) ||
+                                                                        `#${quote.uid}`,
+                                                                    quantity:
+                                                                        totalQuantity,
+                                                                    fullNumber:
+                                                                        quote.quotationNumber,
+                                                                    date:
+                                                                        quote.quotationDate ||
+                                                                        quote.createdAt,
+                                                                    status: quote.status,
+                                                                    itemCount:
+                                                                        items.length,
+                                                                };
+                                                            },
                                                         )}
                                                         margin={{
                                                             top: 10,
-                                                            right: 10,
-                                                            left: 10,
+                                                            right: 30,
+                                                            left: 0,
                                                             bottom: 20,
                                                         }}
+                                                        barSize={25}
                                                     >
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
@@ -2249,31 +2441,187 @@ export function ClientDetail({
                                                         />
                                                         <XAxis
                                                             dataKey="name"
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            dy={
+                                                                                16
+                                                                            }
+                                                                            textAnchor="middle"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'QUOTATIONS',
+                                                                position:
+                                                                    'insideBottom',
+                                                                offset: -10,
+                                                                className:
+                                                                    'text-[10px] font-unbounded uppercase font-body',
+                                                            }}
                                                         />
                                                         <YAxis
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={
+                                                                                -5
+                                                                            }
+                                                                            textAnchor="end"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'TOTAL QUANTITY',
+                                                                angle: -90,
+                                                                position:
+                                                                    'insideLeft',
+                                                                style: {
+                                                                    textAnchor:
+                                                                        'middle',
+                                                                    fontSize:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        'var(--font-unbounded)',
+                                                                    textTransform:
+                                                                        'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Tooltip
+                                                            cursor={false}
+                                                            content={({
+                                                                active,
+                                                                payload,
+                                                            }) => {
+                                                                if (
+                                                                    active &&
+                                                                    payload &&
+                                                                    payload.length
+                                                                ) {
+                                                                    const data =
+                                                                        payload[0]
+                                                                            .payload;
+                                                                    return (
+                                                                        <div className="p-3 bg-white border rounded shadow-md">
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <FileText className="inline-block w-3 h-3" />
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.fullNumber ||
+                                                                                        `Quotation #${data.name}`}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Total
+                                                                                    Quantity:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {
+                                                                                        data.quantity
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Number
+                                                                                    of
+                                                                                    Items:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {
+                                                                                        data.itemCount
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Date:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.date
+                                                                                        ? new Date(
+                                                                                              data.date,
+                                                                                          ).toLocaleDateString()
+                                                                                        : 'Unknown date'}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Status:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {(
+                                                                                        data.status ||
+                                                                                        'pending'
+                                                                                    ).toUpperCase()}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            verticalAlign="top"
+                                                            height={36}
+                                                            formatter={(value) => (
+                                                                <span className="text-[8px] uppercase font-body">
+                                                                    Total Quantity
+                                                                </span>
+                                                            )}
+                                                            style={{
+                                                                fontSize: '10px',
+                                                                fontFamily: 'var(--font-body)',
+                                                                textTransform: 'uppercase'
+                                                            }}
                                                         />
                                                         <Bar
                                                             dataKey="quantity"
+                                                            name="quantity"
                                                             fill="#3b82f6"
-                                                            radius={[
-                                                                4, 4, 4, 4,
-                                                            ]}
+                                                            radius={[4, 4, 4, 4]}
                                                         />
                                                     </BarChart>
                                                 </ResponsiveContainer>
@@ -2288,7 +2636,7 @@ export function ClientDetail({
                                         )}
                                     </div>
 
-                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                    <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Item Price Analysis
                                         </h3>
@@ -2304,40 +2652,73 @@ export function ClientDetail({
                                                     height="100%"
                                                 >
                                                     <BarChart
-                                                        data={client.quotations.flatMap(
-                                                            (quote) =>
-                                                                (
+                                                        // Group items by quotation to prevent duplications
+                                                        data={client.quotations.map(
+                                                            (quote) => {
+                                                                const items =
                                                                     quote.quotationItems ||
-                                                                    []
-                                                                ).map(
-                                                                    (
-                                                                        item: any,
-                                                                    ) => ({
-                                                                        name:
-                                                                            quote.quotationNumber?.substring(
-                                                                                quote
-                                                                                    .quotationNumber
-                                                                                    .length -
-                                                                                    8,
-                                                                            ) ||
-                                                                            `#${quote.uid}`,
-                                                                        unitPrice:
-                                                                            item.totalPrice
-                                                                                ? item.totalPrice /
+                                                                    [];
+                                                                const totalPrice =
+                                                                    items.reduce(
+                                                                        (
+                                                                            sum,
+                                                                            item,
+                                                                        ) =>
+                                                                            sum +
+                                                                            (item.totalPrice ||
+                                                                                0),
+                                                                        0,
+                                                                    );
+                                                                const avgUnitPrice =
+                                                                    items.length >
+                                                                    0
+                                                                        ? items.reduce(
+                                                                              (
+                                                                                  sum,
+                                                                                  item,
+                                                                              ) =>
+                                                                                  sum +
+                                                                                  (item.totalPrice &&
                                                                                   item.quantity
-                                                                                : 0,
-                                                                        totalPrice:
-                                                                            item.totalPrice ||
-                                                                            0,
-                                                                    }),
-                                                                ),
+                                                                                      ? item.totalPrice /
+                                                                                        item.quantity
+                                                                                      : 0),
+                                                                              0,
+                                                                          ) /
+                                                                          items.length
+                                                                        : 0;
+
+                                                                return {
+                                                                    name:
+                                                                        quote.quotationNumber?.substring(
+                                                                            quote
+                                                                                .quotationNumber
+                                                                                .length -
+                                                                                8,
+                                                                        ) ||
+                                                                        `#${quote.uid}`,
+                                                                    unitPrice:
+                                                                        avgUnitPrice,
+                                                                    totalPrice:
+                                                                        totalPrice,
+                                                                    fullNumber:
+                                                                        quote.quotationNumber,
+                                                                    date:
+                                                                        quote.quotationDate ||
+                                                                        quote.createdAt,
+                                                                    status: quote.status,
+                                                                    itemCount:
+                                                                        items.length,
+                                                                };
+                                                            },
                                                         )}
                                                         margin={{
                                                             top: 10,
-                                                            right: 10,
-                                                            left: 10,
+                                                            right: 30,
+                                                            left: 0,
                                                             bottom: 20,
                                                         }}
+                                                        barSize={25}
                                                     >
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
@@ -2346,34 +2727,266 @@ export function ClientDetail({
                                                         />
                                                         <XAxis
                                                             dataKey="name"
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            dy={
+                                                                                16
+                                                                            }
+                                                                            textAnchor="middle"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'QUOTATIONS',
+                                                                position:
+                                                                    'insideBottom',
+                                                                offset: -10,
+                                                                className:
+                                                                    'text-[10px] font-unbounded uppercase font-body',
+                                                            }}
                                                         />
                                                         <YAxis
-                                                            tick={{
-                                                                fontSize: 10,
-                                                            }}
+                                                            yAxisId="left"
                                                             axisLine={{
                                                                 stroke: '#e5e7eb',
                                                                 strokeWidth: 0.5,
                                                             }}
                                                             tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={
+                                                                                -5
+                                                                            }
+                                                                            textAnchor="end"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'TOTAL PRICE (R)',
+                                                                angle: -90,
+                                                                position:
+                                                                    'insideLeft',
+                                                                style: {
+                                                                    textAnchor:
+                                                                        'middle',
+                                                                    fontSize:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        'var(--font-unbounded)',
+                                                                    textTransform:
+                                                                        'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <YAxis
+                                                            yAxisId="right"
+                                                            orientation="right"
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={
+                                                                                5
+                                                                            }
+                                                                            textAnchor="start"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'UNIT PRICE (R)',
+                                                                angle: 90,
+                                                                position:
+                                                                    'insideRight',
+                                                                style: {
+                                                                    textAnchor:
+                                                                        'middle',
+                                                                    fontSize:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        'var(--font-unbounded)',
+                                                                    textTransform:
+                                                                        'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Tooltip
+                                                            cursor={false}
+                                                            content={({
+                                                                active,
+                                                                payload,
+                                                            }) => {
+                                                                if (
+                                                                    active &&
+                                                                    payload &&
+                                                                    payload.length
+                                                                ) {
+                                                                    const data =
+                                                                        payload[0]
+                                                                            .payload;
+                                                                    return (
+                                                                        <div className="p-3 bg-white border rounded shadow-md">
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <FileText className="inline-block w-3 h-3" />
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.fullNumber ||
+                                                                                        `Quotation #${data.name}`}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Avg.
+                                                                                    Unit
+                                                                                    Price
+                                                                                    (R):
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.unitPrice.toFixed(
+                                                                                        2,
+                                                                                    )}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Total
+                                                                                    Price
+                                                                                    (R):
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.totalPrice.toFixed(
+                                                                                        2,
+                                                                                    )}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Items:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {
+                                                                                        data.itemCount
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Date:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.date
+                                                                                        ? new Date(
+                                                                                              data.date,
+                                                                                          ).toLocaleDateString()
+                                                                                        : 'Unknown date'}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Status:
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {(
+                                                                                        data.status ||
+                                                                                        'pending'
+                                                                                    ).toUpperCase()}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            verticalAlign="top"
+                                                            height={36}
+                                                            formatter={(
+                                                                value,
+                                                            ) => (
+                                                                <span className="text-[8px] uppercase font-body">
+                                                                    {value ===
+                                                                    'totalPrice'
+                                                                        ? 'Total Price'
+                                                                        : 'Avg. Unit Price'}
+                                                                </span>
+                                                            )}
+                                                            style={{
+                                                                fontSize:
+                                                                    '10px',
+                                                                fontFamily:
+                                                                    'var(--font-body)',
+                                                                textTransform:
+                                                                    'uppercase',
+                                                            }}
                                                         />
                                                         <Bar
+                                                            yAxisId="left"
                                                             dataKey="totalPrice"
+                                                            name="totalPrice"
                                                             fill="#3b82f6"
                                                             radius={[
                                                                 4, 4, 4, 4,
                                                             ]}
                                                         />
                                                         <Bar
+                                                            yAxisId="right"
                                                             dataKey="unitPrice"
+                                                            name="unitPrice"
                                                             fill="#93c5fd"
                                                             radius={[
                                                                 4, 4, 4, 4,
@@ -2402,7 +3015,7 @@ export function ClientDetail({
                     <div className="flex flex-col justify-start gap-4">
                         {/* Overview Cards */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Quotation Value
                                 </h3>
@@ -2431,7 +3044,7 @@ export function ClientDetail({
                                     <DollarSign size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Items
                                 </h3>
@@ -2467,7 +3080,7 @@ export function ClientDetail({
                                     <ShoppingBag size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Latest Quotation
                                 </h3>
@@ -2489,7 +3102,7 @@ export function ClientDetail({
                                     <FileText size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Average Quotation Value
                                 </h3>
@@ -2575,7 +3188,7 @@ export function ClientDetail({
                 return (
                     <div className="space-y-6">
                         {client.assignedSalesRep ? (
-                            <div className="p-4 border rounded-lg bg-card/50 border-primary/30">
+                            <div className="p-4 border rounded-lg bg-card/50 border-border/80">
                                 <h3 className="mb-4 text-xs font-normal uppercase font-body">
                                     Assigned Team Members
                                 </h3>
@@ -2613,12 +3226,11 @@ export function ClientDetail({
                                                     </h4>
                                                     {client.assignedSalesRep
                                                         .role && (
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="text-[10px] px-2 py-0.5 font-body border-0 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 font-thin"
-                                                        >
-                                                            {client?.assignedSalesRep?.role?.toUpperCase()}
-                                                        </Badge>
+                                                        <div className="mt-1">
+                                                            <Badge className="text-[9px] bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                                                {client.assignedSalesRep.role.toUpperCase()}
+                                                            </Badge>
+                                                        </div>
                                                     )}
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-2 mt-2">

@@ -36,7 +36,7 @@ export interface Client extends Omit<ClientBase, 'status'> {
             uid: number;
             name?: string;
             quantity?: number;
-            unitPrice?: number;
+            totalPrice: number;
         }>;
         quotationDate?: Date;
     }>;

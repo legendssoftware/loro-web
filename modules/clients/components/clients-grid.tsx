@@ -4,6 +4,7 @@ import { ClientCard } from './client-card';
 import { Client } from '@/hooks/use-clients-query';
 import { memo, useState, useEffect } from 'react';
 import { FloatingPagination } from '@/components/ui/floating-pagination';
+import { FolderMinus } from 'lucide-react';
 
 interface ClientsGridProps {
     clients: Client[];
@@ -75,8 +76,11 @@ function ClientsGridComponent({
                     />
                 ))}
                 {displayedClients.length === 0 && (
-                    <div className="flex items-center justify-center h-24 text-sm font-normal uppercase border border-dashed rounded-md col-span-full border-border text-muted-foreground font-body animate-fade-in">
-                        No clients found
+                    <div className="flex flex-col items-center justify-center h-screen text-sm font-normal uppercase rounded-md col-span-full border-border text-muted-foreground font-body animate-fade-in">
+                        <FolderMinus size={50} strokeWidth={1.2} />
+                        <span className="text-xs uppercase text-muted-foreground font-body">
+                            No clients found
+                        </span>
                     </div>
                 )}
             </div>

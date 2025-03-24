@@ -11,6 +11,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ClientStatus, ClientFilterParams } from '@/hooks/use-clients-query';
+import { ClientRiskLevel } from '@/lib/types/client-enums';
+import { Client } from '@/lib/types/client';
 import {
     X,
     ChevronDown,
@@ -27,6 +29,7 @@ import {
 import { useCallback, useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 // Date range presets
 enum DateRangePreset {
@@ -37,18 +40,18 @@ enum DateRangePreset {
     CUSTOM = 'CUSTOM',
 }
 
-// Risk level options
-enum RiskLevel {
-    LOW = 'low',
-    MEDIUM = 'medium',
-    HIGH = 'high',
-}
-
 interface ClientsFilterProps {
     onApplyFilters: (filters: ClientFilterParams) => void;
     onClearFilters: () => void;
-    clients?: any[];
+    clients?: Client[];
 }
+
+// Base styling for filter buttons
+const filterButtonClass = "flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer transition-colors hover:bg-accent bg-card border-border";
+const filterLabelClass = "text-[10px] font-medium uppercase font-body";
+const filterIconClass = "w-4 h-4";
+const filterItemClass = "flex items-center gap-2 px-2 py-1.5 text-xs font-normal font-body rounded hover:bg-accent cursor-pointer";
+const activeItemClass = "bg-accent/40";
 
 export function ClientsFilter({
     onApplyFilters,
@@ -60,15 +63,13 @@ export function ClientsFilter({
     const [status, setStatus] = useState<ClientStatus | undefined>(undefined);
     const [category, setCategory] = useState<string | undefined>(undefined);
     const [industry, setIndustry] = useState<string | undefined>(undefined);
-    const [riskLevel, setRiskLevel] = useState<RiskLevel | undefined>(undefined);
+    const [riskLevel, setRiskLevel] = useState<ClientRiskLevel | undefined>(undefined);
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-    const [dateRangePreset, setDateRangePreset] = useState<
-        DateRangePreset | undefined
-    >(undefined);
+    const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset | undefined>(undefined);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-    // Get unique categories from clients
+    // Extract unique values from clients
     const categories = useMemo(() => {
         if (!clients || clients.length === 0) return [];
         return Array.from(
@@ -80,7 +81,6 @@ export function ClientsFilter({
         ).sort();
     }, [clients]);
 
-    // Get unique industries from clients
     const industries = useMemo(() => {
         if (!clients || clients.length === 0) return [];
         return Array.from(
@@ -92,7 +92,23 @@ export function ClientsFilter({
         ).sort();
     }, [clients]);
 
-    // Apply filters
+    const riskLevels = useMemo(() => {
+        if (!clients || clients.length === 0) return Object.values(ClientRiskLevel);
+
+        const availableRiskLevels = Array.from(
+            new Set(
+                clients
+                    .filter((client) => client.riskLevel)
+                    .map((client) => client.riskLevel as ClientRiskLevel)
+            )
+        );
+
+        return availableRiskLevels.length > 0
+            ? availableRiskLevels
+            : Object.values(ClientRiskLevel);
+    }, [clients]);
+
+    // Apply filters function
     const handleApplyFilters = useCallback(() => {
         const filters: ClientFilterParams = {};
         const newActiveFilters: string[] = [];
@@ -135,78 +151,102 @@ export function ClientsFilter({
         onApplyFilters(filters);
     }, [search, status, category, industry, riskLevel, startDate, endDate, onApplyFilters]);
 
-    // Adding direct filter application helper to avoid setTimeout issues
+    // Direct filter application helper - improved to ensure correct data passing
     const applyFilter = useCallback(
         (
             filterType: 'status' | 'category' | 'industry' | 'riskLevel' | 'dateRange' | 'search',
             value: any,
-            startValue?: Date,
-            endValue?: Date
+            filterStartDate?: Date,
+            filterEndDate?: Date
         ) => {
+            console.log(`Applying filter: ${filterType}`, { value, currentValue:
+                filterType === 'status' ? status :
+                filterType === 'category' ? category :
+                filterType === 'industry' ? industry :
+                filterType === 'riskLevel' ? riskLevel :
+                filterType === 'search' ? search :
+                filterType === 'dateRange' ? { startDate, endDate } : null
+            });
+
+            // Create a copy of the current filters state
+            let newStatus = status;
+            let newCategory = category;
+            let newIndustry = industry;
+            let newRiskLevel = riskLevel;
+            let newSearch = search;
+            let newStartDate = startDate;
+            let newEndDate = endDate;
+
+            // Update the specific filter value based on type
+            if (filterType === 'status') {
+                newStatus = value;
+                setStatus(value);
+            } else if (filterType === 'category') {
+                newCategory = value;
+                setCategory(value);
+            } else if (filterType === 'industry') {
+                newIndustry = value;
+                setIndustry(value);
+            } else if (filterType === 'riskLevel') {
+                newRiskLevel = value;
+                setRiskLevel(value);
+            } else if (filterType === 'search') {
+                newSearch = value;
+                setSearch(value);
+            } else if (filterType === 'dateRange') {
+                if (filterStartDate) {
+                    newStartDate = filterStartDate;
+                    setStartDate(filterStartDate);
+                }
+                if (filterEndDate) {
+                    newEndDate = filterEndDate;
+                    setEndDate(filterEndDate);
+                }
+            }
+
+            // Build filter object with the updated values
             const filters: ClientFilterParams = {};
             const newActiveFilters: string[] = [];
 
-            // Preserve existing filters
-            if (search && filterType !== 'search') {
-                filters.search = search;
+            // Add each active filter to the filters object
+            if (newSearch) {
+                filters.search = newSearch;
                 newActiveFilters.push('Search');
             }
 
-            if (status && filterType !== 'status') {
-                filters.status = status;
+            if (newStatus) {
+                filters.status = newStatus;
                 newActiveFilters.push('Status');
             }
 
-            if (category && filterType !== 'category') {
-                filters.category = category;
+            if (newCategory) {
+                filters.category = newCategory;
                 newActiveFilters.push('Category');
             }
 
-            if (industry && filterType !== 'industry') {
-                filters.industry = industry;
+            if (newIndustry) {
+                filters.industry = newIndustry;
                 newActiveFilters.push('Industry');
             }
 
-            if (riskLevel && filterType !== 'riskLevel') {
-                filters.riskLevel = riskLevel;
+            if (newRiskLevel) {
+                filters.riskLevel = newRiskLevel;
                 newActiveFilters.push('Risk Level');
             }
 
-            if (startDate && filterType !== 'dateRange') {
-                filters.from = format(startDate, 'yyyy-MM-dd');
+            if (newStartDate) {
+                filters.from = format(newStartDate, 'yyyy-MM-dd');
                 newActiveFilters.push('Date Range');
             }
 
-            if (endDate && filterType !== 'dateRange') {
-                filters.to = format(endDate, 'yyyy-MM-dd');
+            if (newEndDate) {
+                filters.to = format(newEndDate, 'yyyy-MM-dd');
             }
 
-            // Add the new filter value
-            if (filterType === 'search' && value) {
-                filters.search = value;
-                newActiveFilters.push('Search');
-            } else if (filterType === 'status' && value) {
-                filters.status = value;
-                newActiveFilters.push('Status');
-            } else if (filterType === 'category' && value) {
-                filters.category = value;
-                newActiveFilters.push('Category');
-            } else if (filterType === 'industry' && value) {
-                filters.industry = value;
-                newActiveFilters.push('Industry');
-            } else if (filterType === 'riskLevel' && value) {
-                filters.riskLevel = value;
-                newActiveFilters.push('Risk Level');
-            } else if (filterType === 'dateRange') {
-                if (startValue) {
-                    filters.from = format(startValue, 'yyyy-MM-dd');
-                    newActiveFilters.push('Date Range');
-                }
-                if (endValue) {
-                    filters.to = format(endValue, 'yyyy-MM-dd');
-                }
-            }
+            // Log the final filter state
+            console.log('Applying filters:', filters, 'Active filters:', newActiveFilters);
 
+            // Update active filters and apply
             setActiveFilters(newActiveFilters);
             onApplyFilters(filters);
         },
@@ -227,7 +267,7 @@ export function ClientsFilter({
         onClearFilters();
     }, [onClearFilters]);
 
-    // Status labels and icons
+    // Status data
     const statusLabels = {
         [ClientStatus.ACTIVE]: 'ACTIVE',
         [ClientStatus.INACTIVE]: 'INACTIVE',
@@ -251,9 +291,21 @@ export function ClientsFilter({
 
     // Risk level colors
     const riskLevelColors = {
-        [RiskLevel.LOW]: 'text-green-600',
-        [RiskLevel.MEDIUM]: 'text-yellow-600',
-        [RiskLevel.HIGH]: 'text-red-600',
+        [ClientRiskLevel.LOW]: 'text-green-600',
+        [ClientRiskLevel.MEDIUM]: 'text-yellow-600',
+        [ClientRiskLevel.HIGH]: 'text-red-600',
+        [ClientRiskLevel.CRITICAL]: 'text-purple-600',
+    };
+
+    // Item is selected helper
+    const isSelected = (type: string, value: any) => {
+        switch (type) {
+            case 'status': return status === value;
+            case 'category': return category === value;
+            case 'industry': return industry === value;
+            case 'riskLevel': return riskLevel === value;
+            default: return false;
+        }
     };
 
     return (
@@ -262,19 +314,19 @@ export function ClientsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div className={filterButtonClass}>
                             <div className="flex items-center gap-2">
                                 {status ? (
                                     <>
                                         {React.createElement(
                                             statusIcons[status],
                                             {
-                                                className: `w-4 h-4 ${statusColors[status]}`,
+                                                className: `${filterIconClass} ${statusColors[status]}`,
                                                 strokeWidth: 1.5,
                                             },
                                         )}
                                         <span
-                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                            className={`${filterLabelClass} ${statusColors[status]}`}
                                         >
                                             {statusLabels[status]}
                                         </span>
@@ -282,10 +334,10 @@ export function ClientsFilter({
                                 ) : (
                                     <>
                                         <Users
-                                            className="w-4 h-4 text-muted-foreground"
+                                            className={`${filterIconClass} text-muted-foreground`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin font-body">
+                                        <span className={filterLabelClass}>
                                             STATUS
                                         </span>
                                     </>
@@ -298,7 +350,7 @@ export function ClientsFilter({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                        <DropdownMenuLabel className={filterLabelClass}>
                             Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -307,21 +359,22 @@ export function ClientsFilter({
                                 ([key, label]) => {
                                     const Icon =
                                         statusIcons[key as ClientStatus];
+                                    const selected = isSelected('status', key);
+
                                     return (
                                         <DropdownMenuItem
                                             key={key}
-                                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                            className={cn(filterItemClass, selected && activeItemClass)}
                                             onClick={() => {
                                                 const newStatus =
                                                     status === (key as ClientStatus)
                                                         ? undefined
                                                         : (key as ClientStatus);
-                                                setStatus(newStatus);
                                                 applyFilter('status', newStatus);
                                             }}
                                         >
                                             <Icon
-                                                className={`w-4 h-4 mr-2 ${
+                                                className={`${filterIconClass} mr-2 ${
                                                     statusColors[
                                                         key as ClientStatus
                                                     ]
@@ -330,14 +383,14 @@ export function ClientsFilter({
                                             />
                                             <span
                                                 className={`text-[10px] font-normal font-body ${
-                                                    status === key
+                                                    selected
                                                         ? statusColors[key as ClientStatus]
                                                         : ''
                                                 }`}
                                             >
                                                 {label}
                                             </span>
-                                            {status === key && (
+                                            {selected && (
                                                 <Check
                                                     className="w-4 h-4 ml-auto text-primary"
                                                     strokeWidth={1.5}
@@ -357,25 +410,25 @@ export function ClientsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div className={filterButtonClass}>
                             <div className="flex items-center gap-2">
                                 {category ? (
                                     <>
                                         <Tag
-                                            className="w-4 h-4 text-blue-600"
+                                            className={`${filterIconClass} text-blue-600`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin text-blue-600 font-body">
+                                        <span className={`${filterLabelClass} text-blue-600`}>
                                             {category.toUpperCase()}
                                         </span>
                                     </>
                                 ) : (
                                     <>
                                         <Tag
-                                            className="w-4 h-4 text-muted-foreground"
+                                            className={`${filterIconClass} text-muted-foreground`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin font-body">
+                                        <span className={filterLabelClass}>
                                             CATEGORY
                                         </span>
                                     </>
@@ -388,46 +441,50 @@ export function ClientsFilter({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                        <DropdownMenuLabel className={filterLabelClass}>
                             Filter by Category
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
                             {categories.length > 0 ? (
-                                categories.map((cat) => (
-                                    <DropdownMenuItem
-                                        key={cat}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            const newCategory =
-                                                category === cat
-                                                    ? undefined
-                                                    : cat;
-                                            setCategory(newCategory);
-                                            applyFilter('category', newCategory);
-                                        }}
-                                    >
-                                        <Tag
-                                            className="w-4 h-4 mr-2 text-blue-600"
-                                            strokeWidth={1.5}
-                                        />
-                                        <span
-                                            className={`text-[10px] font-normal font-body ${
-                                                category === cat
-                                                    ? 'text-blue-600'
-                                                    : ''
-                                            }`}
+                                categories.map((cat) => {
+                                    if (!cat) return null;
+                                    const selected = isSelected('category', cat);
+
+                                    return (
+                                        <DropdownMenuItem
+                                            key={cat}
+                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            onClick={() => {
+                                                const newCategory =
+                                                    category === cat
+                                                        ? undefined
+                                                        : cat;
+                                                applyFilter('category', newCategory);
+                                            }}
                                         >
-                                            {cat.toUpperCase()}
-                                        </span>
-                                        {category === cat && (
-                                            <Check
-                                                className="w-4 h-4 ml-auto text-primary"
+                                            <Tag
+                                                className={`${filterIconClass} mr-2 text-blue-600`}
                                                 strokeWidth={1.5}
                                             />
-                                        )}
-                                    </DropdownMenuItem>
-                                ))
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    selected
+                                                        ? 'text-blue-600'
+                                                        : ''
+                                                }`}
+                                            >
+                                                {cat.toUpperCase()}
+                                            </span>
+                                            {selected && (
+                                                <Check
+                                                    className="w-4 h-4 ml-auto text-primary"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })
                             ) : (
                                 <div className="px-2 py-1 text-xs text-gray-400">
                                     <span className="text-[10px] font-normal font-body uppercase">
@@ -445,25 +502,25 @@ export function ClientsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div className={filterButtonClass}>
                             <div className="flex items-center gap-2">
                                 {industry ? (
                                     <>
                                         <Building
-                                            className="w-4 h-4 text-purple-600"
+                                            className={`${filterIconClass} text-purple-600`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin text-purple-600 font-body">
+                                        <span className={`${filterLabelClass} text-purple-600`}>
                                             {industry.toUpperCase()}
                                         </span>
                                     </>
                                 ) : (
                                     <>
                                         <Building
-                                            className="w-4 h-4 text-muted-foreground"
+                                            className={`${filterIconClass} text-muted-foreground`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin font-body">
+                                        <span className={filterLabelClass}>
                                             INDUSTRY
                                         </span>
                                     </>
@@ -476,46 +533,50 @@ export function ClientsFilter({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                        <DropdownMenuLabel className={filterLabelClass}>
                             Filter by Industry
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
                             {industries.length > 0 ? (
-                                industries.map((ind) => (
-                                    <DropdownMenuItem
-                                        key={ind}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            const newIndustry =
-                                                industry === ind
-                                                    ? undefined
-                                                    : ind;
-                                            setIndustry(newIndustry);
-                                            applyFilter('industry', newIndustry);
-                                        }}
-                                    >
-                                        <Building
-                                            className="w-4 h-4 mr-2 text-purple-600"
-                                            strokeWidth={1.5}
-                                        />
-                                        <span
-                                            className={`text-[10px] font-normal font-body ${
-                                                industry === ind
-                                                    ? 'text-purple-600'
-                                                    : ''
-                                            }`}
+                                industries.map((ind) => {
+                                    if (!ind) return null;
+                                    const selected = isSelected('industry', ind);
+
+                                    return (
+                                        <DropdownMenuItem
+                                            key={ind}
+                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            onClick={() => {
+                                                const newIndustry =
+                                                    industry === ind
+                                                        ? undefined
+                                                        : ind;
+                                                applyFilter('industry', newIndustry);
+                                            }}
                                         >
-                                            {ind.toUpperCase()}
-                                        </span>
-                                        {industry === ind && (
-                                            <Check
-                                                className="w-4 h-4 ml-auto text-primary"
+                                            <Building
+                                                className={`${filterIconClass} mr-2 text-purple-600`}
                                                 strokeWidth={1.5}
                                             />
-                                        )}
-                                    </DropdownMenuItem>
-                                ))
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    selected
+                                                        ? 'text-purple-600'
+                                                        : ''
+                                                }`}
+                                            >
+                                                {ind.toUpperCase()}
+                                            </span>
+                                            {selected && (
+                                                <Check
+                                                    className="w-4 h-4 ml-auto text-primary"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })
                             ) : (
                                 <div className="px-2 py-1 text-xs text-gray-400">
                                     <span className="text-[10px] font-normal font-body uppercase">
@@ -533,16 +594,16 @@ export function ClientsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div className={filterButtonClass}>
                             <div className="flex items-center gap-2">
                                 {riskLevel ? (
                                     <>
                                         <AlertTriangle
-                                            className={`w-4 h-4 ${riskLevelColors[riskLevel]}`}
+                                            className={`${filterIconClass} ${riskLevelColors[riskLevel]}`}
                                             strokeWidth={1.5}
                                         />
                                         <span
-                                            className={`text-[10px] font-thin font-body ${riskLevelColors[riskLevel]}`}
+                                            className={`${filterLabelClass} ${riskLevelColors[riskLevel]}`}
                                         >
                                             {riskLevel.toUpperCase()}
                                         </span>
@@ -550,10 +611,10 @@ export function ClientsFilter({
                                 ) : (
                                     <>
                                         <AlertTriangle
-                                            className="w-4 h-4 text-muted-foreground"
+                                            className={`${filterIconClass} text-muted-foreground`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-thin font-body">
+                                        <span className={filterLabelClass}>
                                             RISK LEVEL
                                         </span>
                                     </>
@@ -566,47 +627,58 @@ export function ClientsFilter({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                        <DropdownMenuLabel className={filterLabelClass}>
                             Filter by Risk Level
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {Object.entries(RiskLevel).map(([key, value]) => (
-                                <DropdownMenuItem
-                                    key={value}
-                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                    onClick={() => {
-                                        const newRiskLevel =
-                                            riskLevel === value
-                                                ? undefined
-                                                : value;
-                                        setRiskLevel(newRiskLevel);
-                                        applyFilter('riskLevel', newRiskLevel);
-                                    }}
-                                >
-                                    <AlertTriangle
-                                        className={`w-4 h-4 mr-2 ${
-                                            riskLevelColors[value as RiskLevel]
-                                        }`}
-                                        strokeWidth={1.5}
-                                    />
-                                    <span
-                                        className={`text-[10px] font-normal font-body ${
-                                            riskLevel === value
-                                                ? riskLevelColors[value as RiskLevel]
-                                                : ''
-                                        }`}
-                                    >
-                                        {value.toUpperCase()}
+                            {riskLevels.length > 0 ? (
+                                riskLevels.map((value) => {
+                                    if (!value) return null;
+                                    const selected = isSelected('riskLevel', value);
+
+                                    return (
+                                        <DropdownMenuItem
+                                            key={value}
+                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            onClick={() => {
+                                                const newRiskLevel = riskLevel === value
+                                                    ? undefined
+                                                    : value as ClientRiskLevel;
+                                                applyFilter('riskLevel', newRiskLevel);
+                                            }}
+                                        >
+                                            <AlertTriangle
+                                                className={`${filterIconClass} mr-2 ${
+                                                    riskLevelColors[value as ClientRiskLevel] || 'text-gray-600'
+                                                }`}
+                                                strokeWidth={1.5}
+                                            />
+                                            <span
+                                                className={`text-[10px] font-normal font-body ${
+                                                    selected
+                                                        ? riskLevelColors[value as ClientRiskLevel] || 'text-gray-600'
+                                                        : ''
+                                                }`}
+                                            >
+                                                {value.toUpperCase()}
+                                            </span>
+                                            {selected && (
+                                                <Check
+                                                    className="w-4 h-4 ml-auto text-primary"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })
+                            ) : (
+                                <div className="px-2 py-1 text-xs text-gray-400">
+                                    <span className="text-[10px] font-normal font-body uppercase">
+                                        No risk levels available
                                     </span>
-                                    {riskLevel === value && (
-                                        <Check
-                                            className="w-4 h-4 ml-auto text-primary"
-                                            strokeWidth={1.5}
-                                        />
-                                    )}
-                                </DropdownMenuItem>
-                            ))}
+                                </div>
+                            )}
                             <DropdownMenuSeparator />
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
@@ -618,7 +690,7 @@ export function ClientsFilter({
                 <Button
                     variant="outline"
                     size="sm"
-                    className="text-[10px] hover:text-red-500 font-normal uppercase border border-red-500 rounded h-9 font-body text-red-400"
+                    className="h-10 px-3 text-xs font-medium uppercase transition-colors border rounded hover:bg-red-50 hover:text-red-600 border-red-500 font-body text-red-500"
                     onClick={handleClearFilters}
                 >
                     <X className="w-4 h-4 mr-1" strokeWidth={1.5} />

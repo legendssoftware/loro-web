@@ -62,7 +62,6 @@ const ClientForm = dynamic(
 // Tab configuration
 const tabs = [
     { id: 'clients', label: 'CLIENTS' },
-    { id: 'reports', label: 'REPORTS' },
 ];
 
 // Create Client Modal Component

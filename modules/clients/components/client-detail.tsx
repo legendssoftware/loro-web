@@ -53,6 +53,24 @@ import { Badge } from '@/components/ui/badge';
 import { EditClientModal } from './edit-client-modal';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+    AreaChart,
+    Area,
+    BarChart,
+    Bar,
+    LineChart,
+    Line,
+    PieChart,
+    Pie,
+    ComposedChart,
+    Cell,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+} from 'recharts';
 
 interface ClientDetailsModalProps {
     client: Client;
@@ -81,6 +99,7 @@ export function ClientDetail({
         useState<boolean>(false);
     const [pendingStatusChange, setPendingStatusChange] =
         useState<ClientStatus | null>(null);
+    const [activeReportTab, setActiveReportTab] = useState<string>('overview');
     const queryClient = useQueryClient();
 
     // Format dates
@@ -92,12 +111,18 @@ export function ClientDetail({
     // Handle status change
     const initiateStatusChange = (status: ClientStatus) => {
         if (!onUpdateStatus) {
-            showErrorToast('Status update functionality is not available', toast);
+            showErrorToast(
+                'Status update functionality is not available',
+                toast,
+            );
             return;
         }
 
         if (client.status === status) {
-            showSuccessToast(`Client is already ${status.toUpperCase()}`, toast);
+            showSuccessToast(
+                `Client is already ${status.toUpperCase()}`,
+                toast,
+            );
             return;
         }
 
@@ -107,7 +132,10 @@ export function ClientDetail({
 
     const confirmStatusChange = () => {
         if (!pendingStatusChange || !onUpdateStatus) {
-            showErrorToast('Cannot update client status. Missing required information.', toast);
+            showErrorToast(
+                'Cannot update client status. Missing required information.',
+                toast,
+            );
             setShowStatusChangeConfirmation(false);
             setPendingStatusChange(null);
             return;
@@ -122,14 +150,21 @@ export function ClientDetail({
             queryClient.invalidateQueries({ queryKey: ['client', client.uid] });
 
             // Refetch the specific client data
-            queryClient.refetchQueries({ queryKey: ['client', client.uid], type: 'active' });
+            queryClient.refetchQueries({
+                queryKey: ['client', client.uid],
+                type: 'active',
+            });
 
             setShowStatusChangeConfirmation(false);
             setPendingStatusChange(null);
 
             // The toast will be shown in handleUpdateClientStatus in the clients/page.tsx
         } catch (error: any) {
-            showErrorToast(error?.message || 'Failed to update client status. Please try again.', toast);
+            showErrorToast(
+                error?.message ||
+                    'Failed to update client status. Please try again.',
+                toast,
+            );
             console.error('Error updating client status:', error);
         }
     };
@@ -207,7 +242,10 @@ export function ClientDetail({
                 showSuccessToast('Client deleted successfully', toast);
                 onClose();
             } catch (error) {
-                showErrorToast('Failed to delete client. Please try again.', toast);
+                showErrorToast(
+                    'Failed to delete client. Please try again.',
+                    toast,
+                );
                 console.error('Error deleting client:', error);
             }
         }
@@ -235,7 +273,10 @@ export function ClientDetail({
         queryClient.invalidateQueries({ queryKey: ['client', client.uid] });
 
         // Refetch the specific client data
-        queryClient.refetchQueries({ queryKey: ['client', client.uid], type: 'active' });
+        queryClient.refetchQueries({
+            queryKey: ['client', client.uid],
+            type: 'active',
+        });
 
         // Close the edit modal
         setShowEditModal(false);
@@ -268,7 +309,10 @@ export function ClientDetail({
 
             // The toast will be shown in handleDeleteClient in the clients/page.tsx
         } catch (error: any) {
-            showErrorToast(error?.message || 'Failed to delete client. Please try again.', toast);
+            showErrorToast(
+                error?.message || 'Failed to delete client. Please try again.',
+                toast,
+            );
             console.error('Error deleting client:', error);
         }
     };
@@ -436,7 +480,8 @@ export function ClientDetail({
                                             {client.enableGeofence && (
                                                 <div className="mt-1">
                                                     <Badge className="text-[9px] bg-blue-100 text-blue-800">
-                                                        Geofence: {client.geofenceRadius}m
+                                                        Geofence:{' '}
+                                                        {client.geofenceRadius}m
                                                     </Badge>
                                                 </div>
                                             )}
@@ -929,7 +974,9 @@ export function ClientDetail({
                                         {client?.quotations.map(
                                             (quotation: any, index: number) => (
                                                 <div
-                                                    key={quotation?.uid || index}
+                                                    key={
+                                                        quotation?.uid || index
+                                                    }
                                                     className="p-3 border rounded-md border-primary/20"
                                                 >
                                                     <div className="flex items-center justify-between mb-3">
@@ -1479,23 +1526,1029 @@ export function ClientDetail({
                     </div>
                 );
             case 'reports':
+                const renderReportContent = () => {
+                    switch (activeReportTab) {
+                        case 'overview':
+                            return (
+                                <>
+                                    {/* Charts Section */}
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="p-6 border rounded border-primary/20 bg-card">
+                                            <h3 className="text-sm font-normal uppercase font-body">
+                                                Quotation Values
+                                            </h3>
+                                            <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                                Comparison of quotation amounts
+                                            </p>
+                                            {client.quotations &&
+                                            client.quotations.length > 0 ? (
+                                                <div className="h-64">
+                                                    <ResponsiveContainer
+                                                        width="100%"
+                                                        height="100%"
+                                                    >
+                                                        <BarChart
+                                                            data={client.quotations.map(
+                                                                (quote) => ({
+                                                                    name:
+                                                                        quote.quotationNumber?.substring(
+                                                                            quote
+                                                                                .quotationNumber
+                                                                                .length -
+                                                                                8,
+                                                                        ) ||
+                                                                        `#${quote.uid}`,
+                                                                    value: Number(
+                                                                        quote.totalAmount ||
+                                                                            0,
+                                                                    ),
+                                                                }),
+                                                            )}
+                                                            margin={{
+                                                                top: 10,
+                                                                right: 10,
+                                                                left: 10,
+                                                                bottom: 20,
+                                                            }}
+                                                        >
+                                                            <CartesianGrid
+                                                                strokeDasharray="3 3"
+                                                                vertical={false}
+                                                                opacity={0.1}
+                                                            />
+                                                            <XAxis
+                                                                dataKey="name"
+                                                                tick={{
+                                                                    fontSize: 10,
+                                                                }}
+                                                                axisLine={{
+                                                                    stroke: '#e5e7eb',
+                                                                    strokeWidth: 0.5,
+                                                                }}
+                                                                tickLine={false}
+                                                            />
+                                                            <YAxis
+                                                                tick={{
+                                                                    fontSize: 10,
+                                                                }}
+                                                                axisLine={{
+                                                                    stroke: '#e5e7eb',
+                                                                    strokeWidth: 0.5,
+                                                                }}
+                                                                tickLine={false}
+                                                            />
+                                                            <Bar
+                                                                dataKey="value"
+                                                                fill="#3b82f6"
+                                                                radius={[
+                                                                    4, 4, 4, 4,
+                                                                ]}
+                                                            />
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                    <p className="text-xs">
+                                                        No quotation data
+                                                        available
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-6 border rounded border-primary/20 bg-card">
+                                            <h3 className="text-sm font-normal uppercase font-body">
+                                                Items Distribution
+                                            </h3>
+                                            <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                                Number of items per quotation
+                                            </p>
+                                            {client.quotations &&
+                                            client.quotations.length > 0 ? (
+                                                <div className="h-64">
+                                                    <ResponsiveContainer
+                                                        width="100%"
+                                                        height="100%"
+                                                    >
+                                                        <PieChart>
+                                                            <Pie
+                                                                data={client.quotations.map(
+                                                                    (
+                                                                        quote,
+                                                                    ) => ({
+                                                                        name:
+                                                                            quote.quotationNumber?.substring(
+                                                                                quote
+                                                                                    .quotationNumber
+                                                                                    .length -
+                                                                                    8,
+                                                                            ) ||
+                                                                            `#${quote.uid}`,
+                                                                        value:
+                                                                            quote.totalItems ||
+                                                                            0,
+                                                                    }),
+                                                                )}
+                                                                cx="50%"
+                                                                cy="50%"
+                                                                outerRadius={80}
+                                                                innerRadius={50}
+                                                                fill="#8884d8"
+                                                                dataKey="value"
+                                                                paddingAngle={1}
+                                                            >
+                                                                {client.quotations.map(
+                                                                    (
+                                                                        _,
+                                                                        index,
+                                                                    ) => (
+                                                                        <Cell
+                                                                            key={`cell-${index}`}
+                                                                            fill={`rgb(${130 + index * 20}, ${180 - index * 15}, ${250 - index * 10})`}
+                                                                        />
+                                                                    ),
+                                                                )}
+                                                            </Pie>
+                                                        </PieChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                    <p className="text-xs">
+                                                        No items data available
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Second row of charts for "Visitor Trends" */}
+                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Visitor Trends
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Showing total visitors for the last
+                                            6 months
+                                        </p>
+                                        {/* Mock data for visitor trends since this isn't in the client data */}
+                                        <div className="h-64">
+                                            <ResponsiveContainer
+                                                width="100%"
+                                                height="100%"
+                                            >
+                                                <AreaChart
+                                                    data={[
+                                                        {
+                                                            name: 'Jan',
+                                                            inStore: 120,
+                                                            online: 80,
+                                                        },
+                                                        {
+                                                            name: 'Feb',
+                                                            inStore: 180,
+                                                            online: 100,
+                                                        },
+                                                        {
+                                                            name: 'Mar',
+                                                            inStore: 170,
+                                                            online: 110,
+                                                        },
+                                                        {
+                                                            name: 'Apr',
+                                                            inStore: 130,
+                                                            online: 90,
+                                                        },
+                                                        {
+                                                            name: 'May',
+                                                            inStore: 150,
+                                                            online: 120,
+                                                        },
+                                                        {
+                                                            name: 'Jun',
+                                                            inStore: 170,
+                                                            online: 110,
+                                                        },
+                                                    ]}
+                                                    margin={{
+                                                        top: 10,
+                                                        right: 10,
+                                                        left: 10,
+                                                        bottom: 20,
+                                                    }}
+                                                >
+                                                    <CartesianGrid
+                                                        strokeDasharray="3 3"
+                                                        vertical={false}
+                                                        opacity={0.1}
+                                                    />
+                                                    <XAxis
+                                                        dataKey="name"
+                                                        tick={{ fontSize: 10 }}
+                                                        axisLine={{
+                                                            stroke: '#e5e7eb',
+                                                            strokeWidth: 0.5,
+                                                        }}
+                                                        tickLine={false}
+                                                    />
+                                                    <YAxis
+                                                        tick={{ fontSize: 10 }}
+                                                        axisLine={{
+                                                            stroke: '#e5e7eb',
+                                                            strokeWidth: 0.5,
+                                                        }}
+                                                        tickLine={false}
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="online"
+                                                        stackId="1"
+                                                        stroke="#60a5fa"
+                                                        fill="#60a5fa"
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="inStore"
+                                                        stackId="1"
+                                                        stroke="#f472b6"
+                                                        fill="#f472b6"
+                                                    />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        case 'quotations':
+                            return (
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Quotation Timeline
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Quotation values over time
+                                        </p>
+
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ResponsiveContainer
+                                                    width="100%"
+                                                    height="100%"
+                                                >
+                                                    <LineChart
+                                                        data={client.quotations.map(
+                                                            (quote) => ({
+                                                                name: quote.quotationDate
+                                                                    ? new Date(
+                                                                          quote.quotationDate,
+                                                                      ).toLocaleDateString()
+                                                                    : quote.createdAt
+                                                                      ? new Date(
+                                                                            quote.createdAt,
+                                                                        ).toLocaleDateString()
+                                                                      : 'Unknown',
+                                                                value: Number(
+                                                                    quote.totalAmount ||
+                                                                        0,
+                                                                ),
+                                                            }),
+                                                        )}
+                                                        margin={{
+                                                            top: 10,
+                                                            right: 10,
+                                                            left: 10,
+                                                            bottom: 20,
+                                                        }}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            vertical={false}
+                                                            opacity={0.1}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="name"
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <YAxis
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <Line
+                                                            type="monotone"
+                                                            dataKey="value"
+                                                            stroke="#3b82f6"
+                                                            strokeWidth={2}
+                                                            dot={{
+                                                                r: 4,
+                                                                fill: '#3b82f6',
+                                                            }}
+                                                        />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No timeline data available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Quotation Comparison
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Items vs Amount for each quotation
+                                        </p>
+
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ResponsiveContainer
+                                                    width="100%"
+                                                    height="100%"
+                                                >
+                                                    <ComposedChart
+                                                        data={client.quotations.map(
+                                                            (quote) => ({
+                                                                name:
+                                                                    quote.quotationNumber?.substring(
+                                                                        quote
+                                                                            .quotationNumber
+                                                                            .length -
+                                                                            8,
+                                                                    ) ||
+                                                                    `#${quote.uid}`,
+                                                                amount: Number(
+                                                                    quote.totalAmount ||
+                                                                        0,
+                                                                ),
+                                                                items:
+                                                                    quote.totalItems ||
+                                                                    0,
+                                                                fullNumber:
+                                                                    quote.quotationNumber,
+                                                                date:
+                                                                    quote.quotationDate ||
+                                                                    quote.createdAt,
+                                                                status: quote.status,
+                                                            }),
+                                                        )}
+                                                        margin={{
+                                                            top: 10,
+                                                            right: 30,
+                                                            left: 0,
+                                                            bottom: 20,
+                                                        }}
+                                                        barSize={25}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            vertical={false}
+                                                            opacity={0.1}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="name"
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            dy={
+                                                                                16
+                                                                            }
+                                                                            textAnchor="middle"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'QUOTATIONS',
+                                                                position:
+                                                                    'insideBottom',
+                                                                offset: -10,
+                                                                className:
+                                                                    'text-[10px] font-unbounded uppercase font-body',
+                                                            }}
+                                                        />
+                                                        <YAxis
+                                                            yAxisId="left"
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={
+                                                                                -5
+                                                                            }
+                                                                            textAnchor="end"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'AMOUNT (R)',
+                                                                angle: -90,
+                                                                position:
+                                                                    'insideLeft',
+                                                                style: {
+                                                                    textAnchor:
+                                                                        'middle',
+                                                                    fontSize:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        'var(--font-unbounded)',
+                                                                    textTransform:
+                                                                        'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <YAxis
+                                                            yAxisId="right"
+                                                            orientation="right"
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                            tick={(props) => {
+                                                                const {
+                                                                    x,
+                                                                    y,
+                                                                    payload,
+                                                                } = props;
+                                                                return (
+                                                                    <g
+                                                                        transform={`translate(${x},${y})`}
+                                                                    >
+                                                                        <text
+                                                                            x={
+                                                                                5
+                                                                            }
+                                                                            textAnchor="start"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {
+                                                                                payload.value
+                                                                            }
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                            label={{
+                                                                value: 'ITEMS',
+                                                                angle: 90,
+                                                                position:
+                                                                    'insideRight',
+                                                                style: {
+                                                                    textAnchor:
+                                                                        'middle',
+                                                                    fontSize:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        'var(--font-unbounded)',
+                                                                    textTransform:
+                                                                        'uppercase',
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Tooltip
+                                                            cursor={false}
+                                                            content={({
+                                                                active,
+                                                                payload,
+                                                            }) => {
+                                                                if (
+                                                                    active &&
+                                                                    payload &&
+                                                                    payload.length
+                                                                ) {
+                                                                    const data =
+                                                                        payload[0]
+                                                                            .payload;
+                                                                    return (
+                                                                        <div className="p-3 bg-white border rounded shadow-md">
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <FileText className="inline-block w-3 h-3" />
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.fullNumber ||
+                                                                                        `Quotation #${data.name}`}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Amount
+                                                                                    (R)
+                                                                                    :
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {
+                                                                                        data.amount
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Items
+                                                                                    :{' '}
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {
+                                                                                        data.items
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Date
+                                                                                    created
+                                                                                    :{' '}
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {data.date
+                                                                                        ? new Date(
+                                                                                              data.date,
+                                                                                          ).toLocaleDateString()
+                                                                                        : 'Unknown date'}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                    Status
+                                                                                    :{' '}
+                                                                                </p>
+                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                                    {(
+                                                                                        data.status ||
+                                                                                        'pending'
+                                                                                    ).toUpperCase()}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            verticalAlign="top"
+                                                            height={36}
+                                                            formatter={(
+                                                                value,
+                                                            ) => (
+                                                                <span className="text-[8px] uppercase font-body">
+                                                                    {value ===
+                                                                    'amount'
+                                                                        ? 'Amount'
+                                                                        : 'Items'}
+                                                                </span>
+                                                            )}
+                                                            style={{
+                                                                fontSize: '10px',
+                                                                fontFamily:
+                                                                    'var(--font-body)',
+                                                                textTransform: 'uppercase'
+                                                            }}
+                                                        />
+                                                        <Bar
+                                                            yAxisId="left"
+                                                            dataKey="amount"
+                                                            name="amount"
+                                                            fill="#3b82f6"
+                                                            radius={[
+                                                                4, 4, 4, 4,
+                                                            ]}
+                                                        />
+                                                        <Bar
+                                                            yAxisId="right"
+                                                            dataKey="items"
+                                                            name="items"
+                                                            fill="#93c5fd"
+                                                            radius={[
+                                                                4, 4, 4, 4,
+                                                            ]}
+                                                        />
+                                                    </ComposedChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No comparison data available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        case 'items':
+                            return (
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Item Quantity by Quotation
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Distribution of item quantities
+                                            across quotations
+                                        </p>
+
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ResponsiveContainer
+                                                    width="100%"
+                                                    height="100%"
+                                                >
+                                                    <BarChart
+                                                        data={client.quotations.flatMap(
+                                                            (quote) =>
+                                                                (
+                                                                    quote.quotationItems ||
+                                                                    []
+                                                                ).map(
+                                                                    (
+                                                                        item: any,
+                                                                    ) => ({
+                                                                        name:
+                                                                            quote.quotationNumber?.substring(
+                                                                                quote
+                                                                                    .quotationNumber
+                                                                                    .length -
+                                                                                    8,
+                                                                            ) ||
+                                                                            `#${quote.uid}`,
+                                                                        quantity:
+                                                                            item.quantity ||
+                                                                            0,
+                                                                    }),
+                                                                ),
+                                                        )}
+                                                        margin={{
+                                                            top: 10,
+                                                            right: 10,
+                                                            left: 10,
+                                                            bottom: 20,
+                                                        }}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            vertical={false}
+                                                            opacity={0.1}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="name"
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <YAxis
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <Bar
+                                                            dataKey="quantity"
+                                                            fill="#3b82f6"
+                                                            radius={[
+                                                                4, 4, 4, 4,
+                                                            ]}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No item quantity data
+                                                    available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-6 border rounded border-primary/20 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Item Price Analysis
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Unit price vs total price for items
+                                        </p>
+
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ResponsiveContainer
+                                                    width="100%"
+                                                    height="100%"
+                                                >
+                                                    <BarChart
+                                                        data={client.quotations.flatMap(
+                                                            (quote) =>
+                                                                (
+                                                                    quote.quotationItems ||
+                                                                    []
+                                                                ).map(
+                                                                    (
+                                                                        item: any,
+                                                                    ) => ({
+                                                                        name:
+                                                                            quote.quotationNumber?.substring(
+                                                                                quote
+                                                                                    .quotationNumber
+                                                                                    .length -
+                                                                                    8,
+                                                                            ) ||
+                                                                            `#${quote.uid}`,
+                                                                        unitPrice:
+                                                                            item.totalPrice
+                                                                                ? item.totalPrice /
+                                                                                  item.quantity
+                                                                                : 0,
+                                                                        totalPrice:
+                                                                            item.totalPrice ||
+                                                                            0,
+                                                                    }),
+                                                                ),
+                                                        )}
+                                                        margin={{
+                                                            top: 10,
+                                                            right: 10,
+                                                            left: 10,
+                                                            bottom: 20,
+                                                        }}
+                                                    >
+                                                        <CartesianGrid
+                                                            strokeDasharray="3 3"
+                                                            vertical={false}
+                                                            opacity={0.1}
+                                                        />
+                                                        <XAxis
+                                                            dataKey="name"
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <YAxis
+                                                            tick={{
+                                                                fontSize: 10,
+                                                            }}
+                                                            axisLine={{
+                                                                stroke: '#e5e7eb',
+                                                                strokeWidth: 0.5,
+                                                            }}
+                                                            tickLine={false}
+                                                        />
+                                                        <Bar
+                                                            dataKey="totalPrice"
+                                                            fill="#3b82f6"
+                                                            radius={[
+                                                                4, 4, 4, 4,
+                                                            ]}
+                                                        />
+                                                        <Bar
+                                                            dataKey="unitPrice"
+                                                            fill="#93c5fd"
+                                                            radius={[
+                                                                4, 4, 4, 4,
+                                                            ]}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No price analysis data
+                                                    available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        default:
+                            return null;
+                    }
+                };
+
                 return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
-                        <div className="p-4 text-center rounded-full bg-muted/20">
-                            <BarChart2
-                                className="w-8 h-8 text-muted-foreground"
-                                strokeWidth={1.5}
-                            />
+                    <div className="flex flex-col justify-start gap-4">
+                        {/* Overview Cards */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Total Quotation Value
+                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-2xl font-semibold font-body">
+                                            R{' '}
+                                            {Number(
+                                                client.quotations?.reduce(
+                                                    (sum, quote) =>
+                                                        sum +
+                                                        Number(
+                                                            quote?.totalAmount ||
+                                                                0,
+                                                        ),
+                                                    0,
+                                                ) || 0,
+                                            ).toFixed(2)}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body uppercase">
+                                            Across{' '}
+                                            {client.quotations?.length || 0}{' '}
+                                            quotations
+                                        </p>
+                                    </div>
+                                    <DollarSign size={30} strokeWidth={1.5} />
+                                </div>
+                            </div>
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Total Items
+                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-2xl font-semibold font-body">
+                                            {client.quotations?.reduce(
+                                                (sum, quote) =>
+                                                    sum +
+                                                    (quote?.totalItems || 0),
+                                                0,
+                                            ) || 0}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body uppercase">
+                                            Average{' '}
+                                            {(
+                                                (client.quotations?.reduce(
+                                                    (sum, quote) =>
+                                                        sum +
+                                                        (quote?.totalItems ||
+                                                            0),
+                                                    0,
+                                                ) || 0) /
+                                                Math.max(
+                                                    client.quotations?.length ||
+                                                        1,
+                                                    1,
+                                                )
+                                            ).toFixed(1)}{' '}
+                                            per quotation
+                                        </p>
+                                    </div>
+                                    <ShoppingBag size={30} strokeWidth={1.5} />
+                                </div>
+                            </div>
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Latest Quotation
+                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-2xl font-semibold font-body">
+                                            R{' '}
+                                            {Number(
+                                                client.quotations &&
+                                                    client.quotations.length > 0
+                                                    ? client.quotations[
+                                                          client.quotations
+                                                              .length - 1
+                                                      ]?.totalAmount || 0
+                                                    : 0,
+                                            ).toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <FileText size={30} strokeWidth={1.5} />
+                                </div>
+                            </div>
+                            <div className="p-2 border rounded cursor-pointer bg-card/50 border-primary/30">
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Average Quotation Value
+                                </h3>
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <p className="text-2xl font-semibold font-body">
+                                            R{' '}
+                                            {(
+                                                (client.quotations?.reduce(
+                                                    (sum, quote) =>
+                                                        sum +
+                                                        Number(
+                                                            quote?.totalAmount ||
+                                                                0,
+                                                        ),
+                                                    0,
+                                                ) || 0) /
+                                                Math.max(
+                                                    client.quotations?.length ||
+                                                        1,
+                                                    1,
+                                                )
+                                            ).toFixed(2)}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body uppercase">
+                                            Based on{' '}
+                                            {client.quotations?.length || 0}{' '}
+                                            quotations
+                                        </p>
+                                    </div>
+                                    <TrendingUp size={30} strokeWidth={1.5} />
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-center">
-                            <h3 className="mb-1 text-xs font-normal uppercase font-body">
-                                ACTIVATING SOON
-                            </h3>
-                            <p className="text-xs text-muted-foreground font-body">
-                                Client reporting functionality will be available
-                                soon
-                            </p>
+
+                        {/* Tab Navigation */}
+                        <div className="flex w-full overflow-hidden border-b border-border/10">
+                            <button
+                                className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'overview' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
+                                onClick={() => setActiveReportTab('overview')}
+                            >
+                                Overview
+                            </button>
+                            <button
+                                className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'quotations' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
+                                onClick={() => setActiveReportTab('quotations')}
+                            >
+                                Quotations
+                            </button>
+                            <button
+                                className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'items' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
+                                onClick={() => setActiveReportTab('items')}
+                            >
+                                Items
+                            </button>
                         </div>
+
+                        {/* Render the active tab content */}
+                        {renderReportContent()}
                     </div>
                 );
             case 'tasks':
@@ -1727,7 +2780,7 @@ export function ClientDetail({
                                     </div>
                                 ))}
                             </div>
-                            <div className="overflow-y-auto h-[78vh]">
+                            <div className="overflow-y-auto h-[78vh] pb-20">
                                 {contentTabs()}
                             </div>
                         </div>

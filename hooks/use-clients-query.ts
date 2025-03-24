@@ -23,8 +23,22 @@ export interface Client extends Omit<ClientBase, 'status'> {
         status?: string;
         createdAt: Date;
         expiryDate?: Date;
-        total?: number;
+        totalAmount?: number;
         currency?: string;
+        totalItems?: number;
+        quotationNumber?: string;
+        placedBy?: {
+            uid: number;
+            name?: string;
+            surname?: string;
+        };
+        quotationItems?: Array<{
+            uid: number;
+            name?: string;
+            quantity?: number;
+            unitPrice?: number;
+        }>;
+        quotationDate?: Date;
     }>;
     checkIns?: Array<{
         uid: number;

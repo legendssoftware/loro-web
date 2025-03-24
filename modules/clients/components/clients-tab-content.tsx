@@ -77,21 +77,6 @@ const ReportsContent = memo(() => {
 
 ReportsContent.displayName = 'ReportsContent';
 
-// Analytics tab content
-const AnalyticsContent = memo(() => {
-    return (
-        <div className="h-full overflow-hidden">
-            <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Activating soon
-                </p>
-            </div>
-        </div>
-    );
-});
-
-AnalyticsContent.displayName = 'AnalyticsContent';
-
 // Loading component
 const LoadingContent = memo(() => {
     return (
@@ -164,16 +149,8 @@ function ClientsTabContentComponent({
             );
         case 'reports':
             return <ReportsContent />;
-        case 'analytics':
-            return <AnalyticsContent />;
         default:
-            return (
-                <div className="flex items-center justify-center w-full h-full">
-                    <span className="text-xs font-thin uppercase font-body">
-                        Unknown Tab
-                    </span>
-                </div>
-            );
+            return null;
     }
 }
 

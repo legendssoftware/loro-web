@@ -2,16 +2,18 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useClientsQuery, ClientFilterParams, Client } from '@/hooks/use-clients-query';
+import {
+    useClientsQuery,
+    ClientFilterParams,
+    Client,
+} from '@/hooks/use-clients-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ClientsTabGroup } from '@/modules/clients/components/clients-tab-group';
 import { ClientsHeader } from '@/modules/clients/components/clients-header';
 import { ClientFormValues } from '@/modules/clients/components/client-form';
-import { toast } from 'react-hot-toast';
 import { AppLoader } from '@/components/ui/app-loader';
-import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const ClientsTabContent = dynamic(
@@ -58,7 +60,10 @@ const ClientForm = dynamic(
 );
 
 // Tab configuration
-const tabs = [{ id: 'clients', label: 'CLIENTS' }];
+const tabs = [
+    { id: 'clients', label: 'CLIENTS' },
+    { id: 'reports', label: 'REPORTS' },
+];
 
 // Create Client Modal Component
 function CreateClientModal({
@@ -157,12 +162,12 @@ export default function ClientsPage() {
         async (clientData: ClientFormValues) => {
             try {
                 const result = await createClient(clientData);
-                
+
                 // Toast messages are now handled in the createClient function in the useClientsQuery hook
-                
+
                 // Invalidate clients query to ensure UI is updated with the new client
                 refetch();
-                
+
                 setIsCreateDialogOpen(false);
             } catch (error) {
                 console.error('Error creating client:', error);
@@ -176,9 +181,9 @@ export default function ClientsPage() {
         async (clientId: number, newStatus: string) => {
             try {
                 await updateClientStatus(clientId, newStatus);
-                
+
                 // Toast messages are now handled in the updateClientStatus function in the useClientsQuery hook
-                
+
                 // Explicitly refetch to ensure UI is updated
                 refetch();
             } catch (error) {
@@ -193,9 +198,9 @@ export default function ClientsPage() {
         async (clientId: number) => {
             try {
                 await deleteClient(clientId);
-                
+
                 // Toast messages are now handled in the deleteClient function in the useClientsQuery hook
-                
+
                 // Explicitly refetch to ensure UI is updated
                 refetch();
             } catch (error) {
@@ -211,7 +216,7 @@ export default function ClientsPage() {
         (client: Client) => {
             router.push(`/clients/${client.uid}`);
         },
-        [router]
+        [router],
     );
 
     // Apply filters handler

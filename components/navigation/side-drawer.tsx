@@ -14,10 +14,7 @@ import {
     BriefcaseBusiness,
     Images,
     MapPin,
-    Settings,
-    LayoutList,
     Warehouse,
-    CalendarRange,
 } from 'lucide-react';
 import {
     Sheet,
@@ -48,32 +45,12 @@ const navigationItems = [
         feature: 'dashboard',
     },
     {
-        title: 'Assets',
-        icon: <LayoutList size={18} strokeWidth={1.5} />,
-        href: '/assets',
-        description: 'View & manage company assets',
-        // Only admin can access assets
-        allowedRoles: [AccessLevel.ADMIN],
-    },
-    {
         title: 'Leads',
         icon: <Handshake size={18} strokeWidth={1.5} />,
         href: '/leads',
         description: 'Manage potential customers',
         // Basic users can access leads
         feature: 'leads',
-    },
-    {
-        title: 'Attendance',
-        icon: <CalendarRange size={18} strokeWidth={1.5} />,
-        href: '/attendance',
-        description: 'View & manage employee attendance',
-        // Only admin, manager, supervisor can access attendance
-        allowedRoles: [
-            AccessLevel.ADMIN,
-            AccessLevel.MANAGER,
-            AccessLevel.SUPERVISOR,
-        ],
     },
     {
         title: 'Staff',
@@ -147,14 +124,6 @@ const navigationItems = [
         description: 'Track product stock levels',
         // Only admin, manager can access inventory
         allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
-    },
-    {
-        title: 'Settings',
-        icon: <Settings size={18} strokeWidth={1.5} />,
-        href: '/settings',
-        description: 'Manage system settings',
-        // Only admin can access settings
-        allowedRoles: [AccessLevel.ADMIN],
     },
 ];
 
@@ -293,7 +262,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                         <Button
                                             variant="ghost"
                                             className={cn(
-                                                'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-12 rounded-xl',
+                                                'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-14 rounded-xl',
                                                 'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
                                                 isActive &&
                                                     'border-primary border text-primary bg-primary/5',

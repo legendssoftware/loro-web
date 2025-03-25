@@ -45,3 +45,42 @@
 .animate-fade-in {
   animation: fade-in 0.3s ease-out forwards;
 }
+
+/* Map popup styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  width: 100% !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: white;
+  color: #333;
+  font-size: 14px;
+  line-height: 24px;
+  border-radius: 0.5rem;
+  max-height: 80vh;
+}
+
+.custom-marker-icon {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Ensure no background or borders on the div icon */
+.custom-marker-icon div {
+  background-color: transparent;
+  border: none;
+}

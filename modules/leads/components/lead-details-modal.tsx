@@ -42,6 +42,13 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+    ClientForm,
+    ClientFormValues,
+} from '@/modules/clients/components/client-form';
+import { ClientStatus } from '@/hooks/use-clients-query';
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 interface LeadDetailsModalProps {
     lead: Lead;
@@ -66,6 +73,7 @@ export function LeadDetailsModal({
     const [pendingStatusChange, setPendingStatusChange] =
         useState<LeadStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -117,16 +125,43 @@ export function LeadDetailsModal({
 
     const handleStatusChange = (newStatus: LeadStatus) => {
         if (newStatus === currentStatus) return;
-        setPendingStatusChange(newStatus);
-        setConfirmStatusChangeOpen(true);
+
+        // For conversion, show the client form instead of confirmation dialog
+        if (newStatus === LeadStatus.CONVERTED) {
+            setPendingStatusChange(newStatus);
+            setIsClientFormOpen(true);
+            showSuccessToast(
+                'Marking this lead as converted will change this lead to a client of yours',
+                toast,
+            );
+        } else {
+            setPendingStatusChange(newStatus);
+            setConfirmStatusChangeOpen(true);
+        }
+    };
+
+    const handleClientFormSubmit = async (data: ClientFormValues) => {
+        try {
+            // Here you would submit the client data to your API
+            // After successful submission, update the lead status
+            if (pendingStatusChange && onUpdateStatus) {
+                setCurrentStatus(pendingStatusChange);
+                onUpdateStatus(lead.uid, pendingStatusChange);
+            }
+            setIsClientFormOpen(false);
+            onClose();
+        } catch (error) {
+            showErrorToast('Failed to convert lead to client', toast);
+            console.error('Error converting lead to client:', error);
+        }
     };
 
     const confirmStatusChange = () => {
-        if (pendingStatusChange && onUpdateStatus) {
+        if (onUpdateStatus && pendingStatusChange) {
+            onUpdateStatus(Number(lead.uid), pendingStatusChange);
             setCurrentStatus(pendingStatusChange);
             setConfirmStatusChangeOpen(false);
-            onClose();
-            onUpdateStatus(lead.uid, pendingStatusChange);
+            setPendingStatusChange(null);
         }
     };
 
@@ -392,7 +427,7 @@ export function LeadDetailsModal({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-card">
                     <DialogHeader className="flex flex-row items-start justify-between">
                         <div>
                             <DialogTitle className="text-lg font-medium font-body">
@@ -447,111 +482,142 @@ export function LeadDetailsModal({
 
                     {/* Status Change Section */}
                     <DialogFooter className="flex-col items-center gap-6 pt-4 mt-6 border-t sm:gap-4">
-                        <div className="flex flex-col items-center w-full gap-4">
-                            <div className="flex items-center gap-2">
-                                <p className="text-xs font-thin uppercase font-body">
-                                    Quick Actions
-                                </p>
+                        {lead.status !== LeadStatus.CONVERTED && (
+                            <div className="flex flex-col items-center w-full gap-4">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-xs font-thin uppercase font-body">
+                                        Quick Actions
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap justify-center w-full gap-3">
+                                    {/* PENDING */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.PENDING,
+                                            )
+                                        }
+                                        title="Set as Pending"
+                                    >
+                                        <Clock
+                                            strokeWidth={1.2}
+                                            className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                        />
+                                    </Button>
+                                    {/* REVIEW */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.REVIEW,
+                                            )
+                                        }
+                                        title="Set to Review"
+                                    >
+                                        <RefreshCw
+                                            strokeWidth={1.2}
+                                            className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                        />
+                                    </Button>
+                                    {/* DECLINED */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.DECLINED,
+                                            )
+                                        }
+                                        title="Set as Declined"
+                                    >
+                                        <XCircle
+                                            strokeWidth={1.2}
+                                            className="text-red-600 w-7 h-7 dark:text-red-400"
+                                        />
+                                    </Button>
+                                    {/* CANCELLED */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.CANCELLED,
+                                            )
+                                        }
+                                        title="Set as Cancelled"
+                                    >
+                                        <X
+                                            strokeWidth={1.2}
+                                            className="text-gray-600 w-7 h-7 dark:text-gray-400"
+                                        />
+                                    </Button>
+                                    {/* APPROVED */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.APPROVED,
+                                            )
+                                        }
+                                        title="Set as Approved"
+                                    >
+                                        <CheckCircle2
+                                            strokeWidth={1.2}
+                                            className="text-green-600 w-7 h-7 dark:text-green-400"
+                                        />
+                                    </Button>
+                                    {/* CONVERTED */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
+                                        onClick={() =>
+                                            handleStatusChange(
+                                                LeadStatus.CONVERTED,
+                                            )
+                                        }
+                                        title="Set as Converted"
+                                    >
+                                        <Check
+                                            strokeWidth={1.2}
+                                            className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                        />
+                                    </Button>
+                                    {/* DELETE */}
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
+                                        onClick={handleDelete}
+                                        title="Delete Lead"
+                                    >
+                                        <Trash2
+                                            className="w-7 h-7"
+                                            strokeWidth={1.5}
+                                        />
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="flex flex-wrap justify-center w-full gap-3">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.PENDING)
-                                    }
-                                    title="Set as Pending"
-                                >
-                                    <Clock
-                                        strokeWidth={1.2}
-                                        className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.APPROVED)
-                                    }
-                                    title="Set as Approved"
-                                >
-                                    <CheckCircle2
-                                        strokeWidth={1.2}
-                                        className="text-green-600 w-7 h-7 dark:text-green-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.REVIEW)
-                                    }
-                                    title="Set to Review"
-                                >
-                                    <RefreshCw
-                                        strokeWidth={1.2}
-                                        className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.DECLINED)
-                                    }
-                                    title="Set as Declined"
-                                >
-                                    <XCircle
-                                        strokeWidth={1.2}
-                                        className="text-red-600 w-7 h-7 dark:text-red-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.CONVERTED)
-                                    }
-                                    title="Set as Converted"
-                                >
-                                    <Check
-                                        strokeWidth={1.2}
-                                        className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
-                                    onClick={() =>
-                                        handleStatusChange(LeadStatus.CANCELLED)
-                                    }
-                                    title="Set as Cancelled"
-                                >
-                                    <X
-                                        strokeWidth={1.2}
-                                        className="text-gray-600 w-7 h-7 dark:text-gray-400"
-                                    />
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
-                                    onClick={handleDelete}
-                                    title="Delete Lead"
-                                >
-                                    <Trash2
-                                        className="w-7 h-7"
-                                        strokeWidth={1.5}
-                                    />
-                                </Button>
+                        )}
+                        {lead.status === LeadStatus.CONVERTED && (
+                            <div className="flex flex-col items-center w-full gap-4">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                        This lead has been converted to a client
+                                        and cannot be modified further.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -570,6 +636,41 @@ export function LeadDetailsModal({
                             Activating Soon
                         </h2>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Client Form Modal for Conversion */}
+            <Dialog
+                open={isClientFormOpen}
+                onOpenChange={() => setIsClientFormOpen(false)}
+            >
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-medium uppercase font-body">
+                            Convert Lead to Client
+                        </DialogTitle>
+                    </DialogHeader>
+                    <ClientForm
+                        onSubmit={handleClientFormSubmit}
+                        initialData={{
+                            name: lead.name,
+                            email: lead.email,
+                            phone: lead.phone,
+                            contactPerson: lead.name,
+                            status: ClientStatus.ACTIVE,
+                            description: lead.notes,
+                            address: {
+                                street: '',
+                                suburb: '',
+                                city: '',
+                                state: '',
+                                country: 'South Africa',
+                                postalCode: '',
+                            },
+                            ref: `CL${Math.floor(100000 + Math.random() * 900000)}`,
+                        }}
+                        isLoading={false}
+                    />
                 </DialogContent>
             </Dialog>
 

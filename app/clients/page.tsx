@@ -60,9 +60,7 @@ const ClientForm = dynamic(
 );
 
 // Tab configuration
-const tabs = [
-    { id: 'clients', label: 'CLIENTS' },
-];
+const tabs = [{ id: 'clients', label: 'CLIENTS' }];
 
 // Create Client Modal Component
 function CreateClientModal({
@@ -94,7 +92,7 @@ function CreateClientModal({
                         Create New Client
                     </DialogTitle>
                 </DialogHeader>
-                <div className="px-1 py-4">
+                <div className="px-1 py-4 bg-card">
                     {/* Import and use our ClientForm component */}
                     {isOpen && (
                         <ClientForm

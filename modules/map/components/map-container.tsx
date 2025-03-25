@@ -1,13 +1,50 @@
 'use client';
 
-import { RefObject, useEffect, useState } from 'react';
+import { RefObject, useEffect, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { WorkerType } from '@/lib/data';
+import {
+    WorkerType,
+    ClientType,
+    CompetitorType,
+    QuotationType,
+} from '@/lib/data';
 import MarkersLayer from './markers-layer';
 import MapCenter from './map-center';
 import { useLeafletInit } from '../hooks/use-leaflet-init';
+
+// Define a union type for all map markers
+type MapMarker = WorkerType | ClientType | CompetitorType | QuotationType;
+
+// Type guard to check if a marker is a WorkerType
+const isWorker = (marker: MapMarker): marker is WorkerType => {
+    return (
+        'markerType' in marker &&
+        (marker.markerType === 'check-in' ||
+            marker.markerType === 'shift-start' ||
+            marker.markerType === 'lead' ||
+            marker.markerType === 'journal' ||
+            marker.markerType === 'task' ||
+            marker.markerType === 'break-start' ||
+            marker.markerType === 'break-end')
+    );
+};
+
+// Type guard for client markers
+const isClient = (marker: MapMarker): marker is ClientType => {
+    return 'markerType' in marker && marker.markerType === 'client';
+};
+
+// Type guard for competitor markers
+const isCompetitor = (marker: MapMarker): marker is CompetitorType => {
+    return 'markerType' in marker && marker.markerType === 'competitor';
+};
+
+// Type guard for quotation markers
+const isQuotation = (marker: MapMarker): marker is QuotationType => {
+    return 'markerType' in marker && marker.markerType === 'quotation';
+};
 
 // Utility function to validate coordinates
 const isValidPosition = (position: any): position is [number, number] => {
@@ -26,10 +63,25 @@ const isValidPosition = (position: any): position is [number, number] => {
 };
 
 interface MapComponentProps {
-    filteredWorkers: WorkerType[];
-    selectedMarker: WorkerType | null;
+    filteredWorkers: (
+        | WorkerType
+        | ClientType
+        | CompetitorType
+        | QuotationType
+    )[];
+    clients?: ClientType[];
+    competitors?: CompetitorType[];
+    quotations?: QuotationType[];
+    selectedMarker:
+        | WorkerType
+        | ClientType
+        | CompetitorType
+        | QuotationType
+        | null;
     highlightedMarkerId: string | null;
-    handleMarkerClick: (worker: WorkerType) => void;
+    handleMarkerClick: (
+        marker: WorkerType | ClientType | CompetitorType | QuotationType,
+    ) => void;
     mapRef: RefObject<L.Map>;
     mapConfig?: {
         defaultCenter: { lat: number; lng: number };
@@ -43,6 +95,9 @@ interface MapComponentProps {
 
 export default function MapComponent({
     filteredWorkers,
+    clients = [],
+    competitors = [],
+    quotations = [],
     selectedMarker,
     highlightedMarkerId,
     handleMarkerClick,
@@ -86,13 +141,32 @@ export default function MapComponent({
         }
     }, [selectedMarker, mapRef]);
 
-    // Safely validate and filter workers with valid coordinates
-    const safeWorkers = Array.isArray(filteredWorkers)
-        ? filteredWorkers.filter(
-              (worker) => worker && isValidPosition(worker.position),
-          )
-        : [];
+    // Process all markers to display
+    const allMarkers = useMemo(() => {
+        // Create a set of all entities we want to show on the map - excluding quotations
+        const entities = new Set([
+            ...filteredWorkers, // Already filtered by the parent component
+            ...(filteredWorkers.some((w) => w.markerType === 'client')
+                ? []
+                : clients),
+            ...(filteredWorkers.some((w) => w.markerType === 'competitor')
+                ? []
+                : competitors),
+            // Quotations are intentionally excluded from the map display
+        ]);
 
+        // Filter out any invalid entities and ensure they have valid positions
+        return Array.from(entities).filter(
+            (entity) =>
+                entity &&
+                entity.id &&
+                entity.position &&
+                isValidPosition(entity.position) &&
+                entity.markerType !== 'quotation', // Additional filter to ensure no quotations are shown
+        );
+    }, [filteredWorkers, clients, competitors]); // Removed quotations from dependencies
+
+    // Now handle the markers differently for rendering
     return (
         <MapContainer
             center={defaultCenter}
@@ -116,9 +190,10 @@ export default function MapComponent({
 
             <MapCenter />
 
-            {isMapReady && safeWorkers.length > 0 && (
+            {/* Render all markers in a single layer */}
+            {isMapReady && allMarkers.length > 0 && (
                 <MarkersLayer
-                    filteredWorkers={safeWorkers}
+                    filteredWorkers={allMarkers}
                     selectedMarker={selectedMarker}
                     highlightedMarkerId={highlightedMarkerId}
                     handleMarkerClick={handleMarkerClick}

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { WorkerType, EventType } from '@/lib/data';
+import { WorkerType, EventType, ClientType, CompetitorType, QuotationType } from '@/lib/data';
 import { mapApi, MapConfigType } from '@/lib/services/map-api';
 
 const MAP_DATA_QUERY_KEY = 'mapData';
@@ -21,6 +21,9 @@ export interface MapData {
     workers: WorkerType[];
     events: EventType[];
     mapConfig?: MapConfigType;
+    competitors?: CompetitorType[];
+    clients?: ClientType[];
+    quotations?: QuotationType[];
 }
 
 /**
@@ -49,11 +52,17 @@ export function useMapQuery(params: MapQueryParams = {}) {
     const workers = data?.workers || [];
     const events = data?.events || [];
     const mapConfig = data?.mapConfig;
+    const competitors = data?.competitors || [];
+    const clients = data?.clients || [];
+    const quotations = data?.quotations || [];
 
     return {
         workers,
         events,
         mapConfig,
+        competitors,
+        clients,
+        quotations,
         isLoading,
         isRefetching,
         isError,

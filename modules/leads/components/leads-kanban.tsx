@@ -69,35 +69,41 @@ export function LeadsKanban({
 
     return (
         <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden">
+            {/* PENDING */}
             {renderColumn(
                 LeadStatus.PENDING,
                 'Pending',
                 leadsByStatus[LeadStatus.PENDING]?.length || 0,
             )}
+            {/* APPROVED */}
             {renderColumn(
                 LeadStatus.APPROVED,
                 'Approved',
                 leadsByStatus[LeadStatus.APPROVED]?.length || 0,
             )}
+            {/* REVIEW */}
             {renderColumn(
                 LeadStatus.REVIEW,
                 'Review',
                 leadsByStatus[LeadStatus.REVIEW]?.length || 0,
             )}
+            {/* DECLINED */}
             {renderColumn(
                 LeadStatus.DECLINED,
                 'Declined',
                 leadsByStatus[LeadStatus.DECLINED]?.length || 0,
             )}
-            {renderColumn(
-                LeadStatus.CONVERTED,
-                'Converted',
-                leadsByStatus[LeadStatus.CONVERTED]?.length || 0,
-            )}
+            {/* CANCELLED */}
             {renderColumn(
                 LeadStatus.CANCELLED,
                 'Cancelled',
                 leadsByStatus[LeadStatus.CANCELLED]?.length || 0,
+            )}
+            {/* CONVERTED */}
+            {renderColumn(
+                LeadStatus.CONVERTED,
+                'Converted to Clients',
+                leadsByStatus[LeadStatus.CONVERTED]?.length || 0,
             )}
         </div>
     );

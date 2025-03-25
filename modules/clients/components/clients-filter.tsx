@@ -48,7 +48,7 @@ interface ClientsFilterProps {
 
 // Base styling for filter buttons
 const filterButtonClass = "flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer transition-colors hover:bg-accent bg-card border-border";
-const filterLabelClass = "text-[10px] font-medium uppercase font-body";
+const filterLabelClass = "text-[10px] font-thin uppercase font-body";
 const filterIconClass = "w-4 h-4";
 const filterItemClass = "flex items-center gap-2 px-2 py-1.5 text-xs font-normal font-body rounded hover:bg-accent cursor-pointer";
 const activeItemClass = "bg-accent/40";
@@ -690,7 +690,7 @@ export function ClientsFilter({
                 <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 px-3 text-xs font-medium uppercase transition-colors border rounded hover:bg-red-50 hover:text-red-600 border-red-500 font-body text-red-500"
+                    className="h-10 px-3 text-xs font-medium text-red-500 uppercase transition-colors border border-red-500 rounded hover:bg-red-50 hover:text-red-600 font-body"
                     onClick={handleClearFilters}
                 >
                     <X className="w-4 h-4 mr-1" strokeWidth={1.5} />

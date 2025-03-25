@@ -30,63 +30,101 @@ export const createCustomIcon = (type: MarkerType, isHighlighted = false) => {
       </svg>`;
             break;
         case 'journal':
-            color = '#ef4444'; // red
+            color = '#8b5cf6'; // purple
             iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
-        <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path>
-        <line x1="9" y1="9" x2="10" y2="9"></line>
-        <line x1="9" y1="13" x2="15" y2="13"></line>
-        <line x1="9" y1="17" x2="15" y2="17"></line>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <path d="M14 2v6h6"></path>
+        <path d="M16 13H8"></path>
+        <path d="M16 17H8"></path>
+        <path d="M10 9H8"></path>
       </svg>`;
             break;
         case 'task':
-            color = '#8b5cf6'; // purple
+            color = '#ec4899'; // pink
             iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-        <path d="M3 9h18"></path>
-        <path d="M9 21V9"></path>
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+        <path d="m9 12 2 2 4-4"></path>
+      </svg>`;
+            break;
+        case 'break-start':
+        case 'break-end':
+            color = '#f59e0b'; // amber
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+        <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+        <line x1="6" x2="6" y1="2" y2="4"></line>
+        <line x1="10" x2="10" y1="2" y2="4"></line>
+        <line x1="14" x2="14" y1="2" y2="4"></line>
+      </svg>`;
+            break;
+        case 'client':
+            color = '#06b6d4'; // cyan
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21h18"></path>
+        <path d="M5 21V7l8-4v18"></path>
+        <path d="M19 21V11l-6-4"></path>
+        <path d="M9 9h1"></path>
+        <path d="M9 12h1"></path>
+        <path d="M9 15h1"></path>
+        <path d="M9 18h1"></path>
+      </svg>`;
+            break;
+        case 'competitor':
+            color = '#ef4444'; // red
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+      </svg>`;
+            break;
+        case 'quotation':
+            color = '#22c55e'; // green
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" x2="12" y1="15" y2="3"></line>
       </svg>`;
             break;
         default:
-            color = '#6b7280'; // gray
+            color = '#6b7280'; // gray for fallback
             iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
+        <path d="m15 9-6 6"></path>
+        <path d="m9 9 6 6"></path>
       </svg>`;
     }
 
-    // Increase size and add glow effect if highlighted
-    const size = isHighlighted ? 50 : 40;
-    const glowEffect = isHighlighted
-        ? `box-shadow: 0 0 0 4px rgba(255,255,255,0.7), 0 0 15px rgba(0,0,0,0.3);`
-        : `box-shadow: 0 2px 5px rgba(0,0,0,0.2);`;
-    const scale = isHighlighted ? `transform: scale(1.1);` : '';
+    // Highlight selected marker with a larger size and brighter color
+    const size = isHighlighted ? 42 : 34; // Slightly larger for better visibility
+    const borderWidth = isHighlighted ? 3 : 2;
+    const borderColor = 'white';
+    
+    // Keep the same color but make it slightly brighter when highlighted
+    const highlightedColor = isHighlighted
+        ? color.replace(/^#/, '') // Remove leading #
+              .match(/.{2}/g) // Split into RGB pairs
+              ?.map((hex) => Math.min(parseInt(hex, 16) + 30, 255).toString(16).padStart(2, '0')) // Lighten more
+              .join('') || color // Fallback to original color
+        : color;
 
-    return L.divIcon({
-        className: 'custom-icon',
-        html: `
+    const html = `
       <div style="
+        background-color: ${highlightedColor};
         width: ${size}px;
         height: ${size}px;
-        border-radius: 50%;
-        background-color: ${color};
         display: flex;
-        align-items: center;
         justify-content: center;
-        ${glowEffect}
-        ${scale}
-        transition: all 0.3s ease;
+        align-items: center;
+        border-radius: 50%;
+        border: ${borderWidth}px solid ${borderColor};
+        box-shadow: ${isHighlighted ? '0 3px 8px rgba(0,0,0,0.5)' : '0 2px 5px rgba(0,0,0,0.3)'};
       ">
         ${iconSvg}
       </div>
-      <div style="
-        width: 2px;
-        height: 10px;
-        background-color: ${color};
-        margin: 0 auto;
-      "></div>
-    `,
-        iconSize: [size, size + 10],
-        iconAnchor: [size / 2, size + 10],
-        popupAnchor: [0, -(size + 10)],
+    `;
+
+    return L.divIcon({
+        html: html,
+        className: 'custom-marker-icon',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
     });
 };

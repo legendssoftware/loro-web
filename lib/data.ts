@@ -1,4 +1,4 @@
-export type MarkerType = "check-in" | "shift-start" | "lead" | "journal" | "task"
+export type MarkerType = "check-in" | "shift-start" | "lead" | "journal" | "task" | "break-start" | "break-end" | "client" | "competitor" | "quotation"
 
 export interface JobStatusType {
   startTime: string;
@@ -39,6 +39,63 @@ export interface WorkerType {
   }
   jobStatus?: JobStatusType
   breakData?: BreakDataType
+  activity?: {
+    claims: number
+    journals: number
+    leads: number
+    checkIns: number
+    tasks: number
+    quotations: number
+  }
+}
+
+export interface ClientType {
+  id: number;
+  name: string;
+  position: [number, number];
+  clientRef: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  status: string;
+  website?: string;
+  logoUrl?: string;
+  address: any;
+  markerType: MarkerType;
+}
+
+export interface CompetitorType {
+  id: number;
+  name: string;
+  position: [number, number];
+  markerType: MarkerType;
+  threatLevel?: number;
+  isDirect?: boolean;
+  industry?: string;
+  status: string;
+  website?: string;
+  logoUrl?: string;
+  competitorRef: string;
+  address: any;
+  geofencing?: {
+    enabled: boolean;
+    type: string;
+    radius: number;
+  };
+}
+
+export interface QuotationType {
+  id: number;
+  quotationNumber: string;
+  clientName: string;
+  position: [number, number];
+  totalAmount: number;
+  status: string;
+  quotationDate: string | Date;
+  placedBy: string;
+  isConverted: boolean;
+  validUntil?: string | Date;
+  markerType: MarkerType;
 }
 
 // Updated worker data with Johannesburg coordinates

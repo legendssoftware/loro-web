@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, useRef } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
-import { type WorkerType, type EventType } from '@/lib/data';
+import { type WorkerType, type EventType, type ClientType, type CompetitorType, type QuotationType } from '@/lib/data';
 import {
     Filter,
     List,
@@ -14,6 +14,7 @@ import {
     FileText,
     CalendarClock,
     UserPlus,
+    Building,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMapQuery } from '@/hooks/use-map-query';
@@ -46,98 +47,111 @@ type FilterType =
     | 'shift-start'
     | 'lead'
     | 'journal'
-    | 'task';
+    | 'task'
+    | 'client'
+    | 'competitor'
+    | 'quotation';
 
 export default function MapPage() {
-    const [selectedMarker, setSelectedMarker] = useState<WorkerType | null>(
+    const [selectedMarker, setSelectedMarker] = useState<WorkerType | ClientType | CompetitorType | QuotationType | null>(
         null,
     );
     const [highlightedMarkerId, setHighlightedMarkerId] = useState<
         string | null
     >(null);
     const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [showEventsDropdown, setShowEventsDropdown] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
     const mapRef = useRef<any>(null);
 
     // Use the map query hook
-    const { workers, events, mapConfig, isLoading, isError, error, refetch } =
-        useMapQuery({
-            enabled: isClient, // Only enable the query when client-side
-        });
+    const {
+        workers,
+        events,
+        mapConfig,
+        clients,
+        competitors,
+        quotations,
+        isLoading,
+        isError,
+        error,
+        refetch
+    } = useMapQuery({
+        enabled: isClient, // Only enable the query when client-side
+    });
 
     // Set isClient to true when component mounts
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    const handleMarkerClick = (worker: WorkerType) => {
-        if (!worker) return;
-        setSelectedMarker(worker);
-        setHighlightedMarkerId(worker.id);
+    const handleMarkerClick = (marker: WorkerType | ClientType | CompetitorType | QuotationType) => {
+        if (!marker) return;
+        setSelectedMarker(marker);
+        setHighlightedMarkerId(marker.id.toString());
     };
 
-    const handleEventClick = (event: EventType) => {
-        if (!event || !event.user) return;
-
-        // Find the worker associated with this event
-        const worker = workers.find((w) => w?.name === event.user);
-        if (worker) {
-            // Set the highlight first
-            setHighlightedMarkerId(worker.id);
-
-            // Center the map on the worker's position with animation
-            if (mapRef.current && worker.position) {
-                // Use a higher zoom level for better visibility
-                mapRef.current.flyTo(worker.position, 16, {
-                    duration: 1.5, // Animation duration in seconds
-                });
-
-                // Slight delay before setting selectedMarker to ensure map has time to begin panning
-                setTimeout(() => {
-                    setSelectedMarker(worker);
-                }, 100);
-            } else {
-                // If map reference isn't available, just set the marker directly
-                setSelectedMarker(worker);
-            }
-
-            // Close dropdown to avoid covering the popup
-            setShowEventsDropdown(false);
+    // Toggle dropdown function
+    const toggleDropdown = (dropdown: string) => {
+        if (activeDropdown === dropdown) {
+            setActiveDropdown(null);
+        } else {
+            setActiveDropdown(dropdown);
         }
     };
 
     // Filter workers based on active filter
-    const filteredWorkers = Array.isArray(workers)
-        ? workers.filter((worker) => {
-              if (!worker) return false;
-              if (activeFilter === 'all') return true;
-              return worker.markerType === activeFilter;
-          })
-        : [];
+    const filteredWorkers = workers?.filter((worker) => {
+        if (activeFilter === 'all') return true;
+        return worker.markerType === activeFilter;
+    });
 
-    const toggleFilterDropdown = () => {
-        setShowFilterDropdown(!showFilterDropdown);
-        if (showEventsDropdown) setShowEventsDropdown(false);
+    // Get all entities for the map based on active filter
+    const getFilteredEntities = () => {
+        switch (activeFilter) {
+            case 'all':
+                return [
+                    ...(workers || []),
+                    ...(clients || []),
+                    ...(competitors || []),
+                    ...(quotations || [])
+                ];
+            case 'client':
+                return clients || [];
+            case 'competitor':
+                return competitors || [];
+            case 'quotation':
+                return quotations || [];
+            default:
+                // For worker-specific filters (check-in, shift-start, lead, journal, task)
+                return workers?.filter(worker => worker.markerType === activeFilter) || [];
+        }
     };
 
-    const toggleEventsDropdown = () => {
-        setShowEventsDropdown(!showEventsDropdown);
-        if (showFilterDropdown) setShowFilterDropdown(false);
-    };
-
-    const setFilter = (filter: FilterType) => {
-        setActiveFilter(filter);
-        setShowFilterDropdown(false);
-    };
+    const filteredEntities = getFilteredEntities();
 
     if (isLoading) {
-        return <MapLoading message="Initializing map..." />;
+        return (
+            <ProtectedRoute>
+                <PageTransition type="fade">
+                    <div className="relative w-[98%] mx-auto h-[90vh] p-1 rounded border border-card">
+                        <MapLoading />
+                    </div>
+                </PageTransition>
+            </ProtectedRoute>
+        );
     }
 
     if (isError) {
-        return <MapError onRetry={refetch} message={error?.message} />;
+        return (
+            <ProtectedRoute>
+                <PageTransition type="fade">
+                    <div className="relative w-[98%] mx-auto h-[90vh] p-1 rounded border border-card">
+                        <MapError onRetry={refetch} message={error?.message} />
+                    </div>
+                </PageTransition>
+            </ProtectedRoute>
+        );
     }
 
     return (
@@ -145,247 +159,150 @@ export default function MapPage() {
             <PageTransition type="fade">
                 <div className="relative w-[98%] mx-auto h-[90vh] p-1 rounded border border-card">
                     <MapComponent
-                        filteredWorkers={filteredWorkers}
+                        filteredWorkers={filteredEntities}
+                        clients={clients}
+                        competitors={competitors}
+                        quotations={quotations}
                         selectedMarker={selectedMarker}
                         highlightedMarkerId={highlightedMarkerId}
                         handleMarkerClick={handleMarkerClick}
                         mapRef={mapRef}
                         mapConfig={mapConfig}
                     />
+
                     {/* Top Navigation Bar */}
                     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[2500] flex items-center gap-2">
                         <div className="relative">
                             <button
-                                onClick={toggleFilterDropdown}
-                                className="flex items-center gap-2 px-4 py-2 text-xs font-thin uppercase transition-colors rounded shadow-md bg-card hover:bg-accent/20 font-body"
+                                onClick={() => toggleDropdown('filter')}
+                                className="flex items-center gap-2 bg-card backdrop-blur-sm px-4 py-1.5 rounded-md text-xs font-body uppercase border border-gray-200 dark:border-gray-800 shadow-sm hover:bg-accent/5 transition"
                             >
-                                <Filter size={14} />
-                                <span className="hidden sm:inline">Filter</span>
+                                <Filter size={14} strokeWidth={1.5} />
+                                <span className="text-[10px] font-thin uppercase font-body">
+                                    {activeFilter === 'all'
+                                        ? 'ALL'
+                                        : activeFilter
+                                              .split('-')
+                                              .map(
+                                                  (word) =>
+                                                      word.charAt(0).toUpperCase() +
+                                                      word.slice(1),
+                                              )
+                                              .join(' ')}
+                                </span>
                                 <ChevronDown
                                     size={14}
-                                    className={`transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`}
+                                    className={cn(
+                                        'text-muted-foreground transition-transform',
+                                        activeDropdown === 'filter' && 'rotate-180',
+                                    )}
                                 />
                             </button>
 
-                            {showFilterDropdown && (
-                                <div className="absolute right-0 z-[2501] w-48 mt-1 overflow-hidden rounded-lg shadow-lg top-full bg-card font-body">
-                                    <div className="p-1">
+                            {/* Filter Dropdown */}
+                            {activeDropdown === 'filter' && (
+                                <div className="absolute top-full mt-1 left-0 bg-card border border-border rounded-md shadow-md w-40 z-[3000] py-1 text-xs">
+                                    {[
+                                        { id: 'all', label: 'All', icon: List },
+                                        { id: 'check-in', label: 'Check In', icon: MapPin },
+                                        { id: 'shift-start', label: 'Shift Start', icon: Clock },
+                                        { id: 'lead', label: 'Lead', icon: UserPlus },
+                                        { id: 'journal', label: 'Journal', icon: FileText },
+                                        { id: 'task', label: 'Task', icon: CalendarClock },
+                                        { id: 'client', label: 'Client', icon: Building },
+                                        { id: 'competitor', label: 'Competitor', icon: Building },
+                                        { id: 'quotation', label: 'Quotation', icon: FileText }
+                                    ].map((filter) => (
                                         <button
-                                            onClick={() => setFilter('all')}
+                                            key={filter.id}
+                                            onClick={() => {
+                                                setActiveFilter(filter.id as FilterType);
+                                                setActiveDropdown(null);
+                                            }}
                                             className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'all'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
+                                                'w-full px-3 py-1.5 text-left hover:bg-accent/5 flex items-center gap-2',
+                                                activeFilter === filter.id &&
+                                                    'bg-accent/10 text-accent-foreground',
                                             )}
                                         >
-                                            All
+                                            <filter.icon size={14} strokeWidth={1.5} />
+                                            <span className="text-[10px] uppercase font-thin">
+                                                {filter.label}
+                                            </span>
                                         </button>
-                                        <button
-                                            onClick={() =>
-                                                setFilter('check-in')
-                                            }
-                                            className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'check-in'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
-                                            )}
-                                        >
-                                            Check-ins
-                                        </button>
-                                        <button
-                                            onClick={() => setFilter('task')}
-                                            className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'task'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
-                                            )}
-                                        >
-                                            Tasks
-                                        </button>
-                                        <button
-                                            onClick={() => setFilter('journal')}
-                                            className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'journal'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
-                                            )}
-                                        >
-                                            Journals
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setFilter('shift-start')
-                                            }
-                                            className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'shift-start'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
-                                            )}
-                                        >
-                                            Shift Starts
-                                        </button>
-                                        <button
-                                            onClick={() => setFilter('lead')}
-                                            className={cn(
-                                                'w-full text-left px-3 py-2 text-[10px] rounded-md uppercase font-thin',
-                                                activeFilter === 'lead'
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-accent/20',
-                                            )}
-                                        >
-                                            Leads
-                                        </button>
-                                    </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
 
                         <div className="relative">
                             <button
-                                onClick={toggleEventsDropdown}
-                                className="flex items-center gap-2 px-4 py-2 text-xs font-thin uppercase transition-colors rounded shadow-md bg-card hover:bg-accent/20 font-body"
-                                disabled={isLoading || isError}
+                                onClick={() => toggleDropdown('events')}
+                                className="flex items-center gap-2 bg-card backdrop-blur-sm px-4 py-1.5 rounded-md text-xs font-body uppercase border border-gray-200 dark:border-gray-800 shadow-sm hover:bg-accent/5 transition"
                             >
-                                <List size={14} />
-                                <span className="hidden sm:inline">
-                                    Recent Events
-                                </span>
-                                <span className="inline-flex items-center justify-center w-4 h-4 text-[9px] bg-primary/10 text-primary rounded-full">
-                                    {events?.length || 0}
-                                </span>
+                                <List size={14} className="text-muted-foreground" strokeWidth={1.5} />
+                                <span className="text-[10px] font-thin uppercase font-body">RECENT EVENTS</span>
                                 <ChevronDown
                                     size={14}
-                                    className={`transition-transform ${showEventsDropdown ? 'rotate-180' : ''}`}
+                                    className={cn(
+                                        'text-muted-foreground transition-transform',
+                                        activeDropdown === 'events' && 'rotate-180',
+                                    )}
                                 />
                             </button>
 
-                            {showEventsDropdown && (
-                                <div className="absolute right-0 z-[2501] w-72 mt-1 overflow-hidden rounded-lg shadow-lg top-full bg-card font-body">
-                                    <div className="p-1">
-                                        <h3 className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">
-                                            Recent Events
-                                        </h3>
-
-                                        {events?.length === 0 ? (
-                                            <p className="px-3 py-2 text-[10px] text-muted-foreground font-body uppercase font-thin">
-                                                No recent events found.
-                                            </p>
-                                        ) : (
-                                            <div className="max-h-[350px] overflow-y-auto">
-                                                {events.map((event) => (
-                                                    <button
-                                                        key={event.id}
-                                                        onClick={() =>
-                                                            handleEventClick(
-                                                                event,
-                                                            )
-                                                        }
-                                                        className="w-full text-left px-3 py-2 text-[10px] rounded-md hover:bg-accent/20 flex items-start gap-2"
-                                                    >
+                            {/* Events Dropdown */}
+                            {activeDropdown === 'events' && (
+                                <div className="absolute top-full mt-1 right-0 bg-card border border-border rounded-md shadow-md w-72 z-[3000] py-1 text-xs max-h-[60vh] overflow-y-auto">
+                                    <div className="px-3 py-2 border-b border-border">
+                                        <h3 className="text-xs font-thin uppercase font-body">RECENT EVENTS</h3>
+                                    </div>
+                                    {events?.length > 0 ? (
+                                        <div>
+                                            {events.map((event) => (
+                                                <button
+                                                    key={event.id}
+                                                    className="w-full px-3 py-2 text-left border-b hover:bg-accent/10 border-border/50 last:border-0"
+                                                >
+                                                    <div className="flex items-center gap-2">
                                                         <div
                                                             className={cn(
-                                                                'w-6 h-6 rounded-md flex items-center justify-center text-white shrink-0 mt-0.5',
-                                                                event.type ===
-                                                                    'check-in'
+                                                                'w-2 h-2 rounded-full',
+                                                                event.type === 'check-in'
                                                                     ? 'bg-blue-500'
                                                                     : event.type ===
-                                                                        'task'
-                                                                      ? 'bg-purple-500'
-                                                                      : event.type ===
-                                                                          'journal'
-                                                                        ? 'bg-red-500'
-                                                                        : event.type ===
-                                                                            'shift-start'
-                                                                          ? 'bg-green-500'
-                                                                          : 'bg-orange-500',
+                                                                      'shift-start'
+                                                                    ? 'bg-green-500'
+                                                                    : event.type === 'task'
+                                                                    ? 'bg-pink-500'
+                                                                    : event.type ===
+                                                                      'journal'
+                                                                    ? 'bg-purple-500'
+                                                                    : 'bg-orange-500',
                                                             )}
-                                                        >
-                                                            {event.type ===
-                                                                'check-in' && (
-                                                                <MapPin
-                                                                    size={12}
-                                                                />
-                                                            )}
-                                                            {event.type ===
-                                                                'task' && (
-                                                                <CalendarClock
-                                                                    size={12}
-                                                                />
-                                                            )}
-                                                            {event.type ===
-                                                                'journal' && (
-                                                                <FileText
-                                                                    size={12}
-                                                                />
-                                                            )}
-                                                            {event.type ===
-                                                                'shift-start' && (
-                                                                <Clock
-                                                                    size={12}
-                                                                />
-                                                            )}
-                                                            {event.type ===
-                                                                'lead' && (
-                                                                <UserPlus
-                                                                    size={12}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium uppercase text-[9px] text-primary">
-                                                                {event.type.replace(
-                                                                    '-',
-                                                                    ' ',
-                                                                )}
-                                                            </div>
-                                                            <div className="font-thin uppercase">
+                                                        ></div>
+                                                        <div>
+                                                            <p className="font-medium line-clamp-1 font-body">
                                                                 {event.title}
-                                                            </div>
-                                                            <div className="text-[9px] text-muted-foreground mt-1 flex items-center gap-1">
-                                                                <Clock
-                                                                    size={8}
-                                                                />
-                                                                {event.time}
-                                                            </div>
-                                                            <div className="text-[9px] text-muted-foreground flex items-center gap-1">
-                                                                <MapPin
-                                                                    size={8}
-                                                                />
-                                                                <span className="truncate">
-                                                                    {
-                                                                        event.location
-                                                                    }
+                                                            </p>
+                                                            <div className="flex items-center gap-4 text-[10px] text-muted-foreground mt-0.5 font-body">
+                                                                <span>
+                                                                    {event.user}
+                                                                </span>
+                                                                <span>
+                                                                    {event.time}
                                                                 </span>
                                                             </div>
-                                                            {event.user && (
-                                                                <div className="flex items-center gap-1 pt-1 mt-1 border-t border-border/10">
-                                                                    <div className="w-4 h-4 overflow-hidden rounded-full bg-accent">
-                                                                        <img
-                                                                            src="/placeholder.svg?height=16&width=16"
-                                                                            alt={
-                                                                                event.user
-                                                                            }
-                                                                            className="object-cover w-full h-full"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="truncate">
-                                                                        {
-                                                                            event.user
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            )}
                                                         </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="px-3 py-2 text-muted-foreground font-body font-thin uppercase text-[10px]">
+                                            No recent events.
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

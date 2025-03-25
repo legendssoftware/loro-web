@@ -37,38 +37,6 @@ const LeadsContent = memo(
     },
 );
 
-LeadsContent.displayName = 'LeadsContent';
-
-// Reports tab content
-const ReportsContent = memo(() => {
-    return (
-        <div className="h-full overflow-hidden">
-            <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Activating soon
-                </p>
-            </div>
-        </div>
-    );
-});
-
-ReportsContent.displayName = 'ReportsContent';
-
-// Analytics tab content
-const AnalyticsContent = memo(() => {
-    return (
-        <div className="h-full overflow-hidden">
-            <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                    Activating soon
-                </p>
-            </div>
-        </div>
-    );
-});
-
-AnalyticsContent.displayName = 'AnalyticsContent';
-
 // Loading component
 const LoadingContent = memo(() => {
     return (
@@ -91,7 +59,7 @@ const ErrorContent = memo(() => {
                     strokeWidth={1}
                 />
                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                   Please re-try
+                    Please re-try
                 </p>
             </div>
         </div>
@@ -123,8 +91,11 @@ function LeadsTabContentComponent({
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center w-full h-96">
-                <FolderMinus className="w-16 h-16 text-muted" />
-                <p className="mt-4 text-sm text-muted">
+                <FolderMinus
+                    className="w-16 h-16 text-red-500"
+                    strokeWidth={1.2}
+                />
+                <p className="text-xs font-thin uppercase font-body">
                     {error.message || 'Failed to load leads data.'}
                 </p>
             </div>
@@ -141,10 +112,6 @@ function LeadsTabContentComponent({
                     onAddLead={onAddLead}
                 />
             );
-        case 'reports':
-            return <ReportsContent />;
-        case 'analytics':
-            return <AnalyticsContent />;
         default:
             return null;
     }

@@ -571,11 +571,21 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 ...data,
                 logo: logoUrl,
                 // Format date fields to YYYY-MM-DD for API
-                birthday: data.birthday ? formatDateToYYYYMMDD(data.birthday) : undefined,
-                anniversaryDate: data.anniversaryDate ? formatDateToYYYYMMDD(data.anniversaryDate) : undefined,
-                acquisitionDate: data.acquisitionDate ? formatDateToYYYYMMDD(data.acquisitionDate) : undefined,
-                lastVisitDate: data.lastVisitDate ? formatDateToYYYYMMDD(data.lastVisitDate) : undefined,
-                nextContactDate: data.nextContactDate ? formatDateToYYYYMMDD(data.nextContactDate) : undefined,
+                birthday: data.birthday
+                    ? formatDateToYYYYMMDD(data.birthday)
+                    : undefined,
+                anniversaryDate: data.anniversaryDate
+                    ? formatDateToYYYYMMDD(data.anniversaryDate)
+                    : undefined,
+                acquisitionDate: data.acquisitionDate
+                    ? formatDateToYYYYMMDD(data.acquisitionDate)
+                    : undefined,
+                lastVisitDate: data.lastVisitDate
+                    ? formatDateToYYYYMMDD(data.lastVisitDate)
+                    : undefined,
+                nextContactDate: data.nextContactDate
+                    ? formatDateToYYYYMMDD(data.nextContactDate)
+                    : undefined,
                 // Ensure status is passed as a string matching the backend's enum values
                 status: data.status,
                 // Ensure the ref is set and follows the pattern
@@ -615,7 +625,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             setSelectedFile(null);
         } catch (error) {
             console.error('Error submitting client form:', error);
-            showErrorToast('Failed to create client. Please check required fields and try again.', toast);
+            showErrorToast(
+                'Failed to create client. Please check required fields and try again.',
+                toast,
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -631,9 +644,13 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
     }, [logoImage]);
 
     return (
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+        <form
+            onSubmit={handleSubmit(onFormSubmit)}
+            className="space-y-6 bg-card"
+        >
             <p className="mb-2 text-xs text-muted-foreground">
-                <span className="text-red-500">*</span> indicates required fields
+                <span className="text-red-500">*</span> indicates required
+                fields
             </p>
             <fieldset
                 disabled={isLoading || isSubmitting}
@@ -713,7 +730,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('name')}
                                     placeholder="ACME Inc."
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.name ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.name
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -742,7 +761,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         {...register('contactPerson')}
                                         placeholder="John Doe"
                                         className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                            errors.contactPerson ? 'border-red-500 focus:ring-red-500' : ''
+                                            errors.contactPerson
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : ''
                                         }`}
                                         aria-required="true"
                                     />
@@ -773,7 +794,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         {...register('email')}
                                         placeholder="john.doe@example.co.za"
                                         className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                            errors.email ? 'border-red-500 focus:ring-red-500' : ''
+                                            errors.email
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : ''
                                         }`}
                                         aria-required="true"
                                     />
@@ -833,7 +856,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                         {...register('phone')}
                                         placeholder="+27 64 123 4567"
                                         className={`pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                            errors.phone ? 'border-red-500 focus:ring-red-500' : ''
+                                            errors.phone
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : ''
                                         }`}
                                         aria-required="true"
                                     />
@@ -927,7 +952,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('address.street')}
                                     placeholder="123 Main St"
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.address?.street ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.address?.street
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -957,7 +984,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('address.suburb')}
                                     placeholder="Halfway House"
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.address?.suburb ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.address?.suburb
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -983,7 +1012,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('address.city')}
                                     placeholder="Cape Town"
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.address?.city ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.address?.city
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -1007,7 +1038,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('address.state')}
                                     placeholder="Western Cape"
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.address?.state ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.address?.state
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -1023,18 +1056,21 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     htmlFor="address.country"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Country <span className="text-red-500">*</span>
+                                    Country{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                     control={control}
                                     name="address.country"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className={`flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card ${
-                                                errors.address?.country
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : 'border-border'
-                                            }`}>
+                                            <div
+                                                className={`flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card ${
+                                                    errors.address?.country
+                                                        ? 'border-red-500 focus:ring-red-500'
+                                                        : 'border-border'
+                                                }`}
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     <Globe
                                                         className="w-4 h-4 text-muted-foreground"
@@ -1076,7 +1112,10 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.address?.country && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.address.country.message as string}
+                                        {
+                                            errors.address.country
+                                                .message as string
+                                        }
                                     </p>
                                 )}
                             </div>
@@ -1094,7 +1133,9 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     {...register('address.postalCode')}
                                     placeholder="8001"
                                     className={`font-light bg-card border-border placeholder:text-xs placeholder:font-body ${
-                                        errors.address?.postalCode ? 'border-red-500 focus:ring-red-500' : ''
+                                        errors.address?.postalCode
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : ''
                                     }`}
                                     aria-required="true"
                                 />
@@ -3289,21 +3330,39 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                     <div className="p-3 mb-4 text-xs text-red-800 bg-red-100 rounded-md">
                         <div className="flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4" />
-                            <p className="text-xs font-semibold uppercase font-body">Please fix the following errors:</p>
+                            <p className="text-xs font-semibold uppercase font-body">
+                                Please fix the following errors:
+                            </p>
                         </div>
                         <ul className="pl-4 mt-1 list-disc">
                             {errors.name && <li>Company Name is required</li>}
-                            {errors.contactPerson && <li>Contact Person is required</li>}
+                            {errors.contactPerson && (
+                                <li>Contact Person is required</li>
+                            )}
                             {errors.email && <li>Valid Email is required</li>}
                             {errors.phone && <li>Valid Phone is required</li>}
-                            {errors.address?.street && <li>Street Address is required</li>}
-                            {errors.address?.suburb && <li>Suburb is required</li>}
+                            {errors.address?.street && (
+                                <li>Street Address is required</li>
+                            )}
+                            {errors.address?.suburb && (
+                                <li>Suburb is required</li>
+                            )}
                             {errors.address?.city && <li>City is required</li>}
-                            {errors.address?.state && <li>State/Province is required</li>}
-                            {errors.address?.country && <li>Country is required</li>}
-                            {errors.address?.postalCode && <li>Postal Code is required</li>}
-                            {errors.website && <li>Website must be a valid URL format</li>}
-                            {errors.discountPercentage && <li>Discount must be between 0-100%</li>}
+                            {errors.address?.state && (
+                                <li>State/Province is required</li>
+                            )}
+                            {errors.address?.country && (
+                                <li>Country is required</li>
+                            )}
+                            {errors.address?.postalCode && (
+                                <li>Postal Code is required</li>
+                            )}
+                            {errors.website && (
+                                <li>Website must be a valid URL format</li>
+                            )}
+                            {errors.discountPercentage && (
+                                <li>Discount must be between 0-100%</li>
+                            )}
                         </ul>
                     </div>
                 )}

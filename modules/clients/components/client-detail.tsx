@@ -1827,7 +1827,7 @@ export function ClientDetail({
                                                                     ([status, colors]) => (
                                                                         <Cell
                                                                             key={`cell-${status}`}
-                                                                            fill={colors.text.includes('green') ? '#22c55e' : 
+                                                                            fill={colors.text.includes('green') ? '#22c55e' :
                                                                                   colors.text.includes('red') ? '#ef4444' :
                                                                                   colors.text.includes('yellow') ? '#eab308' :
                                                                                   colors.text.includes('blue') ? '#3b82f6' :
@@ -3354,7 +3354,7 @@ export function ClientDetail({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="min-w-[100vw] h-[100vh] overflow-hidden bg-card sm:rounded-none p-4 flex flex-col justify-between gap-4">
+                <DialogContent className="min-w-[100vw] h-[100vh] overflow-hidden bg-card sm:rounded-none p-4 flex flex-col justify-between gap-4 bg-card">
                     <div className="flex flex-col justify-start gap-4 h-[90vh] overflow-hidden">
                         <DialogHeader className="flex flex-row items-start justify-between h-[7vh]">
                             <div className="flex flex-row items-center gap-3">

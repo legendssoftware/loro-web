@@ -86,6 +86,7 @@ import { Calendar as UiCalendar } from '@/components/ui/calendar';
 import { TaskFlagModal } from './task-flag-modal';
 import { TaskFlagAccordion } from './task-flag-accordion';
 import { axiosInstance } from '@/lib/services/api-client';
+import TaskEditForm from './task-edit-form';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -1581,8 +1582,6 @@ export function TaskDetailsModal({
         }
     };
 
-    console.log(task, 'task data here');
-
     // Update useEffect to set the extendedTask state
     useEffect(() => {
         if (task) {
@@ -1899,17 +1898,16 @@ export function TaskDetailsModal({
                 open={isEditModalOpen}
                 onOpenChange={() => setIsEditModalOpen(false)}
             >
-                <DialogContent className="w-[39vw] max-w-[1200px] border-border/50 max-h-[90vh] overflow-y-auto bg-card flex items-center justify-center flex-col">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-thin uppercase font-body">
                             {modalMode === 'edit' ? 'Edit Task' : ''}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center justify-center">
-                        <h2 className="text-xs font-thin uppercase font-body">
-                            Activating Soon, but you can edit the task on your
-                            loro app
-                        </h2>
+                        <p className="text-xs font-thin uppercase font-body">
+                            Activating soon
+                        </p>
                     </div>
                 </DialogContent>
             </Dialog>

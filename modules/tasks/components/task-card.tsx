@@ -158,8 +158,6 @@ function TaskCardComponent({
         return Math.round((completedSubtasks / validSubtasks.length) * 100);
     }, [task?.subtasks]);
 
-    console.log(task, 'full task data');
-
     return (
         <>
             <div

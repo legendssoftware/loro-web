@@ -10,7 +10,6 @@ import {
     ChartSpline,
     Timer,
     Flag,
-    Bell,
     MessageCircle,
 } from 'lucide-react';
 import { useState, useCallback, memo } from 'react';
@@ -268,7 +267,7 @@ function TaskCardComponent({
                             <div className="flex items-center col-span-2">
                                 <Calendar className="w-3 h-3 mr-1" />
                                 <span className="text-[10px] font-normal uppercase font-body">
-                                    Due: {formatDate(task?.deadline)}
+                                    Due Date: {formatDate(task?.deadline)}
                                 </span>
                             </div>
                         )}
@@ -338,21 +337,22 @@ function TaskCardComponent({
                     )}
                     <div className="flex items-center gap-1">
                         {/* Feedback counter - Using temporary dummy data until backend integrates feedback */}
-                        {(task as any).feedback && (task as any).feedback.length > 0 && (
-                            <Badge
-                                variant="outline"
-                                className="flex items-center justify-center gap-1 px-3 py-1 bg-green-500 border-0"
-                            >
-                                <MessageCircle
-                                    strokeWidth={1.5}
-                                    size={16}
-                                    color="white"
-                                />
-                                <span className="text-[10px] font-normal uppercase text-white font-body">
-                                    {(task as any).feedback.length}
-                                </span>
-                            </Badge>
-                        )}
+                        {(task as any).feedback &&
+                            (task as any).feedback.length > 0 && (
+                                <Badge
+                                    variant="outline"
+                                    className="flex items-center justify-center gap-1 px-3 py-1 bg-green-500 border-0"
+                                >
+                                    <MessageCircle
+                                        strokeWidth={1.5}
+                                        size={16}
+                                        color="white"
+                                    />
+                                    <span className="text-[10px] font-normal uppercase text-white font-body">
+                                        {(task as any).feedback.length}
+                                    </span>
+                                </Badge>
+                            )}
 
                         {/* Flag indicator */}
                         {task.flags && task.flags.length > 0 && (

@@ -75,21 +75,6 @@ export function ClaimsKanban({
                 claimsByStatus[ClaimStatus.PENDING]?.length || 0,
             )}
             {renderColumn(
-                ClaimStatus.APPROVED,
-                'Approved',
-                claimsByStatus[ClaimStatus.APPROVED]?.length || 0,
-            )}
-            {renderColumn(
-                ClaimStatus.REJECTED,
-                'Rejected',
-                claimsByStatus[ClaimStatus.REJECTED]?.length || 0,
-            )}
-            {renderColumn(
-                ClaimStatus.PAID,
-                'Paid',
-                claimsByStatus[ClaimStatus.PAID]?.length || 0,
-            )}
-            {renderColumn(
                 ClaimStatus.CANCELLED,
                 'Cancelled',
                 claimsByStatus[ClaimStatus.CANCELLED]?.length || 0,
@@ -98,6 +83,21 @@ export function ClaimsKanban({
                 ClaimStatus.DECLINED,
                 'Declined',
                 claimsByStatus[ClaimStatus.DECLINED]?.length || 0,
+            )}
+            {renderColumn(
+                ClaimStatus.APPROVED,
+                'Approved',
+                claimsByStatus[ClaimStatus.APPROVED]?.length || 0,
+            )}
+            {renderColumn(
+                ClaimStatus.PAID,
+                'Paid',
+                claimsByStatus[ClaimStatus.PAID]?.length || 0,
+            )}
+            {renderColumn(
+                ClaimStatus.REJECTED,
+                'Rejected',
+                claimsByStatus[ClaimStatus.REJECTED]?.length || 0,
             )}
         </div>
     );

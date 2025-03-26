@@ -9,7 +9,11 @@ import { cn } from '@/lib/utils';
 
 interface TasksKanbanProps {
     tasksByStatus: Record<TaskStatus, Task[]>;
-    onUpdateTaskStatus: (taskId: number, newStatus: string, newDeadline?: Date) => void;
+    onUpdateTaskStatus: (
+        taskId: number,
+        newStatus: string,
+        newDeadline?: Date,
+    ) => void;
     onUpdateTask?: (taskId: number, updates: Partial<Task>) => void;
     onDeleteTask: (taskId: number) => void;
     onAddTask?: () => void;
@@ -72,7 +76,9 @@ export function TasksKanban({
                                         task={task}
                                         onUpdateStatus={onUpdateTaskStatus}
                                         onDelete={onDeleteTask}
-                                        onUpdateSubtaskStatus={onUpdateSubtaskStatus}
+                                        onUpdateSubtaskStatus={
+                                            onUpdateSubtaskStatus
+                                        }
                                         index={index}
                                     />
                                 ))
@@ -84,46 +90,77 @@ export function TasksKanban({
                 </div>
             );
         },
-        [tasksByStatus, onUpdateTaskStatus, onDeleteTask, onAddTask, onUpdateSubtaskStatus],
+        [
+            tasksByStatus,
+            onUpdateTaskStatus,
+            onDeleteTask,
+            onAddTask,
+            onUpdateSubtaskStatus,
+        ],
     );
 
     return (
-        <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden">
-            {renderColumn(
-                TaskStatus.PENDING,
-                'Pending',
-                tasksByStatus[TaskStatus.PENDING]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.IN_PROGRESS,
-                'In Progress',
-                tasksByStatus[TaskStatus.IN_PROGRESS]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.COMPLETED,
-                'Completed',
-                tasksByStatus[TaskStatus.COMPLETED]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.CANCELLED,
-                'Cancelled',
-                tasksByStatus[TaskStatus.CANCELLED]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.OVERDUE,
-                'Overdue',
-                tasksByStatus[TaskStatus.OVERDUE]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.POSTPONED,
-                'Postponed',
-                tasksByStatus[TaskStatus.POSTPONED]?.length || 0,
-            )}
-            {renderColumn(
-                TaskStatus.MISSED,
-                'Missed',
-                tasksByStatus[TaskStatus.MISSED]?.length || 0,
-            )}
+        <div className="flex flex-row items-start w-full h-full gap-6 overflow-x-scroll overflow-y-hidden">
+            {/* Stage 1: Planning/Waiting */}
+            <div className="flex flex-col">
+                <div className="flex gap-2">
+                    {renderColumn(
+                        TaskStatus.PENDING,
+                        'Pending',
+                        tasksByStatus[TaskStatus.PENDING]?.length || 0,
+                    )}
+                    {renderColumn(
+                        TaskStatus.POSTPONED,
+                        'Postponed',
+                        tasksByStatus[TaskStatus.POSTPONED]?.length || 0,
+                    )}
+                </div>
+            </div>
+            {/* Stage 2: Active */}
+            <div className="flex flex-col">
+                <div className="flex gap-2">
+                    {renderColumn(
+                        TaskStatus.IN_PROGRESS,
+                        'In Progress',
+                        tasksByStatus[TaskStatus.IN_PROGRESS]?.length || 0,
+                    )}
+                </div>
+            </div>
+            {/* Stage 3: Problem States */}
+            <div className="flex flex-col">
+                <div className="flex gap-2">
+                    {renderColumn(
+                        TaskStatus.OVERDUE,
+                        'Overdue',
+                        tasksByStatus[TaskStatus.OVERDUE]?.length || 0,
+                    )}
+                    {renderColumn(
+                        TaskStatus.MISSED,
+                        'Missed',
+                        tasksByStatus[TaskStatus.MISSED]?.length || 0,
+                    )}
+                </div>
+            </div>
+            {/* Stage 4: Terminated States */}
+            <div className="flex flex-col">
+                <div className="flex gap-2">
+                    {renderColumn(
+                        TaskStatus.CANCELLED,
+                        'Cancelled',
+                        tasksByStatus[TaskStatus.CANCELLED]?.length || 0,
+                    )}
+                </div>
+            </div>
+            {/* Stage 5: Approved/Completed (at the end) */}
+            <div className="flex flex-col">
+                <div className="flex gap-2">
+                    {renderColumn(
+                        TaskStatus.COMPLETED,
+                        'Completed',
+                        tasksByStatus[TaskStatus.COMPLETED]?.length || 0,
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

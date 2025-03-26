@@ -84,11 +84,6 @@ export function JournalsKanban({
                 journalsByStatus[JournalStatus.PENDING_REVIEW]?.length || 0,
             )}
             {renderColumn(
-                JournalStatus.PUBLISHED,
-                'Published',
-                journalsByStatus[JournalStatus.PUBLISHED]?.length || 0,
-            )}
-            {renderColumn(
                 JournalStatus.DRAFT,
                 'Draft',
                 journalsByStatus[JournalStatus.DRAFT]?.length || 0,
@@ -102,6 +97,11 @@ export function JournalsKanban({
                 JournalStatus.ARCHIVED,
                 'Archived',
                 journalsByStatus[JournalStatus.ARCHIVED]?.length || 0,
+            )}
+            {renderColumn(
+                JournalStatus.PUBLISHED,
+                'Published',
+                journalsByStatus[JournalStatus.PUBLISHED]?.length || 0,
             )}
         </div>
     );

@@ -279,6 +279,7 @@ export interface TaskFlag {
         avatarUrl?: string;
     };
     items: TaskFlagItem[];
+    attachments?: string[];
 }
 
 export interface TaskFlagItem {

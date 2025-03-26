@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -44,6 +44,12 @@ import {
     Timer,
     PlayIcon,
     StopCircle,
+    ChevronDown,
+    MessageCircle,
+    ClipboardCheck,
+    CheckCircle,
+    XCircle,
+    AlertTriangle,
 } from 'lucide-react';
 import {
     Task,
@@ -53,6 +59,7 @@ import {
     JobStatus,
     JobStatusColors,
     TaskFlag,
+    TaskFlagItemStatus,
 } from '@/lib/types/task';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -77,6 +84,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Calendar as UiCalendar } from '@/components/ui/calendar';
 import { TaskFlagModal } from './task-flag-modal';
+import { TaskFlagAccordion } from './task-flag-accordion';
+import { axiosInstance } from '@/lib/services/api-client';
 
 interface TaskDetailsModalProps {
     task: Task;
@@ -134,7 +143,7 @@ export function TaskDetailsModal({
 }: TaskDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<TaskStatus>(task.status);
     const [activeTab, setActiveTab] = useState<string>('details');
-    const extendedTask = task as ExtendedTask;
+    const [extendedTask, setExtendedTask] = useState<ExtendedTask | null>(null);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
     const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] =
         useState<boolean>(false);
@@ -151,6 +160,22 @@ export function TaskDetailsModal({
         task.deadline ? format(new Date(task.deadline), 'HH:mm') : '12:00',
     );
     const [modalMode, setModalMode] = useState<'edit' | 'flag'>('edit');
+    // Add state for tracking expanded flag IDs
+    const [expandedFlagIds, setExpandedFlagIds] = useState<number[]>([]);
+
+    // Function to toggle a flag's expanded state
+    const toggleFlagExpansion = (flagId: number) => {
+        setExpandedFlagIds(prev =>
+            prev.includes(flagId)
+                ? prev.filter(id => id !== flagId)
+                : [...prev, flagId]
+        );
+    };
+
+    // Function to check if a flag is expanded
+    const isFlagExpanded = (flagId: number) => {
+        return expandedFlagIds.includes(flagId);
+    };
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -1518,157 +1543,12 @@ export function TaskDetailsModal({
                             </Button>
                         </div>
 
-                        {extendedTask?.flags &&
-                        extendedTask.flags.length > 0 ? (
-                            <div className="space-y-3">
-                                {extendedTask.flags.map((flag) => (
-                                    <div
-                                        key={flag.uid}
-                                        className="p-3 border rounded-lg"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Flag
-                                                    className={`w-4 h-4 ${
-                                                        flag.status === 'OPEN'
-                                                            ? 'text-amber-500'
-                                                            : flag.status ===
-                                                                'IN_PROGRESS'
-                                                              ? 'text-blue-500'
-                                                              : flag.status ===
-                                                                  'RESOLVED'
-                                                                ? 'text-green-500'
-                                                                : 'text-gray-500'
-                                                    }`}
-                                                />
-                                                <h4 className="text-xs uppercase font-norma font-body">
-                                                    {flag.title}
-                                                </h4>
-                                            </div>
-                                            <Badge
-                                                variant="outline"
-                                                className={`text-[10px] uppercase font-body font-normal ${
-                                                    flag.status === 'OPEN'
-                                                        ? 'bg-amber-100 text-amber-800 border-amber-200'
-                                                        : flag.status ===
-                                                            'IN_PROGRESS'
-                                                          ? 'bg-blue-100 text-blue-800 border-blue-200'
-                                                          : flag.status ===
-                                                              'RESOLVED'
-                                                            ? 'bg-green-100 text-green-800 border-green-200'
-                                                            : 'bg-gray-100 text-gray-800 border-gray-200'
-                                                }`}
-                                            >
-                                                {flag.status}
-                                            </Badge>
-                                        </div>
-
-                                        <p className="mt-2 text-[10px] font-normal uppercase text-muted-foreground font-body">
-                                            {flag.description}
-                                        </p>
-
-                                        {flag.deadline && (
-                                            <div className="flex items-center mt-2 text-xs">
-                                                <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
-                                                <span className="text-[10px] font-normal uppercase text-muted-foreground font-body">
-                                                    Due:{' '}
-                                                    {formatDate(
-                                                        new Date(flag.deadline),
-                                                    )}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {flag.items &&
-                                            flag.items.length > 0 && (
-                                                <div className="mt-3">
-                                                    <h5 className="mb-1 text-xs font-medium font-body">
-                                                        Checklist:
-                                                    </h5>
-                                                    <div className="space-y-1">
-                                                        {flag.items.map(
-                                                            (item) => (
-                                                                <div
-                                                                    key={
-                                                                        item.uid
-                                                                    }
-                                                                    className="flex items-center gap-2 text-xs"
-                                                                >
-                                                                    {item.status ===
-                                                                    'COMPLETED' ? (
-                                                                        <CheckCircle2 className="w-3 h-3 text-green-500" />
-                                                                    ) : item.status ===
-                                                                      'SKIPPED' ? (
-                                                                        <FolderMinus className="w-3 h-3 text-gray-500" />
-                                                                    ) : (
-                                                                        <div className="w-3 h-3 border border-gray-300 rounded-full" />
-                                                                    )}
-                                                                    <span
-                                                                        className={
-                                                                            item.status ===
-                                                                            'COMPLETED'
-                                                                                ? 'line-through text-muted-foreground'
-                                                                                : ''
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            item.title
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                        {flag.comments &&
-                                            flag.comments.length > 0 && (
-                                                <div className="pt-2 mt-3 border-t border-border">
-                                                    <div className="flex items-center gap-1 mb-1">
-                                                        <MessageSquare className="w-3 h-3 text-muted-foreground" />
-                                                        <span className="text-[10px] font-normal uppercase text-muted-foreground font-body">
-                                                            {
-                                                                flag.comments
-                                                                    .length
-                                                            }{' '}
-                                                            comment
-                                                            {flag.comments
-                                                                .length > 1
-                                                                ? 's'
-                                                                : ''}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-[10px] italic text-muted-foreground font-body uppercase font-normal">
-                                                        {flag.comments[0]
-                                                            .content.length > 40
-                                                            ? `${flag.comments[0].content.substring(0, 40)}...`
-                                                            : flag.comments[0]
-                                                                  .content}
-                                                    </span>
-                                                </div>
-                                            )}
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
-                                <Flag className="w-8 h-8 mb-2 text-muted-foreground" />
-                                <p className="text-xs uppercase text-muted-foreground font-body">
-                                    No flags for this task
-                                </p>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="mt-2 uppercase border cursor-pointer font-body text-muted-foreground"
-                                    onClick={() => setIsFlagModalOpen(true)}
-                                >
-                                    <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">
-                                        Add Flag
-                                    </span>
-                                </Button>
-                            </div>
-                        )}
+                        <TaskFlagAccordion
+                            flags={extendedTask?.flags || []}
+                            onAddFlag={() => setIsFlagModalOpen(true)}
+                            onUpdateFlag={handleFlagUpdate}
+                            onUpdateFlagItem={handleFlagItemUpdate}
+                        />
                     </div>
                 );
             case 'feedback':
@@ -1702,6 +1582,121 @@ export function TaskDetailsModal({
     };
 
     console.log(task, 'task data here');
+
+    // Update useEffect to set the extendedTask state
+    useEffect(() => {
+        if (task) {
+            setExtendedTask(task as ExtendedTask);
+        }
+    }, [task]);
+
+    // Update the handleFlagUpdate function to fix error property access
+    const handleFlagUpdate = async (flagId: number, updates: Partial<TaskFlag>) => {
+        try {
+            const response = await axiosInstance.patch(`/tasks/flags/${flagId}`, updates);
+
+            if (response && response.data) {
+                // Update the task in local state to reflect the changes
+                if (extendedTask && extendedTask.flags) {
+                    const updatedFlags = extendedTask.flags.map(flag =>
+                        flag.uid === flagId ? { ...flag, ...updates } : flag
+                    );
+
+                    setExtendedTask({
+                        ...extendedTask,
+                        flags: updatedFlags
+                    });
+                }
+
+                // Show success message
+                showSuccessToast('Flag updated successfully', toast);
+                return true;
+            }
+            return false;
+        } catch (error: any) {
+            console.error('Error updating flag status:', error);
+            showErrorToast(
+                error?.response?.data?.message || 'Failed to update flag. Please try again.',
+                toast
+            );
+            return false;
+        }
+    };
+
+    // Update the handleFlagItemUpdate function to fix error property access
+    const handleFlagItemUpdate = async (flagId: number, itemId: number, status: TaskFlagItemStatus) => {
+        try {
+            const response = await axiosInstance.patch(`/tasks/flag-items/${itemId}`, {
+                status
+            });
+
+            if (response && response.data) {
+                // Update the task in local state to reflect the changes
+                if (extendedTask && extendedTask.flags) {
+                    const updatedFlags = extendedTask.flags.map(flag => {
+                        if (flag.uid === flagId && flag.items) {
+                            const updatedItems = flag.items.map(item =>
+                                item.uid === itemId ? { ...item, status } : item
+                            );
+                            return { ...flag, items: updatedItems };
+                        }
+                        return flag;
+                    });
+
+                    setExtendedTask({
+                        ...extendedTask,
+                        flags: updatedFlags
+                    });
+                }
+
+                // Show success message
+                showSuccessToast('Checklist item updated', toast);
+                return true;
+            }
+            return false;
+        } catch (error: any) {
+            console.error('Error updating flag item status:', error);
+            showErrorToast(
+                error?.response?.data?.message || 'Failed to update checklist item. Please try again.',
+                toast
+            );
+            return false;
+        }
+    };
+
+    // Add the handleFlagCreated function implementation
+    const handleFlagCreated = async (taskId: number) => {
+        try {
+            // Show success toast
+            showSuccessToast('Task flagged successfully', toast);
+
+            // Close the modal first to prevent any UI glitches
+            setIsFlagModalOpen(false);
+
+            // Fetch the updated task data with the new flag
+            const response = await axiosInstance.get(`/tasks/${taskId}`);
+            if (response && response.data && response.data.task) {
+                setExtendedTask(response.data.task as ExtendedTask);
+
+                // Navigate to the flags tab to show the new flag
+                if (activeTab !== 'flags') {
+                    handleTabChange('flags');
+                }
+            } else {
+                // If fetch fails, use onUpdateTask as fallback
+                if (onUpdateTask) {
+                    // Send a minimal update to trigger a refresh
+                    onUpdateTask(taskId, { uid: taskId });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching updated task data:', error);
+            // If there's an error, still try to refresh using onUpdateTask
+            if (onUpdateTask) {
+                onUpdateTask(taskId, { uid: taskId });
+            }
+        }
+    };
 
     return (
         <>
@@ -1925,26 +1920,7 @@ export function TaskDetailsModal({
                     task={task}
                     isOpen={isFlagModalOpen}
                     onClose={() => setIsFlagModalOpen(false)}
-                    onFlagCreated={(taskId) => {
-                        showSuccessToast('Task flagged successfully', toast);
-
-                        // Close the modal first to prevent any UI glitches
-                        setIsFlagModalOpen(false);
-
-                        // If we have an onUpdateTask handler, use it to trigger a refresh of the task data
-                        if (onUpdateTask) {
-                            // Send a minimal update to trigger a refresh
-                            onUpdateTask(taskId, { uid: taskId });
-                        }
-
-                        // Navigate to the flags tab to show the new flag
-                        if (activeTab !== 'flags') {
-                            handleTabChange('flags');
-                        } else {
-                            // If already on flags tab, we may need to manually refresh
-                            // This will be handled by the parent component through onUpdateTask
-                        }
-                    }}
+                    onFlagCreated={handleFlagCreated}
                 />
             )}
 

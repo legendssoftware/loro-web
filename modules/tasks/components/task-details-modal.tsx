@@ -86,7 +86,6 @@ import { Calendar as UiCalendar } from '@/components/ui/calendar';
 import { TaskFlagModal } from './task-flag-modal';
 import { TaskFlagAccordion } from './task-flag-accordion';
 import { axiosInstance } from '@/lib/services/api-client';
-import TaskEditForm from './task-edit-form';
 
 interface TaskDetailsModalProps {
     task: Task;

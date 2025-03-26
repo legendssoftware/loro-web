@@ -356,7 +356,11 @@ function TaskCardComponent({
                         {task.flags && task.flags.length > 0 && (
                             <Badge
                                 variant="outline"
-                                className="flex items-center justify-center gap-1 px-3 py-1 bg-red-500 border-0"
+                                className={`flex items-center justify-center gap-1 px-3 py-1 border-0 ${
+                                    task.flags.every((flag) => flag.status === 'RESOLVED')
+                                        ? 'bg-green-500'
+                                        : 'bg-red-500'
+                                }`}
                             >
                                 <Flag
                                     strokeWidth={1.5}

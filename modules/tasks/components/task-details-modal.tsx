@@ -87,7 +87,7 @@ import { TaskFlagModal } from './task-flag-modal';
 import { TaskFlagAccordion } from './task-flag-accordion';
 import { axiosInstance } from '@/lib/services/api-client';
 
-interface TaskDetailsModalProps {
+interface TaskDetailsModalProp {
     task: Task;
     isOpen: boolean;
     onClose: () => void;
@@ -140,7 +140,7 @@ export function TaskDetailsModal({
     onUpdateTask,
     onDelete,
     onUpdateSubtaskStatus,
-}: TaskDetailsModalProps) {
+}: TaskDetailsModalProp) {
     const [currentStatus, setCurrentStatus] = useState<TaskStatus>(task.status);
     const [activeTab, setActiveTab] = useState<string>('details');
     const [extendedTask, setExtendedTask] = useState<ExtendedTask | null>(null);

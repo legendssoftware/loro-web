@@ -15,6 +15,7 @@ import {
     Images,
     MapPin,
     Warehouse,
+    Settings,
 } from 'lucide-react';
 import {
     Sheet,
@@ -123,6 +124,14 @@ const navigationItems = [
         href: '/inventory',
         description: 'Track product stock levels',
         // Only admin, manager can access inventory
+        allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
+    },
+    {
+        title: 'Settings',
+        icon: <Settings size={18} strokeWidth={1.5} />,
+        href: '/settings',
+        description: 'Manage system settings',
+        // Only admin, manager can access settings
         allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
     },
 ];

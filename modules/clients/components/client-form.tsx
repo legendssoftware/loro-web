@@ -315,57 +315,56 @@ export const clientFormSchema = z.object({
             uid: z.number(),
         })
         .optional(),
-    // Financial Information
-    creditLimit: z.number().optional(),
-    outstandingBalance: z.number().optional(),
-    priceTier: z.nativeEnum(PriceTier).default(PriceTier.STANDARD).optional(),
-    discountPercentage: z.number().min(0).max(100).optional(),
+    // Financial Information - all optional
+    creditLimit: z.union([z.number(), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
+    outstandingBalance: z.union([z.number(), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
+    priceTier: z.nativeEnum(PriceTier).optional(),
+    discountPercentage: z.union([z.number().min(0).max(100), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
     paymentTerms: z.string().optional(),
-    lifetimeValue: z.number().optional(),
+    lifetimeValue: z.any().optional(),
     preferredPaymentMethod: z.nativeEnum(PaymentMethod).optional(),
-    // Contact preferences and dates
+    // Contact preferences and dates - all optional
     preferredContactMethod: z
         .nativeEnum(ClientContactPreference)
-        .default(ClientContactPreference.EMAIL)
         .optional(),
     preferredLanguage: z.string().optional(),
     lastVisitDate: z.date().optional(),
     nextContactDate: z.date().optional(),
     birthday: z.date().optional(),
     anniversaryDate: z.date().optional(),
-    // Business information
+    // Business information - all optional
     industry: z.string().optional(),
-    companySize: z.number().optional(),
-    annualRevenue: z.number().optional(),
-    // Customer insights
-    acquisitionChannel: z.nativeEnum(AcquisitionChannel).optional(),
-    acquisitionDate: z.date().optional(),
+    companySize: z.any().optional(),
+    annualRevenue: z.any().optional(),
+    // Customer insights - all optional
+    acquisitionChannel: z.nativeEnum(AcquisitionChannel).optional().catch(undefined),
+    acquisitionDate: z.date().optional().catch(undefined),
     riskLevel: z
         .nativeEnum(ClientRiskLevel)
-        .default(ClientRiskLevel.LOW)
-        .optional(),
-    satisfactionScore: z.number().min(0).max(10).optional(),
-    npsScore: z.number().min(-10).max(10).optional(),
-    // Categorization and geofencing
+        .optional()
+        .catch(undefined),
+    satisfactionScore: z.any().optional(),
+    npsScore: z.any().optional(),
+    // Categorization and geofencing - all optional
     tags: z.array(z.string()).optional(),
     visibleCategories: z.array(z.string()).optional(),
     customFields: z.record(z.string(), z.any()).optional(),
     socialProfiles: z
         .object({
-            linkedin: z.string().url().optional(),
-            twitter: z.string().url().optional(),
-            facebook: z.string().url().optional(),
-            instagram: z.string().url().optional(),
+            linkedin: z.string().optional(),
+            twitter: z.string().optional(),
+            facebook: z.string().optional(),
+            instagram: z.string().optional(),
         })
         .optional(),
     geofenceType: z
         .nativeEnum(GeofenceType)
-        .default(GeofenceType.NONE)
-        .optional(),
-    geofenceRadius: z.number().min(100).max(5000).default(500).optional(),
-    enableGeofence: z.boolean().default(false).optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
+        .optional()
+        .catch(undefined),
+    geofenceRadius: z.any().optional(),
+    enableGeofence: z.boolean().optional(),
+    latitude: z.any().optional(),
+    longitude: z.any().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -1523,11 +1522,6 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     placeholder="250"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
-                                {errors.companySize && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.companySize.message}
-                                    </p>
-                                )}
                                 <p className="text-[10px] text-muted-foreground">
                                     Number of employees
                                 </p>
@@ -2097,11 +2091,6 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     placeholder="8.5"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
-                                {errors.satisfactionScore && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.satisfactionScore.message}
-                                    </p>
-                                )}
                                 <p className="text-[10px] text-muted-foreground">
                                     Overall customer satisfaction score
                                 </p>
@@ -2129,7 +2118,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.npsScore && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.npsScore.message}
+                                        {typeof errors.npsScore.message === 'string' ? errors.npsScore.message : 'Invalid NPS score'}
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
@@ -2476,7 +2465,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.lifetimeValue && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.lifetimeValue.message}
+                                        {typeof errors.lifetimeValue.message === 'string' ? errors.lifetimeValue.message : 'Invalid value'}
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
@@ -2502,7 +2491,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.annualRevenue && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.annualRevenue.message}
+                                        {typeof errors.annualRevenue.message === 'string' ? errors.annualRevenue.message : 'Invalid value'}
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
@@ -3262,7 +3251,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 />
                                 {errors.geofenceRadius && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.geofenceRadius.message}
+                                        {typeof errors.geofenceRadius.message === 'string' ? errors.geofenceRadius.message : 'Invalid radius'}
                                     </p>
                                 )}
                                 <p className="text-[10px] text-muted-foreground">
@@ -3290,7 +3279,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     />
                                     {errors.latitude && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.latitude.message}
+                                            {typeof errors.latitude.message === 'string' ? errors.latitude.message : 'Invalid latitude'}
                                         </p>
                                     )}
                                 </div>
@@ -3314,7 +3303,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     />
                                     {errors.longitude && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.longitude.message}
+                                            {typeof errors.longitude.message === 'string' ? errors.longitude.message : 'Invalid longitude'}
                                         </p>
                                     )}
                                 </div>

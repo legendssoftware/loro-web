@@ -343,11 +343,21 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                 ...data,
                 logo: logoUrl,
                 // Format date fields to YYYY-MM-DD for API
-                birthday: data.birthday ? formatDateToYYYYMMDD(data.birthday) : undefined,
-                anniversaryDate: data.anniversaryDate ? formatDateToYYYYMMDD(data.anniversaryDate) : undefined,
-                acquisitionDate: data.acquisitionDate ? formatDateToYYYYMMDD(data.acquisitionDate) : undefined,
-                lastVisitDate: data.lastVisitDate ? formatDateToYYYYMMDD(data.lastVisitDate) : undefined,
-                nextContactDate: data.nextContactDate ? formatDateToYYYYMMDD(data.nextContactDate) : undefined,
+                birthday: data.birthday
+                    ? formatDateToYYYYMMDD(data.birthday)
+                    : undefined,
+                anniversaryDate: data.anniversaryDate
+                    ? formatDateToYYYYMMDD(data.anniversaryDate)
+                    : undefined,
+                acquisitionDate: data.acquisitionDate
+                    ? formatDateToYYYYMMDD(data.acquisitionDate)
+                    : undefined,
+                lastVisitDate: data.lastVisitDate
+                    ? formatDateToYYYYMMDD(data.lastVisitDate)
+                    : undefined,
+                nextContactDate: data.nextContactDate
+                    ? formatDateToYYYYMMDD(data.nextContactDate)
+                    : undefined,
             };
 
             // Remove ref from apiClientData
@@ -362,14 +372,17 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
 
             // Submit the data to the parent component with API-formatted data
             // This allows the parent component to directly use the properly formatted data for the API
-            await onSubmit(apiClientData as any as ClientFormValues, client.uid);
+            await onSubmit(
+                apiClientData as any as ClientFormValues,
+                client.uid,
+            );
 
             showSuccessToast('Client updated successfully', toast);
         } catch (error) {
             console.error('Error updating client:', error);
             showErrorToast(
                 'Failed to update client. Please check required fields and try again.',
-                toast
+                toast,
             );
         } finally {
             setIsSubmitting(false);
@@ -878,11 +891,6 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     placeholder="51.5074"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
-                                {errors.latitude && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.latitude.message}
-                                    </p>
-                                )}
                             </div>
 
                             <div className="space-y-1">
@@ -902,11 +910,6 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     placeholder="-0.1278"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
-                                {errors.longitude && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.longitude.message}
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </CardContent>
@@ -2090,7 +2093,10 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                 />
                                 {errors.socialProfiles?.instagram && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.socialProfiles.instagram.message}
+                                        {
+                                            errors.socialProfiles.instagram
+                                                .message
+                                        }
                                     </p>
                                 )}
                             </div>
@@ -2121,19 +2127,34 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     name="tags"
                                     control={control}
                                     render={({ field }) => {
-                                        const tags = Array.isArray(field.value) ? field.value : [];
-                                        const handleTagDelete = (index: number) => {
-                                            const newTags = tags.filter((_, i) => i !== index);
+                                        const tags = Array.isArray(field.value)
+                                            ? field.value
+                                            : [];
+                                        const handleTagDelete = (
+                                            index: number,
+                                        ) => {
+                                            const newTags = tags.filter(
+                                                (_, i) => i !== index,
+                                            );
                                             field.onChange(newTags);
                                         };
 
-                                        const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                                        const handleTagAdd = (
+                                            e: React.KeyboardEvent<HTMLInputElement>,
+                                        ) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
                                                 const input = e.currentTarget;
-                                                const value = input.value.trim();
-                                                if (value && !tags.includes(value)) {
-                                                    field.onChange([...tags, value]);
+                                                const value =
+                                                    input.value.trim();
+                                                if (
+                                                    value &&
+                                                    !tags.includes(value)
+                                                ) {
+                                                    field.onChange([
+                                                        ...tags,
+                                                        value,
+                                                    ]);
                                                     input.value = '';
                                                 }
                                             }
@@ -2142,19 +2163,28 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                         return (
                                             <div className="space-y-2">
                                                 <div className="flex flex-wrap gap-2">
-                                                    {tags.map((tag: string, index: number) => (
-                                                        <Badge
-                                                            key={index}
-                                                            variant="outline"
-                                                            className="text-xs font-light bg-card border-border"
-                                                        >
-                                                            {tag}
-                                                            <X
-                                                                className="w-3 h-3 ml-1 cursor-pointer"
-                                                                onClick={() => handleTagDelete(index)}
-                                                            />
-                                                        </Badge>
-                                                    ))}
+                                                    {tags.map(
+                                                        (
+                                                            tag: string,
+                                                            index: number,
+                                                        ) => (
+                                                            <Badge
+                                                                key={index}
+                                                                variant="outline"
+                                                                className="text-xs font-light bg-card border-border"
+                                                            >
+                                                                {tag}
+                                                                <X
+                                                                    className="w-3 h-3 ml-1 cursor-pointer"
+                                                                    onClick={() =>
+                                                                        handleTagDelete(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </Badge>
+                                                        ),
+                                                    )}
                                                 </div>
                                                 <Input
                                                     placeholder="Type and press Enter to add tags"
@@ -2178,19 +2208,37 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     name="visibleCategories"
                                     control={control}
                                     render={({ field }) => {
-                                        const categories = Array.isArray(field.value) ? field.value : [];
-                                        const handleCategoryDelete = (index: number) => {
-                                            const newCategories = categories.filter((_, i) => i !== index);
+                                        const categories = Array.isArray(
+                                            field.value,
+                                        )
+                                            ? field.value
+                                            : [];
+                                        const handleCategoryDelete = (
+                                            index: number,
+                                        ) => {
+                                            const newCategories =
+                                                categories.filter(
+                                                    (_, i) => i !== index,
+                                                );
                                             field.onChange(newCategories);
                                         };
 
-                                        const handleCategoryAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                                        const handleCategoryAdd = (
+                                            e: React.KeyboardEvent<HTMLInputElement>,
+                                        ) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
                                                 const input = e.currentTarget;
-                                                const value = input.value.trim();
-                                                if (value && !categories.includes(value)) {
-                                                    field.onChange([...categories, value]);
+                                                const value =
+                                                    input.value.trim();
+                                                if (
+                                                    value &&
+                                                    !categories.includes(value)
+                                                ) {
+                                                    field.onChange([
+                                                        ...categories,
+                                                        value,
+                                                    ]);
                                                     input.value = '';
                                                 }
                                             }
@@ -2199,24 +2247,35 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                         return (
                                             <div className="space-y-2">
                                                 <div className="flex flex-wrap gap-2">
-                                                    {categories.map((category: string, index: number) => (
-                                                        <Badge
-                                                            key={index}
-                                                            variant="outline"
-                                                            className="text-xs font-light bg-card border-border"
-                                                        >
-                                                            {category}
-                                                            <X
-                                                                className="w-3 h-3 ml-1 cursor-pointer"
-                                                                onClick={() => handleCategoryDelete(index)}
-                                                            />
-                                                        </Badge>
-                                                    ))}
+                                                    {categories.map(
+                                                        (
+                                                            category: string,
+                                                            index: number,
+                                                        ) => (
+                                                            <Badge
+                                                                key={index}
+                                                                variant="outline"
+                                                                className="text-xs font-light bg-card border-border"
+                                                            >
+                                                                {category}
+                                                                <X
+                                                                    className="w-3 h-3 ml-1 cursor-pointer"
+                                                                    onClick={() =>
+                                                                        handleCategoryDelete(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </Badge>
+                                                        ),
+                                                    )}
                                                 </div>
                                                 <Input
                                                     placeholder="Type and press Enter to add categories"
                                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                    onKeyDown={handleCategoryAdd}
+                                                    onKeyDown={
+                                                        handleCategoryAdd
+                                                    }
                                                 />
                                             </div>
                                         );

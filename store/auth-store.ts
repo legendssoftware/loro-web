@@ -4,6 +4,7 @@ import {
     authService,
     ProfileData,
     SignInCredentials,
+    ClientSignInCredentials,
     AuthResponse,
 } from '@/lib/services/auth-service';
 
@@ -18,6 +19,7 @@ interface AuthState {
 
 interface AuthActions {
     signIn: (credentials: SignInCredentials) => Promise<AuthResponse>;
+    clientSignIn: (credentials: ClientSignInCredentials) => Promise<AuthResponse>;
     signOut: () => void;
     setAuthState: (state: Partial<AuthState>) => void;
     clearAuthError: () => void;
@@ -54,6 +56,71 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                             error: response.message,
                         });
                         throw new Error(response.message);
+                    }
+
+                    set({
+                        isAuthenticated: true,
+                        accessToken: response.accessToken,
+                        refreshToken: response.refreshToken,
+                        profileData: response.profileData,
+                        isLoading: false,
+                    });
+
+                    return response;
+                } catch (error) {
+                    const errorMessage =
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to sign in';
+
+                    set({
+                        isLoading: false,
+                        error: errorMessage,
+                    });
+
+                    throw error;
+                }
+            },
+
+            clientSignIn: async (credentials) => {
+                try {
+                    set({ isLoading: true, error: null });
+
+                    const response = await authService.clientSignIn(credentials);
+
+                    // If we received a response with a message but no tokens, it's an error
+                    if (
+                        response.message &&
+                        !response.accessToken &&
+                        !response.refreshToken
+                    ) {
+                        set({
+                            isLoading: false,
+                            error: response.message,
+                        });
+                        throw new Error(response.message);
+                    }
+
+                    // For client authentication, ensure the profile data has the correct accessLevel
+                    if (response.profileData && !response.profileData.accessLevel) {
+                        try {
+                            // Extract role from JWT token
+                            const token = response.accessToken;
+                            const base64Url = token.split('.')[1];
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const jsonPayload = decodeURIComponent(
+                                atob(base64)
+                                    .split('')
+                                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                                    .join('')
+                            );
+                            const payload = JSON.parse(jsonPayload);
+
+                            // Add accessLevel to profileData
+                            response.profileData.accessLevel = payload.role;
+                        } catch (e) {
+                            console.error("Failed to extract role from token:", e);
+                        }
                     }
 
                     set({

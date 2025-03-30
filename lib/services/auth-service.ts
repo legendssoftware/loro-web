@@ -57,6 +57,11 @@ export interface AuthUser {
   permissions: string[];
 }
 
+export interface ClientSignInCredentials {
+  email: string;
+  password: string;
+}
+
 export class AuthenticationError extends Error {
   constructor(message: string, public code?: string) {
     super(message);
@@ -296,6 +301,40 @@ class AuthService {
    */
   public getRefreshToken(): string | null {
     return this.refreshToken;
+  }
+
+  /**
+   * Signs in a client with provided credentials
+   */
+  public async clientSignIn(credentials: ClientSignInCredentials): Promise<AuthResponse> {
+    try {
+      const { data } = await this.api.post<AuthResponse>('/client-auth/sign-in', credentials);
+
+      // Check if the response contains a message but no tokens - this is an error case
+      if (data.message && !data.accessToken && !data.refreshToken) {
+        throw new AuthenticationError(data.message);
+      }
+
+      if (data.accessToken && data.refreshToken) {
+        this.setTokens(data.accessToken, data.refreshToken);
+        // Also set cookies for middleware authentication
+        this.setTokensInCookies(data.accessToken, data.refreshToken);
+      } else {
+        throw new AuthenticationError('Invalid response from server');
+      }
+
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new AuthenticationError(
+          error.response?.data?.message || 'Authentication failed',
+          error.response?.status?.toString()
+        );
+      }
+      throw new AuthenticationError(
+        error instanceof Error ? error.message : 'Authentication failed'
+      );
+    }
   }
 }
 

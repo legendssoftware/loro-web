@@ -59,18 +59,21 @@ export interface OrganisationSettings {
  * Organization Appearance Interface
  */
 export interface OrganisationAppearance {
-  id?: string;
+  uid?: number;
   ref?: string;
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
   errorColor: string;
   successColor: string;
-  logoUrl: string;
+  logoUrl?: string;
   logoAltText: string;
-  theme: 'light' | 'dark' | 'system';
-  customFont: string;
-  customCss: string;
+  theme?: 'light' | 'dark' | 'system';
+  customFont?: string;
+  customCss?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  organisationUid?: number;
 }
 
 /**
@@ -103,8 +106,8 @@ export const organizationSettingsApi = {
   async getSettings(): Promise<OrganisationSettings> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.get(`/organisation-settings/${ref}`);
-      return response.data;
+      const response = await axiosInstance.get(`/organisations/${ref}/settings`);
+      return response.data.settings;
     } catch (error) {
       console.error('Error fetching organization settings:', error);
       throw error;
@@ -117,8 +120,8 @@ export const organizationSettingsApi = {
   async updateSettings(settings: Partial<OrganisationSettings>): Promise<OrganisationSettings> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.patch(`/organisation-settings/${ref}`, settings);
-      return response.data;
+      const response = await axiosInstance.patch(`/organisations/${ref}/settings`, settings);
+      return response.data.settings;
     } catch (error) {
       console.error('Error updating organization settings:', error);
       throw error;
@@ -136,7 +139,7 @@ export const organizationAppearanceApi = {
   async getAppearance(): Promise<OrganisationAppearance> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.get(`/organisation-appearance/${ref}`);
+      const response = await axiosInstance.get(`/organisations/${ref}/appearance`);
       return response.data;
     } catch (error) {
       console.error('Error fetching organization appearance:', error);
@@ -150,7 +153,7 @@ export const organizationAppearanceApi = {
   async updateAppearance(appearance: Partial<OrganisationAppearance>): Promise<OrganisationAppearance> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.patch(`/organisation-appearance/${ref}`, appearance);
+      const response = await axiosInstance.patch(`/organisations/${ref}/appearance`, appearance);
       return response.data;
     } catch (error) {
       console.error('Error updating organization appearance:', error);
@@ -169,7 +172,7 @@ export const organizationHoursApi = {
   async getHours(): Promise<OrganisationHours> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.get(`/organisation-hours/${ref}`);
+      const response = await axiosInstance.get(`/organisations/${ref}/hours`);
       return response.data;
     } catch (error) {
       console.error('Error fetching organization hours:', error);
@@ -183,7 +186,7 @@ export const organizationHoursApi = {
   async updateHours(hours: Partial<OrganisationHours>): Promise<OrganisationHours> {
     try {
       const ref = getOrganizationRef();
-      const response = await axiosInstance.patch(`/organisation-hours/${ref}`, hours);
+      const response = await axiosInstance.patch(`/organisations/${ref}/hours`, hours);
       return response.data;
     } catch (error) {
       console.error('Error updating organization hours:', error);

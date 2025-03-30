@@ -33,7 +33,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { organizationHoursApi } from '@/lib/services/organization-api';
+import { organizationHoursApi, OrganisationHours } from '@/lib/services/organization-api';
 
 // Time options for the schedule
 const timeOptions = [
@@ -147,6 +147,8 @@ const hoursSchema = z.object({
 export default function BusinessHoursForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [originalHours, setOriginalHours] = useState<OrganisationHours | null>(null);
+    const [hours, setHours] = useState<OrganisationHours | null>(null);
 
     const form = useForm<z.infer<typeof hoursSchema>>({
         resolver: zodResolver(hoursSchema),
@@ -175,7 +177,9 @@ export default function BusinessHoursForm() {
             setIsInitialLoading(true);
             try {
                 const hours = await organizationHoursApi.getHours();
-
+                setOriginalHours(hours);
+                setHours(hours);
+                
                 // Reset form with fetched hours
                 form.reset({
                     schedule: hours.schedule || {
@@ -211,7 +215,33 @@ export default function BusinessHoursForm() {
                 });
             } catch (error) {
                 console.error('Error fetching business hours:', error);
-                toast.error('Failed to load business hours. Please try again.');
+                // Silently handle the error without showing a toast
+                // Initialize with default values
+                const defaultSchedule = {
+                    monday: { start: '09:00', end: '17:00', closed: false },
+                    tuesday: { start: '09:00', end: '17:00', closed: false },
+                    wednesday: { start: '09:00', end: '17:00', closed: false },
+                    thursday: { start: '09:00', end: '17:00', closed: false },
+                    friday: { start: '09:00', end: '17:00', closed: false },
+                    saturday: { start: '10:00', end: '16:00', closed: true },
+                    sunday: { start: '10:00', end: '16:00', closed: true },
+                };
+                
+                const defaultHours = {
+                    schedule: defaultSchedule,
+                    timezone: 'UTC',
+                    holidayMode: false,
+                };
+                
+                setHours(defaultHours);
+                setOriginalHours(defaultHours);
+                
+                form.reset({
+                    schedule: defaultSchedule,
+                    timezone: 'UTC',
+                    holidayMode: false,
+                    holidayUntil: null,
+                });
             } finally {
                 setIsInitialLoading(false);
             }

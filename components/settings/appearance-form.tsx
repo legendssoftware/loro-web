@@ -55,18 +55,7 @@ export default function AppearanceForm() {
 
     const form = useForm<z.infer<typeof appearanceSchema>>({
         resolver: zodResolver(appearanceSchema),
-        defaultValues: {
-            primaryColor: '#4f46e5',
-            secondaryColor: '#6b7280',
-            accentColor: '#f97316',
-            errorColor: '#ef4444',
-            successColor: '#22c55e',
-            logoUrl: '',
-            logoAltText: 'Company Logo',
-            theme: 'light',
-            customFont: '',
-            customCss: '',
-        },
+        defaultValues: {}
     });
 
     useEffect(() => {
@@ -76,26 +65,41 @@ export default function AppearanceForm() {
                 const appearance =
                     await organizationAppearanceApi.getAppearance();
 
+                // Now the server guarantees these values will exist with defaults
                 const formattedAppearance = {
-                    primaryColor: appearance.primaryColor || '#4f46e5',
-                    secondaryColor: appearance.secondaryColor || '#6b7280',
-                    accentColor: appearance.accentColor || '#f97316',
-                    errorColor: appearance.errorColor || '#ef4444',
-                    successColor: appearance.successColor || '#22c55e',
+                    primaryColor: appearance.primaryColor,
+                    secondaryColor: appearance.secondaryColor,
+                    accentColor: appearance.accentColor,
+                    errorColor: appearance.errorColor,
+                    successColor: appearance.successColor,
                     logoUrl: appearance.logoUrl || '',
-                    logoAltText: appearance.logoAltText || 'Company Logo',
+                    logoAltText: appearance.logoAltText,
                     theme: appearance.theme || 'light',
                     customFont: appearance.customFont || '',
                     customCss: appearance.customCss || '',
                 };
 
+                console.log('Loaded appearance settings:', formattedAppearance);
                 setOriginalAppearance(formattedAppearance);
                 form.reset(formattedAppearance);
             } catch (error) {
                 console.error('Error fetching appearance settings:', error);
-                toast.error(
-                    'Failed to load appearance settings. Please try again.',
-                );
+                // Silently handle the error without showing a toast
+                // This is a background operation, so we don't want to alert the user
+                
+                // Initialize with default values if we can't load from server
+                form.reset({
+                    primaryColor: '#4F46E5',
+                    secondaryColor: '#3F3ACA',
+                    accentColor: '#F97316',
+                    errorColor: '#EF4444',
+                    successColor: '#10B981',
+                    logoUrl: '',
+                    logoAltText: 'Company Logo',
+                    theme: 'light',
+                    customFont: '',
+                    customCss: '',
+                });
             } finally {
                 setIsInitialLoading(false);
             }
@@ -130,8 +134,11 @@ export default function AppearanceForm() {
 
             // Only send update if there are changes
             if (Object.keys(changedFields).length > 0) {
-                await organizationAppearanceApi.updateAppearance(changedFields);
-                setOriginalAppearance(values); // Update original values
+                const updatedAppearance = await organizationAppearanceApi.updateAppearance(changedFields);
+                setOriginalAppearance({
+                    ...values,
+                    ...updatedAppearance
+                }); 
                 toast.success('Appearance settings updated successfully');
             } else {
                 toast.success('No changes to save');

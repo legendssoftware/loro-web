@@ -13,10 +13,34 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function TopNav() {
     const pathname = usePathname();
-    const { signOut, profileData } = useAuthStore();
+    const { signOut, profileData, accessToken } = useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
 
-    const userInitials = profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU';
+    // Check if user is a client by examining profileData or JWT token
+    const isClient = profileData?.accessLevel === 'client' || (() => {
+        if (accessToken) {
+            try {
+                const base64Url = accessToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                return payload.role === 'client';
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    })();
+
+    // Get user display info based on whether they're a client or regular user
+    const userInitials = isClient
+        ? (profileData?.email ? profileData.email.substring(0, 2).toUpperCase() : 'CL')
+        : (profileData ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase() : 'UU');
 
     const handleSignOut = async () => {
         try {
@@ -78,7 +102,17 @@ export function TopNav() {
                         >
                             <LayoutDashboardIcon strokeWidth={1.5} size={23} />
                         </Button>
-                        <span className='text-xs font-normal uppercase font-body'>{profileData?.branch?.name}</span>
+                        <div className='flex items-center gap-2'>
+                            {isClient ? (
+                                <span className='text-xs font-medium uppercase text-primary font-body'>
+                                    Client Portal
+                                </span>
+                            ) : (
+                                <span className='text-xs font-normal uppercase font-body'>
+                                    {profileData?.branch?.name}
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className='items-center hidden gap-4 md:flex'>
                         <Button
@@ -96,10 +130,10 @@ export function TopNav() {
                                 {profileData?.photoURL && (
                                     <AvatarImage
                                         src={profileData?.photoURL}
-                                        alt={`${profileData?.name} ${profileData?.surname}`}
+                                        alt={isClient ? profileData?.email : `${profileData?.name} ${profileData?.surname}`}
                                     />
                                 )}
-                                <AvatarFallback className='bg-black text-white text-[10px] font-body uppercase'>
+                                <AvatarFallback className={`${isClient ? 'bg-primary' : 'bg-black'} text-white text-[10px] font-body uppercase`}>
                                     {userInitials}
                                 </AvatarFallback>
                             </Avatar>

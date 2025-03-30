@@ -152,10 +152,34 @@ export default function GeneralSettingsForm() {
                 }
             } catch (error) {
                 console.error('Error fetching organization settings:', error);
-                showErrorToast(
-                    'Failed to load settings. Please try again.',
-                    toast,
-                );
+                // Silently handle the error without showing a toast
+                // Initialize with default values instead
+                
+                // Initialize contact form with defaults
+                contactForm.reset({
+                    email: '',
+                    phone: { code: '', number: '' },
+                    website: '',
+                    address: '',
+                });
+                
+                // Initialize regional form with defaults
+                regionalForm.reset({
+                    language: '',
+                    timezone: '',
+                    currency: '',
+                    dateFormat: '',
+                    timeFormat: '',
+                });
+                
+                // Initialize business form with defaults
+                businessForm.reset({
+                    name: '',
+                    registrationNumber: '',
+                    taxId: '',
+                    industry: '',
+                    size: 'small',
+                });
             } finally {
                 setIsInitialLoading(false);
             }

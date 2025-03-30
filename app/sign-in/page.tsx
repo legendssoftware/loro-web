@@ -4,7 +4,14 @@ import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import {
+    Loader2,
+    Eye,
+    EyeOff,
+    Building2,
+    Briefcase,
+    ArrowLeft,
+} from 'lucide-react';
 import Link from 'next/link';
 import * as z from 'zod';
 import { cn } from '@/lib/utils';
@@ -16,11 +23,20 @@ import { PublicOnlyRoute } from '@/components/auth/public-only-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import { itemVariants } from '@/lib/utils/animations';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
-// Sign in form component that uses useSearchParams
-const SignInForm = () => {
+// Client sign in schema based on DTO
+const clientSignInSchema = z.object({
+    email: z.string().min(1, 'Email is required').email('Invalid email format'),
+    password: z.string().min(1, 'Password is required'),
+});
+
+type ClientSignInSchema = z.infer<typeof clientSignInSchema>;
+
+// User sign in form component
+const UserSignInForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -111,30 +127,390 @@ const SignInForm = () => {
                     toast,
                 );
 
-                // Simplified callback URL handling - decode it once and sanitize
-                const decodedCallbackUrl = decodeURIComponent(callbackUrl);
-                // Make sure callback URL is to our domain and valid
-                const finalRedirectUrl = decodedCallbackUrl.startsWith('/')
-                    ? decodedCallbackUrl
-                    : '/'; // Default to home page if invalid
-
                 // Shorter wait time before redirect
                 await new Promise((resolve) => setTimeout(resolve, 500));
 
-                // Push to the sanitized URL
-                router.push(finalRedirectUrl);
+                // Always redirect employee users to the home dashboard
+                router.push('/');
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);
             }
         } catch (error) {
             // Error handling is done in the useEffect above
-            // showErrorToast will be triggered by the error state change
         }
     };
 
     const handleTogglePassword = () => {
         setShowPassword(!showPassword);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 sm:mt-6">
+            <div className="space-y-1">
+                <label
+                    htmlFor="username"
+                    className="block text-xs font-light text-white uppercase font-body"
+                >
+                    Username
+                </label>
+                <Input
+                    id="username"
+                    type="text"
+                    value={form.username}
+                    onChange={(e) =>
+                        setForm((prev) => ({
+                            ...prev,
+                            username: e.target.value,
+                        }))
+                    }
+                    placeholder="theguy@loro.co.za"
+                    disabled={isLoading}
+                    className={cn(
+                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                        errors.username &&
+                            'border-red-500 focus-visible:ring-red-500',
+                        isLoading && 'opacity-50',
+                    )}
+                    aria-label="Username"
+                />
+                {errors.username && (
+                    <p className="mt-1 text-xs text-red-500">
+                        {errors.username}
+                    </p>
+                )}
+            </div>
+            <div className="space-y-1">
+                <div className="flex justify-between">
+                    <label
+                        htmlFor="password"
+                        className="block text-xs font-light text-white uppercase font-body"
+                    >
+                        Password
+                    </label>
+                    <Link
+                        href="/forgot-password"
+                        className={cn(
+                            'text-[9px] cursor-pointer text-white hover:text-white/80 font-light font-body uppercase',
+                            isLoading && 'pointer-events-none opacity-50',
+                        )}
+                        tabIndex={isLoading ? -1 : 0}
+                    >
+                        Forgot password?
+                    </Link>
+                </div>
+                <div className="relative">
+                    <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                password: e.target.value,
+                            }))
+                        }
+                        placeholder="***********************"
+                        disabled={isLoading}
+                        className={cn(
+                            'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light pr-10',
+                            errors.password &&
+                                'border-red-500 focus-visible:ring-red-500',
+                            isLoading && 'opacity-50',
+                        )}
+                        aria-label="Password"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={isLoading}
+                        className={cn(
+                            'absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent',
+                            isLoading && 'opacity-50',
+                        )}
+                        onClick={handleTogglePassword}
+                        aria-label={
+                            showPassword ? 'Hide password' : 'Show password'
+                        }
+                    >
+                        {showPassword ? (
+                            <EyeOff className="w-4 h-4 text-white/70" />
+                        ) : (
+                            <Eye className="w-4 h-4 text-white/70" />
+                        )}
+                    </Button>
+                    {errors.password && (
+                        <p className="mt-1 text-xs text-red-500">
+                            {errors.password}
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            <Button
+                type="submit"
+                className={cn(
+                    'w-full bg-primary hover:bg-primary/90 p-5 font-normal font-body uppercase text-xs',
+                    isLoading && 'opacity-50',
+                )}
+                disabled={isLoading}
+                aria-label="Sign In"
+            >
+                {isLoading ? (
+                    <div className="flex items-center justify-center space-x-1">
+                        <p className="font-normal text-white uppercase">
+                            Signing In
+                        </p>
+                        <Loader2
+                            className="w-4 h-4 mr-2 text-white animate-spin"
+                            size={16}
+                            strokeWidth={1.5}
+                        />
+                    </div>
+                ) : (
+                    <span className="font-normal text-white">Sign In</span>
+                )}
+            </Button>
+        </form>
+    );
+};
+
+// Client sign in form component
+const ClientSignInForm = () => {
+    const [showPassword, setShowPassword] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const { clientSignIn, isLoading, error, clearAuthError } = useAuthStore();
+
+    const [form, setForm] = useState<ClientSignInSchema>({
+        email: '',
+        password: '',
+    });
+    const [errors, setErrors] = useState<{
+        [K in keyof ClientSignInSchema]?: string;
+    }>({});
+
+    // Clear any auth errors when component mounts or unmounts
+    useEffect(() => {
+        clearAuthError();
+        return () => clearAuthError();
+    }, [clearAuthError]);
+
+    // Show toast for auth errors
+    useEffect(() => {
+        if (error) {
+            showErrorToast(error, toast);
+            clearAuthError();
+        }
+    }, [error, clearAuthError]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const result = clientSignInSchema.safeParse(form);
+
+        if (!result.success) {
+            const formattedErrors = result.error.issues.reduce(
+                (acc, issue) => {
+                    const path = issue.path[0] as keyof ClientSignInSchema;
+                    acc[path] = issue.message;
+                    return acc;
+                },
+                {} as { [K in keyof ClientSignInSchema]?: string },
+            );
+
+            setErrors(formattedErrors);
+            return;
+        }
+
+        setErrors({});
+
+        try {
+            const response = await clientSignIn({
+                email: form.email.trim(),
+                password: form.password.trim(),
+            });
+
+            // Only show success toast and redirect if we have valid tokens
+            if (response.accessToken && response.refreshToken) {
+                const hour = new Date().getHours();
+                const greeting =
+                    hour < 12
+                        ? 'Good morning'
+                        : hour < 18
+                        ? 'Good afternoon'
+                        : 'Good evening';
+
+                showSuccessToast(
+                    `${greeting}, welcome to the client portal!`,
+                    toast,
+                );
+
+                // Shorter wait time before redirect
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Always redirect client users directly to quotations page
+                router.push('/quotations');
+            } else if (response.message) {
+                // If we have a message but no tokens, it's an error
+                showErrorToast(response.message, toast);
+            }
+        } catch (error) {
+            // Error handling is done in the useEffect above
+        }
+    };
+
+    const handleTogglePassword = () => {
+        setShowPassword(!showPassword);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 sm:mt-6">
+            <div className="space-y-1">
+                <label
+                    htmlFor="client-email"
+                    className="block text-xs font-light text-white uppercase font-body"
+                >
+                    Email
+                </label>
+                <Input
+                    id="client-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                        setForm((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                        }))
+                    }
+                    placeholder="client@example.com"
+                    disabled={isLoading}
+                    className={cn(
+                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                        errors.email &&
+                            'border-red-500 focus-visible:ring-red-500',
+                        isLoading && 'opacity-50',
+                    )}
+                    aria-label="Email"
+                />
+                {errors.email && (
+                    <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                )}
+            </div>
+            <div className="space-y-1">
+                <div className="flex justify-between">
+                    <label
+                        htmlFor="client-password"
+                        className="block text-xs font-light text-white uppercase font-body"
+                    >
+                        Password
+                    </label>
+                    <Link
+                        href="/forgot-password"
+                        className={cn(
+                            'text-[9px] cursor-pointer text-white hover:text-white/80 font-light font-body uppercase',
+                            isLoading && 'pointer-events-none opacity-50',
+                        )}
+                        tabIndex={isLoading ? -1 : 0}
+                    >
+                        Forgot password?
+                    </Link>
+                </div>
+                <div className="relative">
+                    <Input
+                        id="client-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={(e) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                password: e.target.value,
+                            }))
+                        }
+                        placeholder="***********************"
+                        disabled={isLoading}
+                        className={cn(
+                            'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light pr-10',
+                            errors.password &&
+                                'border-red-500 focus-visible:ring-red-500',
+                            isLoading && 'opacity-50',
+                        )}
+                        aria-label="Password"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={isLoading}
+                        className={cn(
+                            'absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent',
+                            isLoading && 'opacity-50',
+                        )}
+                        onClick={handleTogglePassword}
+                        aria-label={
+                            showPassword ? 'Hide password' : 'Show password'
+                        }
+                    >
+                        {showPassword ? (
+                            <EyeOff className="w-4 h-4 text-white/70" />
+                        ) : (
+                            <Eye className="w-4 h-4 text-white/70" />
+                        )}
+                    </Button>
+                    {errors.password && (
+                        <p className="mt-1 text-xs text-red-500">
+                            {errors.password}
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            <Button
+                type="submit"
+                className={cn(
+                    'w-full bg-primary hover:bg-primary/90 p-5 font-normal font-body uppercase text-xs',
+                    isLoading && 'opacity-50',
+                )}
+                disabled={isLoading}
+                aria-label="Sign In"
+            >
+                {isLoading ? (
+                    <div className="flex items-center justify-center space-x-1">
+                        <p className="font-normal text-white uppercase">
+                            Signing In
+                        </p>
+                        <Loader2
+                            className="w-4 h-4 mr-2 text-white animate-spin"
+                            size={16}
+                            strokeWidth={1.5}
+                        />
+                    </div>
+                ) : (
+                    <span className="font-normal text-white">Sign In</span>
+                )}
+            </Button>
+        </form>
+    );
+};
+
+// Sign in form component with tabs
+const SignInForm = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const { isLoading } = useAuthStore();
+    const [activeTab, setActiveTab] = useState<string>('employee');
+
+    const handleTabChange = (tabValue: string) => {
+        setActiveTab(tabValue);
+    };
+
+    const handleGoBack = (e: React.MouseEvent) => {
+        e.preventDefault(); // Prevent default navigation behavior
+        // Force navigation to the landing page without preserving any query parameters
+        window.location.replace('/landing-page');
     };
 
     return (
@@ -157,147 +533,79 @@ const SignInForm = () => {
                         className="relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl"
                         variants={itemVariants}
                     >
+                        <div className="absolute top-4 left-4">
+                            <a
+                                href="/landing"
+                                onClick={handleGoBack}
+                                className="block"
+                            >
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    type="button"
+                                    className="rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                                    aria-label="Go back to landing page"
+                                >
+                                    <ArrowLeft className="w-5 h-5" />
+                                </Button>
+                            </a>
+                        </div>
+
                         <h1 className="text-2xl font-normal text-center text-white sm:text-3xl font-heading">
                             LORO CRM
                         </h1>
-                        <form
-                            onSubmit={handleSubmit}
-                            className="mt-4 space-y-4 sm:mt-6"
-                        >
-                            <div className="space-y-1">
-                                <label
-                                    htmlFor="username"
-                                    className="block text-xs font-light text-white uppercase font-body"
-                                >
-                                    Username
-                                </label>
-                                <Input
-                                    id="username"
-                                    type="text"
-                                    value={form.username}
-                                    onChange={(e) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            username: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="theguy@loro.co.za"
-                                    disabled={isLoading}
-                                    className={cn(
-                                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
-                                        errors.username &&
-                                            'border-red-500 focus-visible:ring-red-500',
-                                        isLoading && 'opacity-50',
+
+                        <div className="w-full">
+                            <div className="flex items-center mb-6">
+                                <div className="relative flex items-center justify-center flex-1 gap-1 mr-4 cursor-pointer">
+                                    <div
+                                        className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
+                                            activeTab === 'employee'
+                                                ? 'text-primary'
+                                                : 'text-white/70 hover:text-white'
+                                        }`}
+                                        onClick={() =>
+                                            handleTabChange('employee')
+                                        }
+                                    >
+                                        <Building2 className="w-4 h-4 mr-2" />
+                                        <span className="text-xs font-thin uppercase font-body">
+                                            Employee Portal
+                                        </span>
+                                    </div>
+                                    {activeTab === 'employee' && (
+                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                                     )}
-                                    aria-label="Username"
-                                />
-                                {errors.username && (
-                                    <p className="mt-1 text-xs text-red-500">
-                                        {errors.username}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex justify-between">
-                                    <label
-                                        htmlFor="password"
-                                        className="block text-xs font-light text-white uppercase font-body"
-                                    >
-                                        Password
-                                    </label>
-                                    <Link
-                                        href="/forgot-password"
-                                        className={cn(
-                                            'text-[9px] cursor-pointer text-white hover:text-white/80 font-light font-body uppercase',
-                                            isLoading &&
-                                                'pointer-events-none opacity-50',
-                                        )}
-                                        tabIndex={isLoading ? -1 : 0}
-                                    >
-                                        Forgot password?
-                                    </Link>
                                 </div>
-                                <div className="relative">
-                                    <Input
-                                        id="password"
-                                        type={
-                                            showPassword ? 'text' : 'password'
-                                        }
-                                        value={form.password}
-                                        onChange={(e) =>
-                                            setForm((prev) => ({
-                                                ...prev,
-                                                password: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="***********************"
-                                        disabled={isLoading}
-                                        className={cn(
-                                            'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light pr-10',
-                                            errors.password &&
-                                                'border-red-500 focus-visible:ring-red-500',
-                                            isLoading && 'opacity-50',
-                                        )}
-                                        aria-label="Password"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        disabled={isLoading}
-                                        className={cn(
-                                            'absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white hover:bg-transparent',
-                                            isLoading && 'opacity-50',
-                                        )}
-                                        onClick={handleTogglePassword}
-                                        aria-label={
-                                            showPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
+                                <div className="relative flex items-center justify-center flex-1 gap-1 mr-4 cursor-pointer">
+                                    <div
+                                        className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
+                                            activeTab === 'client'
+                                                ? 'text-primary'
+                                                : 'text-white/70 hover:text-white'
+                                        }`}
+                                        onClick={() =>
+                                            handleTabChange('client')
                                         }
                                     >
-                                        {showPassword ? (
-                                            <EyeOff className="w-4 h-4" />
-                                        ) : (
-                                            <Eye className="w-4 h-4" />
-                                        )}
-                                    </Button>
-                                    {errors.password && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                            {errors.password}
-                                        </p>
+                                        <Briefcase className="w-4 h-4 mr-2" />
+                                        <span className="text-xs font-thin uppercase font-body">
+                                            Client Portal
+                                        </span>
+                                    </div>
+                                    {activeTab === 'client' && (
+                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                                     )}
                                 </div>
                             </div>
 
-                            <Button
-                                type="submit"
-                                className={cn(
-                                    'w-full bg-primary hover:bg-primary/90 p-5 font-normal font-body uppercase text-xs',
-                                    isLoading && 'opacity-50',
-                                )}
-                                disabled={isLoading}
-                                aria-label="Sign In"
-                            >
-                                {isLoading ? (
-                                    <div className="flex items-center justify-center space-x-1">
-                                        <p className="font-normal text-white uppercase">
-                                            Signing In
-                                        </p>
-                                        <Loader2
-                                            className="w-4 h-4 mr-2 text-white animate-spin"
-                                            size={16}
-                                            strokeWidth={1.5}
-                                        />
-                                    </div>
-                                ) : (
-                                    <span className="font-normal text-white">
-                                        Sign In
-                                    </span>
-                                )}
-                            </Button>
-                        </form>
-                        <div className="space-y-2 text-center">
+                            <div className="mt-4">
+                                {activeTab === 'employee' && <UserSignInForm />}
+                                {activeTab === 'client' && <ClientSignInForm />}
+                            </div>
+                        </div>
+
+                        <div className="pt-4 space-y-2 text-center">
                             <div className="text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center">
                                 <p className="font-body uppercase text-[10px] text-white">
                                     Don&apos;t have an account?

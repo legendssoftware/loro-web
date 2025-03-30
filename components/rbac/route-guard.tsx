@@ -60,6 +60,12 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
             return () => clearTimeout(redirectTimer);
         }
 
+        // For client routes, specifically check quotations access
+        if (pathname.startsWith('/quotations') && userRole === AccessLevel.CLIENT) {
+            // Client is trying to access quotations - always allow this
+            return;
+        }
+
         // Check if the current pathname is accessible for the user's role
         let hasAccess = false;
 
@@ -106,8 +112,14 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
                 },
             );
 
-            // Redirect to dashboard
-            router.push('/');
+            // Redirect based on role
+            if (userRole === AccessLevel.CLIENT) {
+                // Clients should be directed to quotations page
+                router.push('/quotations');
+            } else {
+                // Other roles go to dashboard
+                router.push('/');
+            }
         }
     }, [pathname, isAuthenticated, userRole, router, isLoading]);
 

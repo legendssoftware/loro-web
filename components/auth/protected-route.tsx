@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { hasPermission, PermissionValue } from '@/lib/permissions/permission-manager';
+import { AccessLevel, rolePermissions } from '@/types/auth';
 
 interface ProtectedRouteProps {
     children: ReactNode;
@@ -32,6 +33,57 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
             return;
         }
 
+        // Special case: Allow CLIENT direct access to quotations page
+        // Extract role from JWT token if not available in profileData
+        const getClientRoleFromToken = () => {
+            const token = sessionStorage.getItem('auth-storage');
+            if (token) {
+                try {
+                    const authData = JSON.parse(token);
+                    const accessToken = authData?.state?.accessToken;
+
+                    if (accessToken) {
+                        const base64Url = accessToken.split('.')[1];
+                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                        const jsonPayload = decodeURIComponent(
+                            atob(base64)
+                                .split('')
+                                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                                .join('')
+                        );
+                        const payload = JSON.parse(jsonPayload);
+                        return payload.role;
+                    }
+                } catch (e) {
+                    console.error("Failed to extract role from token:", e);
+                }
+            }
+            return null;
+        };
+
+        // For quotations page, check if user is a client from token
+        if (pathname === '/quotations') {
+            const tokenRole = getClientRoleFromToken();
+            if (tokenRole === 'client') {
+                // Always allow clients to access quotations
+                return;
+            }
+        }
+
+        // Check route access based on role
+        if (userRole === AccessLevel.CLIENT) {
+            // For client role, check if current path is in allowed routes
+            const allowedRoutes = rolePermissions[AccessLevel.CLIENT]?.routes || [];
+            const hasRouteAccess = allowedRoutes.includes(pathname) ||
+                                  (pathname === '/' && allowedRoutes.some(route => route !== '/'));
+
+            if (!hasRouteAccess) {
+                // Redirect clients to quotations page if they don't have access
+                router.push('/quotations');
+                return;
+            }
+        }
+
         // If permissions are required, check if user has them
         if (requiredPermissions.length > 0 && userRole) {
             const hasRequiredPermission = requiredPermissions.some(permission => hasPermission(userRole, permission));
@@ -39,8 +91,13 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
             // If user doesn't have permission, show fallback or redirect
             if (!hasRequiredPermission) {
                 if (!fallback) {
-                    // Redirect to dashboard if no fallback is provided
-                    router.push('/');
+                    // Redirect based on role
+                    if (userRole === AccessLevel.CLIENT) {
+                        router.push('/quotations');
+                    } else {
+                        // Redirect to dashboard if no fallback is provided
+                        router.push('/');
+                    }
                 }
             }
         }

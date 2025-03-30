@@ -64,7 +64,7 @@ export default function SettingsPage() {
                                     }
                                     className={`justify-start px-2 ${
                                         activeTab === 'general'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-primary text-white'
                                             : 'hover:bg-muted/50'
                                     }`}
                                     onClick={() => setActiveTab('general')}
@@ -72,10 +72,17 @@ export default function SettingsPage() {
                                     <SettingsIcon
                                         size={22}
                                         strokeWidth={1.2}
-                                        color="white"
-                                        className="mr-2"
+                                        className={`mr-2 ${
+                                            activeTab === 'general'
+                                                ? 'text-white'
+                                                : 'text-foreground'
+                                        }`}
                                     />
-                                    <span className="text-[10px] font-thin uppercase font-body text-white">
+                                    <span className={`text-[10px] font-thin uppercase font-body ${
+                                        activeTab === 'general'
+                                            ? 'text-white'
+                                            : 'text-foreground'
+                                    }`}>
                                         General
                                     </span>
                                 </Button>
@@ -87,7 +94,7 @@ export default function SettingsPage() {
                                     }
                                     className={`justify-start px-2 ${
                                         activeTab === 'business-hours'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-primary text-white'
                                             : 'hover:bg-muted/50'
                                     }`}
                                     onClick={() =>
@@ -97,10 +104,17 @@ export default function SettingsPage() {
                                     <TimerOff
                                         size={22}
                                         strokeWidth={1.2}
-                                        color="white"
-                                        className="mr-2"
+                                        className={`mr-2 ${
+                                            activeTab === 'business-hours'
+                                                ? 'text-white'
+                                                : 'text-foreground'
+                                        }`}
                                     />
-                                    <span className="text-[10px] font-thin uppercase font-body text-white">
+                                    <span className={`text-[10px] font-thin uppercase font-body ${
+                                        activeTab === 'business-hours'
+                                            ? 'text-white'
+                                            : 'text-foreground'
+                                    }`}>
                                         Business Hours
                                     </span>
                                 </Button>
@@ -112,7 +126,7 @@ export default function SettingsPage() {
                                     }
                                     className={`justify-start px-2 ${
                                         activeTab === 'appearance'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-primary text-white'
                                             : 'hover:bg-muted/50'
                                     }`}
                                     onClick={() => setActiveTab('appearance')}
@@ -120,10 +134,17 @@ export default function SettingsPage() {
                                     <Palette
                                         size={22}
                                         strokeWidth={1.2}
-                                        color="white"
-                                        className="mr-2"
+                                        className={`mr-2 ${
+                                            activeTab === 'appearance'
+                                                ? 'text-white'
+                                                : 'text-foreground'
+                                        }`}
                                     />
-                                    <span className="text-[10px] font-thin uppercase font-body text-white">
+                                    <span className={`text-[10px] font-thin uppercase font-body ${
+                                        activeTab === 'appearance'
+                                            ? 'text-white'
+                                            : 'text-foreground'
+                                    }`}>
                                         Appearance
                                     </span>
                                 </Button>
@@ -135,7 +156,7 @@ export default function SettingsPage() {
                                     }
                                     className={`justify-start px-2 ${
                                         activeTab === 'geofence'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-primary text-white'
                                             : 'hover:bg-muted/50'
                                     }`}
                                     onClick={() => setActiveTab('geofence')}
@@ -143,10 +164,17 @@ export default function SettingsPage() {
                                     <CreditCard
                                         size={22}
                                         strokeWidth={1.2}
-                                        color="white"
-                                        className="mr-2"
+                                        className={`mr-2 ${
+                                            activeTab === 'geofence'
+                                                ? 'text-white'
+                                                : 'text-foreground'
+                                        }`}
                                     />
-                                    <span className="text-[10px] font-thin uppercase font-body text-white">
+                                    <span className={`text-[10px] font-thin uppercase font-body ${
+                                        activeTab === 'geofence'
+                                            ? 'text-white'
+                                            : 'text-foreground'
+                                    }`}>
                                         Geofence
                                     </span>
                                 </Button>
@@ -158,7 +186,7 @@ export default function SettingsPage() {
                                     }
                                     className={`justify-start px-2 ${
                                         activeTab === 'notifications'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-primary text-white'
                                             : 'hover:bg-muted/50'
                                     }`}
                                     onClick={() =>
@@ -168,10 +196,17 @@ export default function SettingsPage() {
                                     <Bell
                                         size={22}
                                         strokeWidth={1.2}
-                                        color="white"
-                                        className="mr-2"
+                                        className={`mr-2 ${
+                                            activeTab === 'notifications'
+                                                ? 'text-white'
+                                                : 'text-foreground'
+                                        }`}
                                     />
-                                    <span className="text-[10px] font-thin uppercase font-body text-white">
+                                    <span className={`text-[10px] font-thin uppercase font-body ${
+                                        activeTab === 'notifications'
+                                            ? 'text-white'
+                                            : 'text-foreground'
+                                    }`}>
                                         Notifications
                                     </span>
                                 </Button>

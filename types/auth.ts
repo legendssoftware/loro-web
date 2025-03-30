@@ -30,6 +30,7 @@ export enum AccessLevel {
   EVENT_PLANNER = 'event planner',
   MARKETING = 'marketing',
   HR = 'hr',
+  CLIENT = 'client',
 }
 
 /**
@@ -88,4 +89,5 @@ export const rolePermissions: Record<AccessLevel, RolePermissions> = {
   [AccessLevel.EVENT_PLANNER]: { routes: ['/leads', '/clients'], features: ['leads', 'clients'] },
   [AccessLevel.MARKETING]: { routes: ['/leads', '/clients'], features: ['leads', 'clients'] },
   [AccessLevel.HR]: { routes: ['/staff', '/claims'], features: ['staff', 'claims'] },
+  [AccessLevel.CLIENT]: { routes: ['/quotations'], features: ['quotations'] },
 };

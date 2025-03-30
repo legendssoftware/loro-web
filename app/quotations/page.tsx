@@ -48,6 +48,39 @@ export default function QuotationsPage() {
         if (!status.isAuthenticated) {
             console.warn('User not authenticated. Redirecting to login page.');
             router.push('/sign-in');
+        } else {
+            // For client authentication, extract role from JWT token
+            const getClientRoleFromToken = () => {
+                const token = sessionStorage.getItem('auth-storage');
+                if (token) {
+                    try {
+                        const authData = JSON.parse(token);
+                        const accessToken = authData?.state?.accessToken;
+
+                        if (accessToken) {
+                            const base64Url = accessToken.split('.')[1];
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const jsonPayload = decodeURIComponent(
+                                atob(base64)
+                                    .split('')
+                                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                                    .join('')
+                            );
+                            const payload = JSON.parse(jsonPayload);
+                            return payload.role;
+                        }
+                    } catch (e) {
+                        console.error("Failed to extract role from token:", e);
+                    }
+                }
+                return null;
+            };
+
+            // If client role is detected, make sure we're on the quotations page
+            const role = getClientRoleFromToken();
+            if (role === 'client') {
+                console.log('Client role detected, ensuring access to quotations page');
+            }
         }
     }, [checkStatus, router]);
 

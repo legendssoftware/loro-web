@@ -99,12 +99,12 @@ const navigationItems = [
         feature: 'dashboard',
     },
     {
-        title: 'Shop',
+        title: 'Quotations',
         icon: <ShoppingBag size={18} strokeWidth={1.5} />,
         href: '/quotations',
-        description: 'Manage purchase transactions, orders and payments',
-        // Basic users can access quotations
-        feature: 'quotations',
+        description: 'View and manage quotations',
+        // Use array to check for any quotations-related permission
+        featureCheck: ['quotations', 'quotations.view', 'quotations.access'],
     },
     {
         title: 'Clients',
@@ -249,15 +249,18 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                         {navigationItems.map((item) => {
                             const isActive = pathname === item.href;
 
-                            // Skip rendering this item if user doesn't have permission
-                            if (
-                                item.allowedRoles &&
-                                !hasRole(item.allowedRoles)
-                            ) {
+                            // Skip rendering this item if user doesn't have permission based on role
+                            if (item.allowedRoles && !hasRole(item.allowedRoles)) {
                                 return null;
                             }
 
+                            // Skip if no matching feature permission
                             if (item.feature && !hasPermission(item.feature)) {
+                                return null;
+                            }
+
+                            // New check for featureCheck array - any match grants access
+                            if (item.featureCheck && !item.featureCheck.some(feature => hasPermission(feature))) {
                                 return null;
                             }
 

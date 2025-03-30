@@ -5,12 +5,70 @@ import { OrderStatus } from '@/lib/enums/status.enums';
 import { useQuotationApi } from './use-quotation-api';
 import toast from 'react-hot-toast';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { useAuthStore } from '@/store/auth-store';
+import { AccessLevel } from '@/types/auth';
 
 const QUOTATIONS_QUERY_KEY = 'quotations';
 
 export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     const queryClient = useQueryClient();
     const quotationApi = useQuotationApi();
+    const { profileData, accessToken } = useAuthStore();
+
+    // Determine if user is a client by checking profileData and JWT token
+    const isClient = useMemo(() => {
+        // Check profileData first
+        if (profileData?.accessLevel === AccessLevel.CLIENT) {
+            return true;
+        }
+
+        // If not found in profileData, check JWT token
+        if (accessToken) {
+            try {
+                const base64Url = accessToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                return payload.role === 'client';
+            } catch (e) {
+                console.error("Failed to extract role from token:", e);
+            }
+        }
+
+        return false;
+    }, [profileData, accessToken]);
+
+    // Get client ID from profileData or JWT token
+    const clientId = useMemo(() => {
+        if (profileData?.uid) {
+            return Number(profileData.uid);
+        }
+
+        // If not found in profileData, try to get from JWT token
+        if (accessToken) {
+            try {
+                const base64Url = accessToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                return Number(payload.uid);
+            } catch (e) {
+                console.error("Failed to extract UID from token:", e);
+            }
+        }
+
+        return null;
+    }, [profileData, accessToken]);
 
     // Ensure we always use a limit of 500
     const enhancedFilters = useMemo(() => ({
@@ -18,10 +76,21 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
         limit: 500,
     }), [filters]);
 
+    // Determine which query function to use based on user role
+    const queryFn = useCallback(async () => {
+        if (isClient && clientId) {
+            console.log(`Fetching quotations for client ID: ${clientId}`);
+            return quotationApi.getClientQuotations(clientId, enhancedFilters);
+        } else {
+            console.log('Fetching all quotations');
+            return quotationApi.getQuotations(enhancedFilters);
+        }
+    }, [isClient, clientId, quotationApi, enhancedFilters]);
+
     // Fetch quotations with React Query
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: [QUOTATIONS_QUERY_KEY, enhancedFilters],
-        queryFn: () => quotationApi.getQuotations(enhancedFilters),
+        queryKey: [QUOTATIONS_QUERY_KEY, enhancedFilters, isClient, clientId],
+        queryFn,
         placeholderData: previousData => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling

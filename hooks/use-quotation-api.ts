@@ -97,6 +97,87 @@ export const useQuotationApi = () => {
         [],
     );
 
+    // Get client quotations
+    const getClientQuotations = useCallback(
+        async (
+            clientId: number,
+            filters: QuotationFilterParams = {},
+        ): Promise<PaginatedQuotationsResponse> => {
+            try {
+                const queryParams = new URLSearchParams();
+
+                // Map frontend filter parameters to backend expectations
+                if (filters.status)
+                    queryParams.append('status', filters.status);
+                if (filters.search)
+                    queryParams.append('search', filters.search);
+
+                // The backend expects these specific parameter names based on the controller
+                if (filters.page)
+                    queryParams.append('page', String(filters.page));
+                if (filters.limit)
+                    queryParams.append('limit', String(filters.limit));
+
+                // Handle date parameters with proper formatting
+                if (filters.startDate) {
+                    queryParams.append(
+                        'startDate',
+                        filters.startDate.toISOString(),
+                    );
+                }
+
+                if (filters.endDate) {
+                    queryParams.append(
+                        'endDate',
+                        filters.endDate.toISOString(),
+                    );
+                }
+
+                // The axios interceptor will add the token headers
+                console.log(
+                    `Fetching client quotations with params: ${queryParams.toString()}`,
+                );
+
+                // Use the shop/quotations/user/:ref endpoint for client-specific quotations
+                const response = await axiosInstance.get(
+                    `/shop/quotations/user/${clientId}?${queryParams.toString()}`,
+                );
+
+                console.log('Client Quotations API Response:', response.data);
+
+                // Process response based on server format
+                if (response.data && response.data.quotations) {
+                    // The API returns an array of quotations in a 'quotations' property
+                    return {
+                        items: response.data.quotations || [],
+                        total:
+                            response.data.meta?.total ||
+                            response.data.quotations.length,
+                        page: response.data.meta?.page || 1,
+                        limit: response.data.meta?.limit || 10,
+                        totalPages: response.data.meta?.totalPages || 1,
+                    };
+                } else {
+                    console.error(
+                        'Unexpected API response format:',
+                        response.data,
+                    );
+                    return {
+                        items: [],
+                        total: 0,
+                        page: 1,
+                        limit: 10,
+                        totalPages: 0,
+                    };
+                }
+            } catch (error) {
+                console.error(`Error fetching quotations for client ${clientId}:`, error);
+                throw error;
+            }
+        },
+        [],
+    );
+
     // Get a single quotation by ID
     const getQuotation = useCallback(
         async (quotationId: number): Promise<Quotation> => {
@@ -189,6 +270,7 @@ export const useQuotationApi = () => {
 
     return {
         getQuotations,
+        getClientQuotations,
         getQuotation,
         updateQuotationStatus,
         createQuotation,

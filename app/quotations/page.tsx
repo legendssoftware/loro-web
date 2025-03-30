@@ -59,18 +59,27 @@ export default function QuotationsPage() {
 
                         if (accessToken) {
                             const base64Url = accessToken.split('.')[1];
-                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const base64 = base64Url
+                                .replace(/-/g, '+')
+                                .replace(/_/g, '/');
                             const jsonPayload = decodeURIComponent(
                                 atob(base64)
                                     .split('')
-                                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                                    .join('')
+                                    .map(
+                                        (c) =>
+                                            '%' +
+                                            (
+                                                '00' +
+                                                c.charCodeAt(0).toString(16)
+                                            ).slice(-2),
+                                    )
+                                    .join(''),
                             );
                             const payload = JSON.parse(jsonPayload);
                             return payload.role;
                         }
                     } catch (e) {
-                        console.error("Failed to extract role from token:", e);
+                        console.error('Failed to extract role from token:', e);
                     }
                 }
                 return null;
@@ -79,7 +88,9 @@ export default function QuotationsPage() {
             // If client role is detected, make sure we're on the quotations page
             const role = getClientRoleFromToken();
             if (role === 'client') {
-                console.log('Client role detected, ensuring access to quotations page');
+                console.log(
+                    'Client role detected, ensuring access to quotations page',
+                );
             }
         }
     }, [checkStatus, router]);

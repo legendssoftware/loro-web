@@ -138,8 +138,29 @@ const navigationItems = [
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const pathname = usePathname();
-    const { profileData, signOut } = useAuthStore();
+    const { profileData, signOut, accessToken } = useAuthStore();
     const { hasRole, hasPermission } = useRBAC();
+
+    // Check if user is a client by examining profileData or JWT token
+    const isClient = profileData?.accessLevel === 'client' || (() => {
+        if (accessToken) {
+            try {
+                const base64Url = accessToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                return payload.role === 'client';
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    })();
 
     const handleSignOut = async () => {
         try {
@@ -239,61 +260,89 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                 <SheetHeader className="flex items-center justify-between p-6 border-b border-border/10">
                     <SheetTitle asChild>
                         <span className="text-sm font-bold uppercase font-body text-card-foreground">
-                            LORO
+                            {isClient ? 'CLIENT' : 'LORO'}
                         </span>
                     </SheetTitle>
                 </SheetHeader>
                 <div className="flex-1 p-2">
                     <div className="flex flex-col space-y-1">
-                        {/* Filter the navigation items based on user permissions */}
-                        {navigationItems.map((item) => {
-                            const isActive = pathname === item.href;
-
-                            // Skip rendering this item if user doesn't have permission based on role
-                            if (item.allowedRoles && !hasRole(item.allowedRoles)) {
-                                return null;
-                            }
-
-                            // Skip if no matching feature permission
-                            if (item.feature && !hasPermission(item.feature)) {
-                                return null;
-                            }
-
-                            // New check for featureCheck array - any match grants access
-                            if (item.featureCheck && !item.featureCheck.some(feature => hasPermission(feature))) {
-                                return null;
-                            }
-
-                            return (
-                                <Link
-                                    key={item.title}
-                                    href={item.href}
-                                    onClick={onClose}
-                                >
-                                    <div className="relative group">
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-14 rounded-xl',
-                                                'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
-                                                isActive &&
-                                                    'border-primary border text-primary bg-primary/5',
-                                            )}
-                                        >
-                                            {item.icon}
-                                        </Button>
-                                        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0">
-                                            <p className="text-sm font-medium uppercase text-card-foreground">
-                                                {item.title}
-                                            </p>
-                                            <p className="text-[11px] text-muted-foreground">
-                                                {item.description}
-                                            </p>
-                                        </div>
+                        {/* For clients, only display the Quotations link */}
+                        {isClient ? (
+                            // Display only the Quotations link for clients
+                            <Link href="/quotations" onClick={onClose}>
+                                <div className="relative group">
+                                    <Button
+                                        variant="ghost"
+                                        className={cn(
+                                            'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-14 rounded-xl',
+                                            'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
+                                            pathname === '/quotations' &&
+                                                'border-primary border text-primary bg-primary/5',
+                                        )}
+                                    >
+                                        <ShoppingBag size={18} strokeWidth={1.5} />
+                                    </Button>
+                                    <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0">
+                                        <p className="text-sm font-medium uppercase text-card-foreground">
+                                            Quotations
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            View and manage quotations
+                                        </p>
                                     </div>
-                                </Link>
-                            );
-                        })}
+                                </div>
+                            </Link>
+                        ) : (
+                            // Filter the navigation items based on user permissions for regular users
+                            navigationItems.map((item) => {
+                                const isActive = pathname === item.href;
+
+                                // Skip rendering this item if user doesn't have permission based on role
+                                if (item.allowedRoles && !hasRole(item.allowedRoles)) {
+                                    return null;
+                                }
+
+                                // Skip if no matching feature permission
+                                if (item.feature && !hasPermission(item.feature)) {
+                                    return null;
+                                }
+
+                                // New check for featureCheck array - any match grants access
+                                if (item.featureCheck && !item.featureCheck.some(feature => hasPermission(feature))) {
+                                    return null;
+                                }
+
+                                return (
+                                    <Link
+                                        key={item.title}
+                                        href={item.href}
+                                        onClick={onClose}
+                                    >
+                                        <div className="relative group">
+                                            <Button
+                                                variant="ghost"
+                                                className={cn(
+                                                    'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-14 rounded-xl',
+                                                    'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
+                                                    isActive &&
+                                                        'border-primary border text-primary bg-primary/5',
+                                                )}
+                                            >
+                                                {item.icon}
+                                            </Button>
+                                            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0">
+                                                <p className="text-sm font-medium uppercase text-card-foreground">
+                                                    {item.title}
+                                                </p>
+                                                <p className="text-[11px] text-muted-foreground">
+                                                    {item.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 p-2 md:hidden">

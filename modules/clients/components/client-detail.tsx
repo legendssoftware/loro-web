@@ -44,6 +44,7 @@ import {
     Twitter,
     Instagram,
     AlertTriangle,
+    ExternalLink,
 } from 'lucide-react';
 import { Client, ClientStatus } from '@/hooks/use-clients-query';
 import { useState, useCallback } from 'react';
@@ -70,6 +71,8 @@ import {
     Legend,
     ResponsiveContainer,
 } from 'recharts';
+import Link from 'next/link';
+import { ClientQuotationReport } from '@/modules/reports/components/client-quotation-report';
 
 interface ClientDetailsModalProps {
     client: Client;
@@ -1530,6 +1533,16 @@ export function ClientDetail({
                         case 'overview':
                             return (
                                 <>
+                                    {/* Add View Full Report button */}
+                                    <div className="flex justify-end mb-4">
+                                        <Link href={`/dashboard/clients/${client.uid}/reports`}>
+                                            <Button variant="outline" className="gap-2">
+                                                <ExternalLink className="w-4 h-4" />
+                                                View Full Report
+                                            </Button>
+                                        </Link>
+                                    </div>
+
                                     {/* Charts Section */}
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="p-6 border rounded border-border/80 bg-card">
@@ -2419,645 +2432,32 @@ export function ClientDetail({
                                     </div>
                                 </div>
                             );
-                        case 'items':
+                        case 'fullreport':
                             return (
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="p-6 border rounded border-border/80 bg-card">
-                                        <h3 className="text-sm font-normal uppercase font-body">
-                                            Item Quantity by Quotation
-                                        </h3>
-                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                            Distribution of item quantities
-                                            across quotations
-                                        </p>
-
-                                        {client.quotations &&
-                                        client.quotations.length > 0 ? (
-                                            <div className="h-64">
-                                                <ResponsiveContainer
-                                                    width="100%"
-                                                    height="100%"
-                                                >
-                                                    <BarChart
-                                                        // Group items by quotation to prevent duplications
-                                                        data={client.quotations.map(
-                                                            (quote) => {
-                                                                const items =
-                                                                    quote.quotationItems ||
-                                                                    [];
-                                                                const totalQuantity =
-                                                                    items.reduce(
-                                                                        (
-                                                                            sum,
-                                                                            item,
-                                                                        ) =>
-                                                                            sum +
-                                                                            (item.quantity ||
-                                                                                0),
-                                                                        0,
-                                                                    );
-
-                                                                return {
-                                                                    name:
-                                                                        quote.quotationNumber?.substring(
-                                                                            quote
-                                                                                .quotationNumber
-                                                                                .length -
-                                                                                8,
-                                                                        ) ||
-                                                                        `#${quote.uid}`,
-                                                                    quantity:
-                                                                        totalQuantity,
-                                                                    fullNumber:
-                                                                        quote.quotationNumber,
-                                                                    date:
-                                                                        quote.quotationDate ||
-                                                                        quote.createdAt,
-                                                                    status: quote.status,
-                                                                    itemCount:
-                                                                        items.length,
-                                                                };
-                                                            },
-                                                        )}
-                                                        margin={{
-                                                            top: 10,
-                                                            right: 30,
-                                                            left: 0,
-                                                            bottom: 20,
-                                                        }}
-                                                        barSize={25}
-                                                    >
-                                                        <CartesianGrid
-                                                            strokeDasharray="3 3"
-                                                            vertical={false}
-                                                            opacity={0.1}
-                                                        />
-                                                        <XAxis
-                                                            dataKey="name"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            dy={
-                                                                                16
-                                                                            }
-                                                                            textAnchor="middle"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'QUOTATIONS',
-                                                                position:
-                                                                    'insideBottom',
-                                                                offset: -10,
-                                                                className:
-                                                                    'text-[10px] font-unbounded uppercase font-body',
-                                                            }}
-                                                        />
-                                                        <YAxis
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                -5
-                                                                            }
-                                                                            textAnchor="end"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'TOTAL QUANTITY',
-                                                                angle: -90,
-                                                                position:
-                                                                    'insideLeft',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
-                                                        />
-                                                        <Tooltip
-                                                            cursor={false}
-                                                            content={({
-                                                                active,
-                                                                payload,
-                                                            }) => {
-                                                                if (
-                                                                    active &&
-                                                                    payload &&
-                                                                    payload.length
-                                                                ) {
-                                                                    const data =
-                                                                        payload[0]
-                                                                            .payload;
-                                                                    return (
-                                                                        <div className="p-3 bg-white border rounded shadow-md">
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <FileText className="inline-block w-3 h-3" />
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.fullNumber ||
-                                                                                        `Quotation #${data.name}`}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Total
-                                                                                    Quantity:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {
-                                                                                        data.quantity
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Number
-                                                                                    of
-                                                                                    Items:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {
-                                                                                        data.itemCount
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Date:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.date
-                                                                                        ? new Date(
-                                                                                              data.date,
-                                                                                          ).toLocaleDateString()
-                                                                                        : 'Unknown date'}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Status:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {(
-                                                                                        data.status ||
-                                                                                        'pending'
-                                                                                    ).toUpperCase()}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return null;
-                                                            }}
-                                                        />
-                                                        <Legend
-                                                            verticalAlign="top"
-                                                            height={36}
-                                                            formatter={(value) => (
-                                                                <span className="text-[8px] uppercase font-body">
-                                                                    Total Quantity
-                                                                </span>
-                                                            )}
-                                                            style={{
-                                                                fontSize: '10px',
-                                                                fontFamily: 'var(--font-body)',
-                                                                textTransform: 'uppercase'
-                                                            }}
-                                                        />
-                                                        <Bar
-                                                            dataKey="quantity"
-                                                            name="quantity"
-                                                            fill="#3b82f6"
-                                                            radius={[4, 4, 4, 4]}
-                                                        />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
-                                                <p className="text-xs">
-                                                    No item quantity data
-                                                    available
-                                                </p>
-                                            </div>
-                                        )}
+                                <>
+                                    {/* Add View Full Report button */}
+                                    <div className="flex justify-end mb-4">
+                                        <Link href={`/dashboard/clients/${client.uid}/reports`}>
+                                            <Button variant="outline" className="gap-2">
+                                                <ExternalLink className="w-4 h-4" />
+                                                View Full Report
+                                            </Button>
+                                        </Link>
                                     </div>
 
+                                    {/* Full Client Quotation Report Section */}
                                     <div className="p-6 border rounded border-border/80 bg-card">
-                                        <h3 className="text-sm font-normal uppercase font-body">
-                                            Item Price Analysis
+                                        <h3 className="mb-4 text-sm font-normal uppercase font-body">
+                                            Comprehensive Quotation Analysis
                                         </h3>
                                         <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                            Unit price vs total price for items
+                                            Detailed reports and analytics of client quotations
                                         </p>
-
-                                        {client.quotations &&
-                                        client.quotations.length > 0 ? (
-                                            <div className="h-64">
-                                                <ResponsiveContainer
-                                                    width="100%"
-                                                    height="100%"
-                                                >
-                                                    <BarChart
-                                                        // Group items by quotation to prevent duplications
-                                                        data={client.quotations.map(
-                                                            (quote) => {
-                                                                const items =
-                                                                    quote.quotationItems ||
-                                                                    [];
-                                                                const totalPrice =
-                                                                    items.reduce(
-                                                                        (
-                                                                            sum,
-                                                                            item,
-                                                                        ) =>
-                                                                            sum +
-                                                                            (item.totalPrice ||
-                                                                                0),
-                                                                        0,
-                                                                    );
-                                                                const avgUnitPrice =
-                                                                    items.length >
-                                                                    0
-                                                                        ? items.reduce(
-                                                                              (
-                                                                                  sum,
-                                                                                  item,
-                                                                              ) =>
-                                                                                  sum +
-                                                                                  (item.totalPrice &&
-                                                                                  item.quantity
-                                                                                      ? item.totalPrice /
-                                                                                        item.quantity
-                                                                                      : 0),
-                                                                              0,
-                                                                          ) /
-                                                                          items.length
-                                                                        : 0;
-
-                                                                return {
-                                                                    name:
-                                                                        quote.quotationNumber?.substring(
-                                                                            quote
-                                                                                .quotationNumber
-                                                                                .length -
-                                                                                8,
-                                                                        ) ||
-                                                                        `#${quote.uid}`,
-                                                                    unitPrice:
-                                                                        avgUnitPrice,
-                                                                    totalPrice:
-                                                                        totalPrice,
-                                                                    fullNumber:
-                                                                        quote.quotationNumber,
-                                                                    date:
-                                                                        quote.quotationDate ||
-                                                                        quote.createdAt,
-                                                                    status: quote.status,
-                                                                    itemCount:
-                                                                        items.length,
-                                                                };
-                                                            },
-                                                        )}
-                                                        margin={{
-                                                            top: 10,
-                                                            right: 30,
-                                                            left: 0,
-                                                            bottom: 20,
-                                                        }}
-                                                        barSize={25}
-                                                    >
-                                                        <CartesianGrid
-                                                            strokeDasharray="3 3"
-                                                            vertical={false}
-                                                            opacity={0.1}
-                                                        />
-                                                        <XAxis
-                                                            dataKey="name"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            dy={
-                                                                                16
-                                                                            }
-                                                                            textAnchor="middle"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'QUOTATIONS',
-                                                                position:
-                                                                    'insideBottom',
-                                                                offset: -10,
-                                                                className:
-                                                                    'text-[10px] font-unbounded uppercase font-body',
-                                                            }}
-                                                        />
-                                                        <YAxis
-                                                            yAxisId="left"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                -5
-                                                                            }
-                                                                            textAnchor="end"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'TOTAL PRICE (R)',
-                                                                angle: -90,
-                                                                position:
-                                                                    'insideLeft',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
-                                                        />
-                                                        <YAxis
-                                                            yAxisId="right"
-                                                            orientation="right"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                5
-                                                                            }
-                                                                            textAnchor="start"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'UNIT PRICE (R)',
-                                                                angle: 90,
-                                                                position:
-                                                                    'insideRight',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
-                                                        />
-                                                        <Tooltip
-                                                            cursor={false}
-                                                            content={({
-                                                                active,
-                                                                payload,
-                                                            }) => {
-                                                                if (
-                                                                    active &&
-                                                                    payload &&
-                                                                    payload.length
-                                                                ) {
-                                                                    const data =
-                                                                        payload[0]
-                                                                            .payload;
-                                                                    return (
-                                                                        <div className="p-3 bg-white border rounded shadow-md">
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <FileText className="inline-block w-3 h-3" />
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.fullNumber ||
-                                                                                        `Quotation #${data.name}`}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Avg.
-                                                                                    Unit
-                                                                                    Price
-                                                                                    (R):
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.unitPrice.toFixed(
-                                                                                        2,
-                                                                                    )}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Total
-                                                                                    Price
-                                                                                    (R):
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.totalPrice.toFixed(
-                                                                                        2,
-                                                                                    )}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Items:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {
-                                                                                        data.itemCount
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Date:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.date
-                                                                                        ? new Date(
-                                                                                              data.date,
-                                                                                          ).toLocaleDateString()
-                                                                                        : 'Unknown date'}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Status:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {(
-                                                                                        data.status ||
-                                                                                        'pending'
-                                                                                    ).toUpperCase()}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return null;
-                                                            }}
-                                                        />
-                                                        <Legend
-                                                            verticalAlign="top"
-                                                            height={36}
-                                                            formatter={(
-                                                                value,
-                                                            ) => (
-                                                                <span className="text-[8px] uppercase font-body">
-                                                                    {value ===
-                                                                    'totalPrice'
-                                                                        ? 'Total Price'
-                                                                        : 'Avg. Unit Price'}
-                                                                </span>
-                                                            )}
-                                                            style={{
-                                                                fontSize:
-                                                                    '10px',
-                                                                fontFamily:
-                                                                    'var(--font-body)',
-                                                                textTransform:
-                                                                    'uppercase',
-                                                            }}
-                                                        />
-                                                        <Bar
-                                                            yAxisId="left"
-                                                            dataKey="totalPrice"
-                                                            name="totalPrice"
-                                                            fill="#3b82f6"
-                                                            radius={[
-                                                                4, 4, 4, 4,
-                                                            ]}
-                                                        />
-                                                        <Bar
-                                                            yAxisId="right"
-                                                            dataKey="unitPrice"
-                                                            name="unitPrice"
-                                                            fill="#93c5fd"
-                                                            radius={[
-                                                                4, 4, 4, 4,
-                                                            ]}
-                                                        />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
-                                                <p className="text-xs">
-                                                    No price analysis data
-                                                    available
-                                                </p>
-                                            </div>
-                                        )}
+                                        <div className="h-full">
+                                            <ClientQuotationReport clientId={client.uid} />
+                                        </div>
                                     </div>
-                                </div>
+                                </>
                             );
                         default:
                             return null;
@@ -3206,10 +2606,10 @@ export function ClientDetail({
                                 Quotations
                             </button>
                             <button
-                                className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'items' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
-                                onClick={() => setActiveReportTab('items')}
+                                className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'fullreport' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
+                                onClick={() => setActiveReportTab('fullreport')}
                             >
-                                Items
+                                Full Report
                             </button>
                         </div>
 

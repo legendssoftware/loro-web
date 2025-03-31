@@ -6,6 +6,7 @@ import { QuotationsKanban } from './quotations-kanban';
 import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { FolderMinus } from 'lucide-react';
+import { ClientQuotationReport } from '@/modules/reports/components/client-quotation-report';
 
 interface QuotationsTabContentProps {
     activeTab: string;
@@ -68,12 +69,12 @@ function QuotationsTabContentComponent({
             )}
 
             {activeTab === 'reports' && (
-                <div className="h-full overflow-hidden">
-                    <div className="flex flex-col items-center justify-center h-full">
-                        <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                            Activating soon
-                        </p>
-                    </div>
+                <div className="h-full pb-6 overflow-auto">
+                    <ClientQuotationReport
+                        clientId={1}
+                        // We're setting a default client ID of 1 until we can properly extract the client ID
+                        // This should be replaced with the actual logged-in client's ID
+                    />
                 </div>
             )}
 

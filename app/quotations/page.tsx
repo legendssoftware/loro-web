@@ -41,6 +41,17 @@ const tabs = [{ id: 'quotations', label: 'Quotations' }];
 export default function QuotationsPage() {
     const router = useRouter();
     const { isAuthenticated, checkStatus } = useAuthStatus();
+    // State for client role
+    const [isClientRole, setIsClientRole] = useState(false);
+    // State
+    const [activeTab, setActiveTab] = useState<string>('quotations');
+    // Tabs based on user role
+    const clientTabs = useMemo(() => [
+        { id: 'reports', label: 'Reports' },
+        { id: 'quotations', label: 'Quotations' }
+    ], []);
+
+    const displayTabs = useMemo(() => isClientRole ? clientTabs : tabs, [isClientRole, clientTabs]);
 
     // Check authentication on component mount
     useEffect(() => {
@@ -91,12 +102,19 @@ export default function QuotationsPage() {
                 console.log(
                     'Client role detected, ensuring access to quotations page',
                 );
+                setIsClientRole(true);
+                setActiveTab('reports');
             }
         }
-    }, [checkStatus, router]);
+    }, [checkStatus, router, clientTabs, setActiveTab]);
 
-    // State
-    const [activeTab, setActiveTab] = useState<string>('quotations');
+    // Update activeTab when isClientRole changes
+    useEffect(() => {
+        if (isClientRole) {
+            setActiveTab('reports');
+        }
+    }, [isClientRole]);
+
     const [filterParams, setFilterParams] = useState<QuotationFilterParams>({
         page: 1,
         limit: 500,
@@ -150,7 +168,7 @@ export default function QuotationsPage() {
         <PageTransition>
             <div className="flex flex-col h-screen overflow-hidden">
                 <QuotationsTabGroup
-                    tabs={tabs}
+                    tabs={displayTabs}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
@@ -179,3 +197,4 @@ export default function QuotationsPage() {
         </PageTransition>
     );
 }
+

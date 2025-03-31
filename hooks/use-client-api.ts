@@ -174,6 +174,34 @@ export const useClientApi = () => {
         }
     }, []);
 
+    // Generate a client quotation report
+    const generateClientReport = useCallback(async (clientId: number, params: {
+        startDate?: string;
+        endDate?: string;
+        additionalFilters?: Record<string, any>;
+    } = {}): Promise<ApiResponse<any>> => {
+        try {
+            const response = await axiosInstance.post(`/reports/client/${clientId}/quotations`, {
+                name: 'Client Quotation Report',
+                startDate: params.startDate,
+                endDate: params.endDate,
+                additionalFilters: params.additionalFilters
+            });
+            return {
+                data: response.data,
+                message: 'Report generated successfully',
+                success: true
+            };
+        } catch (error: any) {
+            console.error(`Error generating report for client ${clientId}:`, error);
+            return {
+                data: null,
+                message: error?.response?.data?.message || 'Failed to generate report',
+                success: false
+            };
+        }
+    }, []);
+
     return {
         getClients,
         getClient,
@@ -181,5 +209,6 @@ export const useClientApi = () => {
         updateClient,
         deleteClient,
         restoreClient,
+        generateClientReport,
     };
 };

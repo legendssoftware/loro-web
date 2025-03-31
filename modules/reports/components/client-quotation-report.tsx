@@ -595,22 +595,35 @@ export function ClientQuotationReport({
                                                                 payload[0]
                                                                     .payload;
                                                             return (
-                                                                <div className="p-2 bg-white border rounded-lg shadow-sm">
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-unbounded">
+                                                                <div className="p-3 bg-white border rounded shadow-md">
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <Tag className="inline-block w-3 h-3" />
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data.name
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Count:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Total Count:{' '}
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data.value
                                                                             }
                                                                         </p>
                                                                     </div>
+                                                                    {data.percentage && (
+                                                                        <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                            <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                                Percentage:{' '}
+                                                                            </p>
+                                                                            <p className="text-xs uppercase font-unbounded font-body">
+                                                                                {data.percentage?.toFixed(1)}%
+                                                                            </p>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             );
                                                         }
@@ -903,29 +916,31 @@ export function ClientQuotationReport({
                                                                 payload[0]
                                                                     ?.payload;
                                                             return (
-                                                                <div className="p-2 bg-white border rounded-lg shadow-sm">
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-unbounded">
+                                                                <div className="p-3 bg-white border rounded shadow-md">
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <CreditCard className="inline-block w-3 h-3" />
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data?.name
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Count:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Count:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data?.value
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Percentage:{' '}
-                                                                            {data?.percentage?.toFixed(
-                                                                                1,
-                                                                            )}
-                                                                            %
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Percentage:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
+                                                                            {data?.percentage?.toFixed(1)}%
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -1588,7 +1603,8 @@ export function ClientQuotationReport({
                                                             return (
                                                                 <div className="p-3 bg-white border rounded shadow-md">
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                        <p className="text-xs uppercase font-unbounded font-body">
+                                                                        <FileText className="inline-block w-3 h-3" />
+                                                                        <p className="text-xs uppercase font-unbounded">
                                                                             {
                                                                                 data?.name
                                                                             }
@@ -1746,29 +1762,31 @@ export function ClientQuotationReport({
                                                                 payload[0]
                                                                     ?.payload;
                                                             return (
-                                                                <div className="p-2 bg-white border rounded-lg shadow-sm">
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-unbounded">
+                                                                <div className="p-3 bg-white border rounded shadow-md">
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <Tag className="inline-block w-3 h-3" />
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data?.name
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Count:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Count:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data?.value
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Percentage:{' '}
-                                                                            {data?.percentage?.toFixed(
-                                                                                1,
-                                                                            )}
-                                                                            %
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Percentage:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
+                                                                            {data?.percentage?.toFixed(1)}%
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -2082,24 +2100,22 @@ export function ClientQuotationReport({
                                                                     </div>
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
                                                                         <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                            Quotations:
+                                                                            Value:
                                                                         </p>
                                                                         <p className="text-xs uppercase font-unbounded font-body">
-                                                                            {
-                                                                                data?.value
-                                                                            }
+                                                                            {formatCurrency(
+                                                                                data?.value ||
+                                                                                    0,
+                                                                            )}
                                                                         </p>
                                                                     </div>
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
                                                                         <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                            Total
-                                                                            Amount:
+                                                                            Quotations:
                                                                         </p>
                                                                         <p className="text-xs uppercase font-unbounded font-body">
-                                                                            {formatCurrency(
-                                                                                data?.totalAmount ||
-                                                                                    0,
-                                                                            )}
+                                                                            {data?.value ||
+                                                                                0}
                                                                         </p>
                                                                     </div>
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
@@ -2240,34 +2256,40 @@ export function ClientQuotationReport({
                                                                 payload[0]
                                                                     ?.payload;
                                                             return (
-                                                                <div className="p-2 bg-white border rounded-lg shadow-sm">
+                                                                <div className="p-3 bg-white border rounded shadow-md">
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
                                                                         <User className="inline-block w-3 h-3" />
-                                                                        <p className="text-xs uppercase font-unbounded">
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
                                                                                 data?.name
                                                                             }
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Value:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Value:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {formatCurrency(
                                                                                 data?.value ||
                                                                                     0,
                                                                             )}
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Quotations:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Quotations:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {data?.value ||
                                                                                 0}
                                                                         </p>
                                                                     </div>
-                                                                    <div className="mb-1">
-                                                                        <p className="text-[10px] uppercase font-body">
-                                                                            Role:{' '}
+                                                                    <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
+                                                                        <p className="text-[10px] uppercase font-unbounded font-body font-thin">
+                                                                            Role:
+                                                                        </p>
+                                                                        <p className="text-xs uppercase font-unbounded font-body">
                                                                             {data?.role ||
                                                                                 'Staff'}
                                                                         </p>

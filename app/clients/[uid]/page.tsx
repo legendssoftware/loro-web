@@ -28,7 +28,6 @@ export default function ClientDetailPage() {
     const clientId = params.uid ? String(params.uid) : '';
     const { client, loading, error, deleteClient, updateClientStatus } =
         useClientQuery(clientId);
-
     const handleClose = () => {
         router.push('/clients');
     };

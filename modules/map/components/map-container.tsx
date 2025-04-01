@@ -54,12 +54,28 @@ const isValidPosition = (position: any): position is [number, number] => {
         typeof position[0] === 'number' &&
         typeof position[1] === 'number' &&
         !isNaN(position[0]) &&
-        !isNaN(position[1]) &&
-        position[0] >= -90 &&
-        position[0] <= 90 &&
-        position[1] >= -180 &&
-        position[1] <= 180
+        !isNaN(position[1])
     );
+};
+
+// Utility function to extract position from an entity that might have various position formats
+const getValidPosition = (entity: any): [number, number] | null => {
+    // Direct position array format
+    if (isValidPosition(entity.position)) {
+        return entity.position;
+    }
+
+    // Location object with lat/lng fields (from events)
+    if (
+        entity.location &&
+        typeof entity.location === 'object' &&
+        typeof entity.location.lat === 'number' &&
+        typeof entity.location.lng === 'number'
+    ) {
+        return [entity.location.lat, entity.location.lng];
+    }
+
+    return null;
 };
 
 interface MapComponentProps {
@@ -133,10 +149,34 @@ export default function MapComponent({
 
     // Center map on selected marker when it changes
     useEffect(() => {
-        if (mapRef.current && selectedMarker?.position) {
-            // Validate position data is valid before setting view
-            if (isValidPosition(selectedMarker.position)) {
-                mapRef.current.setView(selectedMarker.position, 15);
+        if (mapRef.current && selectedMarker) {
+            let position: [number, number] | null = null;
+
+            // Get position from marker position property
+            if (selectedMarker.position && isValidPosition(selectedMarker.position)) {
+                position = selectedMarker.position;
+            }
+            // Or from location property for events
+            else if ('location' in selectedMarker && typeof selectedMarker.location === 'object' &&
+                    selectedMarker.location && 'lat' in selectedMarker.location && 'lng' in selectedMarker.location) {
+                position = [
+                    Number(selectedMarker.location.lat),
+                    Number(selectedMarker.location.lng)
+                ];
+            }
+
+            if (position) {
+                mapRef.current.setView(position, 15);
+
+                // Search for the marker by ID to open its popup
+                setTimeout(() => {
+                    const markers = document.querySelectorAll('.leaflet-marker-icon');
+                    markers.forEach(marker => {
+                        if (marker.getAttribute('data-marker-id') === selectedMarker.id?.toString()) {
+                            (marker as HTMLElement).click();
+                        }
+                    });
+                }, 100);
             }
         }
     }, [selectedMarker, mapRef]);
@@ -148,7 +188,7 @@ export default function MapComponent({
             ...filteredWorkers, // Already filtered by the parent component
             ...(clients || []),
             ...(competitors || []),
-            ...(quotations || [])
+            ...(quotations || []),
         ].filter(Boolean); // Remove any undefined or null entries
 
         // Filter out any invalid entities and ensure they have valid positions
@@ -156,8 +196,15 @@ export default function MapComponent({
             (entity) =>
                 entity &&
                 entity.id &&
-                entity.position &&
-                isValidPosition(entity.position)
+                (isValidPosition(entity.position) ||
+                    // Check if it's an entity with location.lat and location.lng (like an event)
+                    ('location' in entity &&
+                        typeof entity.location === 'object' &&
+                        entity.location !== null &&
+                        'lat' in entity.location &&
+                        'lng' in entity.location &&
+                        typeof entity.location.lat === 'number' &&
+                        typeof entity.location.lng === 'number')),
         );
     }, [filteredWorkers, clients, competitors, quotations]);
 

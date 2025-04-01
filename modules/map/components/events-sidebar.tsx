@@ -17,9 +17,44 @@ export default function EventsSidebar({
     const highlightedEvent = highlightedMarkerId
         ? events.find((event) => {
               const worker = workers.find((w) => w.id === highlightedMarkerId);
-              return worker && event.user === worker.name;
+              return (
+                  worker &&
+                  ((event.user && event.user === worker.name) ||
+                      (event.userName && event.userName === worker.name) ||
+                      (event.userId && event.userId.toString() === worker.id))
+              );
           })
         : null;
+
+    // Helper function to get location text
+    const getLocationText = (event: EventType) => {
+        if (typeof event.location === 'string') {
+            return event.location;
+        } else if (event.location && typeof event.location === 'object') {
+            return event.location.address;
+        }
+        return '';
+    };
+
+    // Helper function to get event time
+    const getEventTime = (event: EventType) => {
+        if (event.time) {
+            return event.time;
+        } else if (event.timestamp) {
+            return new Date(event.timestamp).toLocaleString();
+        }
+        return '';
+    };
+
+    // Helper function to get event user
+    const getEventUser = (event: EventType) => {
+        return event.user || event.userName || '';
+    };
+
+    // Helper function to get event title
+    const getEventTitle = (event: EventType) => {
+        return event.title || event.details || event.type.replace(/-/g, ' ');
+    };
 
     return (
         <div className="font-body">
@@ -183,13 +218,13 @@ export default function EventsSidebar({
                                         {event.type.replace('-', ' ')}
                                     </div>
                                     <div className="text-xs font-thin uppercase">
-                                        {event.title}
+                                        {getEventTitle(event)}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="text-[10px] text-muted-foreground mb-1 uppercase">
-                                {event.time}
+                                {getEventTime(event)}
                             </div>
 
                             <div className="flex items-start gap-2 mb-2">
@@ -211,24 +246,24 @@ export default function EventsSidebar({
                                 </div>
                                 <div>
                                     <div className="text-[10px] uppercase">
-                                        {event.location}
+                                        {getLocationText(event)}
                                     </div>
                                 </div>
                             </div>
 
-                            {event.user && (
+                            {getEventUser(event) && (
                                 <div className="flex items-center gap-2 pt-1 mt-1 border-t border-border/10">
                                     <div className="w-5 h-5 overflow-hidden rounded-full bg-accent">
                                         <Image
                                             src="/placeholder.svg?height=20&width=20"
-                                            alt={event.user}
+                                            alt={getEventUser(event)}
                                             className="object-cover w-full h-full"
                                             width={20}
                                             height={20}
                                         />
                                     </div>
                                     <div className="text-[10px] uppercase">
-                                        {event.user}
+                                        {getEventUser(event)}
                                     </div>
                                 </div>
                             )}

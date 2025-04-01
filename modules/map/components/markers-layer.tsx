@@ -15,7 +15,6 @@ import {
     CalendarCheck,
     PlusSquare,
     LucideTimer,
-    BarChart4,
     TimerOff,
     TimerReset,
     Coffee,
@@ -27,7 +26,6 @@ import {
     AlertTriangle,
     UserPlus
 } from 'lucide-react';
-import router from 'next/router';
 
 interface MarkerPopupProps {
     worker: WorkerType | ClientType | CompetitorType | QuotationType;
@@ -42,6 +40,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
     const isClientType = markerType === 'client';
     const isCompetitorType = markerType === 'competitor';
     const isQuotationType = markerType === 'quotation';
+    const isEventType = 'type' in worker && worker.type === 'event';
 
     // Handle client navigation
     const handleViewClient = () => {
@@ -64,6 +63,8 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
     const entityName =
         isQuotationType && 'quotationNumber' in worker
             ? worker.quotationNumber
+            : isEventType && 'name' in worker
+            ? worker.name
             : 'name' in worker ? worker.name : 'Unnamed Entity';
 
     // Get appropriate status color based on marker type and status
@@ -73,6 +74,8 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             ? 'bg-red-500'
             : isQuotationType
                 ? 'bg-green-600'
+                : isEventType
+                    ? 'bg-orange-500'
                 : worker?.status?.includes('progress')
                     ? 'bg-green-500'
                     : worker?.status?.includes('break')
@@ -86,7 +89,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             {/* Header with entity info */}
             <div className="flex flex-col items-center mb-4">
                 {/* Only show image for worker types */}
-                {isWorkerType && (
+                {isWorkerType && !isEventType && (
                     <div className="w-16 h-16 mb-2 overflow-hidden border-2 rounded-full border-primary/20">
                         <Image
                             src={
@@ -101,23 +104,43 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         />
                     </div>
                 )}
+                {/* Show event icon for event type */}
+                {isEventType && (
+                    <div className="flex items-center justify-center w-12 h-12 mb-2 text-orange-500 bg-orange-100 rounded-full">
+                        {(markerType as string) === 'check-in' ? <MapPin size={24} /> :
+                         (markerType as string) === 'shift-start' ? <PlayCircle size={24} /> :
+                         (markerType as string) === 'shift-end' ? <TimerOff size={24} /> :
+                         (markerType as string) === 'task' || (markerType as string) === 'task-completed' ? <CheckCircle2 size={24} /> :
+                         (markerType as string) === 'journal' ? <FolderIcon size={24} /> :
+                         (markerType as string) === 'new-lead' ? <UserPlus size={24} /> :
+                         (markerType as string) === 'client-visit' ? <Building size={24} /> :
+                         (markerType as string) === 'break-start' || (markerType as string) === 'break-end' ? <Coffee size={24} /> :
+                         <Calendar size={24} />}
+                    </div>
+                )}
                 <h3 className="text-xs font-normal uppercase">
                     {isQuotationType && 'clientName' in worker ? worker.clientName : entityName}
                 </h3>
                 <div className="flex items-center gap-1.5 mt-1">
                     <span className={`w-2 h-2 rounded-full ${statusColor}`}></span>
                     <p className="text-[10px] text-muted-foreground uppercase">
-                        {worker?.status || 'Unknown Status'}
+                        {isEventType ? markerType.replace(/-/g, ' ') : (worker?.status || 'Unknown Status')}
                     </p>
                 </div>
             </div>
 
-            {/* Render location image only for worker types */}
-            {isWorkerType && (
+            {/* Render location image only for worker types and event types with imageUrl */}
+            {(isWorkerType || (isEventType && 'location' in worker && typeof (worker as any).location === 'object' && (worker as any).location?.imageUrl)) && (
                 <div className="w-full mb-4 overflow-hidden rounded-md h-44">
                     <Image
-                        src={locationImage}
-                        alt={'location' in worker && worker.location?.address || 'Location'}
+                        src={isEventType && typeof (worker as any).location === 'object' && (worker as any).location?.imageUrl
+                            ? (worker as any).location.imageUrl
+                            : locationImage}
+                        alt={'location' in worker
+                            ? (typeof (worker as any).location === 'object'
+                                ? (worker as any).location?.address || 'Location'
+                                : String((worker as any).location || 'Location'))
+                            : 'Location'}
                         className="object-cover w-full h-full"
                         width={400}
                         height={400}
@@ -126,7 +149,24 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                 </div>
             )}
 
-            {isWorkerType && 'canAddTask' in worker && worker.canAddTask && (
+            {/* Event specific information */}
+            {isEventType && (
+                <div className="p-2 text-[10px] bg-orange-500/10 rounded-md mb-2">
+                    <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                        <Calendar size={15} strokeWidth={1.5} />
+                        Event Details
+                    </p>
+                    {/* Show event location details */}
+                    {'location' in worker && typeof (worker as any).location === 'object' && (worker as any).location?.address && (
+                        <div className="flex items-start gap-1 mb-2">
+                            <MapPin size={12} className="mt-0.5 text-muted-foreground" strokeWidth={1.5} />
+                            <p className="text-[10px]">{(worker as any).location.address}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {isWorkerType && 'canAddTask' in worker && worker.canAddTask && !isEventType && (
                 <button className="w-full mb-4 flex items-center justify-center gap-2 text-primary text-[10px] uppercase font-thin border border-border rounded-md py-2 hover:bg-accent/10 transition-colors">
                     <PlusSquare size={14} />
                     Assign Task
@@ -545,18 +585,25 @@ interface MarkersLayerProps {
     handleMarkerClick: (marker: WorkerType | ClientType | CompetitorType | QuotationType) => void;
 }
 
-// Utility function to validate coordinates
-const isValidPosition = (position: any): position is [number, number] => {
-    return Array.isArray(position) &&
-        position.length === 2 &&
-        typeof position[0] === 'number' &&
-        typeof position[1] === 'number' &&
-        !isNaN(position[0]) &&
-        !isNaN(position[1]) &&
-        position[0] >= -90 &&
-        position[0] <= 90 &&
-        position[1] >= -180 &&
-        position[1] <= 180;
+// Helper function to get position from marker
+const getMarkerPosition = (marker: any): [number, number] | null => {
+    // Direct position array
+    if (Array.isArray(marker.position) &&
+        marker.position.length === 2 &&
+        typeof marker.position[0] === 'number' &&
+        typeof marker.position[1] === 'number') {
+        return marker.position;
+    }
+
+    // Location object with lat/lng fields (for events)
+    if (marker.location &&
+        typeof marker.location === 'object' &&
+        typeof marker.location.lat === 'number' &&
+        typeof marker.location.lng === 'number') {
+        return [marker.location.lat, marker.location.lng];
+    }
+
+    return null;
 };
 
 export default function MarkersLayer({
@@ -574,7 +621,7 @@ export default function MarkersLayer({
     console.log(`Rendering ${filteredWorkers.length} markers on t he m ap`);
 
     // Log any markers with invalid positions
-    const invalidMarkers = filteredWorkers.filter(worker => !isValidPosition(worker.position));
+    const invalidMarkers = filteredWorkers.filter(worker => !getMarkerPosition(worker));
     if (invalidMarkers.length > 0) {
         console.warn(`Found ${invalidMarkers.length} markers with invalid positions`, invalidMarkers);
     }
@@ -582,22 +629,27 @@ export default function MarkersLayer({
     return (
         <>
             {filteredWorkers?.map((worker) => {
+                const position = getMarkerPosition(worker);
+                if (!position) return null;
+
+                const isHighlighted =
+                    selectedMarker?.id?.toString() === worker.id?.toString() ||
+                    highlightedMarkerId === worker.id?.toString();
+
                 // Generate a unique key using id and type
                 const uniqueKey = `${worker.id}-${worker.markerType}-${Math.random().toString(36).substr(2, 9)}`;
-
-                if (!isValidPosition(worker.position)) {
-                    console.warn(`Invalid position for worker: ${worker.id}, position: ${JSON.stringify(worker.position)}`);
-                    return null;
-                }
 
                 return (
                     <Marker
                         key={uniqueKey}
-                        position={worker.position}
+                        position={position}
                         icon={createCustomIcon(worker.markerType || 'check-in')}
                         eventHandlers={{
                             click: () => handleMarkerClick(worker),
                         }}
+                        // Add data attribute to identify markers for programmatic access
+                        // @ts-ignore - Adding custom property to Marker component
+                        data-marker-id={worker.id?.toString()}
                     >
                         {selectedMarker?.id === worker.id && (
                             <Popup>

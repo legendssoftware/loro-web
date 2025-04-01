@@ -1733,31 +1733,6 @@ export function TaskDetailsModal({
                             >
                                 <X className="w-5 h-5" />
                             </Button>
-                            {task?.status !== TaskStatus.COMPLETED ? (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="w-9 h-9"
-                                    onClick={() => {
-                                        setModalMode('edit');
-                                        setIsEditModalOpen(true);
-                                    }}
-                                >
-                                    <Edit className="w-5 h-5" />
-                                </Button>
-                            ) : (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="w-9 h-9"
-                                    onClick={() => {
-                                        setModalMode('flag');
-                                        setIsFlagModalOpen(true);
-                                    }}
-                                >
-                                    <Flag className="w-5 h-5 text-amber-500" />
-                                </Button>
-                            )}
                         </div>
                     </DialogHeader>
                     <div className="mt-4">
@@ -1887,6 +1862,39 @@ export function TaskDetailsModal({
                             >
                                 <Trash2 className="w-7 h-7" strokeWidth={1.5} />
                             </Button>
+                            {task?.status !== TaskStatus.COMPLETED ? (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                    onClick={() => {
+                                        setModalMode('edit');
+                                        setIsEditModalOpen(true);
+                                    }}
+                                    title="Edit Task"
+                                >
+                                    <Edit
+                                        strokeWidth={1.2}
+                                        className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                    />
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-amber-800 border-amber-200 rounded-full w-14 h-14 hover:bg-amber-50 hover:border-amber-300 dark:text-amber-300 dark:hover:bg-amber-900/20 dark:border-amber-900/30"
+                                    onClick={() => {
+                                        setModalMode('flag');
+                                        setIsFlagModalOpen(true);
+                                    }}
+                                    title="Flag Task"
+                                >
+                                    <Flag
+                                        strokeWidth={1.2}
+                                        className="text-amber-600 w-7 h-7 dark:text-amber-400"
+                                    />
+                                </Button>
+                            )}
                         </div>
                     </DialogFooter>
                 </DialogContent>

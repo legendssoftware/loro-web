@@ -2918,14 +2918,6 @@ export function ClientDetail({
                                 >
                                     <X className="w-5 h-5" />
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="w-9 h-9"
-                                    onClick={handleEditClick}
-                                >
-                                    <Edit className="w-5 h-5" />
-                                </Button>
                             </div>
                         </DialogHeader>
 

@@ -28,6 +28,9 @@ import {
     AlertCircle,
     Mail,
     Clock,
+    Edit,
+    Save,
+    PenLine,
 } from 'lucide-react';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 import { cn } from '@/lib/utils';
@@ -70,6 +73,13 @@ export function QuotationDetailsModal({
     const [pendingStatusChange, setPendingStatusChange] =
         useState<OrderStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [editingItemId, setEditingItemId] = useState<number | null>(null);
+    const [editingField, setEditingField] = useState<
+        'quantity' | 'price' | 'discount' | null
+    >(null);
+    const [editValue, setEditValue] = useState<string>('');
+    const [discountValue, setDiscountValue] = useState<string>('0');
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const quotation = data as Quotation;
 
@@ -132,6 +142,93 @@ export function QuotationDetailsModal({
         setIsEditModalOpen(true);
     };
 
+    const handleEditClick = () => {
+        setIsEditModalOpen(true);
+    };
+
+    // Update with a new function to switch to Items tab for editing
+    const handleEditItemsClick = () => {
+        // Switch to the items tab
+        handleTabChange('items');
+        // Enter editing mode
+        setIsEditing(true);
+    };
+
+    // Add handlers for editing fields
+    const handleStartEdit = (
+        itemId: number,
+        field: 'quantity' | 'price',
+        value: string,
+    ) => {
+        setEditingItemId(itemId);
+        setEditingField(field);
+        setEditValue(value);
+    };
+
+    const handleStartDiscountEdit = () => {
+        setEditingField('discount');
+        setDiscountValue('0');
+    };
+
+    const handleSaveEdit = () => {
+        if (!editingItemId || !editingField || !quotation.quotationItems)
+            return;
+
+        // Find the item being edited
+        const updatedItems = quotation.quotationItems.map((item) => {
+            if (item.uid === editingItemId) {
+                const updatedItem = { ...item };
+
+                // Update the appropriate field
+                if (editingField === 'quantity') {
+                    updatedItem.quantity =
+                        parseInt(editValue, 10) || item.quantity;
+                    // Recalculate the total price
+                    if (updatedItem.product && updatedItem.product.price) {
+                        updatedItem.totalPrice =
+                            updatedItem.quantity * updatedItem.product.price;
+                    }
+                } else if (editingField === 'price' && updatedItem.product) {
+                    // Update the product price
+                    updatedItem.product = {
+                        ...updatedItem.product,
+                        price:
+                            parseFloat(editValue) || updatedItem.product.price,
+                    };
+                    // Recalculate the total price
+                    updatedItem.totalPrice =
+                        updatedItem.quantity * updatedItem.product.price;
+                }
+
+                return updatedItem;
+            }
+            return item;
+        });
+
+        // You would ideally update the quotation in state here
+        // For now, we'll just reset the editing states
+        setEditingItemId(null);
+        setEditingField(null);
+        setEditValue('');
+    };
+
+    const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDiscountValue(e.target.value);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditValue(e.target.value);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSaveEdit();
+        } else if (e.key === 'Escape') {
+            setEditingItemId(null);
+            setEditingField(null);
+        }
+    };
+
     // Get status button variant
     const getStatusButtonVariant = (status: OrderStatus) => {
         switch (status) {
@@ -149,6 +246,40 @@ export function QuotationDetailsModal({
                 return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${quotation.status === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
             default:
                 return `text-gray-800 border-gray-200 hover:bg-gray-50 hover:border-gray-300 dark:text-gray-300 dark:hover:bg-gray-800/20 dark:border-gray-700 ${quotation.status === status ? 'bg-gray-100 dark:bg-gray-800/50' : ''}`;
+        }
+    };
+
+    // Add a function to save all changes to the quotation
+    const handleSaveQuotationChanges = async () => {
+        if (!quotation || !onEditQuotation) return;
+
+        // Create an object with all the updates
+        const updatedQuotationData: Partial<Quotation> = {};
+
+        // Add updated items if any were edited
+        if (quotation.quotationItems && quotation.quotationItems.length > 0) {
+            // Here you would collect all the changes from edited items
+            // For now, we're just demonstrating the structure
+        }
+
+        // Add discount if it was changed
+        if (discountValue && discountValue !== '0') {
+            (updatedQuotationData as any).discount = parseFloat(discountValue);
+        }
+
+        try {
+            // Call the onEditQuotation function with the updated data
+            await onEditQuotation(quotation.uid, updatedQuotationData);
+
+            // Exit editing mode
+            setIsEditing(false);
+
+            // Reset all editing states
+            setEditingItemId(null);
+            setEditingField(null);
+            setEditValue('');
+        } catch (error) {
+            console.error('Error updating quotation:', error);
         }
     };
 
@@ -521,24 +652,132 @@ export function QuotationDetailsModal({
                                                                 </div>
                                                             </div>
                                                             <div className="col-span-2 text-center">
-                                                                <span className="text-sm font-medium font-body">
-                                                                    {
-                                                                        item.quantity
-                                                                    }
-                                                                </span>
+                                                                <div className="flex items-center justify-center">
+                                                                    {editingItemId ===
+                                                                        item.uid &&
+                                                                    editingField ===
+                                                                        'quantity' ? (
+                                                                        <div className="flex items-center">
+                                                                            <input
+                                                                                type="number"
+                                                                                className="w-16 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
+                                                                                value={
+                                                                                    editValue
+                                                                                }
+                                                                                onChange={
+                                                                                    handleInputChange
+                                                                                }
+                                                                                onKeyDown={
+                                                                                    handleKeyDown
+                                                                                }
+                                                                                autoFocus
+                                                                                min="1"
+                                                                            />
+                                                                            <button
+                                                                                className="p-1 ml-1 text-primary hover:text-primary/80"
+                                                                                onClick={
+                                                                                    handleSaveEdit
+                                                                                }
+                                                                            >
+                                                                                <Save className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div
+                                                                            className="flex items-center cursor-pointer group"
+                                                                            onClick={() =>
+                                                                                handleStartEdit(
+                                                                                    item.uid,
+                                                                                    'quantity',
+                                                                                    item.quantity.toString(),
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <span className="text-sm font-medium font-body group-hover:text-primary">
+                                                                                {
+                                                                                    item.quantity
+                                                                                }
+                                                                            </span>
+                                                                            <PenLine
+                                                                                className="ml-1 text-primary"
+                                                                                size={
+                                                                                    20
+                                                                                }
+                                                                                strokeWidth={
+                                                                                    1.2
+                                                                                }
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             <div className="col-span-2 text-right">
-                                                                <span className="text-[10px] font-medium font-body">
-                                                                    {item
-                                                                        .product
-                                                                        .price
-                                                                        ? formatCurrency(
-                                                                              item
-                                                                                  .product
-                                                                                  .price,
-                                                                          )
-                                                                        : 'N/A'}
-                                                                </span>
+                                                                <div className="flex items-center justify-end">
+                                                                    {editingItemId ===
+                                                                        item.uid &&
+                                                                    editingField ===
+                                                                        'price' ? (
+                                                                        <div className="flex items-center">
+                                                                            <input
+                                                                                type="number"
+                                                                                className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
+                                                                                value={
+                                                                                    editValue
+                                                                                }
+                                                                                onChange={
+                                                                                    handleInputChange
+                                                                                }
+                                                                                onKeyDown={
+                                                                                    handleKeyDown
+                                                                                }
+                                                                                autoFocus
+                                                                                min="0"
+                                                                                step="0.01"
+                                                                            />
+                                                                            <button
+                                                                                className="p-1 ml-1 text-primary hover:text-primary/80"
+                                                                                onClick={
+                                                                                    handleSaveEdit
+                                                                                }
+                                                                            >
+                                                                                <Save className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div
+                                                                            className="flex items-center justify-end cursor-pointer group"
+                                                                            onClick={() =>
+                                                                                handleStartEdit(
+                                                                                    item.uid,
+                                                                                    'price',
+                                                                                    item.product.price?.toString() ||
+                                                                                        '0',
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <span className="text-[10px] font-medium font-body group-hover:text-primary">
+                                                                                {item
+                                                                                    .product
+                                                                                    .price
+                                                                                    ? formatCurrency(
+                                                                                          item
+                                                                                              .product
+                                                                                              .price,
+                                                                                      )
+                                                                                    : 'N/A'}
+                                                                            </span>
+                                                                            <PenLine
+                                                                                className="ml-1 text-primary"
+                                                                                size={
+                                                                                    20
+                                                                                }
+                                                                                strokeWidth={
+                                                                                    1.2
+                                                                                }
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             <div className="col-span-2 text-right">
                                                                 <span className="text-sm font-medium font-body">
@@ -573,13 +812,69 @@ export function QuotationDetailsModal({
                                                             )}
                                                         </span>
                                                     </div>
+                                                    <div className="flex items-center justify-between w-48">
+                                                        <span className="text-[10px] font-normal uppercase font-body">
+                                                            Discount:
+                                                        </span>
+                                                        {editingField ===
+                                                        'discount' ? (
+                                                            <div className="flex items-center">
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
+                                                                    value={
+                                                                        discountValue
+                                                                    }
+                                                                    onChange={
+                                                                        handleDiscountChange
+                                                                    }
+                                                                    onKeyDown={
+                                                                        handleKeyDown
+                                                                    }
+                                                                    autoFocus
+                                                                    min="0"
+                                                                    step="0.01"
+                                                                    placeholder="0.00"
+                                                                />
+                                                                <button
+                                                                    className="p-1 ml-1 text-primary hover:text-primary/80"
+                                                                    onClick={
+                                                                        handleSaveEdit
+                                                                    }
+                                                                >
+                                                                    <Save className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div
+                                                                className="flex items-center cursor-pointer group"
+                                                                onClick={
+                                                                    handleStartDiscountEdit
+                                                                }
+                                                            >
+                                                                <span className="font-thin font-body group-hover:text-primary">
+                                                                    {formatCurrency(
+                                                                        0,
+                                                                    )}
+                                                                </span>
+                                                                <PenLine
+                                                                    className="ml-1 text-primary"
+                                                                    size={20}
+                                                                    strokeWidth={
+                                                                        1.2
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center justify-between w-48 font-semibold text-primary">
                                                         <span className="font-normal uppercase text-md font-body">
                                                             Total:
                                                         </span>
                                                         <span className="font-thin font-body text-md">
                                                             {formatCurrency(
-                                                                quotation?.totalAmount,
+                                                                quotation?.totalAmount ||
+                                                                    0,
                                                             )}
                                                         </span>
                                                     </div>
@@ -790,138 +1085,190 @@ export function QuotationDetailsModal({
 
                     <DialogFooter className="flex flex-col items-center gap-2 pt-4 border-t border-border/10">
                         <div className="w-full">
-                            <h3 className="mb-4 text-xs font-thin text-center uppercase font-body">
-                                Quick Actions
-                            </h3>
-                            <div className="flex items-center justify-center gap-4">
-                                {/* Pending button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.PENDING)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.PENDING &&
-                                        handleStatusChange(OrderStatus.PENDING)
-                                    }
-                                    title="Set as Pending"
-                                >
-                                    <AlertCircle
-                                        strokeWidth={1.2}
-                                        className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                    />
-                                </Button>
+                            {isEditing ? (
+                                <>
+                                    <h3 className="mb-4 text-xs font-thin text-center uppercase font-body">
+                                        Editing Quotation
+                                    </h3>
+                                    <div className="flex items-center justify-center gap-4">
+                                        <Button
+                                            variant="default"
+                                            className="w-[250px] px-6 py-2 bg-primary hover:bg-primary/90"
+                                            onClick={handleSaveQuotationChanges}
+                                        >
+                                            <Save className="w-4 h-4 mr-2 text-white" />
+                                            <span className="text-xs font-thin text-white uppercase font-body">
+                                                Update Quotation
+                                            </span>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="w-[250px] px-6 py-2"
+                                            onClick={() => setIsEditing(false)}
+                                        >
+                                            <X className="w-4 h-4 mr-2" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                Cancel
+                                            </span>
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="mb-4 text-xs font-thin text-center uppercase font-body">
+                                        Quick Actions
+                                    </h3>
+                                    <div className="flex items-center justify-center gap-4">
+                                        {/* Pending button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.PENDING)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.PENDING &&
+                                                handleStatusChange(
+                                                    OrderStatus.PENDING,
+                                                )
+                                            }
+                                            title="Set as Pending"
+                                        >
+                                            <AlertCircle
+                                                strokeWidth={1.2}
+                                                className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                            />
+                                        </Button>
 
-                                {/* In Progress button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.INPROGRESS)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.INPROGRESS &&
-                                        handleStatusChange(
-                                            OrderStatus.INPROGRESS,
-                                        )
-                                    }
-                                    title="Set as In Progress"
-                                >
-                                    <Clock
-                                        strokeWidth={1.2}
-                                        className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                    />
-                                </Button>
+                                        {/* In Progress button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.INPROGRESS)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.INPROGRESS &&
+                                                handleStatusChange(
+                                                    OrderStatus.INPROGRESS,
+                                                )
+                                            }
+                                            title="Set as In Progress"
+                                        >
+                                            <Clock
+                                                strokeWidth={1.2}
+                                                className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                            />
+                                        </Button>
 
-                                {/* Approved button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.APPROVED)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.APPROVED &&
-                                        handleStatusChange(OrderStatus.APPROVED)
-                                    }
-                                    title="Set as Approved"
-                                >
-                                    <CheckCircle
-                                        strokeWidth={1.2}
-                                        className="text-green-600 w-7 h-7 dark:text-green-400"
-                                    />
-                                </Button>
+                                        {/* Approved button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.APPROVED)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.APPROVED &&
+                                                handleStatusChange(
+                                                    OrderStatus.APPROVED,
+                                                )
+                                            }
+                                            title="Set as Approved"
+                                        >
+                                            <CheckCircle
+                                                strokeWidth={1.2}
+                                                className="text-green-600 w-7 h-7 dark:text-green-400"
+                                            />
+                                        </Button>
 
-                                {/* Rejected button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.REJECTED)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.REJECTED &&
-                                        handleStatusChange(OrderStatus.REJECTED)
-                                    }
-                                    title="Set as Rejected"
-                                >
-                                    <Ban
-                                        strokeWidth={1.2}
-                                        className="text-red-600 w-7 h-7 dark:text-red-400"
-                                    />
-                                </Button>
+                                        {/* Rejected button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.REJECTED)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.REJECTED &&
+                                                handleStatusChange(
+                                                    OrderStatus.REJECTED,
+                                                )
+                                            }
+                                            title="Set as Rejected"
+                                        >
+                                            <Ban
+                                                strokeWidth={1.2}
+                                                className="text-red-600 w-7 h-7 dark:text-red-400"
+                                            />
+                                        </Button>
 
-                                {/* Completed button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.COMPLETED)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.COMPLETED &&
-                                        handleStatusChange(
-                                            OrderStatus.COMPLETED,
-                                        )
-                                    }
-                                    title="Set as Completed"
-                                >
-                                    <CheckCheck
-                                        strokeWidth={1.2}
-                                        className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                    />
-                                </Button>
+                                        {/* Completed button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.COMPLETED)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.COMPLETED &&
+                                                handleStatusChange(
+                                                    OrderStatus.COMPLETED,
+                                                )
+                                            }
+                                            title="Set as Completed"
+                                        >
+                                            <CheckCheck
+                                                strokeWidth={1.2}
+                                                className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                            />
+                                        </Button>
 
-                                {/* Cancelled button */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.CANCELLED)}`}
-                                    onClick={() =>
-                                        quotation.status !==
-                                            OrderStatus.CANCELLED &&
-                                        handleStatusChange(
-                                            OrderStatus.CANCELLED,
-                                        )
-                                    }
-                                    title="Set as Cancelled"
-                                >
-                                    <CalendarX2
-                                        strokeWidth={1.2}
-                                        className="text-orange-600 w-7 h-7 dark:text-orange-400"
-                                    />
-                                </Button>
+                                        {/* Cancelled button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.CANCELLED)}`}
+                                            onClick={() =>
+                                                quotation.status !==
+                                                    OrderStatus.CANCELLED &&
+                                                handleStatusChange(
+                                                    OrderStatus.CANCELLED,
+                                                )
+                                            }
+                                            title="Set as Cancelled"
+                                        >
+                                            <CalendarX2
+                                                strokeWidth={1.2}
+                                                className="text-orange-600 w-7 h-7 dark:text-orange-400"
+                                            />
+                                        </Button>
 
-                                {/* Delete button */}
-                                <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
-                                    onClick={handleDelete}
-                                    title="Delete Quotation"
-                                >
-                                    <Trash2
-                                        className="w-7 h-7"
-                                        strokeWidth={1.5}
-                                    />
-                                </Button>
-                            </div>
+                                        {/* Add Edit Quotation button */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                            onClick={handleEditItemsClick}
+                                            title="Edit Quotation Items"
+                                        >
+                                            <Edit
+                                                strokeWidth={1.2}
+                                                className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                            />
+                                        </Button>
+
+                                        {/* Delete button */}
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
+                                            onClick={handleDelete}
+                                            title="Delete Quotation"
+                                        >
+                                            <Trash2
+                                                className="w-7 h-7"
+                                                strokeWidth={1.5}
+                                            />
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </DialogFooter>
                 </DialogContent>

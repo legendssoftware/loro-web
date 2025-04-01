@@ -506,14 +506,6 @@ export function ProductDetailsModal({
                             >
                                 <X className="w-5 h-5" />
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-9 h-9"
-                                onClick={handleEditClick}
-                            >
-                                <Edit className="w-5 h-5" />
-                            </Button>
                         </div>
                     </DialogHeader>
 
@@ -682,6 +674,20 @@ export function ProductDetailsModal({
                                 <Trash
                                     strokeWidth={1.2}
                                     className="text-red-600 w-7 h-7 dark:text-red-400"
+                                />
+                            </Button>
+
+                            {/* Edit Button */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                onClick={handleEditClick}
+                                title="Edit Product"
+                            >
+                                <Edit
+                                    strokeWidth={1.2}
+                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
                                 />
                             </Button>
                         </div>

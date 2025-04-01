@@ -29,13 +29,15 @@ export const useReportApi = () => {
                 params,
             );
             try {
-                const response = await axiosInstance.post(
-                    `/reports/client/${clientId}/quotations`,
+                const response = await axiosInstance.get(
+                    `/reports/client/${clientId}`,
                     {
-                        name: params.name,
-                        startDate: params.startDate,
-                        endDate: params.endDate,
-                        additionalFilters: params.additionalFilters,
+                        params: {
+                            name: params.name,
+                            startDate: params.startDate,
+                            endDate: params.endDate,
+                            additionalFilters: params.additionalFilters,
+                        },
                     },
                 );
 

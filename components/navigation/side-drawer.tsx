@@ -13,7 +13,7 @@ import {
     KeySquare,
     BriefcaseBusiness,
     Images,
-    // MapPin,
+    MapPin,
     Warehouse,
     Settings,
 } from 'lucide-react';
@@ -90,14 +90,14 @@ const navigationItems = [
         // All authenticated users can access journals
         feature: 'journal',
     },
-    // {
-    //     title: 'Map View',
-    //     icon: <MapPin size={18} strokeWidth={1.5} />,
-    //     href: '/map',
-    //     description: 'View check-ins, tasks, events and team locations',
-    //     // All authenticated users can access the map
-    //     feature: 'dashboard',
-    // },
+    {
+        title: 'Map View',
+        icon: <MapPin size={18} strokeWidth={1.5} />,
+        href: '/map',
+        description: 'View check-ins, tasks, events and team locations',
+        // All authenticated users can access the map
+        feature: 'dashboard',
+    },
     {
         title: 'Quotations',
         icon: <ShoppingBag size={18} strokeWidth={1.5} />,

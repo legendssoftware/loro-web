@@ -143,28 +143,23 @@ export default function MapComponent({
 
     // Process all markers to display
     const allMarkers = useMemo(() => {
-        // Create a set of all entities we want to show on the map - excluding quotations
-        const entities = new Set([
+        // Create an array of all entities we want to show on the map
+        const entities = [
             ...filteredWorkers, // Already filtered by the parent component
-            ...(filteredWorkers.some((w) => w.markerType === 'client')
-                ? []
-                : clients),
-            ...(filteredWorkers.some((w) => w.markerType === 'competitor')
-                ? []
-                : competitors),
-            // Quotations are intentionally excluded from the map display
-        ]);
+            ...(clients || []),
+            ...(competitors || []),
+            ...(quotations || [])
+        ].filter(Boolean); // Remove any undefined or null entries
 
         // Filter out any invalid entities and ensure they have valid positions
-        return Array.from(entities).filter(
+        return entities.filter(
             (entity) =>
                 entity &&
                 entity.id &&
                 entity.position &&
-                isValidPosition(entity.position) &&
-                entity.markerType !== 'quotation', // Additional filter to ensure no quotations are shown
+                isValidPosition(entity.position)
         );
-    }, [filteredWorkers, clients, competitors]); // Removed quotations from dependencies
+    }, [filteredWorkers, clients, competitors, quotations]);
 
     // Now handle the markers differently for rendering
     return (

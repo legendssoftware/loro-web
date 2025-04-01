@@ -15,6 +15,7 @@ import {
     CalendarClock,
     UserPlus,
     Building,
+    Coffee,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMapQuery } from '@/hooks/use-map-query';
@@ -45,9 +46,12 @@ type FilterType =
     | 'all'
     | 'check-in'
     | 'shift-start'
+    | 'shift-end'
     | 'lead'
     | 'journal'
     | 'task'
+    | 'break-start'
+    | 'break-end'
     | 'client'
     | 'competitor'
     | 'quotation';
@@ -80,6 +84,8 @@ export default function MapPage() {
         enabled: isClient, // Only enable the query when client-side
     });
 
+    console.log(workers, clients, competitors, quotations, 'here');
+
     // Set isClient to true when component mounts
     useEffect(() => {
         setIsClient(true);
@@ -108,24 +114,71 @@ export default function MapPage() {
 
     // Get all entities for the map based on active filter
     const getFilteredEntities = () => {
-        switch (activeFilter) {
-            case 'all':
-                return [
-                    ...(workers || []),
-                    ...(clients || []),
-                    ...(competitors || []),
-                    ...(quotations || [])
-                ];
-            case 'client':
-                return clients || [];
-            case 'competitor':
-                return competitors || [];
-            case 'quotation':
-                return quotations || [];
-            default:
-                // For worker-specific filters (check-in, shift-start, lead, journal, task)
-                return workers?.filter(worker => worker.markerType === activeFilter) || [];
+        const entities = [];
+
+        // Always verify that each entity has valid position data
+        const hasValidPosition = (entity: any) => {
+            return entity &&
+                   entity.position &&
+                   Array.isArray(entity.position) &&
+                   entity.position.length === 2 &&
+                   typeof entity.position[0] === 'number' &&
+                   typeof entity.position[1] === 'number';
+        };
+
+        // Add filtered entities based on the active filter
+        if (activeFilter === 'all') {
+            // Add all workers with valid positions
+            const validWorkers = workers?.filter(hasValidPosition) || [];
+            entities.push(...validWorkers);
+
+            // Add all clients with valid positions
+            const validClients = clients?.filter(hasValidPosition) || [];
+            entities.push(...validClients);
+
+            // Add all competitors with valid positions
+            const validCompetitors = competitors?.filter(hasValidPosition) || [];
+            entities.push(...validCompetitors);
+
+            // Add all quotations with valid positions
+            const validQuotations = quotations?.filter(hasValidPosition) || [];
+            entities.push(...validQuotations);
+        } else {
+            // Filter by specific types
+            switch (activeFilter) {
+                case 'check-in':
+                case 'shift-start':
+                case 'shift-end':
+                case 'lead':
+                case 'journal':
+                case 'task':
+                case 'break-start':
+                case 'break-end':
+                    // Filter workers by marker type
+                    const filteredWorkers = workers?.filter(worker =>
+                        worker.markerType === activeFilter && hasValidPosition(worker)
+                    ) || [];
+                    entities.push(...filteredWorkers);
+                    break;
+
+                case 'client':
+                    const filteredClients = clients?.filter(hasValidPosition) || [];
+                    entities.push(...filteredClients);
+                    break;
+
+                case 'competitor':
+                    const filteredCompetitors = competitors?.filter(hasValidPosition) || [];
+                    entities.push(...filteredCompetitors);
+                    break;
+
+                case 'quotation':
+                    const filteredQuotations = quotations?.filter(hasValidPosition) || [];
+                    entities.push(...filteredQuotations);
+                    break;
+            }
         }
+
+        return entities;
     };
 
     const filteredEntities = getFilteredEntities();
@@ -160,9 +213,9 @@ export default function MapPage() {
                 <div className="relative w-[98%] mx-auto h-[90vh] p-1 rounded border border-card">
                     <MapComponent
                         filteredWorkers={filteredEntities}
-                        clients={clients}
-                        competitors={competitors}
-                        quotations={quotations}
+                        clients={activeFilter === 'all' || activeFilter === 'client' ? clients : []}
+                        competitors={activeFilter === 'all' || activeFilter === 'competitor' ? competitors : []}
+                        quotations={activeFilter === 'all' || activeFilter === 'quotation' ? quotations : []}
                         selectedMarker={selectedMarker}
                         highlightedMarkerId={highlightedMarkerId}
                         handleMarkerClick={handleMarkerClick}
@@ -180,7 +233,7 @@ export default function MapPage() {
                                 <Filter size={14} strokeWidth={1.5} />
                                 <span className="text-[10px] font-thin uppercase font-body">
                                     {activeFilter === 'all'
-                                        ? 'ALL'
+                                        ? 'Select A Filter'
                                         : activeFilter
                                               .split('-')
                                               .map(
@@ -206,9 +259,12 @@ export default function MapPage() {
                                         { id: 'all', label: 'All', icon: List },
                                         { id: 'check-in', label: 'Check In', icon: MapPin },
                                         { id: 'shift-start', label: 'Shift Start', icon: Clock },
+                                        { id: 'shift-end', label: 'Shift End', icon: Clock },
                                         { id: 'lead', label: 'Lead', icon: UserPlus },
                                         { id: 'journal', label: 'Journal', icon: FileText },
                                         { id: 'task', label: 'Task', icon: CalendarClock },
+                                        { id: 'break-start', label: 'Break Start', icon: Coffee },
+                                        { id: 'break-end', label: 'Break End', icon: Coffee },
                                         { id: 'client', label: 'Client', icon: Building },
                                         { id: 'competitor', label: 'Competitor', icon: Building },
                                         { id: 'quotation', label: 'Quotation', icon: FileText }
@@ -226,7 +282,7 @@ export default function MapPage() {
                                             )}
                                         >
                                             <filter.icon size={14} strokeWidth={1.5} />
-                                            <span className="text-[10px] uppercase font-thin">
+                                            <span className="text-[10px] uppercase font-thin font-body">
                                                 {filter.label}
                                             </span>
                                         </button>

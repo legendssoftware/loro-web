@@ -192,16 +192,6 @@ export function ClientQuotationReport({
                         Comprehensive quotation analysis and product insights
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        onClick={handleExportPdf}
-                        variant="outline"
-                        size="sm"
-                        className="gap-1 text-xs font-body"
-                    >
-                        <FileText className="w-4 h-4" /> Export PDF
-                    </Button>
-                </div>
             </div>
 
             <div className="flex w-full mb-4 overflow-hidden border-b border-border/10">

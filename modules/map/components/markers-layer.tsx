@@ -57,6 +57,9 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             ? `https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(worker.location.address)}&key=YOUR_API_KEY&fallback=true`
             : '/placeholder.svg?height=200&width=400';
 
+    // Profile image for worker
+    const profileImage = 'https://images.pexels.com/photos/1181346/pexels-photo-1181346.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+
     // Get the entity name for display
     const entityName =
         isQuotationType && 'quotationNumber' in worker
@@ -88,7 +91,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         <Image
                             src={
                                 isWorkerType && 'image' in worker && worker.image
-                                    ? worker.image
+                                    ? profileImage
                                     : '/placeholder.svg?height=64&width=64'
                             }
                             alt={entityName}
@@ -154,7 +157,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         </p>
                         {worker.totalAmount && (
                             <p className="text-[10px] font-semibold mt-2">
-                                Total: ${worker.totalAmount.toFixed(2)}
+                                Total: ${typeof worker.totalAmount === 'number' ? worker.totalAmount.toFixed(2) : worker.totalAmount}
                             </p>
                         )}
                     </div>
@@ -166,7 +169,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         </p>
                         <div className="grid grid-cols-2 gap-1">
                             <p className="text-[9px] text-muted-foreground">
-                                Quotation Date: {new Date(worker.quotationDate).toLocaleDateString()}
+                                Quotation Date: {worker.quotationDate ? new Date(worker.quotationDate).toLocaleDateString() : 'N/A'}
                             </p>
                             {worker.validUntil && (
                                 <p className="text-[9px] text-muted-foreground">
@@ -562,7 +565,19 @@ export default function MarkersLayer({
     highlightedMarkerId,
     handleMarkerClick,
 }: MarkersLayerProps) {
-    if (!Array.isArray(filteredWorkers)) return null;
+    if (!Array.isArray(filteredWorkers)) {
+        console.error("filteredWorkers is not an array:", filteredWorkers);
+        return null;
+    }
+
+    // Log the number of markers to be rendered
+    console.log(`Rendering ${filteredWorkers.length} markers on t he m ap`);
+
+    // Log any markers with invalid positions
+    const invalidMarkers = filteredWorkers.filter(worker => !isValidPosition(worker.position));
+    if (invalidMarkers.length > 0) {
+        console.warn(`Found ${invalidMarkers.length} markers with invalid positions`, invalidMarkers);
+    }
 
     return (
         <>
@@ -571,7 +586,7 @@ export default function MarkersLayer({
                 const uniqueKey = `${worker.id}-${worker.markerType}-${Math.random().toString(36).substr(2, 9)}`;
 
                 if (!isValidPosition(worker.position)) {
-                    console.warn(`Invalid position for worker: ${worker.id}`);
+                    console.warn(`Invalid position for worker: ${worker.id}, position: ${JSON.stringify(worker.position)}`);
                     return null;
                 }
 

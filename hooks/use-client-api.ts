@@ -181,7 +181,7 @@ export const useClientApi = () => {
         additionalFilters?: Record<string, any>;
     } = {}): Promise<ApiResponse<any>> => {
         try {
-            const response = await axiosInstance.post(`/reports/client/${clientId}/quotations`, {
+            const response = await axiosInstance.post(`/reports/client/${clientId}`, {
                 name: 'Client Quotation Report',
                 startDate: params.startDate,
                 endDate: params.endDate,

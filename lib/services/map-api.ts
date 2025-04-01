@@ -1,5 +1,11 @@
 import { axiosInstance } from './api-client';
-import { WorkerType, EventType, ClientType, CompetitorType, QuotationType } from '@/lib/data';
+import {
+    WorkerType,
+    EventType,
+    ClientType,
+    CompetitorType,
+    QuotationType,
+} from '@/lib/data';
 
 export interface MapConfigType {
     defaultCenter: { lat: number; lng: number };
@@ -11,12 +17,14 @@ export interface MapConfigType {
 }
 
 export interface MapDataResponse {
-    workers: WorkerType[];
-    events: EventType[];
-    mapConfig?: MapConfigType;
-    competitors?: CompetitorType[];
-    clients?: ClientType[];
-    quotations?: QuotationType[];
+    data: {
+        workers: WorkerType[];
+        events: EventType[];
+        mapConfig?: MapConfigType;
+        competitors?: CompetitorType[];
+        clients?: ClientType[];
+        quotations?: QuotationType[];
+    };
 }
 
 /**

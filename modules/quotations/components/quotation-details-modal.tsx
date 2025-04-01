@@ -80,6 +80,8 @@ export function QuotationDetailsModal({
     const [editValue, setEditValue] = useState<string>('');
     const [discountValue, setDiscountValue] = useState<string>('0');
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [editedItems, setEditedItems] = useState<Record<number, { quantity?: number; price?: number; totalPrice?: number }>>({});
+    const [editedDiscount, setEditedDiscount] = useState<number>(0);
 
     const quotation = data as Quotation;
 
@@ -152,6 +154,9 @@ export function QuotationDetailsModal({
         handleTabChange('items');
         // Enter editing mode
         setIsEditing(true);
+        // Reset any previous edits when starting a new edit session
+        setEditedItems({});
+        setEditedDiscount(0);
     };
 
     // Add handlers for editing fields
@@ -171,42 +176,48 @@ export function QuotationDetailsModal({
     };
 
     const handleSaveEdit = () => {
-        if (!editingItemId || !editingField || !quotation.quotationItems)
-            return;
-
+        if (!editingItemId || !editingField || !quotation.quotationItems) return;
+        
         // Find the item being edited
-        const updatedItems = quotation.quotationItems.map((item) => {
-            if (item.uid === editingItemId) {
-                const updatedItem = { ...item };
-
-                // Update the appropriate field
-                if (editingField === 'quantity') {
-                    updatedItem.quantity =
-                        parseInt(editValue, 10) || item.quantity;
-                    // Recalculate the total price
-                    if (updatedItem.product && updatedItem.product.price) {
-                        updatedItem.totalPrice =
-                            updatedItem.quantity * updatedItem.product.price;
-                    }
-                } else if (editingField === 'price' && updatedItem.product) {
-                    // Update the product price
-                    updatedItem.product = {
-                        ...updatedItem.product,
-                        price:
-                            parseFloat(editValue) || updatedItem.product.price,
-                    };
-                    // Recalculate the total price
-                    updatedItem.totalPrice =
-                        updatedItem.quantity * updatedItem.product.price;
-                }
-
-                return updatedItem;
+        const itemToUpdate = quotation.quotationItems.find(item => item.uid === editingItemId);
+        if (!itemToUpdate) return;
+        
+        // Create updated item properties
+        let updatedProps: { quantity?: number; price?: number; totalPrice?: number } = {};
+        
+        // Update the appropriate field
+        if (editingField === 'quantity') {
+            const newQuantity = parseInt(editValue, 10) || itemToUpdate.quantity;
+            updatedProps.quantity = newQuantity;
+            
+            // Get the current price (either from edited state or original)
+            const currentPrice = editedItems[itemToUpdate.uid]?.price ?? 
+                                (itemToUpdate.product?.price ?? 0);
+            
+            // Recalculate total price
+            updatedProps.totalPrice = newQuantity * currentPrice;
+        } else if (editingField === 'price' && itemToUpdate.product) {
+            const newPrice = parseFloat(editValue) || itemToUpdate.product.price || 0;
+            updatedProps.price = newPrice;
+            
+            // Get the current quantity (either from edited state or original)
+            const currentQuantity = editedItems[itemToUpdate.uid]?.quantity ?? 
+                                   itemToUpdate.quantity;
+            
+            // Recalculate total price
+            updatedProps.totalPrice = currentQuantity * newPrice;
+        }
+        
+        // Update the edited items state
+        setEditedItems(prev => ({
+            ...prev,
+            [editingItemId]: {
+                ...prev[editingItemId],
+                ...updatedProps
             }
-            return item;
-        });
-
-        // You would ideally update the quotation in state here
-        // For now, we'll just reset the editing states
+        }));
+        
+        // Reset editing states
         setEditingItemId(null);
         setEditingField(null);
         setEditValue('');
@@ -220,9 +231,19 @@ export function QuotationDetailsModal({
         setEditValue(e.target.value);
     };
 
+    const handleSaveDiscountEdit = () => {
+        const newDiscount = parseFloat(discountValue) || 0;
+        setEditedDiscount(newDiscount);
+        setEditingField(null);
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            handleSaveEdit();
+            if (editingField === 'discount') {
+                handleSaveDiscountEdit();
+            } else {
+                handleSaveEdit();
+            }
         } else if (e.key === 'Escape') {
             setEditingItemId(null);
             setEditingField(null);
@@ -252,32 +273,67 @@ export function QuotationDetailsModal({
     // Add a function to save all changes to the quotation
     const handleSaveQuotationChanges = async () => {
         if (!quotation || !onEditQuotation) return;
-
+        
         // Create an object with all the updates
         const updatedQuotationData: Partial<Quotation> = {};
-
+        
         // Add updated items if any were edited
-        if (quotation.quotationItems && quotation.quotationItems.length > 0) {
-            // Here you would collect all the changes from edited items
-            // For now, we're just demonstrating the structure
+        if (Object.keys(editedItems).length > 0 && quotation.quotationItems) {
+            // Create a copy of the quotation items with updates applied
+            const updatedItems = quotation.quotationItems.map(item => {
+                const edits = editedItems[item.uid];
+                if (!edits) return item;
+                
+                const updatedItem = { ...item };
+                
+                // Update quantity if edited
+                if (edits.quantity !== undefined) {
+                    updatedItem.quantity = edits.quantity;
+                }
+                
+                // Update price if edited
+                if (edits.price !== undefined && updatedItem.product) {
+                    updatedItem.product = {
+                        ...updatedItem.product,
+                        price: edits.price
+                    };
+                }
+                
+                // Update total price
+                if (edits.totalPrice !== undefined) {
+                    updatedItem.totalPrice = edits.totalPrice;
+                }
+                
+                return updatedItem;
+            });
+            
+            updatedQuotationData.quotationItems = updatedItems;
+            
+            // Update total amount based on edited items
+            updatedQuotationData.totalAmount = calculateUpdatedSubtotal() - editedDiscount;
+        } else if (editedDiscount > 0) {
+            // If only discount was changed, update the total amount accordingly
+            updatedQuotationData.totalAmount = calculateUpdatedSubtotal() - editedDiscount;
         }
-
+        
         // Add discount if it was changed
-        if (discountValue && discountValue !== '0') {
-            (updatedQuotationData as any).discount = parseFloat(discountValue);
+        if (editedDiscount > 0) {
+            (updatedQuotationData as any).discount = editedDiscount;
         }
-
+        
         try {
             // Call the onEditQuotation function with the updated data
             await onEditQuotation(quotation.uid, updatedQuotationData);
-
+            
             // Exit editing mode
             setIsEditing(false);
-
+            
             // Reset all editing states
             setEditingItemId(null);
             setEditingField(null);
             setEditValue('');
+            setEditedItems({});
+            setEditedDiscount(0);
         } catch (error) {
             console.error('Error updating quotation:', error);
         }
@@ -299,6 +355,36 @@ export function QuotationDetailsModal({
         { id: 'items', label: 'Items' },
         { id: 'client', label: 'Client' },
     ];
+
+    // Add helper functions to calculate totals with edited values
+    const calculateUpdatedSubtotal = () => {
+        if (!quotation.quotationItems || quotation.quotationItems.length === 0) {
+            return quotation?.totalAmount || 0;
+        }
+        
+        return quotation.quotationItems.reduce((total, item) => {
+            // Get the edited quantity or use original
+            const quantity = editedItems[item.uid]?.quantity ?? item.quantity;
+            
+            // Get the edited price or use original
+            const price = editedItems[item.uid]?.price ?? 
+                         (item.product?.price ?? 0);
+            
+            // Calculate the item total
+            const itemTotal = quantity * price;
+            
+            return total + itemTotal;
+        }, 0);
+    };
+
+    const calculateUpdatedTotal = () => {
+        const subtotal = calculateUpdatedSubtotal();
+        return subtotal - editedDiscount;
+    };
+
+    const hasEdits = () => {
+        return Object.keys(editedItems).length > 0 || editedDiscount > 0;
+    };
 
     return (
         <>
@@ -653,137 +739,104 @@ export function QuotationDetailsModal({
                                                             </div>
                                                             <div className="col-span-2 text-center">
                                                                 <div className="flex items-center justify-center">
-                                                                    {editingItemId ===
-                                                                        item.uid &&
-                                                                    editingField ===
-                                                                        'quantity' ? (
+                                                                    {isEditing && editingItemId === item.uid && editingField === 'quantity' ? (
                                                                         <div className="flex items-center">
                                                                             <input
                                                                                 type="number"
                                                                                 className="w-16 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
-                                                                                value={
-                                                                                    editValue
-                                                                                }
-                                                                                onChange={
-                                                                                    handleInputChange
-                                                                                }
-                                                                                onKeyDown={
-                                                                                    handleKeyDown
-                                                                                }
+                                                                                value={editValue}
+                                                                                onChange={handleInputChange}
+                                                                                onKeyDown={handleKeyDown}
                                                                                 autoFocus
                                                                                 min="1"
                                                                             />
                                                                             <button
                                                                                 className="p-1 ml-1 text-primary hover:text-primary/80"
-                                                                                onClick={
-                                                                                    handleSaveEdit
-                                                                                }
+                                                                                onClick={handleSaveEdit}
                                                                             >
                                                                                 <Save className="w-4 h-4" />
                                                                             </button>
                                                                         </div>
                                                                     ) : (
                                                                         <div
-                                                                            className="flex items-center cursor-pointer group"
+                                                                            className={`flex items-center ${isEditing ? 'cursor-pointer group' : ''}`}
                                                                             onClick={() =>
-                                                                                handleStartEdit(
+                                                                                isEditing && handleStartEdit(
                                                                                     item.uid,
                                                                                     'quantity',
                                                                                     item.quantity.toString(),
                                                                                 )
                                                                             }
                                                                         >
-                                                                            <span className="text-sm font-medium font-body group-hover:text-primary">
-                                                                                {
-                                                                                    item.quantity
-                                                                                }
+                                                                            <span className={`text-sm font-medium font-body ${
+                                                                                editedItems[item.uid]?.quantity !== undefined ? 'text-primary font-semibold' : ''
+                                                                            }`}>
+                                                                                {editedItems[item.uid]?.quantity ?? item.quantity}
                                                                             </span>
-                                                                            <PenLine
-                                                                                className="ml-1 text-primary"
-                                                                                size={
-                                                                                    20
-                                                                                }
-                                                                                strokeWidth={
-                                                                                    1.2
-                                                                                }
-                                                                            />
+                                                                            {isEditing && (
+                                                                                <PenLine
+                                                                                    className="ml-1 text-primary"
+                                                                                    size={20}
+                                                                                    strokeWidth={1.2}
+                                                                                />
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="col-span-2 text-right">
-                                                                <div className="flex items-center justify-end">
-                                                                    {editingItemId ===
-                                                                        item.uid &&
-                                                                    editingField ===
-                                                                        'price' ? (
-                                                                        <div className="flex items-center">
-                                                                            <input
-                                                                                type="number"
-                                                                                className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
-                                                                                value={
-                                                                                    editValue
-                                                                                }
-                                                                                onChange={
-                                                                                    handleInputChange
-                                                                                }
-                                                                                onKeyDown={
-                                                                                    handleKeyDown
-                                                                                }
-                                                                                autoFocus
-                                                                                min="0"
-                                                                                step="0.01"
-                                                                            />
-                                                                            <button
-                                                                                className="p-1 ml-1 text-primary hover:text-primary/80"
-                                                                                onClick={
-                                                                                    handleSaveEdit
-                                                                                }
-                                                                            >
-                                                                                <Save className="w-4 h-4" />
-                                                                            </button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div
-                                                                            className="flex items-center justify-end cursor-pointer group"
-                                                                            onClick={() =>
-                                                                                handleStartEdit(
-                                                                                    item.uid,
-                                                                                    'price',
-                                                                                    item.product.price?.toString() ||
-                                                                                        '0',
-                                                                                )
-                                                                            }
+                                                                {isEditing && editingItemId === item.uid && editingField === 'price' ? (
+                                                                    <div className="flex items-center justify-end">
+                                                                        <input
+                                                                            type="number"
+                                                                            className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
+                                                                            value={editValue}
+                                                                            onChange={handleInputChange}
+                                                                            onKeyDown={handleKeyDown}
+                                                                            autoFocus
+                                                                            min="0"
+                                                                            step="0.01"
+                                                                        />
+                                                                        <button
+                                                                            className="p-1 ml-1 text-primary hover:text-primary/80"
+                                                                            onClick={handleSaveEdit}
                                                                         >
-                                                                            <span className="text-[10px] font-medium font-body group-hover:text-primary">
-                                                                                {item
-                                                                                    .product
-                                                                                    .price
-                                                                                    ? formatCurrency(
-                                                                                          item
-                                                                                              .product
-                                                                                              .price,
-                                                                                      )
-                                                                                    : 'N/A'}
-                                                                            </span>
+                                                                            <Save className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div 
+                                                                        className={`flex items-center justify-end ${isEditing ? 'cursor-pointer group' : ''}`}
+                                                                        onClick={() => 
+                                                                            isEditing && handleStartEdit(
+                                                                                item.uid,
+                                                                                'price',
+                                                                                item.product.price?.toString() || '0',
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <span className={`text-[10px] font-medium font-body ${
+                                                                            editedItems[item.uid]?.price !== undefined ? 'text-primary font-semibold' : ''
+                                                                        } ${isEditing ? 'group-hover:text-primary' : ''}`}>
+                                                                            {formatCurrency(editedItems[item.uid]?.price ?? item.product.price ?? 0)}
+                                                                        </span>
+                                                                        {isEditing && (
                                                                             <PenLine
                                                                                 className="ml-1 text-primary"
-                                                                                size={
-                                                                                    20
-                                                                                }
-                                                                                strokeWidth={
-                                                                                    1.2
-                                                                                }
+                                                                                size={20}
+                                                                                strokeWidth={1.2}
                                                                             />
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                             <div className="col-span-2 text-right">
-                                                                <span className="text-sm font-medium font-body">
+                                                                <span className={`text-sm font-medium font-body ${
+                                                                    editedItems[item.uid]?.totalPrice !== undefined ? 'text-primary font-semibold' : ''
+                                                                }`}>
                                                                     {formatCurrency(
-                                                                        item.totalPrice ||
-                                                                            0,
+                                                                        editedItems[item.uid]?.totalPrice ?? 
+                                                                        (item.totalPrice || 0)
                                                                     )}
                                                                 </span>
                                                             </div>
@@ -807,30 +860,21 @@ export function QuotationDetailsModal({
                                                             Subtotal:
                                                         </span>
                                                         <span className="font-thin font-body">
-                                                            {formatCurrency(
-                                                                quotation?.totalAmount,
-                                                            )}
+                                                            {formatCurrency(calculateUpdatedSubtotal())}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center justify-between w-48">
                                                         <span className="text-[10px] font-normal uppercase font-body">
                                                             Discount:
                                                         </span>
-                                                        {editingField ===
-                                                        'discount' ? (
+                                                        {isEditing && editingField === 'discount' ? (
                                                             <div className="flex items-center">
                                                                 <input
                                                                     type="number"
                                                                     className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
-                                                                    value={
-                                                                        discountValue
-                                                                    }
-                                                                    onChange={
-                                                                        handleDiscountChange
-                                                                    }
-                                                                    onKeyDown={
-                                                                        handleKeyDown
-                                                                    }
+                                                                    value={discountValue}
+                                                                    onChange={handleDiscountChange}
+                                                                    onKeyDown={handleKeyDown}
                                                                     autoFocus
                                                                     min="0"
                                                                     step="0.01"
@@ -838,32 +882,26 @@ export function QuotationDetailsModal({
                                                                 />
                                                                 <button
                                                                     className="p-1 ml-1 text-primary hover:text-primary/80"
-                                                                    onClick={
-                                                                        handleSaveEdit
-                                                                    }
+                                                                    onClick={handleSaveDiscountEdit}
                                                                 >
                                                                     <Save className="w-4 h-4" />
                                                                 </button>
                                                             </div>
                                                         ) : (
                                                             <div
-                                                                className="flex items-center cursor-pointer group"
-                                                                onClick={
-                                                                    handleStartDiscountEdit
-                                                                }
+                                                                className={`flex items-center ${isEditing ? 'cursor-pointer group' : ''}`}
+                                                                onClick={() => isEditing && handleStartDiscountEdit()}
                                                             >
-                                                                <span className="font-thin font-body group-hover:text-primary">
-                                                                    {formatCurrency(
-                                                                        0,
-                                                                    )}
+                                                                <span className={`font-thin font-body ${isEditing ? 'group-hover:text-primary' : ''}`}>
+                                                                    {formatCurrency(editedDiscount)}
                                                                 </span>
-                                                                <PenLine
-                                                                    className="ml-1 text-primary"
-                                                                    size={20}
-                                                                    strokeWidth={
-                                                                        1.2
-                                                                    }
-                                                                />
+                                                                {isEditing && (
+                                                                    <PenLine
+                                                                        className="ml-1 text-primary"
+                                                                        size={20}
+                                                                        strokeWidth={1.2}
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -871,11 +909,10 @@ export function QuotationDetailsModal({
                                                         <span className="font-normal uppercase text-md font-body">
                                                             Total:
                                                         </span>
-                                                        <span className="font-thin font-body text-md">
-                                                            {formatCurrency(
-                                                                quotation?.totalAmount ||
-                                                                    0,
-                                                            )}
+                                                        <span className={`font-thin font-body text-md ${
+                                                            hasEdits() ? 'text-primary font-semibold' : ''
+                                                        }`}>
+                                                            {formatCurrency(calculateUpdatedTotal())}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1104,7 +1141,15 @@ export function QuotationDetailsModal({
                                         <Button
                                             variant="outline"
                                             className="w-[250px] px-6 py-2"
-                                            onClick={() => setIsEditing(false)}
+                                            onClick={() => {
+                                                setIsEditing(false);
+                                                // Clear all editing states
+                                                setEditingItemId(null);
+                                                setEditingField(null);
+                                                setEditValue('');
+                                                setEditedItems({});
+                                                setEditedDiscount(0);
+                                            }}
                                         >
                                             <X className="w-4 h-4 mr-2" />
                                             <span className="text-xs font-thin uppercase font-body">

@@ -37,11 +37,14 @@ interface LeadCategoryData {
 }
 
 // Dummy hourly leads data
-const dummyHourlyLeadsData: LeadHourlyData[] = Array.from({ length: 24 }, (_, i) => ({
-    hour: i.toString().padStart(2, '0'),
-    newLeads: Math.floor(Math.random() * 2) + 1, // Ensure positive values between 1-2
-    converted: Math.floor(Math.random() * 1.5), // Values between 0-1
-}));
+const dummyHourlyLeadsData: LeadHourlyData[] = Array.from(
+    { length: 24 },
+    (_, i) => ({
+        hour: i.toString().padStart(2, '0'),
+        newLeads: Math.floor(Math.random() * 2) + 1, // Ensure positive values between 1-2
+        converted: Math.floor(Math.random() * 1.5), // Values between 0-1
+    }),
+);
 
 // Dummy status distribution data
 const dummyStatusDistribution: LeadStatusData[] = [
@@ -70,7 +73,7 @@ export function LeadsHourlyActivityChart({
     data?: LeadHourlyData[];
 }) {
     // Process data to ensure it stays within reasonable bounds
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
         ...item,
         newLeads: Math.min(3, Math.max(0, item.newLeads)), // Cap between 0-3
         converted: Math.min(2, Math.max(0, item.converted)), // Cap between 0-2
@@ -86,7 +89,7 @@ export function LeadsHourlyActivityChart({
                     New and converted leads by hour
                 </p>
             </CardHeader>
-            <CardContent className="h-96 p-6 border rounded border-border/30 bg-card/50">
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={processedData}
@@ -98,13 +101,41 @@ export function LeadsHourlyActivityChart({
                         }}
                     >
                         <defs>
-                            <linearGradient id="newLeadsGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.2}/>
+                            <linearGradient
+                                id="newLeadsGradient"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor="#4F46E5"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="#4F46E5"
+                                    stopOpacity={0.2}
+                                />
                             </linearGradient>
-                            <linearGradient id="convertedGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#10B981" stopOpacity={0.2}/>
+                            <linearGradient
+                                id="convertedGradient"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor="#10B981"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="#10B981"
+                                    stopOpacity={0.2}
+                                />
                             </linearGradient>
                         </defs>
                         <CartesianGrid
@@ -158,9 +189,10 @@ export function LeadsHourlyActivityChart({
                             content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
                                     return (
-                                        <div className="p-3 bg-card border rounded shadow-md dark:bg-background dark:border-border/50">
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
                                             <p className="text-xs font-normal uppercase font-body">
-                                                Hour: {payload[0]?.payload?.hour}:00
+                                                Hour:{' '}
+                                                {payload[0]?.payload?.hour}:00
                                             </p>
                                             {payload.map((entry, index) => (
                                                 <div
@@ -175,7 +207,8 @@ export function LeadsHourlyActivityChart({
                                                         }}
                                                     />
                                                     <p className="text-[10px] font-normal uppercase font-body">
-                                                        {entry.name}: {entry.value}
+                                                        {entry.name}:{' '}
+                                                        {entry.value}
                                                     </p>
                                                 </div>
                                             ))}
@@ -216,6 +249,9 @@ export function LeadsHourlyActivityChart({
                         />
                     </AreaChart>
                 </ResponsiveContainer>
+                <p className="text-[10px] text-center uppercase text-muted-foreground font-body">
+                    hours of the day (0 - 23)
+                </p>
             </CardContent>
         </Card>
     );
@@ -239,7 +275,7 @@ export function LeadsStatusDistributionChart({
                     Breakdown of leads by current status
                 </p>
             </CardHeader>
-            <CardContent className="h-96 p-6 border rounded border-border/30 bg-card/50">
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -265,14 +301,21 @@ export function LeadsStatusDistributionChart({
                                 if (active && payload && payload.length) {
                                     const data = payload[0].payload;
                                     return (
-                                        <div className="p-3 bg-card border rounded shadow-md dark:bg-background dark:border-border/50">
-                                            <p className="text-xs font-normal uppercase font-body">{data.name}</p>
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {data.name}
+                                            </p>
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: data.color }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            data.color,
+                                                    }}
                                                 />
-                                                <p className="text-[10px] font-normal uppercase font-body">Count: {data.value}</p>
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Count: {data.value}
+                                                </p>
                                             </div>
                                         </div>
                                     );
@@ -312,7 +355,7 @@ export function LeadsByCategoryChart({
                     Distribution of leads by source category
                 </p>
             </CardHeader>
-            <CardContent className="h-96 p-6 border rounded border-border/30 bg-card/50">
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -338,14 +381,21 @@ export function LeadsByCategoryChart({
                                 if (active && payload && payload.length) {
                                     const data = payload[0].payload;
                                     return (
-                                        <div className="p-3 bg-card border rounded shadow-md dark:bg-background dark:border-border/50">
-                                            <p className="text-xs font-normal uppercase font-body">{data.name}</p>
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {data.name}
+                                            </p>
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: data.color }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            data.color,
+                                                    }}
                                                 />
-                                                <p className="text-[10px] font-normal uppercase font-body">Count: {data.value}</p>
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Count: {data.value}
+                                                </p>
                                             </div>
                                         </div>
                                     );

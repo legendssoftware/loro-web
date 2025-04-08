@@ -29,32 +29,42 @@ interface WeeklyRevenueData {
 }
 
 // Dummy hourly sales data
-const dummyHourlySalesData: HourlySalesData[] = Array.from({ length: 24 }, (_, i) => ({
-    hour: i.toString().padStart(2, '0'),
-    quotations: Math.floor(Math.random() * 1.5), // Values between 0-1
-    revenue: Math.floor(Math.random() * 800) + 100, // Values between 100-900
-}));
+const dummyHourlySalesData: HourlySalesData[] = Array.from(
+    { length: 24 },
+    (_, i) => ({
+        hour: i.toString().padStart(2, '0'),
+        quotations: Math.floor(Math.random() * 1.5), // Values between 0-1
+        revenue: Math.floor(Math.random() * 800) + 100, // Values between 100-900
+    }),
+);
 
 // Dummy daily revenue data for the past week
-const dummyWeeklyRevenueData: WeeklyRevenueData[] = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - 6 + i);
-    return {
-        date: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        revenue: Math.floor(Math.random() * 4000) + 500, // Values between 500-4500
-    };
-});
+const dummyWeeklyRevenueData: WeeklyRevenueData[] = Array.from(
+    { length: 7 },
+    (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - 6 + i);
+        return {
+            date: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            revenue: Math.floor(Math.random() * 4000) + 500, // Values between 500-4500
+        };
+    },
+);
 
-export function SalesHourlyActivityChart({ data = dummyHourlySalesData }: { data?: HourlySalesData[] }) {
+export function SalesHourlyActivityChart({
+    data = dummyHourlySalesData,
+}: {
+    data?: HourlySalesData[];
+}) {
     // Process data to ensure it stays within reasonable bounds
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
         ...item,
         quotations: Math.min(2, Math.max(0, item.quotations)), // Cap between 0-2
         revenue: Math.min(1000, Math.max(0, item.revenue)), // Cap between 0-1000
     }));
 
     // Calculate the max revenue for proper Y axis scaling
-    const maxRevenue = Math.max(...processedData.map(item => item.revenue));
+    const maxRevenue = Math.max(...processedData.map((item) => item.revenue));
     const revenueAxisMax = Math.ceil(maxRevenue / 250) * 250; // Round up to nearest 250
 
     return (
@@ -67,7 +77,7 @@ export function SalesHourlyActivityChart({ data = dummyHourlySalesData }: { data
                     Quotations and revenue by hour
                 </p>
             </CardHeader>
-            <CardContent className="h-96 p-6 border rounded border-border/30 bg-card/50">
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={processedData}
@@ -79,16 +89,48 @@ export function SalesHourlyActivityChart({ data = dummyHourlySalesData }: { data
                         }}
                     >
                         <defs>
-                            <linearGradient id="quotationsGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.2}/>
+                            <linearGradient
+                                id="quotationsGradient"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor="#4F46E5"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="#4F46E5"
+                                    stopOpacity={0.2}
+                                />
                             </linearGradient>
-                            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#10B981" stopOpacity={0.2}/>
+                            <linearGradient
+                                id="revenueGradient"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor="#10B981"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="#10B981"
+                                    stopOpacity={0.2}
+                                />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                            opacity={0.1}
+                        />
                         <XAxis
                             dataKey="hour"
                             axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
@@ -162,24 +204,33 @@ export function SalesHourlyActivityChart({ data = dummyHourlySalesData }: { data
                                     return (
                                         <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
                                             <p className="text-xs font-normal uppercase font-body">
-                                                Hour: {payload[0]?.payload?.hour}:00
+                                                Hour:{' '}
+                                                {payload[0]?.payload?.hour}:00
                                             </p>
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: '#4F46E5' }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            '#4F46E5',
+                                                    }}
                                                 />
                                                 <p className="text-[10px] font-normal uppercase font-body">
-                                                    Quotations: {payload[0]?.value || 0}
+                                                    Quotations:{' '}
+                                                    {payload[0]?.value || 0}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: '#10B981' }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            '#10B981',
+                                                    }}
                                                 />
                                                 <p className="text-[10px] font-normal uppercase font-body">
-                                                    Revenue: R {payload[1]?.value || 0}
+                                                    Revenue: R{' '}
+                                                    {payload[1]?.value || 0}
                                                 </p>
                                             </div>
                                         </div>
@@ -221,25 +272,32 @@ export function SalesHourlyActivityChart({ data = dummyHourlySalesData }: { data
                         />
                     </AreaChart>
                 </ResponsiveContainer>
+                <p className="text-[10px] text-center uppercase text-muted-foreground font-body">
+                    hours of the day (0 - 23)
+                </p>
             </CardContent>
         </Card>
     );
 }
 
-export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: WeeklyRevenueData[] }) {
+export function WeeklyRevenueChart({
+    data = dummyWeeklyRevenueData,
+}: {
+    data?: WeeklyRevenueData[];
+}) {
     const formatCurrency = (value: number | string) => {
         const numValue = typeof value === 'string' ? parseFloat(value) : value;
         return `R ${numValue.toLocaleString('en-ZA')}`;
     };
 
     // Process data to ensure it stays within reasonable bounds
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
         ...item,
         revenue: Math.min(5000, Math.max(0, item.revenue)), // Cap between 0-5000
     }));
 
     // Calculate the max revenue for proper Y axis scaling
-    const maxRevenue = Math.max(...processedData.map(item => item.revenue));
+    const maxRevenue = Math.max(...processedData.map((item) => item.revenue));
     const revenueAxisMax = Math.ceil(maxRevenue / 1000) * 1000; // Round up to nearest 1000
 
     return (
@@ -252,7 +310,7 @@ export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: W
                     Revenue performance over the past week
                 </p>
             </CardHeader>
-            <CardContent className="h-96 p-6 border rounded border-border/30 bg-card/50">
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={processedData}
@@ -263,7 +321,11 @@ export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: W
                             bottom: 20,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                            opacity={0.1}
+                        />
                         <XAxis
                             dataKey="date"
                             axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
@@ -307,7 +369,11 @@ export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: W
                             }}
                         />
                         <Tooltip
-                            cursor={{ stroke: '#9CA3AF', strokeWidth: 2, strokeDasharray: '3 3' }}
+                            cursor={{
+                                stroke: '#9CA3AF',
+                                strokeWidth: 2,
+                                strokeDasharray: '3 3',
+                            }}
                             content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
                                     const value = payload[0]?.value;
@@ -319,10 +385,16 @@ export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: W
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: '#10B981' }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            '#10B981',
+                                                    }}
                                                 />
                                                 <p className="text-[10px] font-normal uppercase font-body">
-                                                    Revenue: {typeof value === 'number' ? formatCurrency(value) : 'R 0'}
+                                                    Revenue:{' '}
+                                                    {typeof value === 'number'
+                                                        ? formatCurrency(value)
+                                                        : 'R 0'}
                                                 </p>
                                             </div>
                                         </div>
@@ -337,8 +409,18 @@ export function WeeklyRevenueChart({ data = dummyWeeklyRevenueData }: { data?: W
                             name="Revenue"
                             stroke="#10B981"
                             strokeWidth={2}
-                            dot={{ fill: '#10B981', r: 4, strokeWidth: 2, stroke: '#fff' }}
-                            activeDot={{ fill: '#10B981', r: 6, strokeWidth: 2, stroke: '#fff' }}
+                            dot={{
+                                fill: '#10B981',
+                                r: 4,
+                                strokeWidth: 2,
+                                stroke: '#fff',
+                            }}
+                            activeDot={{
+                                fill: '#10B981',
+                                r: 6,
+                                strokeWidth: 2,
+                                stroke: '#fff',
+                            }}
                             isAnimationActive={false} // Disable animation to avoid potential rendering issues
                         />
                     </LineChart>

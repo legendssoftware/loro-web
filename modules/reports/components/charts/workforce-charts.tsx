@@ -52,7 +52,7 @@ export function WorkforceHourlyActivityChart({
     data?: WorkforceHourlyItem[];
 }) {
     // Process data to ensure it stays within reasonable bounds
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
         ...item,
         activeCount: Math.min(10, Math.max(0, item.activeCount)), // Cap between 0-10
         checkIns: Math.min(5, Math.max(0, item.checkIns)), // Cap between 0-5
@@ -259,6 +259,9 @@ export function WorkforceHourlyActivityChart({
                         />
                     </AreaChart>
                 </ResponsiveContainer>
+                <p className="text-[10px] text-center uppercase text-muted-foreground font-body">
+                    hours of the day (0 - 23)
+                </p>
             </CardContent>
         </Card>
     );

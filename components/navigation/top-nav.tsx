@@ -7,14 +7,48 @@ import { isAuthRoute } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/use-app-store';
-import { LayoutDashboardIcon, Power } from 'lucide-react';
+import { LayoutDashboardIcon, Power, PhoneCall, X } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useHelp } from '@/hooks/use-help';
 
 export function TopNav() {
     const pathname = usePathname();
-    const { signOut, profileData, accessToken } = useAuthStore();
+    const { signOut, profileData, accessToken, isAuthenticated } =
+        useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
+
+    // Always call the hook, regardless of authentication status
+    const {
+        startCall: originalStartCall,
+        endCall,
+        isCallActive,
+        isCallInitializing,
+    } = useHelp();
+
+    // Wrap startCall to only work when authenticated
+    const startCall = () => {
+        if (!isAuthenticated) {
+            toast.error('Please sign in to use the voice assistant', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '❌',
+            });
+            return;
+        }
+
+        originalStartCall();
+    };
 
     // Check if user is a client by examining profileData or JWT token
     const isClient =
@@ -138,6 +172,34 @@ export function TopNav() {
                             <Power className="w-5 h-5" />
                             <span className="sr-only">Sign out</span>
                         </Button>
+                        {isCallActive ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="relative text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                onClick={endCall}
+                            >
+                                <PhoneCall strokeWidth={1.2} size={20} />
+                                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                <span className="sr-only">
+                                    End Assistant Call
+                                </span>
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="relative text-green-500 hover:bg-green-100 dark:hover:bg-green-900/20"
+                                onClick={startCall}
+                                disabled={isCallInitializing}
+                            >
+                                <PhoneCall strokeWidth={1.2} size={20} />
+                                {isCallInitializing && (
+                                    <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                )}
+                                <span className="sr-only">Voice Assistant</span>
+                            </Button>
+                        )}
                         <ThemeToggler />
                         <div className="relative">
                             <Avatar className="w-8 h-8 ring-2 ring-primary">

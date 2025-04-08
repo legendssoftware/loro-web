@@ -96,7 +96,7 @@ export const createCustomIcon = (type: MarkerType, isHighlighted = false) => {
     const size = isHighlighted ? 42 : 34; // Slightly larger for better visibility
     const borderWidth = isHighlighted ? 3 : 2;
     const borderColor = 'white';
-    
+
     // Keep the same color but make it slightly brighter when highlighted
     const highlightedColor = isHighlighted
         ? color.replace(/^#/, '') // Remove leading #

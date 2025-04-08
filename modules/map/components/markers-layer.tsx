@@ -26,6 +26,7 @@ import {
     AlertTriangle,
     UserPlus
 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/formatters';
 
 interface MarkerPopupProps {
     worker: WorkerType | ClientType | CompetitorType | QuotationType;
@@ -197,7 +198,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         </p>
                         {worker.totalAmount && (
                             <p className="text-[10px] font-semibold mt-2">
-                                Total: ${typeof worker.totalAmount === 'number' ? worker.totalAmount.toFixed(2) : worker.totalAmount}
+                                Total: {formatCurrency(worker.totalAmount)}
                             </p>
                         )}
                     </div>

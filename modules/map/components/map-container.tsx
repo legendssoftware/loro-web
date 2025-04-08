@@ -14,38 +14,6 @@ import MarkersLayer from './markers-layer';
 import MapCenter from './map-center';
 import { useLeafletInit } from '../hooks/use-leaflet-init';
 
-// Define a union type for all map markers
-type MapMarker = WorkerType | ClientType | CompetitorType | QuotationType;
-
-// Type guard to check if a marker is a WorkerType
-const isWorker = (marker: MapMarker): marker is WorkerType => {
-    return (
-        'markerType' in marker &&
-        (marker.markerType === 'check-in' ||
-            marker.markerType === 'shift-start' ||
-            marker.markerType === 'lead' ||
-            marker.markerType === 'journal' ||
-            marker.markerType === 'task' ||
-            marker.markerType === 'break-start' ||
-            marker.markerType === 'break-end')
-    );
-};
-
-// Type guard for client markers
-const isClient = (marker: MapMarker): marker is ClientType => {
-    return 'markerType' in marker && marker.markerType === 'client';
-};
-
-// Type guard for competitor markers
-const isCompetitor = (marker: MapMarker): marker is CompetitorType => {
-    return 'markerType' in marker && marker.markerType === 'competitor';
-};
-
-// Type guard for quotation markers
-const isQuotation = (marker: MapMarker): marker is QuotationType => {
-    return 'markerType' in marker && marker.markerType === 'quotation';
-};
-
 // Utility function to validate coordinates
 const isValidPosition = (position: any): position is [number, number] => {
     return (
@@ -56,26 +24,6 @@ const isValidPosition = (position: any): position is [number, number] => {
         !isNaN(position[0]) &&
         !isNaN(position[1])
     );
-};
-
-// Utility function to extract position from an entity that might have various position formats
-const getValidPosition = (entity: any): [number, number] | null => {
-    // Direct position array format
-    if (isValidPosition(entity.position)) {
-        return entity.position;
-    }
-
-    // Location object with lat/lng fields (from events)
-    if (
-        entity.location &&
-        typeof entity.location === 'object' &&
-        typeof entity.location.lat === 'number' &&
-        typeof entity.location.lng === 'number'
-    ) {
-        return [entity.location.lat, entity.location.lng];
-    }
-
-    return null;
 };
 
 interface MapComponentProps {
@@ -153,15 +101,23 @@ export default function MapComponent({
             let position: [number, number] | null = null;
 
             // Get position from marker position property
-            if (selectedMarker.position && isValidPosition(selectedMarker.position)) {
+            if (
+                selectedMarker.position &&
+                isValidPosition(selectedMarker.position)
+            ) {
                 position = selectedMarker.position;
             }
             // Or from location property for events
-            else if ('location' in selectedMarker && typeof selectedMarker.location === 'object' &&
-                    selectedMarker.location && 'lat' in selectedMarker.location && 'lng' in selectedMarker.location) {
+            else if (
+                'location' in selectedMarker &&
+                typeof selectedMarker.location === 'object' &&
+                selectedMarker.location &&
+                'lat' in selectedMarker.location &&
+                'lng' in selectedMarker.location
+            ) {
                 position = [
                     Number(selectedMarker.location.lat),
-                    Number(selectedMarker.location.lng)
+                    Number(selectedMarker.location.lng),
                 ];
             }
 
@@ -170,9 +126,14 @@ export default function MapComponent({
 
                 // Search for the marker by ID to open its popup
                 setTimeout(() => {
-                    const markers = document.querySelectorAll('.leaflet-marker-icon');
-                    markers.forEach(marker => {
-                        if (marker.getAttribute('data-marker-id') === selectedMarker.id?.toString()) {
+                    const markers = document.querySelectorAll(
+                        '.leaflet-marker-icon',
+                    );
+                    markers.forEach((marker) => {
+                        if (
+                            marker.getAttribute('data-marker-id') ===
+                            selectedMarker.id?.toString()
+                        ) {
                             (marker as HTMLElement).click();
                         }
                     });

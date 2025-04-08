@@ -774,11 +774,11 @@ export function QuotationDetailsModal({
                                                                                 {editedItems[item.uid]?.quantity ?? item.quantity}
                                                                             </span>
                                                                             {isEditing && (
-                                                                                <PenLine
-                                                                                    className="ml-1 text-primary"
-                                                                                    size={20}
-                                                                                    strokeWidth={1.2}
-                                                                                />
+                                                                            <PenLine
+                                                                                className="ml-1 text-primary"
+                                                                                size={20}
+                                                                                strokeWidth={1.2}
+                                                                            />
                                                                             )}
                                                                         </div>
                                                                     )}
@@ -786,40 +786,40 @@ export function QuotationDetailsModal({
                                                             </div>
                                                             <div className="col-span-2 text-right">
                                                                 {isEditing && editingItemId === item.uid && editingField === 'price' ? (
-                                                                    <div className="flex items-center justify-end">
-                                                                        <input
-                                                                            type="number"
-                                                                            className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
+                                                                <div className="flex items-center justify-end">
+                                                                            <input
+                                                                                type="number"
+                                                                                className="w-20 px-2 py-1 text-sm font-thin border rounded focus:outline-none focus:ring-1 focus:ring-primary font-body"
                                                                             value={editValue}
                                                                             onChange={handleInputChange}
                                                                             onKeyDown={handleKeyDown}
-                                                                            autoFocus
-                                                                            min="0"
-                                                                            step="0.01"
-                                                                        />
-                                                                        <button
-                                                                            className="p-1 ml-1 text-primary hover:text-primary/80"
+                                                                                autoFocus
+                                                                                min="0"
+                                                                                step="0.01"
+                                                                            />
+                                                                            <button
+                                                                                className="p-1 ml-1 text-primary hover:text-primary/80"
                                                                             onClick={handleSaveEdit}
-                                                                        >
-                                                                            <Save className="w-4 h-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div 
+                                                                            >
+                                                                                <Save className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div
                                                                         className={`flex items-center justify-end ${isEditing ? 'cursor-pointer group' : ''}`}
-                                                                        onClick={() => 
+                                                                            onClick={() =>
                                                                             isEditing && handleStartEdit(
-                                                                                item.uid,
-                                                                                'price',
-                                                                                item.product.price?.toString() || '0',
-                                                                            )
-                                                                        }
-                                                                    >
+                                                                                    item.uid,
+                                                                                    'price',
+                                                                                    item.product.price?.toString() || '0',
+                                                                                )
+                                                                            }
+                                                                        >
                                                                         <span className={`text-[10px] font-medium font-body ${
-                                                                            editedItems[item.uid]?.price !== undefined ? 'text-primary font-semibold' : ''
+                                                                                editedItems[item.uid]?.price !== undefined ? 'text-primary font-semibold' : ''
                                                                         } ${isEditing ? 'group-hover:text-primary' : ''}`}>
-                                                                            {formatCurrency(editedItems[item.uid]?.price ?? item.product.price ?? 0)}
-                                                                        </span>
+                                                                                {formatCurrency(editedItems[item.uid]?.price ?? item.product.price ?? 0)}
+                                                                            </span>
                                                                         {isEditing && (
                                                                             <PenLine
                                                                                 className="ml-1 text-primary"
@@ -827,8 +827,8 @@ export function QuotationDetailsModal({
                                                                                 strokeWidth={1.2}
                                                                             />
                                                                         )}
-                                                                    </div>
-                                                                )}
+                                                                        </div>
+                                                                    )}
                                                             </div>
                                                             <div className="col-span-2 text-right">
                                                                 <span className={`text-sm font-medium font-body ${
@@ -896,11 +896,11 @@ export function QuotationDetailsModal({
                                                                     {formatCurrency(editedDiscount)}
                                                                 </span>
                                                                 {isEditing && (
-                                                                    <PenLine
-                                                                        className="ml-1 text-primary"
-                                                                        size={20}
-                                                                        strokeWidth={1.2}
-                                                                    />
+                                                                <PenLine
+                                                                    className="ml-1 text-primary"
+                                                                    size={20}
+                                                                    strokeWidth={1.2}
+                                                                />
                                                                 )}
                                                             </div>
                                                         )}

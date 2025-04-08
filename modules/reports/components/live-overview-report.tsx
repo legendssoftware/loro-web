@@ -9,15 +9,8 @@ import {
     Briefcase,
     DollarSign,
     UserCheck,
-    MapPin,
     BarChart2,
     RefreshCw,
-    CheckSquare,
-    Clock,
-    AlertTriangle,
-    List,
-    Tag,
-    Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +48,14 @@ import {
     LineChart,
     Line,
 } from 'recharts';
+
+// Define interface for lead generator data
+interface LeadGenerator {
+    userId: number;
+    userName: string;
+    leadCount: number;
+    conversionRate: number;
+}
 
 interface LiveOverviewReportProps {
     organizationId?: number;
@@ -120,21 +121,23 @@ export function LiveOverviewReport({
     const leadsByCategoryData = Object.entries(
         report?.metrics?.leads?.leadsByCategory || {}
     ).map(([name, value]) => {
-        // Map categories to colors
+        // Map categories to colors with a richer color palette that matches status colors
         const colorMap: Record<string, string> = {
-            Uncategorized: '#9CA3AF',
-            'Walk-in': '#4F46E5',
-            Referral: '#10B981',
-            Website: '#8B5CF6',
-            Phone: '#F59E0B',
-            Email: '#EC4899',
-            'Social Media': '#3B82F6',
+            'Uncategorized': '#9CA3AF',    // Gray
+            'Walk-in': '#4F46E5',          // Indigo (same as REVIEW)
+            'Referral': '#10B981',         // Green (same as APPROVED)
+            'Website': '#8B5CF6',          // Purple (same as CONVERTED)
+            'Phone': '#F59E0B',            // Amber (same as PENDING)
+            'Email': '#EC4899',            // Pink
+            'Social Media': '#3B82F6',     // Blue
+            'Business': '#6366F1',         // Blue-indigo
+            'Personal': '#14B8A6',         // Teal
         };
 
         return {
             name,
             value: Number(value),
-            color: colorMap[name] || '#9CA3AF',
+            color: colorMap[name] || '#9CA3AF', // Default to gray for unknown categories
         };
     });
 
@@ -1089,6 +1092,59 @@ export function LiveOverviewReport({
                             data={statusDistributionData}
                         />
                         <LeadsByCategoryChart data={leadsByCategoryData} />
+
+                        {/* Top Lead Generators Table */}
+                        <Card className="border shadow-sm border-border/60 bg-card">
+                            <CardHeader className="pb-2">
+                                <h3 className="text-sm font-normal uppercase font-body">
+                                    Top Lead Generators
+                                </h3>
+                                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                    Staff performance for lead generation
+                                </p>
+                            </CardHeader>
+                            <CardContent className="p-4 overflow-auto border rounded h-96 border-border/30 bg-card/50">
+                                <table className="w-full">
+                                    <thead className="border-b">
+                                        <tr>
+                                            <th className="p-2 text-xs font-normal text-left uppercase font-body">Staff Member</th>
+                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Lead Count</th>
+                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Conversion Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {report?.metrics?.leads?.topLeadGenerators?.length > 0 ? (
+                                            report.metrics.leads.topLeadGenerators.map((generator: LeadGenerator, index: number) => (
+                                                <tr key={index} className="border-b border-border/20">
+                                                    <td className="p-2 text-xs font-normal uppercase font-body">
+                                                        <div className="flex flex-row items-center justify-start gap-2">
+                                                            <Avatar className="w-8 h-8 ring-2 ring-primary">
+                                                                <AvatarFallback
+                                                                    className="bg-black text-white text-[10px] font-body uppercase"
+                                                                >
+                                                                    {generator.userName?.split(' ').map((n: string) => n[0]).join('')}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <span className="text-[10px] font-normal uppercase font-body">
+                                                                {generator.userName}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{generator.leadCount}</td>
+                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{generator.conversionRate}%</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="p-4 text-xs font-normal text-center uppercase text-muted-foreground font-body">
+                                                    No lead generation data available
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </CardContent>
+                        </Card>
                     </div>
                 </TabsContent>
 

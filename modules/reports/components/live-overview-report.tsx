@@ -499,7 +499,7 @@ export function LiveOverviewReport({
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
                     >
                         <BarChart2 className="w-4 h-4 mr-2" />
-                        Overview
+                        Custom Report
                     </TabsTrigger>
                     <TabsTrigger
                         value="workforce"
@@ -559,23 +559,14 @@ export function LiveOverviewReport({
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Overview Tab */}
+                {/* Overview Tab (renamed to Custom Report) */}
                 <TabsContent value="overview" className="pt-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col">
-                            <WorkforceHourlyActivityChart
-                                data={report?.metrics?.workforce?.hourlyData || []}
-                            />
-                        </div>
-                        <WorkforceProductivityChart data={productivityData} />
-                        <LeadsStatusDistributionChart
-                            data={statusDistributionData}
-                        />
-                        <div className="flex flex-col">
-                            <SalesHourlyActivityChart
-                                data={report?.metrics?.sales?.hourlySales || []}
-                            />
-                        </div>
+                    <div className="flex flex-col items-center justify-center min-h-[400px]">
+                        <BarChart2 className="w-12 h-12 mb-4 text-primary/50" />
+                        <h3 className="text-lg font-normal uppercase font-body">Custom Report</h3>
+                        <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                            Activating soon
+                        </p>
                     </div>
                 </TabsContent>
 

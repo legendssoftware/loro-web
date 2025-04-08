@@ -44,7 +44,6 @@ import {
     Twitter,
     Instagram,
     AlertTriangle,
-    ExternalLink,
 } from 'lucide-react';
 import { Client, ClientStatus } from '@/hooks/use-clients-query';
 import { useState, useCallback } from 'react';
@@ -71,8 +70,6 @@ import {
     Legend,
     ResponsiveContainer,
 } from 'recharts';
-import Link from 'next/link';
-import { ClientQuotationReport } from '@/modules/reports/components/client-quotation-report';
 
 interface ClientDetailsModalProps {
     client: Client;
@@ -1533,21 +1530,6 @@ export function ClientDetail({
                         case 'overview':
                             return (
                                 <>
-                                    {/* Add View Full Report button */}
-                                    <div className="flex justify-end mb-4">
-                                        <Link
-                                            href={`/dashboard/clients/${client.uid}/reports`}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="gap-2"
-                                            >
-                                                <ExternalLink className="w-4 h-4" />
-                                                View Full Report
-                                            </Button>
-                                        </Link>
-                                    </div>
-
                                     {/* Charts Section */}
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="p-6 border rounded border-border/80 bg-card">
@@ -1713,40 +1695,47 @@ export function ClientDetail({
                                                                             payload[0]
                                                                                 .payload;
                                                                         return (
-                                                                            <div className="p-3 bg-white border rounded shadow-md">
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <FileText className="inline-block w-3 h-3" />
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {data.fullNumber ||
-                                                                                            `Quotation #${data.name}`}
+                                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                                <p className="text-xs font-normal uppercase font-body">
+                                                                                    {data.fullNumber ||
+                                                                                        `Quotation #${data.name}`}
+                                                                                </p>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div
+                                                                                        className="w-2 h-2 rounded-full"
+                                                                                        style={{
+                                                                                            backgroundColor:
+                                                                                                '#3b82f6',
+                                                                                        }}
+                                                                                    />
+                                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                                        Amount: R{' '}
+                                                                                        {data.value.toFixed(2)}
                                                                                     </p>
                                                                                 </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Amount
-                                                                                        (R):
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {data.value.toFixed(
-                                                                                            2,
-                                                                                        )}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Items:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {
-                                                                                            data.itemCount
-                                                                                        }
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div
+                                                                                        className="w-2 h-2 rounded-full"
+                                                                                        style={{
+                                                                                            backgroundColor:
+                                                                                                '#93c5fd',
+                                                                                        }}
+                                                                                    />
+                                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                                        Items:{' '}
+                                                                                        {data.itemCount}
                                                                                     </p>
                                                                                 </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Date:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div
+                                                                                        className="w-2 h-2 rounded-full"
+                                                                                        style={{
+                                                                                            backgroundColor:
+                                                                                                '#10B981',
+                                                                                        }}
+                                                                                    />
+                                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                                        Date:{' '}
                                                                                         {data.date
                                                                                             ? new Date(
                                                                                                   data.date,
@@ -1754,11 +1743,16 @@ export function ClientDetail({
                                                                                             : 'Unknown date'}
                                                                                     </p>
                                                                                 </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Status:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div
+                                                                                        className="w-2 h-2 rounded-full"
+                                                                                        style={{
+                                                                                            backgroundColor:
+                                                                                                '#F59E0B',
+                                                                                        }}
+                                                                                    />
+                                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                                        Status:{' '}
                                                                                         {(
                                                                                             data.status ||
                                                                                             'pending'
@@ -1872,7 +1866,7 @@ export function ClientDetail({
                                                                 innerRadius={50}
                                                                 fill="#8884d8"
                                                                 dataKey="value"
-                                                                paddingAngle={1}
+                                                                paddingAngle={2}
                                                                 cornerRadius={4}
                                                             >
                                                                 {Object.entries(
@@ -1884,6 +1878,7 @@ export function ClientDetail({
                                                                     ]) => (
                                                                         <Cell
                                                                             key={`cell-${status}`}
+                                                                            stroke="transparent"
                                                                             fill={
                                                                                 colors.text.includes(
                                                                                     'green',
@@ -1933,20 +1928,23 @@ export function ClientDetail({
                                                                             payload[0]
                                                                                 .payload;
                                                                         return (
-                                                                            <div className="p-3 bg-white border rounded shadow-md">
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <Tag className="inline-block w-3 h-3" />
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
-                                                                                        {
-                                                                                            data.name
-                                                                                        }
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                    <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                        Count:
-                                                                                    </p>
-                                                                                    <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                                <p className="text-xs font-normal uppercase font-body">
+                                                                                    {
+                                                                                        data.name
+                                                                                    }
+                                                                                </p>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div
+                                                                                        className="w-2 h-2 rounded-full"
+                                                                                        style={{
+                                                                                            backgroundColor:
+                                                                                                payload[0]
+                                                                                                    .color,
+                                                                                        }}
+                                                                                    />
+                                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                                        Count:{' '}
                                                                                         {
                                                                                             data.value
                                                                                         }
@@ -2147,51 +2145,68 @@ export function ClientDetail({
                                                                         payload[0]
                                                                             .payload;
                                                                     return (
-                                                                        <div className="p-3 bg-white border rounded shadow-md">
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <FileText className="inline-block w-3 h-3" />
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.fullNumber ||
-                                                                                        `Quotation on ${data.name}`}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Amount
-                                                                                    (R):
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                            <p className="text-xs font-normal uppercase font-body">
+                                                                                {data.fullNumber ||
+                                                                                    `Quotation on ${data.name}`}
+                                                                            </p>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#3b82f6',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Amount:
+                                                                                    R{' '}
                                                                                     {data.value.toFixed(
                                                                                         2,
                                                                                     )}
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Date:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#10B981',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Date:{' '}
                                                                                     {
                                                                                         data.name
                                                                                     }
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Status:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#F59E0B',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Status:{' '}
                                                                                     {(
                                                                                         data.status ||
                                                                                         'pending'
                                                                                     ).toUpperCase()}
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Items:
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#8B5CF6',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Items:{' '}
                                                                                     {
                                                                                         data.itemCount
                                                                                     }
@@ -2462,44 +2477,52 @@ export function ClientDetail({
                                                                         payload[0]
                                                                             .payload;
                                                                     return (
-                                                                        <div className="p-3 bg-white border rounded shadow-md">
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <FileText className="inline-block w-3 h-3" />
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
-                                                                                    {data.fullNumber ||
-                                                                                        `Quotation #${data.name}`}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Amount
-                                                                                    (R)
-                                                                                    :
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                            <p className="text-xs font-normal uppercase font-body">
+                                                                                {data.fullNumber ||
+                                                                                    `Quotation #${data.name}`}
+                                                                            </p>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#3b82f6',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Amount:
+                                                                                    R{' '}
                                                                                     {
                                                                                         data.amount
                                                                                     }
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Items
-                                                                                    :{' '}
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#93c5fd',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Items:{' '}
                                                                                     {
                                                                                         data.items
                                                                                     }
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Date
-                                                                                    created
-                                                                                    :{' '}
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#10B981',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Date:{' '}
                                                                                     {data.date
                                                                                         ? new Date(
                                                                                               data.date,
@@ -2507,12 +2530,16 @@ export function ClientDetail({
                                                                                         : 'Unknown date'}
                                                                                 </p>
                                                                             </div>
-                                                                            <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
-                                                                                <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                                    Status
-                                                                                    :{' '}
-                                                                                </p>
-                                                                                <p className="text-xs uppercase font-unbounded font-body">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            '#F59E0B',
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Status:{' '}
                                                                                     {(
                                                                                         data.status ||
                                                                                         'pending'

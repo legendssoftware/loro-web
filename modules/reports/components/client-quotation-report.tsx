@@ -8,9 +8,6 @@ import {
     Tag,
     User,
     PackageCheck,
-    Image,
-    Users,
-    ChevronRight,
     CreditCard,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -29,7 +26,6 @@ import {
     LineChart,
     Line,
 } from 'recharts';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useClientQuotationReport } from '@/hooks/use-client-quotation-report';
@@ -61,15 +57,6 @@ interface ProductItem {
     imageUrl?: string;
     category?: string;
     description?: string;
-}
-
-interface CreatorItem {
-    uid: number;
-    name: string;
-    email: string;
-    count: number;
-    value: number;
-    avatar?: string;
 }
 
 interface ClientQuotationReportProps {
@@ -596,7 +583,8 @@ export function ClientQuotationReport({
                                                                     </div>
                                                                     <div className="mb-1 font-unbounded text-[10px] text-gray-800 uppercase flex items-center justify-start gap-1">
                                                                         <p className="text-[10px] uppercase font-unbounded font-body font-thin">
-                                                                            Total Count:{' '}
+                                                                            Total
+                                                                            Count:{' '}
                                                                         </p>
                                                                         <p className="text-xs uppercase font-unbounded font-body">
                                                                             {
@@ -610,7 +598,10 @@ export function ClientQuotationReport({
                                                                                 Percentage:{' '}
                                                                             </p>
                                                                             <p className="text-xs uppercase font-unbounded font-body">
-                                                                                {data.percentage?.toFixed(1)}%
+                                                                                {data.percentage?.toFixed(
+                                                                                    1,
+                                                                                )}
+                                                                                %
                                                                             </p>
                                                                         </div>
                                                                     )}
@@ -930,7 +921,10 @@ export function ClientQuotationReport({
                                                                             Percentage:
                                                                         </p>
                                                                         <p className="text-xs uppercase font-unbounded font-body">
-                                                                            {data?.percentage?.toFixed(1)}%
+                                                                            {data?.percentage?.toFixed(
+                                                                                1,
+                                                                            )}
+                                                                            %
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -1776,7 +1770,10 @@ export function ClientQuotationReport({
                                                                             Percentage:
                                                                         </p>
                                                                         <p className="text-xs uppercase font-unbounded font-body">
-                                                                            {data?.percentage?.toFixed(1)}%
+                                                                            {data?.percentage?.toFixed(
+                                                                                1,
+                                                                            )}
+                                                                            %
                                                                         </p>
                                                                     </div>
                                                                 </div>

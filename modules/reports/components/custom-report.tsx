@@ -1259,7 +1259,8 @@ export function CustomReport({
                                                     {report?.metrics?.tasks?.flags?.flagsToday || 0}
                                                 </span>{' '}
                                                 today
-                                    </div>
+                                            </p>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -1275,7 +1276,8 @@ export function CustomReport({
                                                     {report?.metrics?.tasks?.flags?.inProgressFlags || 0}
                                                 </span>{' '}
                                                 in progress
-                                    </div>
+                                            </p>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -1291,7 +1293,8 @@ export function CustomReport({
                                                     {report?.metrics?.tasks?.flags?.closedFlags || 0}
                                                 </span>{' '}
                                                 closed
-                                    </div>
+                                            </p>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -1304,7 +1307,8 @@ export function CustomReport({
                                             <p className="text-3xl font-semibold uppercase font-body">
                                                 {report?.metrics?.tasks?.flags?.averageResolutionHours || 0}
                                                 <span className="text-xs font-normal uppercase text-muted-foreground font-body"> hrs</span>
-                                    </div>
+                                            </p>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -2019,6 +2023,7 @@ export function CustomReport({
                                                             {report?.metrics?.claims?.claimsToday || 0}
                                                         </span>{' '}
                                                         today
+                                                    </p>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -2429,6 +2434,7 @@ export function CustomReport({
                                                             {report?.metrics?.journals?.journalsToday || 0}
                                                         </span>{' '}
                                                         today
+                                                    </p>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -2701,8 +2707,6 @@ export function CustomReport({
                         </TabsContent>
                     </Tabs>
                 </div>
-            </div>
-        </div>
     );
 }
 

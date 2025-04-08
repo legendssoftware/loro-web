@@ -1705,28 +1705,47 @@ export function ClientQuotationReport({
                                                             entry: any,
                                                             index: number,
                                                         ) => {
-                                                            // Define a set of fixed colors for categories
-                                                            const colors = [
-                                                                '#3b82f6', // blue
-                                                                '#10b981', // green
-                                                                '#f97316', // orange
-                                                                '#8b5cf6', // purple
-                                                                '#f43f5e', // pink
-                                                                '#06b6d4', // cyan
-                                                                '#facc15', // yellow
-                                                                '#14b8a6', // teal
-                                                                '#a855f7', // violet
-                                                                '#ec4899', // rose
+                                                            // Define category-specific colors with a consistent scheme
+                                                            const categoryColorMap: Record<string, string> = {
+                                                                'MEAT_POULTRY': '#EF4444',  // Red
+                                                                'SEAFOOD': '#3B82F6',       // Blue
+                                                                'DAIRY': '#F59E0B',         // Amber
+                                                                'BAKERY': '#F97316',        // Orange
+                                                                'PRODUCE': '#10B981',       // Green
+                                                                'BEVERAGES': '#06B6D4',     // Cyan
+                                                                'SNACKS': '#EC4899',        // Pink
+                                                                'CANNED_GOODS': '#9CA3AF',  // Gray
+                                                                'FROZEN_FOODS': '#60A5FA',  // Light Blue
+                                                                'CLEANING': '#6366F1',      // Indigo
+                                                                'PERSONAL_CARE': '#8B5CF6', // Purple
+                                                                'OTHER': '#78716C',         // Stone
+                                                                'Uncategorized': '#64748B', // Slate
+                                                            };
+
+                                                            // Fallback to a set of fixed colors for unknown categories
+                                                            const fallbackColors = [
+                                                                '#3B82F6', // blue
+                                                                '#10B981', // green
+                                                                '#F97316', // orange
+                                                                '#8B5CF6', // purple
+                                                                '#F43F5E', // pink
+                                                                '#06B6D4', // cyan
+                                                                '#FACC15', // yellow
+                                                                '#14B8A6', // teal
+                                                                '#A855F7', // violet
+                                                                '#EC4899', // rose
+                                                                '#D946EF', // fuchsia
+                                                                '#6366F1', // indigo
                                                             ];
+
+                                                            // Use category-specific color if available, otherwise use a fallback color
+                                                            const categoryColor = categoryColorMap[entry.name] ||
+                                                                fallbackColors[index % fallbackColors.length];
+
                                                             return (
                                                                 <Cell
                                                                     key={`cell-${index}`}
-                                                                    fill={
-                                                                        colors[
-                                                                            index %
-                                                                                colors.length
-                                                                        ]
-                                                                    }
+                                                                    fill={categoryColor}
                                                                 />
                                                             );
                                                         },

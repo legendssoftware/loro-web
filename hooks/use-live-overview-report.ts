@@ -20,7 +20,7 @@ interface UseLiveOverviewReportReturn {
     updateFilters: (
         newFilters: Partial<{ organizationId: number; branchId: number }>,
     ) => void;
-    refreshData: () => void;
+    refreshData: () => Promise<void>;
 }
 
 export function useLiveOverviewReport({
@@ -32,11 +32,12 @@ export function useLiveOverviewReport({
         branchId,
     });
 
-    const fetchLiveReport = async () => {
+    const fetchLiveReport = async ({ forceFresh = false } = {}) => {
         const response = await axiosInstance.get('/reports/live-overview', {
             params: {
                 organisationId: filters.organizationId,
                 branchId: filters.branchId,
+                forceFresh,
             },
         });
         return response.data;
@@ -53,7 +54,7 @@ export function useLiveOverviewReport({
             filters.organizationId,
             filters.branchId,
         ],
-        queryFn: fetchLiveReport,
+        queryFn: () => fetchLiveReport(),
         refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
         staleTime: 60 * 1000, // Consider data stale after 1 minute
     });
@@ -65,9 +66,12 @@ export function useLiveOverviewReport({
         setFilters((prev) => ({ ...prev, ...newFilters }));
     };
 
-    // Function to manually refresh data
-    const refreshData = () => {
-        refetch();
+    // Function to manually refresh data with forceFresh parameter
+    const refreshData = async () => {
+        const result = await refetch({
+            queryFn: () => fetchLiveReport({ forceFresh: true }),
+        });
+        return result;
     };
 
     return {

@@ -179,6 +179,9 @@ export function ClaimDetailsModal({
 
     // Function to render tab content (placeholder for future implementation)
     const renderTabContent = () => {
+        // If no claim provided, show nothing
+        if (!claim) return null;
+
         switch (activeTab) {
             case 'details':
                 return (
@@ -191,122 +194,6 @@ export function ClaimDetailsModal({
                                 {claim?.comments || 'No description provided'}
                             </p>
                         </div>
-
-                        {claim?.documentUrl && (
-                            <div className="p-4 rounded-lg bg-card/50">
-                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                    Attached Document
-                                </h3>
-                                {isImageUrl(claim.documentUrl) ? (
-                                    <div className="space-y-2">
-                                        <div className="overflow-hidden border rounded-md border-border">
-                                            <img
-                                                src={claim.documentUrl}
-                                                alt="Claim image"
-                                                className="object-contain w-full max-h-[300px]"
-                                            />
-                                        </div>
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-1 text-[10px] uppercase font-thin font-body"
-                                                onClick={() =>
-                                                    window.open(
-                                                        claim.documentUrl,
-                                                        '_blank',
-                                                    )
-                                                }
-                                            >
-                                                <ExternalLink className="w-3 h-3" />
-                                                View Full Size
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-1 text-[10px] uppercase font-thin font-body"
-                                                onClick={() => {
-                                                    const link =
-                                                        document.createElement(
-                                                            'a',
-                                                        );
-                                                    link.href =
-                                                        claim.documentUrl!;
-                                                    link.download = `claim-${claim.uid}-image`;
-                                                    document.body.appendChild(
-                                                        link,
-                                                    );
-                                                    link.click();
-                                                    document.body.removeChild(
-                                                        link,
-                                                    );
-                                                }}
-                                            >
-                                                <Download className="w-3 h-3" />
-                                                Download
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col gap-3 p-4 border rounded-md border-border">
-                                        <div className="flex items-center gap-2">
-                                            <FileIcon className="w-8 h-8 text-primary" />
-                                            <div className="flex-1 overflow-hidden">
-                                                <p className="text-xs font-normal truncate font-body">
-                                                    {claim.documentUrl
-                                                        ?.split('/')
-                                                        .pop() || 'Document'}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground font-thin font-body">
-                                                    Attached to claim #
-                                                    {claim.uid}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-1 text-[10px] uppercase font-thin font-body"
-                                                onClick={() =>
-                                                    window.open(
-                                                        claim.documentUrl,
-                                                        '_blank',
-                                                    )
-                                                }
-                                            >
-                                                <ExternalLink className="w-3 h-3" />
-                                                Open Document
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex items-center gap-1 text-[10px] uppercase font-thin font-body"
-                                                onClick={() => {
-                                                    const link =
-                                                        document.createElement(
-                                                            'a',
-                                                        );
-                                                    link.href =
-                                                        claim.documentUrl!;
-                                                    link.download = `claim-${claim.uid}-document`;
-                                                    document.body.appendChild(
-                                                        link,
-                                                    );
-                                                    link.click();
-                                                    document.body.removeChild(
-                                                        link,
-                                                    );
-                                                }}
-                                            >
-                                                <Download className="w-3 h-3" />
-                                                Download
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
 
                         <div className="p-4 rounded-lg bg-card/50">
                             <h3 className="mb-2 text-xs font-normal uppercase font-body">
@@ -382,69 +269,44 @@ export function ClaimDetailsModal({
                                         </span>
                                     </div>
                                 )}
-
-                                {claim?.updatedAt &&
-                                    formatDate(claim?.updatedAt) !==
-                                        formatDate(claim?.createdAt) && (
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <Pencil className="w-4 h-4 mr-2 text-card-foreground/60" />
-                                                <span className="text-[10px] font-thin uppercase font-body">
-                                                    Last Updated
-                                                </span>
-                                            </div>
-                                            <span className="text-xs font-thin font-body">
-                                                {formatDate(claim?.updatedAt)}{' '}
-                                                {formatTime(claim?.updatedAt)}
-                                            </span>
-                                        </div>
-                                    )}
                             </div>
                         </div>
-                    </div>
-                );
-            case 'people':
-                return (
-                    <div className="space-y-6">
+
                         {claim?.owner && (
-                            <div className="p-4 rounded-lg bg-card/50">
+                            <div>
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                    Claim Owner
+                                    Owner Details
                                 </h3>
-                                <div className="flex items-center gap-3 p-3 border rounded-md border-border/30">
-                                    <Avatar className="w-10 h-10 border border-primary/30">
+                                <div className="flex items-center p-3 rounded-lg bg-card/50">
+                                    <Avatar className="w-12 h-12 mr-3 border">
                                         <AvatarImage
                                             src={claim.owner.photoURL}
+                                            alt={`${claim.owner.name} ${claim.owner.surname}`}
                                         />
-                                        <AvatarFallback className="text-xs font-thin uppercase font-body">
+                                        <AvatarFallback>
                                             {getOwnerInitials()}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="space-y-0.5">
-                                        <p className="text-sm font-medium font-body">
+                                    <div>
+                                        <p className="text-xs font-medium font-body">
                                             {claim.owner.name}{' '}
-                                            {claim.owner.surname || ''}
+                                            {claim.owner.surname}
                                         </p>
-                                        <p className="text-xs font-thin text-muted-foreground font-body">
+                                        <p className="text-[10px] text-muted-foreground font-body">
                                             {claim.owner.email}
                                         </p>
-                                        {claim.owner.phone && (
-                                            <p className="text-xs font-thin text-muted-foreground font-body">
-                                                {claim.owner.phone}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {claim?.branch && (
-                            <div className="p-4 rounded-lg bg-card/50">
+                            <div>
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                    Branch
+                                    Branch Details
                                 </h3>
-                                <div className="p-3 border rounded-md border-border/30">
-                                    <p className="text-sm font-medium font-body">
+                                <div className="p-3 rounded-lg bg-card/50">
+                                    <p className="text-xs font-medium font-body">
                                         {claim.branch.name}
                                     </p>
                                     <p className="text-xs font-thin text-muted-foreground font-body">
@@ -552,6 +414,134 @@ export function ClaimDetailsModal({
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    </div>
+                );
+            case 'documents':
+                return (
+                    <div className="space-y-6">
+                        <div className="p-4 rounded-lg bg-card/50">
+                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                Attached Documents & Media
+                            </h3>
+                            {claim && claim.documentUrl ? (
+                                <div className="space-y-6">
+                                    {isImageUrl(claim.documentUrl) ? (
+                                        <div className="space-y-4">
+                                            <div className="overflow-hidden border rounded-lg border-border">
+                                                <img
+                                                    src={claim.documentUrl}
+                                                    alt="Claim image"
+                                                    className="object-contain w-full max-h-[400px]"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    onClick={() =>
+                                                        window.open(
+                                                            claim.documentUrl,
+                                                            '_blank',
+                                                        )
+                                                    }
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    View Full Size
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    onClick={() => {
+                                                        const link =
+                                                            document.createElement(
+                                                                'a',
+                                                            );
+                                                        link.href =
+                                                            claim.documentUrl!;
+                                                        link.download = `claim-${claim.uid}-image`;
+                                                        document.body.appendChild(
+                                                            link,
+                                                        );
+                                                        link.click();
+                                                        document.body.removeChild(
+                                                            link,
+                                                        );
+                                                    }}
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-4 p-4 border rounded-lg border-border">
+                                            <div className="flex items-center gap-3">
+                                                <FileIcon className="w-10 h-10 text-primary" />
+                                                <div className="flex-1 overflow-hidden">
+                                                    <p className="text-sm font-normal truncate font-body">
+                                                        {claim.documentUrl
+                                                            ?.split('/')
+                                                            .pop() || 'Document'}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground font-thin font-body">
+                                                        Attached to claim #
+                                                        {claim.uid}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    onClick={() =>
+                                                        window.open(
+                                                            claim.documentUrl,
+                                                            '_blank',
+                                                        )
+                                                    }
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    Open Document
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    onClick={() => {
+                                                        const link =
+                                                            document.createElement(
+                                                                'a',
+                                                            );
+                                                        link.href =
+                                                            claim.documentUrl!;
+                                                        link.download = `claim-${claim.uid}-document`;
+                                                        document.body.appendChild(
+                                                            link,
+                                                        );
+                                                        link.click();
+                                                        document.body.removeChild(
+                                                            link,
+                                                        );
+                                                    }}
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-10 border rounded-lg border-border/10">
+                                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                        No documents or media attached to this claim
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 );

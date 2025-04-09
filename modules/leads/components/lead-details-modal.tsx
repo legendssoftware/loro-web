@@ -186,6 +186,7 @@ export function LeadDetailsModal({
     const tabs = [
         { id: 'details', label: 'Details' },
         { id: 'activity', label: 'Activity' },
+        { id: 'media', label: 'Media' },
     ];
 
     const formatAddress = (address?: any) => {
@@ -417,6 +418,38 @@ export function LeadDetailsModal({
                                     )}
                             </div>
                         </div>
+                    </div>
+                );
+            case 'media':
+                return (
+                    <div className="space-y-6">
+                        {lead.image ? (
+                            <div className="p-4 rounded-lg bg-card">
+                                <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                    Lead Media
+                                </h3>
+                                <div className="flex flex-col items-center">
+                                    <div className="w-full max-w-lg overflow-hidden rounded-md border border-border">
+                                        <img
+                                            src={lead.image}
+                                            alt={`${lead.name}'s media`}
+                                            className="w-full h-auto object-cover"
+                                        />
+                                    </div>
+                                    {lead.companyName && (
+                                        <p className="mt-4 text-xs font-thin font-body">
+                                            <span className="font-normal">Company:</span> {lead.companyName}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-4 rounded-lg bg-card flex flex-col items-center justify-center h-48">
+                                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                    No media available for this lead
+                                </p>
+                            </div>
+                        )}
                     </div>
                 );
             default:

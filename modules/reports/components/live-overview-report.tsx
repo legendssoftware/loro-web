@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -147,6 +147,14 @@ export function LiveOverviewReport({
         branchId,
     });
 
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+    const handleRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await refreshData();
+        setIsRefreshing(false);
+    }, [refreshData]);
+
     if (isLoading) {
         return <ReportSkeleton />;
     }
@@ -163,10 +171,10 @@ export function LiveOverviewReport({
                 <Button
                     variant="outline"
                     className="mt-4"
-                    onClick={refreshData}
+                    onClick={handleRefresh}
                 >
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Retry
+                    Refresh
                 </Button>
             </div>
         );
@@ -419,17 +427,27 @@ export function LiveOverviewReport({
                         Real-time metrics and performance analytics
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={refreshData}
-                    className="h-8 gap-1"
-                >
-                    <RefreshCw className="w-3 h-3" />
-                    <span className="text-xs font-normal uppercase font-body">
-                        Refresh
-                    </span>
-                </Button>
+                <div className="flex items-center space-x-4">
+                    <Button
+                        variant="ghost"
+                        disabled={isLoading || isRefreshing}
+                        onClick={handleRefresh}
+                        size="sm"
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        {isRefreshing ? (
+                            <>
+                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                Refreshing...
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Refresh
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
 
             {/* Summary Cards */}

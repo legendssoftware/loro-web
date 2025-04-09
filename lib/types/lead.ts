@@ -52,6 +52,8 @@ export interface Lead {
     email: string;
     phone: string;
     notes?: string;
+    companyName?: string;
+    image?: string;
     status: LeadStatus;
     isDeleted: boolean;
     createdAt: Date;

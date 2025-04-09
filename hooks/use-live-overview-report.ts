@@ -68,10 +68,9 @@ export function useLiveOverviewReport({
 
     // Function to manually refresh data with forceFresh parameter
     const refreshData = async () => {
-        const result = await refetch({
-            queryFn: () => fetchLiveReport({ forceFresh: true }),
-        });
-        return result;
+        await fetchLiveReport({ forceFresh: true });
+        await refetch();
+        return;
     };
 
     return {

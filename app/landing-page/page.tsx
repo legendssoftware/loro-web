@@ -5,18 +5,136 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Menu, LogIn, User, Download, Smartphone } from 'lucide-react';
+import {
+    Menu,
+    LogIn,
+    User,
+    Download,
+    Smartphone,
+    PhoneCall,
+} from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { PageTransition } from '@/components/animations/page-transition';
-import { FloatingCallButton } from '@/components/navigation/floating-call-button';
+import { toast } from 'react-hot-toast';
+import Vapi from '@vapi-ai/web';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCallActive, setIsCallActive] = useState(false);
+    const [isCallInitializing, setIsCallInitializing] = useState(false);
+    const [demoVapi, setDemoVapi] = useState<Vapi | null>(null);
     const { isAuthenticated } = useAuthStore();
     const router = useRouter();
+
+    // Initialize Vapi instance for demo calls (without authentication requirement)
+    useEffect(() => {
+        const apiKey = process.env.NEXT_PUBLIC_VAPI_KEY;
+
+        if (!apiKey) {
+            console.error(
+                'Vapi API key is not defined in environment variables',
+            );
+            return;
+        }
+
+        // Create Vapi instance only once
+        const vapiInstance = new Vapi(apiKey);
+
+        // Set up event listeners
+        vapiInstance.on('call-start', () => {
+            setIsCallActive(true);
+            setIsCallInitializing(false);
+            showSuccessToast('Demo call connected to voice assistant', toast);
+        });
+
+        vapiInstance.on('call-end', () => {
+            setIsCallActive(false);
+            showSuccessToast('Demo call ended. Thank you!', toast);
+        });
+
+        vapiInstance.on('error', (error) => {
+            setIsCallInitializing(false);
+            setIsCallActive(false);
+            showErrorToast('Voice assistant error', toast);
+            console.error('Vapi error:', error);
+        });
+
+        setDemoVapi(vapiInstance);
+
+        return () => {
+            // Clean up event listeners and end call if active
+            if (vapiInstance) {
+                try {
+                    vapiInstance.stop();
+                } catch (e) {
+                    console.error('Error stopping Vapi call:', e);
+                }
+            }
+        };
+    }, []);
+
+    // Start demo call - doesn't require authentication
+    const startDemoCall = async () => {
+        if (!demoVapi) {
+            showErrorToast('Demo voice assistant not available', toast);
+            return;
+        }
+
+        if (isCallActive) {
+            toast('Demo voice assistant is already active', {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: 'ℹ️',
+            });
+            return;
+        }
+
+        try {
+            setIsCallInitializing(true);
+            showSuccessToast('Demo call initiated. Connecting...', toast);
+
+            // Get assistant ID from environment variables
+            const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+
+            if (!assistantId) {
+                throw new Error(
+                    'Assistant ID not found in environment variables',
+                );
+            }
+
+            // Start the demo call with the assistant ID
+            await demoVapi.start(assistantId);
+        } catch (error) {
+            console.error('Failed to start Vapi demo call:', error);
+            setIsCallInitializing(false);
+            showErrorToast('Failed to start demo voice assistant', toast);
+        }
+    };
+
+    // End demo call
+    const endDemoCall = () => {
+        if (!demoVapi || !isCallActive) return;
+
+        try {
+            demoVapi.stop();
+        } catch (error) {
+            console.error('Failed to stop Vapi demo call:', error);
+        }
+    };
 
     // Handle account button click - directs to dashboard if logged in, sign-in if not
     const handleAccountClick = () => {
@@ -44,6 +162,51 @@ const LandingPage: React.FunctionComponent = () => {
 
                     {/* Desktop Navigation - Hidden on mobile */}
                     <div className="items-center hidden space-x-6 md:flex">
+                        {isCallActive ? (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={endDemoCall}
+                                className="text-xs font-normal text-red-500 uppercase transition-colors cursor-pointer font-body hover:bg-red-100 dark:hover:bg-red-900/20"
+                            >
+                                <PhoneCall
+                                    className="w-4 h-4 mr-2 animate-pulse"
+                                    size={22}
+                                    strokeWidth={1.2}
+                                />
+                                <span>END DEMO CALL</span>
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={startDemoCall}
+                                disabled={isCallInitializing}
+                                className="text-xs font-normal text-white uppercase transition-colors cursor-pointer font-body"
+                            >
+                                {isCallInitializing ? (
+                                    <>
+                                        <PhoneCall
+                                            className="w-4 h-4 mr-2 text-amber-500"
+                                            size={22}
+                                            strokeWidth={1.2}
+                                        />
+                                        <span className="text-amber-500">
+                                            CONNECTING...
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <PhoneCall
+                                            className="mr-2 text-green-500"
+                                            size={22}
+                                            strokeWidth={1.2}
+                                        />
+                                        <span>GET A DEMO CALL</span>
+                                    </>
+                                )}
+                            </Button>
+                        )}
                         <ThemeToggler />
                         <Button
                             className="text-xs font-normal text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80"
@@ -81,8 +244,39 @@ const LandingPage: React.FunctionComponent = () => {
                             <div className="absolute top-0 left-0 z-50 w-full p-4 mt-16 bg-background">
                                 <div className="p-4 space-y-4 border rounded-md shadow-lg border-border">
                                     <div className="flex flex-col space-y-3">
+                                        {isCallActive ? (
+                                            <Button
+                                                className="justify-start w-full text-xs font-normal text-red-500 uppercase transition-colors bg-transparent font-body hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                onClick={endDemoCall}
+                                            >
+                                                <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                                <span>END DEMO CALL</span>
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                className="justify-start w-full text-xs font-normal uppercase transition-colors bg-transparent font-body"
+                                                onClick={startDemoCall}
+                                                disabled={isCallInitializing}
+                                            >
+                                                {isCallInitializing ? (
+                                                    <>
+                                                        <PhoneCall className="w-4 h-4 mr-2 text-amber-500" />
+                                                        <span className="text-amber-500">
+                                                            CONNECTING...
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <PhoneCall className="w-4 h-4 mr-2 text-green-500" />
+                                                        <span>
+                                                            GET A DEMO CALL
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button
-                                            className="justify-start w-full text-xs font-normal text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80"
+                                            className="justify-start w-full text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body"
                                             onClick={handleAccountClick}
                                         >
                                             {isAuthenticated ? (
@@ -386,13 +580,6 @@ const LandingPage: React.FunctionComponent = () => {
                         </div>
                     </div>
                 </footer>
-
-                {/* Floating Call Button */}
-                <FloatingCallButton
-                    position="bottom-right"
-                    offset={32}
-                    showOnScroll={true}
-                />
             </div>
         </PageTransition>
     );

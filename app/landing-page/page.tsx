@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { PageTransition } from '@/components/animations/page-transition';
+import { FloatingCallButton } from '@/components/navigation/floating-call-button';
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -385,6 +386,13 @@ const LandingPage: React.FunctionComponent = () => {
                         </div>
                     </div>
                 </footer>
+
+                {/* Floating Call Button */}
+                <FloatingCallButton
+                    position="bottom-right"
+                    offset={32}
+                    showOnScroll={true}
+                />
             </div>
         </PageTransition>
     );

@@ -28,13 +28,17 @@ export function useHelp(options: UseHelpOptions = {}) {
         setIsCallActive(true);
         setIsCallInitializing(false);
         options.onCallStart?.();
-        showSuccessToast('Voice assistant activated', toast);
+
+        // Show connected notification
+        showSuccessToast('Call connected to voice assistant', toast);
     }, [options.onCallStart]);
 
     const handleCallEnd = useCallback(() => {
         setIsCallActive(false);
         options.onCallEnd?.();
-        showSuccessToast('Voice assistant call ended', toast);
+
+        // Show thank you notification
+        showSuccessToast('Call ended. Thank you!', toast);
     }, [options.onCallEnd]);
 
     const handleVolumeLevel = useCallback((volume: number) => {
@@ -119,6 +123,9 @@ export function useHelp(options: UseHelpOptions = {}) {
 
         try {
             setIsCallInitializing(true);
+
+            // Show call initiation notification
+            showSuccessToast('Call initiated. Connecting...', toast);
 
             // Get assistant ID from environment variables
             const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;

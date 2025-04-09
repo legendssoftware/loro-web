@@ -7,7 +7,7 @@ import { isAuthRoute } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/use-app-store';
-import { LayoutDashboardIcon, Power, PhoneCall, X } from 'lucide-react';
+import { LayoutDashboardIcon, Power, PhoneCall} from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useHelp } from '@/hooks/use-help';
@@ -179,7 +179,7 @@ export function TopNav() {
                                 className="relative text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
                                 onClick={endCall}
                             >
-                                <PhoneCall strokeWidth={1.2} size={20} />
+                                <PhoneCall strokeWidth={1.2} size={20} className="animate-pulse" />
                                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                 <span className="sr-only">
                                     End Assistant Call

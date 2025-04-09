@@ -439,7 +439,7 @@ export function ClaimDetailsModal({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    className="flex items-center gap-2 text-xs font-thin uppercase font-body"
                                                     onClick={() =>
                                                         window.open(
                                                             claim.documentUrl,
@@ -453,7 +453,7 @@ export function ClaimDetailsModal({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    className="flex items-center gap-2 text-xs font-thin uppercase font-body"
                                                     onClick={() => {
                                                         const link =
                                                             document.createElement(
@@ -486,7 +486,7 @@ export function ClaimDetailsModal({
                                                             ?.split('/')
                                                             .pop() || 'Document'}
                                                     </p>
-                                                    <p className="text-xs text-muted-foreground font-thin font-body">
+                                                    <p className="text-xs font-thin text-muted-foreground font-body">
                                                         Attached to claim #
                                                         {claim.uid}
                                                     </p>
@@ -496,7 +496,7 @@ export function ClaimDetailsModal({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    className="flex items-center gap-2 text-xs font-thin uppercase font-body"
                                                     onClick={() =>
                                                         window.open(
                                                             claim.documentUrl,
@@ -510,7 +510,7 @@ export function ClaimDetailsModal({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 text-xs uppercase font-thin font-body"
+                                                    className="flex items-center gap-2 text-xs font-thin uppercase font-body"
                                                     onClick={() => {
                                                         const link =
                                                             document.createElement(

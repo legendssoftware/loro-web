@@ -429,11 +429,11 @@ export function LeadDetailsModal({
                                     Lead Media
                                 </h3>
                                 <div className="flex flex-col items-center">
-                                    <div className="w-full max-w-lg overflow-hidden rounded-md border border-border">
+                                    <div className="w-full max-w-lg overflow-hidden border rounded-md border-border">
                                         <img
                                             src={lead.image}
                                             alt={`${lead.name}'s media`}
-                                            className="w-full h-auto object-cover"
+                                            className="object-cover w-full h-auto"
                                         />
                                     </div>
                                     {lead.companyName && (
@@ -444,7 +444,7 @@ export function LeadDetailsModal({
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-4 rounded-lg bg-card flex flex-col items-center justify-center h-48">
+                            <div className="flex flex-col items-center justify-center h-48 p-4 rounded-lg bg-card">
                                 <p className="text-xs font-thin uppercase text-muted-foreground font-body">
                                     No media available for this lead
                                 </p>

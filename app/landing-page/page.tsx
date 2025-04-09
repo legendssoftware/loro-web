@@ -48,12 +48,15 @@ const LandingPage: React.FunctionComponent = () => {
         vapiInstance.on('call-start', () => {
             setIsCallActive(true);
             setIsCallInitializing(false);
-            showSuccessToast('Demo call connected to voice assistant', toast);
+            showSuccessToast(
+                'Consultation call connected to voice assistant',
+                toast,
+            );
         });
 
         vapiInstance.on('call-end', () => {
             setIsCallActive(false);
-            showSuccessToast('Demo call ended. Thank you!', toast);
+            showSuccessToast('Consultation call ended. Thank you!', toast);
         });
 
         vapiInstance.on('error', (error) => {
@@ -80,12 +83,12 @@ const LandingPage: React.FunctionComponent = () => {
     // Start demo call - doesn't require authentication
     const startDemoCall = async () => {
         if (!demoVapi) {
-            showErrorToast('Demo voice assistant not available', toast);
+            showErrorToast('Consultation call not available', toast);
             return;
         }
 
         if (isCallActive) {
-            toast('Demo voice assistant is already active', {
+            toast('Consultation call is already ongoing', {
                 style: {
                     borderRadius: '5px',
                     background: '#333',
@@ -105,7 +108,10 @@ const LandingPage: React.FunctionComponent = () => {
 
         try {
             setIsCallInitializing(true);
-            showSuccessToast('Demo call initiated. Connecting...', toast);
+            showSuccessToast(
+                'Consultation call initiated. Connecting...',
+                toast,
+            );
 
             // Get assistant ID from environment variables
             const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
@@ -119,9 +125,9 @@ const LandingPage: React.FunctionComponent = () => {
             // Start the demo call with the assistant ID
             await demoVapi.start(assistantId);
         } catch (error) {
-            console.error('Failed to start Vapi demo call:', error);
+            console.error('Failed to start consultation call:', error);
             setIsCallInitializing(false);
-            showErrorToast('Failed to start demo voice assistant', toast);
+            showErrorToast('Failed to start consultation call', toast);
         }
     };
 
@@ -132,7 +138,7 @@ const LandingPage: React.FunctionComponent = () => {
         try {
             demoVapi.stop();
         } catch (error) {
-            console.error('Failed to stop Vapi demo call:', error);
+            console.error('Failed to stop consultation call:', error);
         }
     };
 
@@ -174,7 +180,7 @@ const LandingPage: React.FunctionComponent = () => {
                                     size={22}
                                     strokeWidth={1.2}
                                 />
-                                <span>END DEMO CALL</span>
+                                <span>END CONSULTATION CALL</span>
                             </Button>
                         ) : (
                             <Button
@@ -198,11 +204,13 @@ const LandingPage: React.FunctionComponent = () => {
                                 ) : (
                                     <>
                                         <PhoneCall
-                                            className="mr-2 text-green-500"
+                                            className="mr-2 text-card-foreground"
                                             size={22}
                                             strokeWidth={1.2}
                                         />
-                                        <span>GET A DEMO CALL</span>
+                                        <span className="text-card-foreground">
+                                            FREE CONSULTATION CALL
+                                        </span>
                                     </>
                                 )}
                             </Button>
@@ -250,7 +258,9 @@ const LandingPage: React.FunctionComponent = () => {
                                                 onClick={endDemoCall}
                                             >
                                                 <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
-                                                <span>END DEMO CALL</span>
+                                                <span>
+                                                    END CONSULTATION CALL
+                                                </span>
                                             </Button>
                                         ) : (
                                             <Button
@@ -268,8 +278,8 @@ const LandingPage: React.FunctionComponent = () => {
                                                 ) : (
                                                     <>
                                                         <PhoneCall className="w-4 h-4 mr-2 text-green-500" />
-                                                        <span>
-                                                            GET A DEMO CALL
+                                                        <span className="text-card-foreground">
+                                                            FREE CONSULTATION
                                                         </span>
                                                     </>
                                                 )}

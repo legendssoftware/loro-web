@@ -1,10 +1,24 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'LORO CRM | All-in-One Enterprise Solution for Field Management, HR, Sales & Customer Relationship Management',
+    title: 'LORO CRM | #1 South African CRM for Field Sales, Lead Management & HR | Offline Capable',
     description:
-        'Transform your business operations with LORO CRM - the ultimate integrated platform for customer relationship management, field service automation, employee monitoring, sales pipeline optimization, HR management, and real-time reporting. Our comprehensive solution works seamlessly online and offline, offering unparalleled visibility into your workforce productivity, customer interactions, and business performance metrics. Trusted by industry leaders for streamlining operations and driving revenue growth.',
+        'Transform your business with LORO CRM - South Africa\'s leading offline-capable CRM system for field sales, quotation management, lead tracking, and HR attendance monitoring. Built for South African businesses with 24/7 local support. Works 100% offline with real-time GPS tracking for field workers. The most comprehensive CRM solution in Johannesburg, Cape Town, Durban, and all of South Africa.',
     keywords: [
+        // Location-Specific
+        'CRM South Africa',
+        'CRM near me',
+        'CRM Johannesburg',
+        'CRM Cape Town',
+        'CRM Durban',
+        'CRM Pretoria',
+        'CRM software South Africa',
+        'sales CRM South Africa',
+        'leads management South Africa',
+        'field service software South Africa',
+        'South African business software',
+        'local CRM provider',
+
         // CRM Core
         'CRM',
         'customer relationship management',
@@ -16,6 +30,11 @@ export const metadata: Metadata = {
         'customer segmentation',
         'customer journey mapping',
         'omnichannel CRM',
+        'offline CRM',
+        'CRM that works without internet',
+        'best CRM for small business',
+        'enterprise CRM solution',
+        'affordable CRM',
 
         // Sales Management
         'sales pipeline',
@@ -33,6 +52,31 @@ export const metadata: Metadata = {
         'sales territory management',
         'account-based selling',
         'upselling tools',
+        'smart sales management',
+        'sales performance tracking',
+        'sales team management',
+        'commission tracking',
+        'smart quotation system',
+        'quotation automation',
+        'quotation templates',
+        'quote approval workflow',
+        'digital signatures for quotes',
+        'online quotation system',
+
+        // Lead Management
+        'lead tracking software',
+        'smart lead management',
+        'lead scoring',
+        'lead nurturing',
+        'lead conversion analytics',
+        'lead source tracking',
+        'lead assignment',
+        'automated lead distribution',
+        'lead capture forms',
+        'lead funnel analytics',
+        'lead verification',
+        'lead quality scoring',
+        'lead lifecycle management',
 
         // Field Management & Monitoring
         'field service management',
@@ -50,6 +94,14 @@ export const metadata: Metadata = {
         'field service KPIs',
         'technician productivity',
         'service appointment scheduling',
+        'offline GPS tracking',
+        'field sales app',
+        'door-to-door sales tracking',
+        'field worker management',
+        'remote team GPS',
+        'GPS attendance verification',
+        'location-based attendance',
+        'geofence attendance',
 
         // Employee & HR Management
         'employee monitoring',
@@ -67,6 +119,14 @@ export const metadata: Metadata = {
         'employee task management',
         'staff training tracking',
         'talent management',
+        'smart HR system',
+        'smart attendance tracking',
+        'biometric attendance alternative',
+        'mobile attendance app',
+        'HR compliance South Africa',
+        'leave management',
+        'employee onboarding',
+        'HR document management',
 
         // Reporting & Analytics
         'business intelligence dashboard',
@@ -82,9 +142,15 @@ export const metadata: Metadata = {
         'predictive analytics',
         'trend analysis',
         'reporting automation',
+        'sales reporting',
+        'lead analytics',
+        'custom report builder',
+        'scheduled reports',
+        'data export',
+        'real-time business metrics',
+        'visual data representation',
 
         // Industry-Specific
-        'CRM South Africa',
         'field service CRM',
         'enterprise CRM solution',
         'SMB customer management',
@@ -95,6 +161,14 @@ export const metadata: Metadata = {
         'claims management',
         'field service management software',
         'mobile CRM app',
+        'CRM for construction',
+        'CRM for manufacturing',
+        'CRM for retail',
+        'CRM for financial services',
+        'CRM for healthcare',
+        'CRM for real estate',
+        'CRM for insurance',
+        'CRM for logistics',
 
         // Technical Features
         'offline-capable CRM',
@@ -106,6 +180,12 @@ export const metadata: Metadata = {
         'secure customer data platform',
         'multi-device CRM',
         'location-based services',
+        'offline data synchronization',
+        'low data usage app',
+        'works in rural areas',
+        'no internet required',
+        'works during load shedding',
+        'minimal data consumption',
     ],
     authors: [
         {
@@ -114,18 +194,29 @@ export const metadata: Metadata = {
         },
     ],
     openGraph: {
-        title: 'LORO CRM | Complete Business Management Platform for Field Operations, HR & Sales',
+        title: 'LORO CRM | South Africa\'s #1 Offline-Capable CRM for Field Sales, Leads & HR',
         description:
-            'Revolutionize your business operations with our comprehensive CRM solution featuring advanced field monitoring, employee reporting, sales automation, and complete HR management capabilities - all in one powerful platform that works online and offline.',
+            'South Africa\'s leading CRM platform with offline GPS tracking, smart lead management, quotation system, and field workforce monitoring. Perfect for businesses in Johannesburg, Cape Town, Durban and beyond, with 100% offline capability.',
         type: 'website',
         siteName: 'LORO CRM Platform',
-        locale: 'en_US',
+        locale: 'en_ZA',
+        images: [
+            {
+                url: 'https://storage.googleapis.com/crmapplications/resources/loro-og-image.jpg',
+                width: 1200,
+                height: 630,
+                alt: 'LORO CRM Platform Dashboard showing field sales tracking and reporting',
+            }
+        ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'LORO CRM | Enterprise Management Solution for Field Teams, Sales & HR',
+        title: 'LORO CRM | South Africa\'s Leading Offline CRM for Field Sales & HR',
         description:
-            'Maximize operational efficiency with our all-in-one CRM platform offering comprehensive field monitoring, employee reporting, sales tracking, and HR management capabilities for modern businesses.',
+            'Transform your South African business with the most comprehensive CRM system that works 100% offline. Perfect for field sales teams, lead tracking, quotation management and employee monitoring.',
+        images: [
+            'https://storage.googleapis.com/crmapplications/resources/loro-twitter-image.jpg'
+        ],
     },
     robots: {
         index: true,
@@ -136,6 +227,14 @@ export const metadata: Metadata = {
             follow: true,
             'max-image-preview': 'large',
             'max-snippet': -1,
+            'max-video-preview': -1,
+        },
+    },
+    alternates: {
+        canonical: 'https://loro.co.za',
+        languages: {
+            'en-ZA': 'https://loro.co.za',
+            'en-US': 'https://loro.com',
         },
     },
     category: 'Business Software',
@@ -143,6 +242,17 @@ export const metadata: Metadata = {
     referrer: 'origin-when-cross-origin',
     creator: 'LORO CRM Team',
     publisher: 'LORO CRM',
+    formatDetection: {
+        telephone: true,
+        address: true,
+        email: true,
+    },
+    metadataBase: new URL('https://loro.co.za'),
+    viewport: {
+        width: 'device-width',
+        initialScale: 1,
+        maximumScale: 5,
+    },
 };
 
 export default function LandingPageLayout({

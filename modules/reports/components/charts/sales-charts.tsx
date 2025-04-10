@@ -14,6 +14,9 @@ import {
     Line,
     AreaChart,
     Area,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts';
 
 // Define proper interfaces for our chart data
@@ -26,6 +29,27 @@ interface HourlySalesData {
 interface WeeklyRevenueData {
     date: string;
     revenue: number;
+}
+
+// Add new interfaces for the new charts
+interface TopPerformerData {
+    userId: number;
+    userName: string;
+    userPhotoURL?: string;
+    quotations: number;
+    revenue: number;
+}
+
+interface QuotationItemData {
+    id: number;
+    quotationNumber: string;
+    clientName: string;
+    amount: number;
+    formattedAmount: string;
+    itemCount: number;
+    status: string;
+    createdBy: string;
+    createdAt: string;
 }
 
 // Dummy hourly sales data
@@ -424,6 +448,474 @@ export function WeeklyRevenueChart({
                             isAnimationActive={false} // Disable animation to avoid potential rendering issues
                         />
                     </LineChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+export function TopPerformersPieChart({
+    data = [],
+}: {
+    data?: TopPerformerData[];
+}) {
+    // Format data for the pie chart
+    const formattedData = data.map((performer) => ({
+        name: performer.userName,
+        value: performer.revenue,
+        quotations: performer.quotations,
+    }));
+
+    // Generate colors for the pie chart - using a fixed set of colors
+    const COLORS = ['#10B981', '#4F46E5', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
+
+    // Format currency
+    const formatCurrency = (value: number | string) => {
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        return `R ${numValue.toLocaleString('en-ZA')}`;
+    };
+
+    return (
+        <Card className="border shadow-sm border-border/60 bg-card">
+            <CardHeader className="pb-2">
+                <h3 className="text-sm font-normal uppercase font-body">
+                    Top Sales Performers
+                </h3>
+                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                    Revenue distribution by sales staff
+                </p>
+            </CardHeader>
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={formattedData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            innerRadius={50}
+                            fill="#8884d8"
+                            dataKey="value"
+                            paddingAngle={2}
+                            cornerRadius={4}
+                        >
+                            {formattedData.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={COLORS[index % COLORS.length]}
+                                    stroke="transparent"
+                                />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            cursor={false}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const data = payload[0].payload as {
+                                        name: string;
+                                        value: number;
+                                        quotations: number;
+                                    };
+                                    return (
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {data.name}
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: COLORS[formattedData.findIndex(item => item.name === data.name) % COLORS.length],
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Revenue: {formatCurrency(data.value)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#93c5fd',
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Quotations: {data.quotations}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#93c5fd',
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Percentage: {((data.value / formattedData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Legend
+                            formatter={(value, entry, index) => (
+                                <span className="text-[10px] uppercase font-body">
+                                    {value}
+                                </span>
+                            )}
+                            iconSize={10}
+                            layout="horizontal"
+                            margin={{ top: 10 }}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+export function AverageOrderValueChart({
+    quotationsData = [],
+}: {
+    quotationsData?: QuotationItemData[];
+}) {
+    // Format currency
+    const formatCurrency = (value: number | string) => {
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        return `R ${numValue.toLocaleString('en-ZA')}`;
+    };
+
+    // Calculate average order value by date
+    const avgOrderByDate = quotationsData.reduce((acc, quotation) => {
+        const date = quotation.createdAt.split('T')[0]; // Get just the date part
+        if (!acc[date]) {
+            acc[date] = {
+                totalAmount: 0,
+                count: 0,
+                date: date
+            };
+        }
+        acc[date].totalAmount += quotation.amount;
+        acc[date].count += 1;
+        return acc;
+    }, {} as Record<string, { totalAmount: number; count: number; date: string; }>);
+
+    // Convert to array and calculate averages
+    const chartData = Object.values(avgOrderByDate).map(({ date, totalAmount, count }) => ({
+        date,
+        avgValue: count > 0 ? totalAmount / count : 0
+    }));
+
+    // Sort by date
+    chartData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Calculate the max value for proper Y axis scaling
+    const maxValue = Math.max(...chartData.map(item => item.avgValue));
+    const valueAxisMax = Math.ceil(maxValue / 500) * 500; // Round up to nearest 500
+
+    return (
+        <Card className="border shadow-sm border-border/60 bg-card">
+            <CardHeader className="pb-2">
+                <h3 className="text-sm font-normal uppercase font-body">
+                    Average Order Value
+                </h3>
+                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                    Average quotation value over time
+                </p>
+            </CardHeader>
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={chartData}
+                        margin={{
+                            top: 10,
+                            right: 30,
+                            left: 10,
+                            bottom: 20,
+                        }}
+                        barSize={20}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                        <XAxis
+                            dataKey="date"
+                            axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
+                            tickLine={false}
+                            tick={(props) => {
+                                const { x, y, payload } = props;
+                                // Display the date as-is without trying to parse it
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            dy={16}
+                                            textAnchor="middle"
+                                            fill="#888"
+                                            className="text-[8px] font-body uppercase"
+                                        >
+                                            {payload.value}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
+                        <YAxis
+                            axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
+                            tickLine={false}
+                            domain={[0, valueAxisMax]}
+                            allowDataOverflow={false}
+                            tick={(props) => {
+                                const { x, y, payload } = props;
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            x={-5}
+                                            textAnchor="end"
+                                            fill="#888"
+                                            className="text-[8px] font-body uppercase"
+                                        >
+                                            R {payload.value}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
+                        <Tooltip
+                            cursor={false}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const value = payload[0]?.value;
+                                    // Display original date string without parsing
+                                    const dateString = payload[0]?.payload?.date;
+
+                                    return (
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {dateString}
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#3B82F6',
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Avg Order Value:{' '}
+                                                    {typeof value === 'number'
+                                                        ? formatCurrency(value)
+                                                        : 'R 0'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Bar
+                            dataKey="avgValue"
+                            name="Average Order Value"
+                            fill="#3B82F6"
+                            radius={[4, 4, 0, 0]}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+export function QuotationItemsChart({
+    quotationsData = [],
+}: {
+    quotationsData?: QuotationItemData[];
+}) {
+    // Prepare data for the chart
+    const chartData = quotationsData.map(quotation => ({
+        id: quotation.id,
+        quotationNumber: quotation.quotationNumber,
+        amount: quotation.amount,
+        itemCount: quotation.itemCount,
+        client: quotation.clientName,
+        createdAt: quotation.createdAt
+    })).sort((a, b) => a.id - b.id);
+
+    // Format currency
+    const formatCurrency = (value: number | string) => {
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        return `R ${numValue.toLocaleString('en-ZA')}`;
+    };
+
+    return (
+        <Card className="border shadow-sm border-border/60 bg-card">
+            <CardHeader className="pb-2">
+                <h3 className="text-sm font-normal uppercase font-body">
+                    Quotation Items Analysis
+                </h3>
+                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                    Number of items per quotation vs amount
+                </p>
+            </CardHeader>
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={chartData}
+                        margin={{
+                            top: 10,
+                            right: 30,
+                            left: 10,
+                            bottom: 20,
+                        }}
+                        barSize={20}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                        <XAxis
+                            dataKey="quotationNumber"
+                            axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
+                            tickLine={false}
+                            tick={(props) => {
+                                const { x, y, payload } = props;
+                                // Just show the last 5 characters to save space
+                                const shortQuotation = payload.value.slice(-5);
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            dy={16}
+                                            textAnchor="middle"
+                                            fill="#888"
+                                            className="text-[8px] font-body uppercase"
+                                        >
+                                            {shortQuotation}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
+                        <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            stroke="#4F46E5"
+                            axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
+                            tickLine={false}
+                            domain={[0, 'dataMax']}
+                            allowDataOverflow={false}
+                            tick={(props) => {
+                                const { x, y, payload } = props;
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            x={-5}
+                                            textAnchor="end"
+                                            fill="#888"
+                                            className="text-[8px] font-body uppercase"
+                                        >
+                                            {payload.value}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
+                        <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            stroke="#10B981"
+                            axisLine={{ stroke: '#e5e7eb', strokeWidth: 0.5 }}
+                            tickLine={false}
+                            domain={[0, 'dataMax']}
+                            allowDataOverflow={false}
+                            tickFormatter={(value) => `R ${value}`}
+                            tick={(props) => {
+                                const { x, y, payload } = props;
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            x={5}
+                                            textAnchor="start"
+                                            fill="#888"
+                                            className="text-[8px] font-body uppercase"
+                                        >
+                                            R {payload.value}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
+                        <Tooltip
+                            cursor={false}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const {
+                                        quotationNumber,
+                                        amount,
+                                        itemCount,
+                                        client,
+                                        createdAt
+                                    } = payload[0]?.payload || {};
+
+                                    // Display the original date string without parsing
+                                    return (
+                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                            <p className="text-xs font-normal uppercase font-body">
+                                                {quotationNumber}
+                                            </p>
+                                            <p className="text-[10px] font-normal uppercase font-body">
+                                                {client} - {createdAt}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#4F46E5',
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Items: {itemCount}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#10B981',
+                                                    }}
+                                                />
+                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                    Amount: {formatCurrency(amount)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Legend
+                            verticalAlign="top"
+                            height={36}
+                            formatter={(value) => (
+                                <span className="text-[8px] uppercase font-body">
+                                    {value}
+                                </span>
+                            )}
+                        />
+                        <Bar
+                            yAxisId="left"
+                            dataKey="itemCount"
+                            name="Items"
+                            fill="#4F46E5"
+                            radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                            yAxisId="right"
+                            dataKey="amount"
+                            name="Amount (R)"
+                            fill="#10B981"
+                            radius={[4, 4, 0, 0]}
+                        />
+                    </BarChart>
                 </ResponsiveContainer>
             </CardContent>
         </Card>

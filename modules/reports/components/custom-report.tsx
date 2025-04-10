@@ -1672,6 +1672,7 @@ export function CustomReport({
                                                     nameKey="name"
                                                     paddingAngle={2}
                                                     cornerRadius={4}
+                                                    stroke="transparent"
                                                 >
                                                     {/* No Cell components needed, using fill in the data */}
                                                 </Pie>
@@ -1940,7 +1941,7 @@ export function CustomReport({
                                             </div>
                                             <div className="p-4 border rounded-md">
                                                 <h4 className="mb-2 text-xs font-normal uppercase font-body">Inventory Value</h4>
-                                                <p className="text-xl font-semibold">R {(report?.metrics?.products?.inventoryValue || 0).toLocaleString()}</p>
+                                                <p className="text-xl font-semibold font-body">R {(report?.metrics?.products?.inventoryValue || 0).toLocaleString()}</p>
                                                 <div className="mt-2 space-y-2">
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-xs uppercase font-body">Total Units</span>

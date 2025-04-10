@@ -32,6 +32,9 @@ import {
 import {
     SalesHourlyActivityChart,
     WeeklyRevenueChart,
+    TopPerformersPieChart,
+    AverageOrderValueChart,
+    QuotationItemsChart,
 } from './charts/sales-charts';
 
 import { useLiveOverviewReport } from '@/hooks/use-live-overview-report';
@@ -575,6 +578,13 @@ export function LiveOverviewReport({
                         <BookOpen className="w-4 h-4 mr-2" />
                         Journals
                     </TabsTrigger>
+                    <TabsTrigger
+                        value="clients"
+                        className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                    >
+                        <Users className="w-4 h-4 mr-2" />
+                        Clients
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Overview Tab (renamed to Custom Report) */}
@@ -992,6 +1002,7 @@ export function LiveOverviewReport({
                                             dataKey="value"
                                             paddingAngle={2}
                                             cornerRadius={4}
+                                            stroke="transparent"
                                         >
                                             {taskTypeData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
@@ -1631,6 +1642,18 @@ export function LiveOverviewReport({
                             />
                         </div>
                         <WeeklyRevenueChart data={weeklyRevenueData} />
+                        <TopPerformersPieChart
+                            data={report?.metrics?.sales?.topPerformers || []}
+                        />
+                        <AverageOrderValueChart
+                            quotationsData={[
+                                ...(report?.metrics?.sales?.recentQuotations || []),
+                                ...(report?.metrics?.sales?.pendingQuotations || [])
+                            ]}
+                        />
+                        <QuotationItemsChart
+                            quotationsData={report?.metrics?.sales?.recentQuotations || []}
+                        />
                     </div>
                 </TabsContent>
 
@@ -1665,6 +1688,7 @@ export function LiveOverviewReport({
                                             nameKey="name"
                                             paddingAngle={2}
                                             cornerRadius={4}
+                                            stroke="transparent"
                                         >
                                             {/* No Cell components needed, using fill in the data */}
                                         </Pie>
@@ -1933,7 +1957,7 @@ export function LiveOverviewReport({
                                     </div>
                                     <div className="p-4 border rounded-md">
                                         <h4 className="mb-2 text-xs font-normal uppercase font-body">Inventory Value</h4>
-                                        <p className="text-xl font-semibold">R {(report?.metrics?.products?.inventoryValue || 0).toLocaleString()}</p>
+                                        <p className="text-xl font-semibold font-body">R {(report?.metrics?.products?.inventoryValue || 0).toLocaleString()}</p>
                                         <div className="mt-2 space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs uppercase font-body">Total Units</span>
@@ -2693,6 +2717,372 @@ export function LiveOverviewReport({
                                             <p className="text-sm uppercase text-muted-foreground font-body">No recent journals found</p>
                                         </div>
                                     )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                {/* Clients Tab */}
+                <TabsContent value="clients" className="pt-6">
+                    <div className="space-y-6">
+                        <h2 className="text-lg font-normal uppercase font-body">Clients Overview</h2>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <Card className="shadow-sm bg-card">
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col space-y-2">
+                                        <h3 className="text-xs font-normal uppercase font-body">Total Clients</h3>
+                                        <div className="flex items-end justify-between">
+                                            <p className="text-3xl font-semibold uppercase font-body">{report?.metrics?.clients?.totalClientCount || 0}</p>
+                                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                                <span className="font-semibold text-primary">
+                                                    {report?.metrics?.clients?.newClientsToday || 0}
+                                                </span>{' '}
+                                                new today
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm bg-card">
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col space-y-2">
+                                        <h3 className="text-xs font-normal uppercase font-body">Active Clients</h3>
+                                        <div className="flex items-end justify-between">
+                                            <p className="text-3xl font-semibold uppercase font-body">{report?.metrics?.clients?.activeClientsCount || 0}</p>
+                                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                                {(report?.metrics?.clients?.totalClientCount > 0)
+                                                    ? `${(report?.metrics?.clients?.activeClientsCount / report?.metrics?.clients?.totalClientCount * 100).toFixed(0)}%`
+                                                    : '0%'}
+                                                of total
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm bg-card">
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col space-y-2">
+                                        <h3 className="text-xs font-normal uppercase font-body">Today's Interactions</h3>
+                                        <div className="flex items-end justify-between">
+                                            <p className="text-3xl font-semibold uppercase font-body">{report?.metrics?.clients?.interactionsToday || 0}</p>
+                                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                                <span className="font-semibold">
+                                                    {report?.metrics?.clients?.uniqueClientsCount || 0}
+                                                </span>{' '}
+                                                unique clients
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm bg-card">
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col space-y-2">
+                                        <h3 className="text-xs font-normal uppercase font-body">Engagement Rate</h3>
+                                        <div className="flex items-end justify-between">
+                                            <p className="text-3xl font-semibold uppercase font-body">{report?.metrics?.clients?.clientEngagementRate || 0}%</p>
+                                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                                <span className="font-semibold">
+                                                    {report?.metrics?.clients?.newClientsLast30Days || 0}
+                                                </span>{' '}
+                                                new in 30d
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            {/* Client Category Distribution */}
+                            <Card className="border shadow-sm border-border/60 bg-card">
+                                <CardHeader className="pb-2">
+                                    <h3 className="text-xs font-normal uppercase font-body">
+                                        Client Category Distribution
+                                    </h3>
+                                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                        Distribution of clients by category
+                                    </p>
+                                </CardHeader>
+                                <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={Object.entries(report?.metrics?.clients?.clientsByCategory || {}).map(([name, value]) => {
+                                                    // Generate color based on category name for consistency
+                                                    const colorMap: Record<string, string> = {
+                                                        'software': '#3B82F6',   // Blue
+                                                        'contract': '#10B981',   // Green
+                                                        'retail': '#F59E0B',     // Amber
+                                                        'service': '#8B5CF6',    // Purple
+                                                        'manufacturing': '#EC4899', // Pink
+                                                        'consulting': '#06B6D4',  // Cyan
+                                                        'other': '#9CA3AF',      // Gray
+                                                    };
+
+                                                    return {
+                                                        name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+                                                        value: Number(value),
+                                                        color: colorMap[name.toLowerCase()] || getColorForIndex(name)
+                                                    };
+                                                })}
+                                                cx="50%"
+                                                cy="50%"
+                                                labelLine={false}
+                                                outerRadius={80}
+                                                innerRadius={50}
+                                                fill="#8884d8"
+                                                dataKey="value"
+                                                paddingAngle={2}
+                                                cornerRadius={4}
+                                            >
+                                                {Object.entries(report?.metrics?.clients?.clientsByCategory || {}).map(([name, value], index) => {
+                                                    const colorMap: Record<string, string> = {
+                                                        'software': '#3B82F6',   // Blue
+                                                        'contract': '#10B981',   // Green
+                                                        'retail': '#F59E0B',     // Amber
+                                                        'service': '#8B5CF6',    // Purple
+                                                        'manufacturing': '#EC4899', // Pink
+                                                        'consulting': '#06B6D4',  // Cyan
+                                                        'other': '#9CA3AF',      // Gray
+                                                    };
+                                                    return (
+                                                        <Cell
+                                                            key={`cell-${index}`}
+                                                            fill={colorMap[name.toLowerCase()] || getColorForIndex(name)}
+                                                            stroke="transparent"
+                                                        />
+                                                    );
+                                                })}
+                                            </Pie>
+                                            <Tooltip
+                                                cursor={false}
+                                                content={({ active, payload }) => {
+                                                    if (active && payload && payload.length) {
+                                                        const data = payload[0].payload as { name: string; value: number; color: string };
+                                                        return (
+                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                <p className="text-xs font-normal uppercase font-body">
+                                                                    {data.name}
+                                                                </p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div
+                                                                        className="w-2 h-2 rounded-full"
+                                                                        style={{
+                                                                            backgroundColor: data.color,
+                                                                        }}
+                                                                    />
+                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                        Count: {data.value}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div
+                                                                        className="w-2 h-2 rounded-full"
+                                                                        style={{
+                                                                            backgroundColor: '#93c5fd',
+                                                                        }}
+                                                                    />
+                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                        Percentage: {((data.value / Object.values(report?.metrics?.clients?.clientsByCategory || {}).reduce((sum: number, val: unknown) => sum + Number(val as number), 0)) * 100).toFixed(1)}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                }}
+                                            />
+                                            <Legend
+                                                formatter={(value, entry) => {
+                                                    return (
+                                                        <span className="text-[10px] uppercase font-body" style={{ color: entry.color }}>
+                                                            {value}
+                                                        </span>
+                                                    );
+                                                }}
+                                                iconSize={10}
+                                                layout="horizontal"
+                                                margin={{ top: 10 }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+
+                            {/* Client Risk Distribution */}
+                            <Card className="border shadow-sm border-border/60 bg-card">
+                                <CardHeader className="pb-2">
+                                    <h3 className="text-xs font-normal uppercase font-body">
+                                        Client Risk Distribution
+                                    </h3>
+                                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                        Distribution of clients by risk level
+                                    </p>
+                                </CardHeader>
+                                <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={Object.entries(report?.metrics?.clients?.clientsByRiskLevel || {}).map(([name, value]) => {
+                                                    // Map risk levels to colors
+                                                    const colorMap: Record<string, string> = {
+                                                        'low': '#10B981',        // Green
+                                                        'medium': '#F59E0B',     // Amber
+                                                        'high': '#EF4444',       // Red
+                                                        'critical': '#7F1D1D',   // Dark Red
+                                                    };
+
+                                                    return {
+                                                        name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+                                                        value: Number(value),
+                                                        color: colorMap[name.toLowerCase()] || '#9CA3AF'
+                                                    };
+                                                })}
+                                                cx="50%"
+                                                cy="50%"
+                                                labelLine={false}
+                                                outerRadius={80}
+                                                innerRadius={50}
+                                                fill="#8884d8"
+                                                dataKey="value"
+                                                paddingAngle={2}
+                                                cornerRadius={4}
+                                            >
+                                                {Object.entries(report?.metrics?.clients?.clientsByRiskLevel || {}).map(([name, value], index) => {
+                                                    const colorMap: Record<string, string> = {
+                                                        'low': '#10B981',        // Green
+                                                        'medium': '#F59E0B',     // Amber
+                                                        'high': '#EF4444',       // Red
+                                                        'critical': '#7F1D1D',   // Dark Red
+                                                    };
+                                                    return (
+                                                        <Cell
+                                                            key={`cell-${index}`}
+                                                            fill={colorMap[name.toLowerCase()] || '#9CA3AF'}
+                                                            stroke="transparent"
+                                                        />
+                                                    );
+                                                })}
+                                            </Pie>
+                                            <Tooltip
+                                                cursor={false}
+                                                content={({ active, payload }) => {
+                                                    if (active && payload && payload.length) {
+                                                        const data = payload[0].payload as { name: string; value: number; color: string };
+                                                        return (
+                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                <p className="text-xs font-normal uppercase font-body">
+                                                                    {data.name} Risk
+                                                                </p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div
+                                                                        className="w-2 h-2 rounded-full"
+                                                                        style={{
+                                                                            backgroundColor: data.color,
+                                                                        }}
+                                                                    />
+                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                        Count: {data.value}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div
+                                                                        className="w-2 h-2 rounded-full"
+                                                                        style={{
+                                                                            backgroundColor: '#93c5fd',
+                                                                        }}
+                                                                    />
+                                                                    <p className="text-[10px] font-normal uppercase font-body">
+                                                                        Percentage: {((data.value / Object.values(report?.metrics?.clients?.clientsByRiskLevel || {}).reduce((sum: number, val: unknown) => sum + Number(val as number), 0)) * 100).toFixed(1)}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                }}
+                                            />
+                                            <Legend
+                                                formatter={(value, entry) => {
+                                                    return (
+                                                        <span className="text-[10px] uppercase font-body" style={{ color: entry.color }}>
+                                                            {value}
+                                                        </span>
+                                                    );
+                                                }}
+                                                iconSize={10}
+                                                layout="horizontal"
+                                                margin={{ top: 10 }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Recent Clients */}
+                        <Card className="shadow-sm bg-card">
+                            <CardHeader className="pb-2">
+                                <h3 className="text-xs font-normal uppercase font-body">
+                                    Recent Clients
+                                </h3>
+                                <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                    Most recently added clients
+                                </p>
+                            </CardHeader>
+                            <CardContent className="p-4 overflow-auto">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-xs">
+                                        <thead>
+                                            <tr className="border-b border-border/50">
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Name</th>
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Contact</th>
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Email</th>
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Phone</th>
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Status</th>
+                                                <th className="px-4 py-3 text-xs font-normal text-left uppercase text-muted-foreground font-body">Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/30">
+                                            {report?.metrics?.clients?.recentClients?.length ? (
+                                                report.metrics.clients.recentClients.map((client: any) => (
+                                                    <tr key={client.id} className="hover:bg-accent/5">
+                                                        <td className="px-4 py-3 text-xs font-medium whitespace-nowrap font-body">{client.name}</td>
+                                                        <td className="px-4 py-3 text-xs whitespace-nowrap font-body">{client.contactPerson}</td>
+                                                        <td className="px-4 py-3 text-xs whitespace-nowrap font-body">{client.email}</td>
+                                                        <td className="px-4 py-3 text-xs whitespace-nowrap font-body">{client.phone}</td>
+                                                        <td className="px-4 py-3 text-xs whitespace-nowrap font-body">
+                                                            <span
+                                                                className={`text-xs font-normal uppercase font-body ${
+                                                                    client.status === 'active'
+                                                                        ? 'text-green-700 dark:text-green-400'
+                                                                        : client.status === 'inactive'
+                                                                        ? 'text-amber-700 dark:text-amber-400'
+                                                                        : 'text-gray-700 dark:text-gray-400'
+                                                                }`}
+                                                            >
+                                                                {client.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-xs whitespace-nowrap font-body">
+                                                            {client.createdAt}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={6} className="px-4 py-6 text-xs text-center font-body text-muted-foreground">
+                                                        No recent clients found
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </CardContent>
                         </Card>

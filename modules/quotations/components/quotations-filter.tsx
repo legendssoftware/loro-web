@@ -22,11 +22,18 @@ import {
     AlertCircle,
     CheckCircle,
     XCircle,
-    Calendar,
     Users,
     User,
     Clock,
     Package,
+    Edit,
+    UserCheck,
+    MessageCircle,
+    Layers,
+    DollarSign,
+    Truck,
+    PackageCheck,
+    PackageX,
 } from 'lucide-react';
 import { useCallback, useState, memo } from 'react';
 import {
@@ -194,15 +201,24 @@ function QuotationsFilterComponent({
     }, [quotations]);
 
     const statusLabels: Record<OrderStatus, string> = {
-        [OrderStatus.PENDING]: 'PENDING',
-        [OrderStatus.INPROGRESS]: 'IN PROGRESS',
+        [OrderStatus.DRAFT]: 'DRAFT',
+        [OrderStatus.PENDING_INTERNAL]: 'INTERNAL REVIEW',
+        [OrderStatus.PENDING_CLIENT]: 'CLIENT REVIEW',
+        [OrderStatus.NEGOTIATION]: 'NEGOTIATION',
         [OrderStatus.APPROVED]: 'APPROVED',
         [OrderStatus.REJECTED]: 'REJECTED',
+        [OrderStatus.SOURCING]: 'SOURCING',
+        [OrderStatus.PACKING]: 'PACKING',
+        [OrderStatus.IN_FULFILLMENT]: 'IN FULFILLMENT',
+        [OrderStatus.PAID]: 'PAID',
+        [OrderStatus.OUTFORDELIVERY]: 'OUT FOR DELIVERY',
+        [OrderStatus.DELIVERED]: 'DELIVERED',
+        [OrderStatus.RETURNED]: 'RETURNED',
         [OrderStatus.COMPLETED]: 'COMPLETED',
         [OrderStatus.CANCELLED]: 'CANCELLED',
         [OrderStatus.POSTPONED]: 'POSTPONED',
-        [OrderStatus.OUTFORDELIVERY]: 'OUT FOR DELIVERY',
-        [OrderStatus.DELIVERED]: 'DELIVERED',
+        [OrderStatus.INPROGRESS]: 'IN PROGRESS',
+        [OrderStatus.PENDING]: 'PENDING',
     };
 
     type IconType = React.ForwardRefExoticComponent<
@@ -212,27 +228,45 @@ function QuotationsFilterComponent({
     >;
 
     const statusIcons: Record<OrderStatus, IconType> = {
-        [OrderStatus.PENDING]: AlertCircle,
-        [OrderStatus.INPROGRESS]: Clock,
+        [OrderStatus.DRAFT]: Edit,
+        [OrderStatus.PENDING_INTERNAL]: AlertCircle,
+        [OrderStatus.PENDING_CLIENT]: UserCheck,
+        [OrderStatus.NEGOTIATION]: MessageCircle,
         [OrderStatus.APPROVED]: CheckCircle,
         [OrderStatus.REJECTED]: XCircle,
+        [OrderStatus.SOURCING]: Search,
+        [OrderStatus.PACKING]: Layers,
+        [OrderStatus.IN_FULFILLMENT]: Package,
+        [OrderStatus.PAID]: DollarSign,
+        [OrderStatus.OUTFORDELIVERY]: Truck,
+        [OrderStatus.DELIVERED]: PackageCheck,
+        [OrderStatus.RETURNED]: PackageX,
         [OrderStatus.COMPLETED]: Check,
         [OrderStatus.CANCELLED]: X,
         [OrderStatus.POSTPONED]: Clock,
-        [OrderStatus.OUTFORDELIVERY]: Package,
-        [OrderStatus.DELIVERED]: Package,
+        [OrderStatus.INPROGRESS]: Clock,
+        [OrderStatus.PENDING]: AlertCircle,
     };
 
     const statusColors: Record<OrderStatus, string> = {
-        [OrderStatus.PENDING]: 'text-yellow-600',
-        [OrderStatus.INPROGRESS]: 'text-blue-600',
+        [OrderStatus.DRAFT]: 'text-gray-600',
+        [OrderStatus.PENDING_INTERNAL]: 'text-amber-600',
+        [OrderStatus.PENDING_CLIENT]: 'text-yellow-600',
+        [OrderStatus.NEGOTIATION]: 'text-indigo-600',
         [OrderStatus.APPROVED]: 'text-green-600',
         [OrderStatus.REJECTED]: 'text-red-600',
+        [OrderStatus.SOURCING]: 'text-cyan-600',
+        [OrderStatus.PACKING]: 'text-sky-600',
+        [OrderStatus.IN_FULFILLMENT]: 'text-violet-600',
+        [OrderStatus.PAID]: 'text-emerald-600',
+        [OrderStatus.OUTFORDELIVERY]: 'text-blue-600',
+        [OrderStatus.DELIVERED]: 'text-teal-600',
+        [OrderStatus.RETURNED]: 'text-rose-600',
         [OrderStatus.COMPLETED]: 'text-purple-600',
         [OrderStatus.CANCELLED]: 'text-gray-600',
         [OrderStatus.POSTPONED]: 'text-orange-600',
-        [OrderStatus.OUTFORDELIVERY]: 'text-indigo-600',
-        [OrderStatus.DELIVERED]: 'text-teal-600',
+        [OrderStatus.INPROGRESS]: 'text-blue-600',
+        [OrderStatus.PENDING]: 'text-yellow-600',
     };
 
     return (

@@ -19,33 +19,27 @@ const publicPaths = [
 ];
 
 // Define path patterns that should be protected
-const protectedPathPatterns = [
-    '/',
-    '/clients',
-    '/leads',
-    '/inventory',
-    '/quotations',
-    '/claims',
-    '/tasks',
-    '/staff',
-    '/resellers',
-    '/settings',
-    '/map',
-];
+// Simplified to check if NOT a public path and NOT an asset/API path
+// const protectedPathPatterns = [ ... ]; // Removed for simplicity below
 
 /**
- * Checks if a path matches any of the protected path patterns
+ * Checks if a path requires authentication (i.e., not public and not static/API)
  */
 function isProtectedPath(path: string): boolean {
-    return protectedPathPatterns.some(pattern => {
-        // Exact match
-        if (pattern === path) return true;
-
-        // Match path with any subpaths
-        if (path.startsWith(`${pattern}/`)) return true;
-
+    // Check if it's a static asset or API route first
+    if (
+        path.startsWith('/_next') ||
+        path.startsWith('/api') ||
+        path.includes('.') // Basic check for files like images, css
+    ) {
         return false;
-    });
+    }
+    // Check if it's one of the defined public paths
+    if (publicPaths.some(publicPath => path.startsWith(publicPath))) {
+        return false;
+    }
+    // Otherwise, it's considered protected
+    return true;
 }
 
 /**
@@ -60,62 +54,55 @@ function validateToken(token: string): boolean {
         // Check expiration
         const currentTimestamp = Math.floor(Date.now() / 1000);
         if (!decodedToken.exp || decodedToken.exp <= currentTimestamp) {
+            console.warn('Middleware: Access token expired');
             return false;
         }
 
         return true;
     } catch (error) {
+        console.error('Middleware: Error validating token:', error);
         return false;
     }
 }
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const response = NextResponse.next(); // Start with a pass-through response
 
-    // Skip middleware for static assets and API routes
-    if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        pathname.includes('.') // Static files like images, css, etc.
-    ) {
-        return NextResponse.next();
-    }
-
-    // Allow access to public paths
-    if (publicPaths.some(path => pathname.startsWith(path))) {
-        return NextResponse.next();
-    }
-
-    // Check if the requested path should be protected
+    // Check if the path requires authentication
     if (isProtectedPath(pathname)) {
-        // Get the access token from cookies
         const accessToken = request.cookies.get('accessToken')?.value;
 
-        // Add a grace period by setting a flag in the headers
-        // This allows the client to attempt token refresh before redirecting
         if (!accessToken || !validateToken(accessToken)) {
-            // Instead of immediate redirect, set a header flag
-            // The client-side RouteGuard will handle the redirect if needed
-            const response = NextResponse.next();
-            response.headers.set('X-Auth-Required', 'true');
+            console.log(`Middleware: No valid token for protected path: ${pathname}. Redirecting to sign-in.`);
 
-            // Only redirect if there's no token at all (brand new session)
-            if (!accessToken) {
-                const signInUrl = new URL('/sign-in', request.url);
-                // Add the original URL as a parameter to redirect back after sign-in
-                signInUrl.searchParams.set('callbackUrl', encodeURI(request.url));
-                return NextResponse.redirect(signInUrl);
-            }
+            // Prepare redirect URL
+            const signInUrl = new URL('/sign-in', request.url);
+            signInUrl.searchParams.set('callbackUrl', request.url); // Use the full requested URL
 
-            return response;
+            // Create a redirect response
+            const redirectResponse = NextResponse.redirect(signInUrl);
+
+            // Clear the invalid/missing accessToken cookie
+            redirectResponse.cookies.set('accessToken', '', {
+                path: '/',
+                expires: new Date(0), // Expire immediately
+                sameSite: 'strict',
+            });
+            // Attempt to clear other potentially related cookies (best effort)
+            redirectResponse.cookies.set('refreshToken', '', { path: '/', expires: new Date(0), sameSite: 'strict' });
+            redirectResponse.cookies.set('auth', '', { path: '/', expires: new Date(0), sameSite: 'strict' });
+            redirectResponse.cookies.set('session', '', { path: '/', expires: new Date(0), sameSite: 'strict' });
+
+            return redirectResponse; // Execute the redirect and cookie clearing
         }
 
-        // If there is a valid token, let the request proceed
-        return NextResponse.next();
+        // If token is valid, proceed with the original request
+        return response;
     }
 
-    // For all other paths, just proceed
-    return NextResponse.next();
+    // For public paths or static assets/API routes, just proceed
+    return response;
 }
 
 export const config = {
@@ -123,6 +110,6 @@ export const config = {
     // - _next/static (static files)
     // - _next/image (image optimization files)
     // - favicon.ico (favicon file)
-    // - public folder
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)'],
+    // - public folder assets inferred by presence of '.'
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'], // Adjusted matcher slightly
 };

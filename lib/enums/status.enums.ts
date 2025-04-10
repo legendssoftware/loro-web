@@ -27,13 +27,22 @@ export enum ClaimStatus {
 }
 
 export enum OrderStatus {
-    PENDING = 'pending',
-    INPROGRESS = 'inprogress',
+    DRAFT = 'draft',
+    PENDING_INTERNAL = 'pending_internal',
+    PENDING_CLIENT = 'pending_client',
+    NEGOTIATION = 'negotiation',
+    APPROVED = 'approved',
+    REJECTED = 'rejected',
+    SOURCING = 'sourcing',
+    PACKING = 'packing',
+    IN_FULFILLMENT = 'in_fulfillment',
+    PAID = 'paid',
+    OUTFORDELIVERY = 'outfordelivery',
+    DELIVERED = 'delivered',
+    RETURNED = 'returned',
     COMPLETED = 'completed',
     CANCELLED = 'cancelled',
     POSTPONED = 'postponed',
-    OUTFORDELIVERY = 'outfordelivery',
-    DELIVERED = 'delivered',
-    REJECTED = 'rejected',
-    APPROVED = 'approved',
+    INPROGRESS = 'inprogress',
+    PENDING = 'pending',
 }

@@ -10,6 +10,52 @@ export interface StatusColorConfig {
 }
 
 export const StatusColors: Record<string, StatusColorConfig> = {
+    [OrderStatus.DRAFT]: {
+        bg: 'bg-gray-100 dark:bg-gray-950/50',
+        text: 'text-gray-800 dark:text-gray-300',
+        border: 'border-gray-200 dark:border-gray-800',
+    },
+    [OrderStatus.PENDING_INTERNAL]: {
+        bg: 'bg-amber-100 dark:bg-amber-950/50',
+        text: 'text-amber-800 dark:text-amber-300',
+        border: 'border-amber-200 dark:border-amber-800',
+    },
+    [OrderStatus.PENDING_CLIENT]: {
+        bg: 'bg-yellow-100 dark:bg-yellow-950/50',
+        text: 'text-yellow-800 dark:text-yellow-300',
+        border: 'border-yellow-200 dark:border-yellow-800',
+    },
+    [OrderStatus.NEGOTIATION]: {
+        bg: 'bg-indigo-100 dark:bg-indigo-950/50',
+        text: 'text-indigo-800 dark:text-indigo-300',
+        border: 'border-indigo-200 dark:border-indigo-800',
+    },
+    [OrderStatus.SOURCING]: {
+        bg: 'bg-cyan-100 dark:bg-cyan-950/50',
+        text: 'text-cyan-800 dark:text-cyan-300',
+        border: 'border-cyan-200 dark:border-cyan-800',
+    },
+    [OrderStatus.PACKING]: {
+        bg: 'bg-sky-100 dark:bg-sky-950/50',
+        text: 'text-sky-800 dark:text-sky-300',
+        border: 'border-sky-200 dark:border-sky-800',
+    },
+    [OrderStatus.IN_FULFILLMENT]: {
+        bg: 'bg-violet-100 dark:bg-violet-950/50',
+        text: 'text-violet-800 dark:text-violet-300',
+        border: 'border-violet-200 dark:border-violet-800',
+    },
+    [OrderStatus.PAID]: {
+        bg: 'bg-emerald-100 dark:bg-emerald-950/50',
+        text: 'text-emerald-800 dark:text-emerald-300',
+        border: 'border-emerald-200 dark:border-emerald-800',
+    },
+    [OrderStatus.RETURNED]: {
+        bg: 'bg-rose-100 dark:bg-rose-950/50',
+        text: 'text-rose-800 dark:text-rose-300',
+        border: 'border-rose-200 dark:border-rose-800',
+    },
+    // Legacy status colors - keep for backward compatibility
     [OrderStatus.PENDING]: {
         bg: 'bg-yellow-100 dark:bg-yellow-950/50',
         text: 'text-yellow-800 dark:text-yellow-300',
@@ -114,15 +160,25 @@ export interface QuotationFilterParams {
 }
 
 export interface QuotationsByStatus {
-    'pending': Quotation[];
-    'inprogress': Quotation[];
-    'approved': Quotation[];
-    'rejected': Quotation[];
-    'completed': Quotation[];
-    'cancelled': Quotation[];
-    'postponed': Quotation[];
-    'outfordelivery': Quotation[];
-    'delivered': Quotation[];
+    draft: Quotation[];
+    pending_internal: Quotation[];
+    pending_client: Quotation[];
+    negotiation: Quotation[];
+    approved: Quotation[];
+    rejected: Quotation[];
+    sourcing: Quotation[];
+    packing: Quotation[];
+    in_fulfillment: Quotation[];
+    paid: Quotation[];
+    outfordelivery: Quotation[];
+    delivered: Quotation[];
+    returned: Quotation[];
+    completed: Quotation[];
+    cancelled: Quotation[];
+    postponed: Quotation[];
+    // Legacy status fields - keep for backward compatibility
+    pending: Quotation[];
+    inprogress: Quotation[];
 }
 
 export interface QuotationStats {

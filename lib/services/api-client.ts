@@ -16,14 +16,11 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         // Define public endpoints that don't need authentication
-        const publicEndpoints = [
-            '/feedback/validate-token',
-            '/feedback'
-        ];
+        const publicEndpoints = ['/feedback/validate-token', '/feedback'];
 
         // Skip token for public endpoints
-        const isPublicEndpoint = publicEndpoints.some(endpoint =>
-            config.url?.includes(endpoint)
+        const isPublicEndpoint = publicEndpoints.some((endpoint) =>
+            config.url?.includes(endpoint),
         );
 
         if (isPublicEndpoint) {
@@ -236,11 +233,6 @@ export const checkAuthStatus = () => {
                 authData = JSON.parse(authStorage);
                 authToken = authData?.state?.accessToken;
                 refreshToken = authData?.state?.refreshToken;
-                console.log('Auth storage found:', {
-                    isAuthenticated: authData?.state?.isAuthenticated,
-                    hasAccessToken: !!authToken,
-                    hasRefreshToken: !!refreshToken,
-                });
             } else {
                 console.log('No auth-storage found');
             }

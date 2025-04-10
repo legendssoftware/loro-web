@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Quotation, QuotationFilterParams, QuotationsByStatus } from '@/lib/types/quotation';
+import {
+    Quotation,
+    QuotationFilterParams,
+    QuotationsByStatus,
+} from '@/lib/types/quotation';
 import { OrderStatus } from '@/lib/enums/status.enums';
 import { useQuotationApi } from './use-quotation-api';
 import toast from 'react-hot-toast';
@@ -30,13 +34,17 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
                 const jsonPayload = decodeURIComponent(
                     atob(base64)
                         .split('')
-                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                        .join('')
+                        .map(
+                            (c) =>
+                                '%' +
+                                ('00' + c.charCodeAt(0).toString(16)).slice(-2),
+                        )
+                        .join(''),
                 );
                 const payload = JSON.parse(jsonPayload);
                 return payload.role === 'client';
             } catch (e) {
-                console.error("Failed to extract role from token:", e);
+                console.error('Failed to extract role from token:', e);
             }
         }
 
@@ -57,13 +65,17 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
                 const jsonPayload = decodeURIComponent(
                     atob(base64)
                         .split('')
-                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                        .join('')
+                        .map(
+                            (c) =>
+                                '%' +
+                                ('00' + c.charCodeAt(0).toString(16)).slice(-2),
+                        )
+                        .join(''),
                 );
                 const payload = JSON.parse(jsonPayload);
                 return Number(payload.uid);
             } catch (e) {
-                console.error("Failed to extract UID from token:", e);
+                console.error('Failed to extract UID from token:', e);
             }
         }
 
@@ -71,10 +83,13 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     }, [profileData, accessToken]);
 
     // Ensure we always use a limit of 500
-    const enhancedFilters = useMemo(() => ({
-        ...filters,
-        limit: 500,
-    }), [filters]);
+    const enhancedFilters = useMemo(
+        () => ({
+            ...filters,
+            limit: 500,
+        }),
+        [filters],
+    );
 
     // Determine which query function to use based on user role
     const queryFn = useCallback(async () => {
@@ -91,33 +106,46 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: [QUOTATIONS_QUERY_KEY, enhancedFilters, isClient, clientId],
         queryFn,
-        placeholderData: previousData => previousData,
+        placeholderData: (previousData) => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling
         retry: 2,
-        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: Object.keys(enhancedFilters)?.length > 0 || !enhancedFilters?.hasOwnProperty('page'),
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        enabled:
+            Object.keys(enhancedFilters)?.length > 0 ||
+            !enhancedFilters?.hasOwnProperty('page'),
     });
 
     // Group quotations by status
     const quotationsByStatus = useMemo<QuotationsByStatus>(() => {
         const statusGroups = {
-            'pending': [],
-            'inprogress': [],
-            'approved': [],
-            'rejected': [],
-            'completed': [],
-            'cancelled': [],
-            'postponed': [],
-            'outfordelivery': [],
-            'delivered': [],
+            pending: [],
+            inprogress: [],
+            approved: [],
+            rejected: [],
+            completed: [],
+            cancelled: [],
+            postponed: [],
+            outfordelivery: [],
+            delivered: [],
+            packing: [],
+            in_fulfillment: [],
+            paid: [],
+            returned: [],
+            draft: [],
+            pending_internal: [],
+            pending_client: [],
+            negotiation: [],
+            sourcing: [],
         } as QuotationsByStatus;
 
         if (data?.items) {
             // Group quotations by status
-            data.items.forEach(quotation => {
+            data.items.forEach((quotation) => {
                 if (!quotation.isDeleted) {
-                    statusGroups[quotation.status.toLowerCase() as keyof QuotationsByStatus].push(quotation);
+                    statusGroups[
+                        quotation?.status?.toLowerCase() as keyof QuotationsByStatus
+                    ]?.push(quotation);
                 }
             });
         }
@@ -127,13 +155,25 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
 
     // Create a mutation for updating quotation status
     const updateStatusMutation = useMutation({
-        mutationFn: async ({ quotationId, status }: { quotationId: number; status: OrderStatus }) => {
+        mutationFn: async ({
+            quotationId,
+            status,
+        }: {
+            quotationId: number;
+            status: OrderStatus;
+        }) => {
             try {
                 await quotationApi.updateQuotationStatus(quotationId, status);
-                showSuccessToast('Quotation status updated successfully.', toast);
+                showSuccessToast(
+                    'Quotation status updated successfully.',
+                    toast,
+                );
                 return { success: true };
             } catch (error) {
-                showErrorToast('Failed to update quotation status. Please try again.', toast);
+                showErrorToast(
+                    'Failed to update quotation status. Please try again.',
+                    toast,
+                );
                 console.error('Update quotation status error:', error);
                 throw error;
             }
@@ -148,11 +188,15 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     const createQuotationMutation = useMutation({
         mutationFn: async (quotationData: Partial<Quotation>) => {
             try {
-                const result = await quotationApi.createQuotation(quotationData);
+                const result =
+                    await quotationApi.createQuotation(quotationData);
                 showSuccessToast('Quotation created successfully.', toast);
                 return result;
             } catch (error) {
-                showErrorToast('Failed to create quotation. Please try again.', toast);
+                showErrorToast(
+                    'Failed to create quotation. Please try again.',
+                    toast,
+                );
                 console.error('Create quotation error:', error);
                 throw error;
             }
@@ -166,7 +210,10 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     // Helper function to update a quotation's status
     const updateQuotationStatus = useCallback(
         async (quotationId: number, newStatus: OrderStatus) => {
-            await updateStatusMutation.mutateAsync({ quotationId, status: newStatus });
+            await updateStatusMutation.mutateAsync({
+                quotationId,
+                status: newStatus,
+            });
         },
         [updateStatusMutation],
     );

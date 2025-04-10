@@ -196,59 +196,39 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                 if (!state) return; // Early return if state is undefined
 
                 if (state.accessToken && state.refreshToken) {
-                    try {
-                        // Immediately set auth state to prevent flicker during validation
+                    // Set tokens in auth service immediately
+                    authService.setTokens(
+                        state.accessToken,
+                        state.refreshToken,
+                    );
+
+                    // Validate the rehydrated access token
+                    const isValid = authService.validateToken(state.accessToken);
+
+                    if (isValid) {
+                        // Token is valid, ensure auth state is correct
                         state.setAuthState({
                             isAuthenticated: true,
-                            isLoading: true,
+                            isLoading: false, // Ensure loading is false
                         });
-
-                        // Set tokens in auth service
-                        authService.setTokens(
-                            state.accessToken,
-                            state.refreshToken,
-                        );
-
-                        // Optimized token validation with better error handling
-                        const isValid = authService.validateToken(
-                            state.accessToken,
-                        );
-
-                        if (isValid) {
-                            // Update state when validation completes successfully
-                            state.setAuthState({
-                                isAuthenticated: true,
-                                isLoading: false,
-                            });
-                        } else {
-                            // Token is invalid, attempt refresh before signing out
-                            authService
-                                .refreshAccessToken(state.refreshToken)
-                                .then((tokens) => {
-                                    if (tokens) {
-                                        state.setAuthState({
-                                            accessToken: tokens.accessToken,
-                                            refreshToken: tokens.refreshToken,
-                                            isAuthenticated: true,
-                                            isLoading: false,
-                                        });
-                                    } else {
-                                        // Refresh failed, sign out
-                                        state.signOut();
-                                    }
-                                })
-                                .catch(() => {
-                                    // Refresh failed, sign out
-                                    state.signOut();
-                                });
-                        }
-                    } catch (error) {
-                        // If any error occurs during validation, sign out
-                        state.signOut();
+                    } else {
+                        // Token is invalid on rehydration, sign out immediately
+                        console.warn('AuthStore: Invalid token on rehydration. Signing out.');
+                        // Need to call signOut via the store's own action for proper state reset
+                        // Directly calling state.signOut() might cause issues if called during rehydration
+                        // Instead, we set initial state and rely on other mechanisms (middleware/interceptors) to handle it.
+                        // Or better: Schedule the signOut after rehydration completes.
+                        // However, the middleware redirect should handle this case anyway.
+                        // For simplicity, let's just clear the store state here directly.
+                        state.setAuthState(initialState);
+                        // Also clear the authService tokens
+                        authService.clearTokens();
+                        // Clear the sessionStorage explicitly again just in case
+                        window.sessionStorage.removeItem('auth-storage');
                     }
                 } else {
-                    // No tokens found, ensure we're not in a loading state
-                    state.setAuthState({ isLoading: false });
+                    // No tokens found, ensure clean initial state
+                    state.setAuthState(initialState);
                 }
             },
         },

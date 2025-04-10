@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { LayoutProvider } from '@/providers/layout.provider';
 import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
+import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
 
 const unbounded = Unbounded({
     variable: '--font-unbounded',
@@ -131,6 +132,7 @@ export default function RootLayout({
                             <TopNav />
                         </div>
                         <main>{children}</main>
+                        <SessionTimeoutHandler />
                     </LayoutProvider>
                     <Toaster
                         position="top-right"

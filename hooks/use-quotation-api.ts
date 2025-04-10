@@ -54,20 +54,17 @@ export const useQuotationApi = () => {
                     );
                 }
 
-                // The axios interceptor will add the token headers
-                console.log(
-                    `Fetching quotations with params: ${queryParams.toString()}`,
-                );
                 const response = await axiosInstance.get(
                     `/shop/quotations?${queryParams.toString()}`,
                 );
 
-                console.log('API Response:', response.data);
+                console.log(response?.data?.quotations, 'db response');
 
                 // Process response based on server format
                 if (response.data && response.data.quotations) {
                     // The API returns an array of quotations in a 'quotations' property
-                    return {
+
+                    const responseObject = {
                         items: response.data.quotations || [],
                         total:
                             response.data.meta?.total ||
@@ -76,6 +73,10 @@ export const useQuotationApi = () => {
                         limit: response.data.meta?.limit || 10,
                         totalPages: response.data.meta?.totalPages || 1,
                     };
+
+                    console.log(responseObject, 'quotations data');
+
+                    return responseObject;
                 } else {
                     console.error(
                         'Unexpected API response format:',
@@ -90,7 +91,6 @@ export const useQuotationApi = () => {
                     };
                 }
             } catch (error) {
-                console.error('Error fetching quotations:', error);
                 throw error;
             }
         },
@@ -171,7 +171,10 @@ export const useQuotationApi = () => {
                     };
                 }
             } catch (error) {
-                console.error(`Error fetching quotations for client ${clientId}:`, error);
+                console.error(
+                    `Error fetching quotations for client ${clientId}:`,
+                    error,
+                );
                 throw error;
             }
         },

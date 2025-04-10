@@ -73,8 +73,8 @@ export function QuotationsKanban({
                         <div
                             className={cn(
                                 'px-2 py-0.5 rounded text-[10px] font-normal flex items-center flex-row justify-between',
-                                colors.bg,
-                                colors.text,
+                                colors?.bg,
+                                colors?.text,
                             )}
                         >
                             <span className="uppercase font-body">{title}</span>
@@ -114,16 +114,29 @@ export function QuotationsKanban({
 
     return (
         <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden">
+            {/* First group: Initial statuses */}
             {renderColumn(
-                OrderStatus.PENDING,
-                'Pending',
-                quotationsByStatus[OrderStatus.PENDING]?.length || 0,
+                OrderStatus.DRAFT,
+                'Draft',
+                quotationsByStatus[OrderStatus.DRAFT]?.length || 0,
             )}
             {renderColumn(
-                OrderStatus.INPROGRESS,
-                'In Progress',
-                quotationsByStatus[OrderStatus.INPROGRESS]?.length || 0,
+                OrderStatus.PENDING_INTERNAL,
+                'Internal Review',
+                quotationsByStatus[OrderStatus.PENDING_INTERNAL]?.length || 0,
             )}
+            {renderColumn(
+                OrderStatus.PENDING_CLIENT,
+                'Client Review',
+                quotationsByStatus[OrderStatus.PENDING_CLIENT]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.NEGOTIATION,
+                'Negotiation',
+                quotationsByStatus[OrderStatus.NEGOTIATION]?.length || 0,
+            )}
+
+            {/* Approval/Rejection */}
             {renderColumn(
                 OrderStatus.APPROVED,
                 'Approved',
@@ -133,6 +146,45 @@ export function QuotationsKanban({
                 OrderStatus.REJECTED,
                 'Rejected',
                 quotationsByStatus[OrderStatus.REJECTED]?.length || 0,
+            )}
+
+            {/* Fulfillment process */}
+            {renderColumn(
+                OrderStatus.SOURCING,
+                'Sourcing',
+                quotationsByStatus[OrderStatus.SOURCING]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.PACKING,
+                'Packing',
+                quotationsByStatus[OrderStatus.PACKING]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.IN_FULFILLMENT,
+                'In Fulfillment',
+                quotationsByStatus[OrderStatus.IN_FULFILLMENT]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.PAID,
+                'Paid',
+                quotationsByStatus[OrderStatus.PAID]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.OUTFORDELIVERY,
+                'Out for Delivery',
+                quotationsByStatus[OrderStatus.OUTFORDELIVERY]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.DELIVERED,
+                'Delivered',
+                quotationsByStatus[OrderStatus.DELIVERED]?.length || 0,
+            )}
+
+            {/* Final statuses */}
+            {renderColumn(
+                OrderStatus.RETURNED,
+                'Returned',
+                quotationsByStatus[OrderStatus.RETURNED]?.length || 0,
             )}
             {renderColumn(
                 OrderStatus.COMPLETED,
@@ -144,6 +196,25 @@ export function QuotationsKanban({
                 'Cancelled',
                 quotationsByStatus[OrderStatus.CANCELLED]?.length || 0,
             )}
+            {renderColumn(
+                OrderStatus.POSTPONED,
+                'Postponed',
+                quotationsByStatus[OrderStatus.POSTPONED]?.length || 0,
+            )}
+
+            {/* Legacy statuses - can be hidden if not needed */}
+            {/*
+            {renderColumn(
+                OrderStatus.PENDING,
+                'Pending (Legacy)',
+                quotationsByStatus[OrderStatus.PENDING]?.length || 0,
+            )}
+            {renderColumn(
+                OrderStatus.INPROGRESS,
+                'In Progress (Legacy)',
+                quotationsByStatus[OrderStatus.INPROGRESS]?.length || 0,
+            )}
+            */}
         </div>
     );
 }

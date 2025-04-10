@@ -46,12 +46,18 @@ export default function QuotationsPage() {
     // State
     const [activeTab, setActiveTab] = useState<string>('quotations');
     // Tabs based on user role
-    const clientTabs = useMemo(() => [
-        { id: 'reports', label: 'Reports' },
-        { id: 'quotations', label: 'Quotations' }
-    ], []);
+    const clientTabs = useMemo(
+        () => [
+            { id: 'reports', label: 'Reports' },
+            { id: 'quotations', label: 'Quotations' },
+        ],
+        [],
+    );
 
-    const displayTabs = useMemo(() => isClientRole ? clientTabs : tabs, [isClientRole, clientTabs]);
+    const displayTabs = useMemo(
+        () => (isClientRole ? clientTabs : tabs),
+        [isClientRole, clientTabs],
+    );
 
     // Check authentication on component mount
     useEffect(() => {
@@ -197,4 +203,3 @@ export default function QuotationsPage() {
         </PageTransition>
     );
 }
-

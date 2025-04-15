@@ -213,7 +213,7 @@ export const useQuotationApi = () => {
 
     // Update a quotation status
     const updateQuotationStatus = useCallback(
-        async (quotationId: number, status: OrderStatus): Promise<void> => {
+        async (quotationId: number, status: OrderStatus): Promise<{success: boolean; message?: string; error?: unknown}> => {
             try {
                 // The controller endpoint is /shop/quotation/:ref/status for PATCH
                 const response = await axiosInstance.patch(
@@ -226,19 +226,41 @@ export const useQuotationApi = () => {
                         'Unexpected API response format:',
                         response.data,
                     );
-                    throw new Error('Invalid API response format');
+                    return {
+                        success: false,
+                        message: 'Invalid API response format',
+                        error: new Error('Invalid API response format')
+                    };
                 }
 
                 console.log(
                     'Quotation status updated successfully:',
                     response.data,
                 );
+
+                return {
+                    success: true,
+                    message: response.data.message || 'Quotation status updated successfully'
+                };
             } catch (error) {
                 console.error(
                     `Error updating quotation ${quotationId} status:`,
                     error,
                 );
-                throw error;
+
+                let errorMessage = 'Failed to update quotation status';
+                if (error instanceof Error) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'object' && error !== null && 'response' in error) {
+                    const axiosError = error as { response?: { data?: { message?: string } } };
+                    errorMessage = axiosError.response?.data?.message || errorMessage;
+                }
+
+                return {
+                    success: false,
+                    message: errorMessage,
+                    error
+                };
             }
         },
         [],

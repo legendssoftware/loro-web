@@ -179,7 +179,7 @@ export default function BusinessHoursForm() {
                 const hours = await organizationHoursApi.getHours();
                 setOriginalHours(hours);
                 setHours(hours);
-                
+
                 // Reset form with fetched hours
                 form.reset({
                     schedule: hours.schedule || {
@@ -226,16 +226,16 @@ export default function BusinessHoursForm() {
                     saturday: { start: '10:00', end: '16:00', closed: true },
                     sunday: { start: '10:00', end: '16:00', closed: true },
                 };
-                
+
                 const defaultHours = {
                     schedule: defaultSchedule,
                     timezone: 'UTC',
                     holidayMode: false,
                 };
-                
+
                 setHours(defaultHours);
                 setOriginalHours(defaultHours);
-                
+
                 form.reset({
                     schedule: defaultSchedule,
                     timezone: 'UTC',

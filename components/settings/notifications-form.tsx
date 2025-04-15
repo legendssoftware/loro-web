@@ -53,7 +53,7 @@ export default function NotificationsForm() {
             try {
                 const settings = await organizationSettingsApi.getSettings();
 
-                if (settings.notifications) {
+                if (settings?.notifications) {
                     form.reset({
                         email: settings.notifications.email ?? true,
                         sms: settings.notifications.sms ?? false,

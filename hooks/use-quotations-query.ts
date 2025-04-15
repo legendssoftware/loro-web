@@ -162,25 +162,28 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
             quotationId: number;
             status: OrderStatus;
         }) => {
-            try {
-                await quotationApi.updateQuotationStatus(quotationId, status);
+            const response = await quotationApi.updateQuotationStatus(quotationId, status);
+
+            if (response.success) {
                 showSuccessToast(
-                    'Quotation status updated successfully.',
+                    response.message || 'Quotation status updated successfully.',
                     toast,
                 );
                 return { success: true };
-            } catch (error) {
+            } else {
                 showErrorToast(
-                    'Failed to update quotation status. Please try again.',
+                    response.message || 'Failed to update quotation status. Please try again.',
                     toast,
                 );
-                console.error('Update quotation status error:', error);
-                throw error;
+                console.error('Update quotation status error:', response.error);
+                return { success: false, error: response.error };
             }
         },
-        onSuccess: () => {
-            // Invalidate quotations query to trigger a refetch, but don't show another toast
-            queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+        onSuccess: (result) => {
+            if (result.success) {
+                // Invalidate quotations query to trigger a refetch, but don't show another toast
+                queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+            }
         },
     });
 
@@ -210,7 +213,7 @@ export function useQuotationsQuery(filters: QuotationFilterParams = {}) {
     // Helper function to update a quotation's status
     const updateQuotationStatus = useCallback(
         async (quotationId: number, newStatus: OrderStatus) => {
-            await updateStatusMutation.mutateAsync({
+            return await updateStatusMutation.mutateAsync({
                 quotationId,
                 status: newStatus,
             });

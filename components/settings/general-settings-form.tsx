@@ -118,7 +118,7 @@ export default function GeneralSettingsForm() {
                 const settings = await organizationSettingsApi.getSettings();
                 setOriginalSettings(settings);
 
-                if (settings.contact) {
+                if (settings?.contact) {
                     contactForm.reset({
                         email: settings.contact.email || '',
                         phone: settings.contact.phone || {
@@ -130,7 +130,7 @@ export default function GeneralSettingsForm() {
                     });
                 }
 
-                if (settings.regional) {
+                if (settings?.regional) {
                     regionalForm.reset({
                         language: settings.regional.language || '',
                         timezone: settings.regional.timezone || '',
@@ -140,7 +140,7 @@ export default function GeneralSettingsForm() {
                     });
                 }
 
-                if (settings.business) {
+                if (settings?.business) {
                     businessForm.reset({
                         name: settings.business.name || '',
                         registrationNumber:
@@ -154,7 +154,7 @@ export default function GeneralSettingsForm() {
                 console.error('Error fetching organization settings:', error);
                 // Silently handle the error without showing a toast
                 // Initialize with default values instead
-                
+
                 // Initialize contact form with defaults
                 contactForm.reset({
                     email: '',
@@ -162,7 +162,7 @@ export default function GeneralSettingsForm() {
                     website: '',
                     address: '',
                 });
-                
+
                 // Initialize regional form with defaults
                 regionalForm.reset({
                     language: '',
@@ -171,7 +171,7 @@ export default function GeneralSettingsForm() {
                     dateFormat: '',
                     timeFormat: '',
                 });
-                
+
                 // Initialize business form with defaults
                 businessForm.reset({
                     name: '',

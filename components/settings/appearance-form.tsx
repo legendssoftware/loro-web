@@ -86,7 +86,7 @@ export default function AppearanceForm() {
                 console.error('Error fetching appearance settings:', error);
                 // Silently handle the error without showing a toast
                 // This is a background operation, so we don't want to alert the user
-                
+
                 // Initialize with default values if we can't load from server
                 form.reset({
                     primaryColor: '#4F46E5',
@@ -138,7 +138,7 @@ export default function AppearanceForm() {
                 setOriginalAppearance({
                     ...values,
                     ...updatedAppearance
-                }); 
+                });
                 toast.success('Appearance settings updated successfully');
             } else {
                 toast.success('No changes to save');

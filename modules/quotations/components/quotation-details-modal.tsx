@@ -51,7 +51,7 @@ interface QuotationDetailsModalProps {
     onUpdateStatus: (
         quotationId: number,
         newStatus: OrderStatus,
-    ) => Promise<void>;
+    ) => Promise<{success: boolean; error?: unknown}>;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
     onEditQuotation?: (
         quotationId: number,
@@ -111,12 +111,16 @@ export function QuotationDetailsModal({
         if (pendingStatusChange && quotation) {
             setIsUpdating(true);
             try {
-                await onUpdateStatus(quotation.uid, pendingStatusChange);
-                // Close the confirmation dialog and modal
-                setConfirmStatusChangeOpen(false);
-                onClose();
+                const result = await onUpdateStatus(quotation.uid, pendingStatusChange);
+                if (result.success) {
+                    // Close the confirmation dialog and modal
+                    setConfirmStatusChangeOpen(false);
+                    onClose();
+                }
+                // Error handling is now taken care of in the updateStatusMutation
             } catch (error) {
                 console.error('Error updating quotation status:', error);
+                // No need to throw here, as errors are handled in the mutation
             } finally {
                 setIsUpdating(false);
             }
@@ -177,37 +181,37 @@ export function QuotationDetailsModal({
 
     const handleSaveEdit = () => {
         if (!editingItemId || !editingField || !quotation.quotationItems) return;
-        
+
         // Find the item being edited
         const itemToUpdate = quotation.quotationItems.find(item => item.uid === editingItemId);
         if (!itemToUpdate) return;
-        
+
         // Create updated item properties
         let updatedProps: { quantity?: number; price?: number; totalPrice?: number } = {};
-        
+
         // Update the appropriate field
         if (editingField === 'quantity') {
             const newQuantity = parseInt(editValue, 10) || itemToUpdate.quantity;
             updatedProps.quantity = newQuantity;
-            
+
             // Get the current price (either from edited state or original)
-            const currentPrice = editedItems[itemToUpdate.uid]?.price ?? 
+            const currentPrice = editedItems[itemToUpdate.uid]?.price ??
                                 (itemToUpdate.product?.price ?? 0);
-            
+
             // Recalculate total price
             updatedProps.totalPrice = newQuantity * currentPrice;
         } else if (editingField === 'price' && itemToUpdate.product) {
             const newPrice = parseFloat(editValue) || itemToUpdate.product.price || 0;
             updatedProps.price = newPrice;
-            
+
             // Get the current quantity (either from edited state or original)
-            const currentQuantity = editedItems[itemToUpdate.uid]?.quantity ?? 
+            const currentQuantity = editedItems[itemToUpdate.uid]?.quantity ??
                                    itemToUpdate.quantity;
-            
+
             // Recalculate total price
             updatedProps.totalPrice = currentQuantity * newPrice;
         }
-        
+
         // Update the edited items state
         setEditedItems(prev => ({
             ...prev,
@@ -216,7 +220,7 @@ export function QuotationDetailsModal({
                 ...updatedProps
             }
         }));
-        
+
         // Reset editing states
         setEditingItemId(null);
         setEditingField(null);
@@ -273,24 +277,24 @@ export function QuotationDetailsModal({
     // Add a function to save all changes to the quotation
     const handleSaveQuotationChanges = async () => {
         if (!quotation || !onEditQuotation) return;
-        
+
         // Create an object with all the updates
         const updatedQuotationData: Partial<Quotation> = {};
-        
+
         // Add updated items if any were edited
         if (Object.keys(editedItems).length > 0 && quotation.quotationItems) {
             // Create a copy of the quotation items with updates applied
             const updatedItems = quotation.quotationItems.map(item => {
                 const edits = editedItems[item.uid];
                 if (!edits) return item;
-                
+
                 const updatedItem = { ...item };
-                
+
                 // Update quantity if edited
                 if (edits.quantity !== undefined) {
                     updatedItem.quantity = edits.quantity;
                 }
-                
+
                 // Update price if edited
                 if (edits.price !== undefined && updatedItem.product) {
                     updatedItem.product = {
@@ -298,36 +302,36 @@ export function QuotationDetailsModal({
                         price: edits.price
                     };
                 }
-                
+
                 // Update total price
                 if (edits.totalPrice !== undefined) {
                     updatedItem.totalPrice = edits.totalPrice;
                 }
-                
+
                 return updatedItem;
             });
-            
+
             updatedQuotationData.quotationItems = updatedItems;
-            
+
             // Update total amount based on edited items
             updatedQuotationData.totalAmount = calculateUpdatedSubtotal() - editedDiscount;
         } else if (editedDiscount > 0) {
             // If only discount was changed, update the total amount accordingly
             updatedQuotationData.totalAmount = calculateUpdatedSubtotal() - editedDiscount;
         }
-        
+
         // Add discount if it was changed
         if (editedDiscount > 0) {
             (updatedQuotationData as any).discount = editedDiscount;
         }
-        
+
         try {
             // Call the onEditQuotation function with the updated data
             await onEditQuotation(quotation.uid, updatedQuotationData);
-            
+
             // Exit editing mode
             setIsEditing(false);
-            
+
             // Reset all editing states
             setEditingItemId(null);
             setEditingField(null);
@@ -361,18 +365,18 @@ export function QuotationDetailsModal({
         if (!quotation.quotationItems || quotation.quotationItems.length === 0) {
             return quotation?.totalAmount || 0;
         }
-        
+
         return quotation.quotationItems.reduce((total, item) => {
             // Get the edited quantity or use original
             const quantity = editedItems[item.uid]?.quantity ?? item.quantity;
-            
+
             // Get the edited price or use original
-            const price = editedItems[item.uid]?.price ?? 
+            const price = editedItems[item.uid]?.price ??
                          (item.product?.price ?? 0);
-            
+
             // Calculate the item total
             const itemTotal = quantity * price;
-            
+
             return total + itemTotal;
         }, 0);
     };
@@ -835,7 +839,7 @@ export function QuotationDetailsModal({
                                                                     editedItems[item.uid]?.totalPrice !== undefined ? 'text-primary font-semibold' : ''
                                                                 }`}>
                                                                     {formatCurrency(
-                                                                        editedItems[item.uid]?.totalPrice ?? 
+                                                                        editedItems[item.uid]?.totalPrice ??
                                                                         (item.totalPrice || 0)
                                                                     )}
                                                                 </span>

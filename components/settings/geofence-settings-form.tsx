@@ -52,7 +52,7 @@ export default function GeofenceSettingsForm() {
             try {
                 const settings = await organizationSettingsApi.getSettings();
 
-                if (settings.geofence) {
+                if (settings?.geofence) {
                     form.reset({
                         enabled: settings.geofence.enabled || false,
                         radius: settings.geofence.radius || 100,

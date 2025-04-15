@@ -160,7 +160,7 @@ export default function QuotationsPage() {
         // Create an empty quotation object and open the modal
         const emptyQuotation = {
             uid: 0, // Temporary ID for new quotation
-            status: OrderStatus.PENDING,
+            status: OrderStatus.DRAFT,
             // Include any other required fields with default values
         };
         quotationModal.onOpen(emptyQuotation as any);

@@ -56,11 +56,6 @@ export const StatusColors: Record<string, StatusColorConfig> = {
         border: 'border-rose-200 dark:border-rose-800',
     },
     // Legacy status colors - keep for backward compatibility
-    [OrderStatus.PENDING]: {
-        bg: 'bg-yellow-100 dark:bg-yellow-950/50',
-        text: 'text-yellow-800 dark:text-yellow-300',
-        border: 'border-yellow-200 dark:border-yellow-800',
-    },
     [OrderStatus.INPROGRESS]: {
         bg: 'bg-blue-100 dark:bg-blue-950/50',
         text: 'text-blue-800 dark:text-blue-300',

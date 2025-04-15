@@ -2,16 +2,8 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Quotation, StatusColors } from '@/lib/types/quotation';
-import { OrderStatus } from '@/lib/enums/status.enums';
 import { memo, useState, useCallback } from 'react';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,16 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
-import {
-    CreditCard,
-    Calendar,
-    Clock,
-    MoreHorizontal,
-    Trash2,
-    FileText,
-    User,
-    Package,
-} from 'lucide-react';
+import { CreditCard, Calendar, Clock, User, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuotationCardProps {
@@ -76,11 +59,6 @@ function QuotationCardComponent({
         onOpen(quotation);
     }, [onOpen, quotation]);
 
-    // Handle status change via dropdown
-    const handleStatusChange = (newStatus: OrderStatus) => {
-        // Implement status change later
-    };
-
     return (
         <>
             <div
@@ -109,86 +87,6 @@ function QuotationCardComponent({
                             </Badge>
                         </div>
                     </div>
-                    {/* Actions menu */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            asChild
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <button className="p-1 rounded-full hover:bg-muted">
-                                <MoreHorizontal className="w-4 h-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <h3 className="px-2 py-1.5 text-xs font-medium">
-                                Change Status
-                            </h3>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(OrderStatus.PENDING);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Pending
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(OrderStatus.INPROGRESS);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    In Progress
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(OrderStatus.APPROVED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Approved
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(OrderStatus.REJECTED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Rejected
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(OrderStatus.COMPLETED);
-                                }}
-                            >
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Completed
-                                </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsDeleteDialogOpen(true);
-                                }}
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                <span className="text-[10px] font-normal uppercase font-body">
-                                    Delete
-                                </span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
                 {/* Quotation Details */}
                 <div className="mt-2 space-y-4 text-xs text-muted-foreground">

@@ -11,7 +11,10 @@ interface QuotationsKanbanProps {
     onUpdateStatus: (
         quotationId: number,
         newStatus: OrderStatus,
-    ) => Promise<{ success: boolean; error?: unknown; } | { success: boolean; message?: string; error?: unknown; }>;
+    ) => Promise<
+        | { success: boolean; error?: unknown }
+        | { success: boolean; message?: string; error?: unknown }
+    >;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
     onAddNewQuotation?: () => void;
 }
@@ -201,20 +204,6 @@ export function QuotationsKanban({
                 'Postponed',
                 quotationsByStatus[OrderStatus.POSTPONED]?.length || 0,
             )}
-
-            {/* Legacy statuses - can be hidden if not needed */}
-            {/*
-            {renderColumn(
-                OrderStatus.PENDING,
-                'Pending (Legacy)',
-                quotationsByStatus[OrderStatus.PENDING]?.length || 0,
-            )}
-            {renderColumn(
-                OrderStatus.INPROGRESS,
-                'In Progress (Legacy)',
-                quotationsByStatus[OrderStatus.INPROGRESS]?.length || 0,
-            )}
-            */}
         </div>
     );
 }

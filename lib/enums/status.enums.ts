@@ -44,5 +44,4 @@ export enum OrderStatus {
     CANCELLED = 'cancelled',
     POSTPONED = 'postponed',
     INPROGRESS = 'inprogress',
-    PENDING = 'pending',
 }

@@ -151,7 +151,7 @@ export default function QuotationsPage() {
     // Handlers
     const handleUpdateQuotationStatus = useCallback(
         async (quotationId: number, newStatus: OrderStatus) => {
-            await updateQuotationStatus(quotationId, newStatus);
+            return await updateQuotationStatus(quotationId, newStatus);
         },
         [updateQuotationStatus],
     );

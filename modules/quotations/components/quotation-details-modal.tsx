@@ -51,7 +51,7 @@ interface QuotationDetailsModalProps {
     onUpdateStatus: (
         quotationId: number,
         newStatus: OrderStatus,
-    ) => Promise<{success: boolean; error?: unknown}>;
+    ) => Promise<{success: boolean; error?: unknown} | { success: boolean; message?: string; error?: unknown }>;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
     onEditQuotation?: (
         quotationId: number,

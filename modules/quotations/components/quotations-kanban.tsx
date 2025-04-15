@@ -11,7 +11,7 @@ interface QuotationsKanbanProps {
     onUpdateStatus: (
         quotationId: number,
         newStatus: OrderStatus,
-    ) => Promise<void>;
+    ) => Promise<{ success: boolean; error?: unknown; } | { success: boolean; message?: string; error?: unknown; }>;
     onDeleteQuotation?: (quotationId: number) => Promise<void>;
     onAddNewQuotation?: () => void;
 }

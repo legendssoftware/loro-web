@@ -89,7 +89,7 @@ export function QuotationDetailsModal({
     const getStatusColors = useMemo(() => {
         if (!quotation) return null;
         return (
-            StatusColors[quotation.status] || StatusColors[OrderStatus.PENDING]
+            StatusColors[quotation.status] || StatusColors[OrderStatus.DRAFT]
         );
     }, [quotation]);
 
@@ -257,7 +257,7 @@ export function QuotationDetailsModal({
     // Get status button variant
     const getStatusButtonVariant = (status: OrderStatus) => {
         switch (status) {
-            case OrderStatus.PENDING:
+            case OrderStatus.DRAFT:
                 return `text-yellow-800 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 dark:text-yellow-300 dark:hover:bg-yellow-900/20 dark:border-yellow-900/30 ${quotation.status === status ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`;
             case OrderStatus.INPROGRESS:
                 return `text-blue-800 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30 ${quotation.status === status ? 'bg-blue-100 dark:bg-blue-900/30' : ''}`;
@@ -1172,12 +1172,12 @@ export function QuotationDetailsModal({
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.PENDING)}`}
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.DRAFT)}`}
                                             onClick={() =>
                                                 quotation.status !==
-                                                    OrderStatus.PENDING &&
+                                                    OrderStatus.DRAFT &&
                                                 handleStatusChange(
-                                                    OrderStatus.PENDING,
+                                                    OrderStatus.DRAFT,
                                                 )
                                             }
                                             title="Set as Pending"

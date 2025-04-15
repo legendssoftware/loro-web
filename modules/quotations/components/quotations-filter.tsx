@@ -218,7 +218,6 @@ function QuotationsFilterComponent({
         [OrderStatus.CANCELLED]: 'CANCELLED',
         [OrderStatus.POSTPONED]: 'POSTPONED',
         [OrderStatus.INPROGRESS]: 'IN PROGRESS',
-        [OrderStatus.PENDING]: 'PENDING',
     };
 
     type IconType = React.ForwardRefExoticComponent<
@@ -245,7 +244,6 @@ function QuotationsFilterComponent({
         [OrderStatus.CANCELLED]: X,
         [OrderStatus.POSTPONED]: Clock,
         [OrderStatus.INPROGRESS]: Clock,
-        [OrderStatus.PENDING]: AlertCircle,
     };
 
     const statusColors: Record<OrderStatus, string> = {
@@ -266,14 +264,16 @@ function QuotationsFilterComponent({
         [OrderStatus.CANCELLED]: 'text-gray-600',
         [OrderStatus.POSTPONED]: 'text-orange-600',
         [OrderStatus.INPROGRESS]: 'text-blue-600',
-        [OrderStatus.PENDING]: 'text-yellow-600',
     };
 
     return (
         <div className="flex items-center justify-end flex-1 gap-2">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" strokeWidth={1.5} />
+                <Search
+                    className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                    strokeWidth={1.5}
+                />
                 <Input
                     placeholder="search..."
                     value={search}
@@ -319,7 +319,10 @@ function QuotationsFilterComponent({
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -329,39 +332,68 @@ function QuotationsFilterComponent({
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.TODAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(DateRangePreset.TODAY)
+                                }
                                 className="text-[10px] font-normal font-body"
                             >
                                 Today
                                 {dateRangePreset === DateRangePreset.TODAY && (
-                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                    <Check
+                                        className="w-4 h-4 ml-auto"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.YESTERDAY)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.YESTERDAY,
+                                    )
+                                }
                                 className="text-[10px] font-normal font-body"
                             >
                                 Yesterday
-                                {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.YESTERDAY && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_WEEK)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_WEEK,
+                                    )
+                                }
                                 className="text-[10px] font-normal font-body"
                             >
                                 Last Week
-                                {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.LAST_WEEK && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleDateRangeSelect(DateRangePreset.LAST_MONTH)}
+                                onClick={() =>
+                                    handleDateRangeSelect(
+                                        DateRangePreset.LAST_MONTH,
+                                    )
+                                }
                                 className="text-[10px] font-normal font-body"
                             >
                                 Last Month
-                                {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                {dateRangePreset ===
+                                    DateRangePreset.LAST_MONTH && (
+                                    <Check
+                                        className="w-4 h-4 ml-auto"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -419,7 +451,10 @@ function QuotationsFilterComponent({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -452,7 +487,10 @@ function QuotationsFilterComponent({
                                             {statusLabels[statusOption]}
                                         </span>
                                         {status === statusOption && (
-                                            <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                            <Check
+                                                className="w-4 h-4 ml-auto"
+                                                strokeWidth={1.5}
+                                            />
                                         )}
                                     </DropdownMenuItem>
                                 );
@@ -490,7 +528,10 @@ function QuotationsFilterComponent({
                                     {clientId ? 'CLIENT' : 'CLIENT'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown
+                                className="w-4 h-4 ml-2 opacity-50"
+                                strokeWidth={1.5}
+                            />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -507,14 +548,20 @@ function QuotationsFilterComponent({
                         >
                             <div className="flex items-center gap-2">
                                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted">
-                                    <Users className="w-3 h-3" strokeWidth={1.5} />
+                                    <Users
+                                        className="w-3 h-3"
+                                        strokeWidth={1.5}
+                                    />
                                 </div>
                                 <span className="text-[10px] font-normal font-body">
                                     All Clients
                                 </span>
                             </div>
                             {!clientId && (
-                                <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                <Check
+                                    className="w-4 h-4 ml-auto"
+                                    strokeWidth={1.5}
+                                />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -546,7 +593,10 @@ function QuotationsFilterComponent({
                                     </span>
                                 </div>
                                 {clientId === client.id && (
-                                    <Check className="w-4 h-4 ml-auto" strokeWidth={1.5} />
+                                    <Check
+                                        className="w-4 h-4 ml-auto"
+                                        strokeWidth={1.5}
+                                    />
                                 )}
                             </DropdownMenuItem>
                         ))}

@@ -5,7 +5,7 @@ import { PageTransition } from '@/components/animations/page-transition';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/utils/animations';
 
-export default function Assets() {
+export default function Competitors() {
     return (
         <ProtectedRoute>
             <PageTransition type="slide-up">

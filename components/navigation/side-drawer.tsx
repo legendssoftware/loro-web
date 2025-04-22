@@ -16,6 +16,8 @@ import {
     MapPin,
     Warehouse,
     Settings,
+    Zap,
+    Computer,
 } from 'lucide-react';
 import {
     Sheet,
@@ -75,6 +77,14 @@ const navigationItems = [
         feature: 'tasks',
     },
     {
+        title: 'Assets',
+        icon: <Computer size={18} strokeWidth={1.5} />,
+        href: '/assets',
+        description: 'Track employee attendance',
+        // Basic users can access attendance
+        feature: 'attendance',
+    },
+    {
         title: 'Claims',
         icon: <HandCoins size={18} strokeWidth={1.5} />,
         href: '/claims',
@@ -119,6 +129,18 @@ const navigationItems = [
         ],
     },
     {
+        title: 'Competitors',
+        icon: <Zap size={18} strokeWidth={1.5} />,
+        href: '/competitors',
+        description: 'View & manage competitors',
+        // Only admin, manager, supervisor can access competitors
+        allowedRoles: [
+            AccessLevel.ADMIN,
+            AccessLevel.MANAGER,
+            AccessLevel.SUPERVISOR,
+        ],
+    },
+    {
         title: 'Inventory',
         icon: <Warehouse size={18} strokeWidth={1.5} />,
         href: '/inventory',
@@ -142,25 +164,35 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const { hasRole, hasPermission } = useRBAC();
 
     // Check if user is a client by examining profileData or JWT token
-    const isClient = profileData?.accessLevel === 'client' || (() => {
-        if (accessToken) {
-            try {
-                const base64Url = accessToken.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(
-                    atob(base64)
-                        .split('')
-                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                        .join('')
-                );
-                const payload = JSON.parse(jsonPayload);
-                return payload.role === 'client';
-            } catch (e) {
-                return false;
+    const isClient =
+        profileData?.accessLevel === 'client' ||
+        (() => {
+            if (accessToken) {
+                try {
+                    const base64Url = accessToken.split('.')[1];
+                    const base64 = base64Url
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(
+                        atob(base64)
+                            .split('')
+                            .map(
+                                (c) =>
+                                    '%' +
+                                    ('00' + c.charCodeAt(0).toString(16)).slice(
+                                        -2,
+                                    ),
+                            )
+                            .join(''),
+                    );
+                    const payload = JSON.parse(jsonPayload);
+                    return payload.role === 'client';
+                } catch (e) {
+                    return false;
+                }
             }
-        }
-        return false;
-    })();
+            return false;
+        })();
 
     const handleSignOut = async () => {
         try {
@@ -280,7 +312,10 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                                 'border-primary border text-primary bg-primary/5',
                                         )}
                                     >
-                                        <ShoppingBag size={18} strokeWidth={1.5} />
+                                        <ShoppingBag
+                                            size={18}
+                                            strokeWidth={1.5}
+                                        />
                                     </Button>
                                     <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-background border rounded-md shadow-md text-[10px] font-body uppercase whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform origin-left scale-95 translate-x-[-10px] group-hover:scale-100 group-hover:translate-x-0">
                                         <p className="text-sm font-medium uppercase text-card-foreground">
@@ -298,17 +333,28 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                 const isActive = pathname === item.href;
 
                                 // Skip rendering this item if user doesn't have permission based on role
-                                if (item.allowedRoles && !hasRole(item.allowedRoles)) {
+                                if (
+                                    item.allowedRoles &&
+                                    !hasRole(item.allowedRoles)
+                                ) {
                                     return null;
                                 }
 
                                 // Skip if no matching feature permission
-                                if (item.feature && !hasPermission(item.feature)) {
+                                if (
+                                    item.feature &&
+                                    !hasPermission(item.feature)
+                                ) {
                                     return null;
                                 }
 
                                 // New check for featureCheck array - any match grants access
-                                if (item.featureCheck && !item.featureCheck.some(feature => hasPermission(feature))) {
+                                if (
+                                    item.featureCheck &&
+                                    !item.featureCheck.some((feature) =>
+                                        hasPermission(feature),
+                                    )
+                                ) {
                                     return null;
                                 }
 
@@ -322,7 +368,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                             <Button
                                                 variant="ghost"
                                                 className={cn(
-                                                    'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-14 rounded-xl',
+                                                    'w-full justify-center gap-3 font-body text-[10px] text-card-foreground font-normal h-[45px] rounded-md p-1',
                                                     'hover:border-primary/30 hover:text-accent-foreground hover:bg-transparent hover:border ease-in-out duration-500',
                                                     isActive &&
                                                         'border-primary border text-primary bg-primary/5',

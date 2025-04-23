@@ -40,6 +40,7 @@ import {
     CheckCircle2,
     XCircle,
     RefreshCw,
+    CalendarCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -49,6 +50,10 @@ import {
 import { ClientStatus } from '@/hooks/use-clients-query';
 import { toast } from 'react-hot-toast';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { TaskPriority, TaskType } from '@/lib/types/task';
+import { useAuthStore, selectProfileData } from '@/store/auth-store';
+import { axiosInstance } from '@/lib/services/api-client';
+import TaskForm from '@/modules/tasks/components/task-form';
 
 interface LeadDetailsModalProps {
     lead: Lead;
@@ -74,6 +79,7 @@ export function LeadDetailsModal({
         useState<LeadStatus | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
+    const [isTaskFormOpen, setIsTaskFormOpen] = useState<boolean>(false);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -438,7 +444,10 @@ export function LeadDetailsModal({
                                     </div>
                                     {lead.companyName && (
                                         <p className="mt-4 text-xs font-thin font-body">
-                                            <span className="font-normal">Company:</span> {lead.companyName}
+                                            <span className="font-normal">
+                                                Company:
+                                            </span>{' '}
+                                            {lead.companyName}
                                         </p>
                                     )}
                                 </div>
@@ -454,6 +463,25 @@ export function LeadDetailsModal({
                 );
             default:
                 return null;
+        }
+    };
+
+    const handleCreateTask = () => {
+        setIsTaskFormOpen(true);
+    };
+
+    const handleTaskFormSubmit = async (taskData: any) => {
+        try {
+            // Here you would submit the task data to your API
+            const response = await axiosInstance.post('/tasks', taskData);
+
+            if (response.data) {
+                showSuccessToast('Task created successfully', toast);
+                setIsTaskFormOpen(false);
+            }
+        } catch (error) {
+            showErrorToast('Failed to create task', toast);
+            console.error('Error creating task:', error);
         }
     };
 
@@ -555,6 +583,19 @@ export function LeadDetailsModal({
                                         <RefreshCw
                                             strokeWidth={1.2}
                                             className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                        />
+                                    </Button>
+                                    {/* CREATE TASK */}
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="rounded-full w-14 h-14 text-cyan-800 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300 dark:text-cyan-300 dark:hover:bg-cyan-900/20 dark:border-cyan-900/30"
+                                        onClick={handleCreateTask}
+                                        title="Create Task"
+                                    >
+                                        <CalendarCheck
+                                            strokeWidth={1.2}
+                                            className="text-cyan-600 w-7 h-7 dark:text-cyan-400"
                                         />
                                     </Button>
                                     {/* DECLINED */}
@@ -753,6 +794,46 @@ export function LeadDetailsModal({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Task Creation Modal */}
+            <Dialog
+                open={isTaskFormOpen}
+                onOpenChange={(open) => {
+                    if (!open) setIsTaskFormOpen(false);
+                }}
+            >
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-medium uppercase font-body">
+                            Create Task for Lead: {lead.name}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <TaskForm
+                        onSubmit={handleTaskFormSubmit}
+                        initialData={{
+                            title: `Follow up with lead: ${lead.name}`,
+                            description: `Lead Information:
+                            Name: ${lead.name}
+                            Email: ${lead.email}
+                            Phone: ${lead.phone}
+                            ${lead.notes ? `Notes: ${lead.notes}` : ''}`,
+                            taskType: TaskType.FOLLOW_UP,
+                            priority: TaskPriority.MEDIUM,
+                            client: lead.uid
+                                ? [
+                                      {
+                                          uid: lead.uid,
+                                          name: lead.name,
+                                          email: lead.email,
+                                          phone: lead.phone,
+                                      },
+                                  ]
+                                : [],
+                        }}
+                        isLoading={false}
+                    />
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

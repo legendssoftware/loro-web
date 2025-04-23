@@ -7,7 +7,7 @@ import { isAuthRoute } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/use-app-store';
-import { LayoutDashboardIcon, Power, PhoneCall} from 'lucide-react';
+import { LayoutDashboardIcon, Power, PhoneCall } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useHelp } from '@/hooks/use-help';
@@ -24,7 +24,19 @@ export function TopNav() {
         endCall,
         isCallActive,
         isCallInitializing,
-    } = useHelp();
+        retryLastCall,
+        lastError,
+        formattedTimeRemaining,
+    } = useHelp({
+        onError: (error) => {
+            // You can add additional error handling behavior here
+            // This will be called in addition to the default error handling
+            // For example, you could log errors to an analytics service
+            if (process.env.NODE_ENV === 'development') {
+                console.error('TopNav - Voice assistant error:', error);
+            }
+        }
+    });
 
     // Wrap startCall to only work when authenticated
     const startCall = () => {
@@ -94,7 +106,7 @@ export function TopNav() {
         try {
             signOut();
 
-            const toastId = toast.success('Session Ended', {
+            const toastId = toast.success(`Cheers ${profileData?.name} `, {
                 style: {
                     borderRadius: '5px',
                     background: '#333',
@@ -176,14 +188,33 @@ export function TopNav() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="relative text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                className="relative text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 w-auto px-2"
                                 onClick={endCall}
                             >
-                                <PhoneCall strokeWidth={1.2} size={20} className="animate-pulse" />
+                                <PhoneCall
+                                    strokeWidth={1.2}
+                                    size={20}
+                                    className="animate-pulse mr-1"
+                                />
+                                {formattedTimeRemaining && (
+                                    <span className="text-xs">{formattedTimeRemaining}</span>
+                                )}
                                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                 <span className="sr-only">
                                     End Assistant Call
                                 </span>
+                            </Button>
+                        ) : lastError ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="relative text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                onClick={retryLastCall}
+                                disabled={isCallInitializing}
+                            >
+                                <PhoneCall strokeWidth={1.2} size={20} />
+                                <span className="absolute top-0 right-0 w-2 h-2 bg-amber-500 rounded-full" />
+                                <span className="sr-only">Retry Assistant Call</span>
                             </Button>
                         ) : (
                             <Button

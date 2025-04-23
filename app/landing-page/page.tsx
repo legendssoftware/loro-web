@@ -15,64 +15,181 @@ import {
 } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { PageTransition } from '@/components/animations/page-transition';
 import { toast } from 'react-hot-toast';
 import Vapi from '@vapi-ai/web';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { handleVapiError, retryVapiOperation } from '@/lib/utils/vapi-error-handler';
+
+// Update the constants for call time management to use environment variables with fallbacks
+const CALL_MAX_DURATION_MS = parseInt(process.env.NEXT_PUBLIC_MAX_CALL_DURATION_MINUTES || '5', 10) * 60 * 1000; // Default: 5 minutes
+const WARNING_TIME_REMAINING_MS = parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCallActive, setIsCallActive] = useState(false);
     const [isCallInitializing, setIsCallInitializing] = useState(false);
     const [demoVapi, setDemoVapi] = useState<Vapi | null>(null);
+    const [connectionError, setConnectionError] = useState<Error | null>(null);
+    const initAttemptedRef = useRef(false);
     const { isAuthenticated } = useAuthStore();
     const router = useRouter();
+    const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+    const callStartTimeRef = useRef<number | null>(null);
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const warningShownRef = useRef(false);
+
+    const formattedTimeRemaining = useMemo(() => {
+        if (timeRemaining === null) return null;
+
+        const totalSeconds = Math.ceil(timeRemaining / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, [timeRemaining]);
+
+    const startCallTimer = useCallback(() => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+
+        warningShownRef.current = false;
+
+        callStartTimeRef.current = Date.now();
+        setTimeRemaining(CALL_MAX_DURATION_MS);
+
+        timerIntervalRef.current = setInterval(() => {
+            if (!callStartTimeRef.current) return;
+
+            const elapsed = Date.now() - callStartTimeRef.current;
+            const remaining = Math.max(0, CALL_MAX_DURATION_MS - elapsed);
+            setTimeRemaining(remaining);
+
+            if (remaining <= WARNING_TIME_REMAINING_MS && !warningShownRef.current) {
+                warningShownRef.current = true;
+                toast('1 minute remaining in your consultation call', {
+                    style: {
+                        borderRadius: '5px',
+                        background: '#333',
+                        color: '#fff',
+                        fontFamily: 'var(--font-unbounded)',
+                        fontSize: '12px',
+                        textTransform: 'uppercase',
+                        fontWeight: '300',
+                        padding: '16px',
+                    },
+                    duration: 4000,
+                    position: 'bottom-center',
+                    icon: '⏱️',
+                });
+            }
+
+            if (remaining <= 0) {
+                toast('Call time limit reached (5 minutes)', {
+                    style: {
+                        borderRadius: '5px',
+                        background: '#333',
+                        color: '#fff',
+                        fontFamily: 'var(--font-unbounded)',
+                        fontSize: '12px',
+                        textTransform: 'uppercase',
+                        fontWeight: '300',
+                        padding: '16px',
+                    },
+                    duration: 4000,
+                    position: 'bottom-center',
+                    icon: '⏰',
+                });
+
+                clearInterval(timerIntervalRef.current!);
+                timerIntervalRef.current = null;
+                endDemoCall();
+            }
+        }, 1000);
+    }, []);
+
+    const stopCallTimer = useCallback(() => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        callStartTimeRef.current = null;
+        setTimeRemaining(null);
+        warningShownRef.current = false;
+    }, []);
 
     // Initialize Vapi instance for demo calls (without authentication requirement)
     useEffect(() => {
-        const apiKey = process.env.NEXT_PUBLIC_VAPI_KEY;
-
-        if (!apiKey) {
-            console.error(
-                'Vapi API key is not defined in environment variables',
-            );
+        // Skip if we've already attempted initialization
+        if (initAttemptedRef.current) {
             return;
         }
 
-        // Create Vapi instance only once
-        const vapiInstance = new Vapi(apiKey);
+        initAttemptedRef.current = true;
 
-        // Set up event listeners
-        vapiInstance.on('call-start', () => {
-            setIsCallActive(true);
-            setIsCallInitializing(false);
-            showSuccessToast(
-                'Consultation call connected to voice assistant',
-                toast,
-            );
-        });
+        const initializeVapi = async () => {
+            try {
+                const apiKey = process.env.NEXT_PUBLIC_VAPI_KEY;
 
-        vapiInstance.on('call-end', () => {
-            setIsCallActive(false);
-            showSuccessToast('Consultation call ended. Thank you!', toast);
-        });
+                if (!apiKey) {
+                    throw new Error('Vapi API key is not defined in environment variables');
+                }
 
-        vapiInstance.on('error', (error) => {
-            setIsCallInitializing(false);
-            setIsCallActive(false);
-            showErrorToast('Voice assistant error', toast);
-            console.error('Vapi error:', error);
-        });
+                // Create Vapi instance only once
+                const vapiInstance = new Vapi(apiKey);
 
-        setDemoVapi(vapiInstance);
+                // Set up event listeners
+                vapiInstance.on('call-start', () => {
+                    setIsCallActive(true);
+                    setIsCallInitializing(false);
+                    setConnectionError(null);
+                    startCallTimer();
+                    showSuccessToast(
+                        'Consultation call connected to voice assistant',
+                        toast,
+                    );
+                });
+
+                vapiInstance.on('call-end', () => {
+                    setIsCallActive(false);
+                    setConnectionError(null);
+                    stopCallTimer();
+                    showSuccessToast('Consultation call ended. Thank you!', toast);
+                });
+
+                vapiInstance.on('error', (error) => {
+                    setIsCallInitializing(false);
+                    setIsCallActive(false);
+                    stopCallTimer();
+                    setConnectionError(error instanceof Error ? error : new Error(String(error)));
+
+                    // Use our enhanced error handler
+                    handleVapiError(error, toast);
+                });
+
+                setDemoVapi(vapiInstance);
+                return vapiInstance;
+            } catch (error) {
+                // Handle initialization errors
+                setConnectionError(error instanceof Error ? error : new Error(String(error)));
+                handleVapiError(error, toast);
+                return null;
+            }
+        };
+
+        initializeVapi();
 
         return () => {
+            stopCallTimer();
+
             // Clean up event listeners and end call if active
-            if (vapiInstance) {
+            if (demoVapi) {
                 try {
-                    vapiInstance.stop();
+                    demoVapi.stop();
                 } catch (e) {
                     console.error('Error stopping Vapi call:', e);
                 }
@@ -80,7 +197,7 @@ const LandingPage: React.FunctionComponent = () => {
         };
     }, []);
 
-    // Start demo call - doesn't require authentication
+    // Start demo call with retry capability - doesn't require authentication
     const startDemoCall = async () => {
         if (!demoVapi) {
             showErrorToast('Consultation call not available', toast);
@@ -106,40 +223,75 @@ const LandingPage: React.FunctionComponent = () => {
             return;
         }
 
+        setIsCallInitializing(true);
+        setConnectionError(null);
+
+        // Show call initiation notification
+        showSuccessToast(
+            'Consultation call initiated. Connecting...',
+            toast,
+        );
+
         try {
-            setIsCallInitializing(true);
-            showSuccessToast(
-                'Consultation call initiated. Connecting...',
-                toast,
-            );
+            // Define the operation to retry if needed
+            const startOperation = async () => {
+                // Get assistant ID from environment variables
+                const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
 
-            // Get assistant ID from environment variables
-            const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+                if (!assistantId) {
+                    throw new Error('Assistant ID not found in environment variables');
+                }
 
-            if (!assistantId) {
-                throw new Error(
-                    'Assistant ID not found in environment variables',
-                );
-            }
+                // Start the demo call with the assistant ID
+                return await demoVapi.start(assistantId);
+            };
 
-            // Start the demo call with the assistant ID
-            await demoVapi.start(assistantId);
+            // Use the retry utility with up to 2 automatic retries for transient issues
+            await retryVapiOperation(startOperation, 2, toast, {
+                onRetry: (attempt) => {
+                    // Update UI during retry attempts
+                    setIsCallInitializing(true);
+                }
+            });
         } catch (error) {
-            console.error('Failed to start consultation call:', error);
+            // If we got here, all retries failed or the error wasn't retryable
+            // handleError event will be triggered by Vapi, so we don't need additional handling here
             setIsCallInitializing(false);
-            showErrorToast('Failed to start consultation call', toast);
         }
     };
 
-    // End demo call
+    // End demo call with improved error handling
     const endDemoCall = () => {
-        if (!demoVapi || !isCallActive) return;
+        if (!demoVapi) {
+            return;
+        }
+
+        if (!isCallActive) {
+            setIsCallInitializing(false);
+            return;
+        }
 
         try {
             demoVapi.stop();
+            stopCallTimer();
         } catch (error) {
-            console.error('Failed to stop consultation call:', error);
+            // Use our error handler but silent the toast since this is less critical
+            handleVapiError(error, toast, { silent: true });
+            // Force UI update in case the event doesn't fire
+            setIsCallActive(false);
+            setIsCallInitializing(false);
+            stopCallTimer();
         }
+    };
+
+    // Retry the demo call if it failed
+    const retryDemoCall = () => {
+        if (isCallActive || isCallInitializing) {
+            return;
+        }
+
+        setConnectionError(null);
+        startDemoCall();
     };
 
     // Handle account button click - directs to dashboard if logged in, sign-in if not
@@ -180,7 +332,21 @@ const LandingPage: React.FunctionComponent = () => {
                                     size={22}
                                     strokeWidth={1.2}
                                 />
-                                <span>END CONSULTATION CALL</span>
+                                <span>END CALL {formattedTimeRemaining && `(${formattedTimeRemaining})`}</span>
+                            </Button>
+                        ) : connectionError ? (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={retryDemoCall}
+                                className="text-xs font-normal text-amber-500 uppercase transition-colors cursor-pointer font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                            >
+                                <PhoneCall
+                                    className="w-4 h-4 mr-2"
+                                    size={22}
+                                    strokeWidth={1.2}
+                                />
+                                <span>RETRY CONSULTATION CALL</span>
                             </Button>
                         ) : (
                             <Button
@@ -188,29 +354,25 @@ const LandingPage: React.FunctionComponent = () => {
                                 size="sm"
                                 onClick={startDemoCall}
                                 disabled={isCallInitializing}
-                                className="text-xs font-normal text-white uppercase transition-colors cursor-pointer font-body"
+                                className="text-xs font-normal text-green-500 uppercase transition-colors cursor-pointer font-body hover:bg-green-100 dark:hover:bg-green-900/20"
                             >
                                 {isCallInitializing ? (
                                     <>
                                         <PhoneCall
-                                            className="w-4 h-4 mr-2 text-amber-500"
+                                            className="w-4 h-4 mr-2 animate-pulse"
                                             size={22}
                                             strokeWidth={1.2}
                                         />
-                                        <span className="text-amber-500">
-                                            CONNECTING...
-                                        </span>
+                                        <span>CONNECTING...</span>
                                     </>
                                 ) : (
                                     <>
                                         <PhoneCall
-                                            className="mr-2 text-card-foreground"
+                                            className="w-4 h-4 mr-2"
                                             size={22}
                                             strokeWidth={1.2}
                                         />
-                                        <span className="text-card-foreground">
-                                            FREE CONSULTATION CALL
-                                        </span>
+                                        <span>FREE CONSULTATION CALL</span>
                                     </>
                                 )}
                             </Button>
@@ -259,8 +421,16 @@ const LandingPage: React.FunctionComponent = () => {
                                             >
                                                 <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
                                                 <span>
-                                                    END CONSULTATION CALL
+                                                    END CALL {formattedTimeRemaining && `(${formattedTimeRemaining})`}
                                                 </span>
+                                            </Button>
+                                        ) : connectionError ? (
+                                            <Button
+                                                className="justify-start w-full text-xs font-normal text-amber-500 uppercase transition-colors bg-transparent font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                                onClick={retryDemoCall}
+                                            >
+                                                <PhoneCall className="w-4 h-4 mr-2" />
+                                                <span>RETRY CONSULTATION CALL</span>
                                             </Button>
                                         ) : (
                                             <Button
@@ -270,10 +440,8 @@ const LandingPage: React.FunctionComponent = () => {
                                             >
                                                 {isCallInitializing ? (
                                                     <>
-                                                        <PhoneCall className="w-4 h-4 mr-2 text-amber-500" />
-                                                        <span className="text-amber-500">
-                                                            CONNECTING...
-                                                        </span>
+                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                                        <span>CONNECTING...</span>
                                                     </>
                                                 ) : (
                                                     <>

@@ -77,14 +77,6 @@ const navigationItems = [
         feature: 'tasks',
     },
     {
-        title: 'Assets',
-        icon: <Computer size={18} strokeWidth={1.5} />,
-        href: '/assets',
-        description: 'Track employee attendance',
-        // Basic users can access attendance
-        feature: 'attendance',
-    },
-    {
         title: 'Claims',
         icon: <HandCoins size={18} strokeWidth={1.5} />,
         href: '/claims',
@@ -122,18 +114,6 @@ const navigationItems = [
         href: '/clients',
         description: 'View & manage clients',
         // Only admin, manager, supervisor can access clients
-        allowedRoles: [
-            AccessLevel.ADMIN,
-            AccessLevel.MANAGER,
-            AccessLevel.SUPERVISOR,
-        ],
-    },
-    {
-        title: 'Competitors',
-        icon: <Zap size={18} strokeWidth={1.5} />,
-        href: '/competitors',
-        description: 'View & manage competitors',
-        // Only admin, manager, supervisor can access competitors
         allowedRoles: [
             AccessLevel.ADMIN,
             AccessLevel.MANAGER,

@@ -12,8 +12,10 @@ import { Badge } from '@/components/ui/badge';
 import { Product, ProductStatus } from '@/hooks/use-products-query';
 import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
-import { showErrorToast, showTokenSuccessToast, showTokenErrorToast } from '@/lib/utils/toast-config';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    showTokenSuccessToast,
+    showTokenErrorToast,
+} from '@/lib/utils/toast-config';
 import toast from 'react-hot-toast';
 import {
     Package,
@@ -22,7 +24,6 @@ import {
     Box,
     Calendar,
     Barcode,
-    Truck,
     Percent,
     Edit,
     X,
@@ -37,6 +38,7 @@ import {
     Trash,
 } from 'lucide-react';
 import Image from 'next/image';
+import EditProductForm from './edit-product-form';
 
 interface ProductDetailsModalProps {
     product: Product;
@@ -56,10 +58,14 @@ export function ProductDetailsModal({
     onDelete,
 }: ProductDetailsModalProps) {
     const [activeTab, setActiveTab] = useState<string>('details');
-    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] =
+        useState<boolean>(false);
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
-    const [showStatusChangeConfirmation, setShowStatusChangeConfirmation] = useState<boolean>(false);
-    const [pendingStatus, setPendingStatus] = useState<ProductStatus | null>(null);
+    const [showStatusChangeConfirmation, setShowStatusChangeConfirmation] =
+        useState<boolean>(false);
+    const [pendingStatus, setPendingStatus] = useState<ProductStatus | null>(
+        null,
+    );
 
     // Format dates
     const formatDate = (date?: Date) => {
@@ -92,7 +98,10 @@ export function ProductDetailsModal({
                 onUpdateStatus(product.uid, pendingStatus);
                 setShowStatusChangeConfirmation(false);
                 setPendingStatus(null);
-                showTokenSuccessToast(`Product status updated to ${pendingStatus.replace('_', ' ')}`, toast);
+                showTokenSuccessToast(
+                    `Product status updated to ${pendingStatus.replace('_', ' ')}`,
+                    toast,
+                );
 
                 // Close the modal if this was a delete action
                 if (pendingStatus === ProductStatus.DELETED) {
@@ -169,17 +178,25 @@ export function ProductDetailsModal({
 
         // Map common categories to colors
         const categoryColors: Record<string, string> = {
-            MEAT_POULTRY: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-            SEAFOOD: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            MEAT_POULTRY:
+                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+            SEAFOOD:
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
             DAIRY: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
             BAKERY: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-            PRODUCE: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-            BEVERAGES: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            PRODUCE:
+                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+            BEVERAGES:
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
             SNACKS: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-            CANNED_GOODS: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-            FROZEN_FOODS: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-            CLEANING: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-            PERSONAL_CARE: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+            CANNED_GOODS:
+                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+            FROZEN_FOODS:
+                'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+            CLEANING:
+                'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+            PERSONAL_CARE:
+                'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
             OTHER: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
         };
 
@@ -199,7 +216,10 @@ export function ProductDetailsModal({
                 onClose();
             } catch (error) {
                 console.error('Error deleting product:', error);
-                showTokenErrorToast('Failed to delete product. Please try again.', toast);
+                showTokenErrorToast(
+                    'Failed to delete product. Please try again.',
+                    toast,
+                );
             }
         }
     }, [product.uid, onDelete, onClose]);
@@ -225,8 +245,6 @@ export function ProductDetailsModal({
         { id: 'analytics', label: 'Analytics' },
     ];
 
-    console.log(product);
-
     const renderTabContent = () => {
         switch (activeTab) {
             case 'details':
@@ -248,9 +266,7 @@ export function ProductDetailsModal({
                                             className="object-contain w-full h-full"
                                         />
                                     ) : (
-                                        <Package
-                                            className="w-20 h-20 text-muted-foreground/30"
-                                        />
+                                        <Package className="w-20 h-20 text-muted-foreground/30" />
                                     )}
                                 </div>
 
@@ -276,7 +292,9 @@ export function ProductDetailsModal({
                                                     product.status,
                                                 )}`}
                                             >
-                                                {getStatusDisplayName(product.status)}
+                                                {getStatusDisplayName(
+                                                    product.status,
+                                                )}
                                             </Badge>
                                         </div>
 
@@ -417,7 +435,8 @@ export function ProductDetailsModal({
                                     <div className="flex items-center">
                                         <Calendar className="w-4 h-4 mr-2 text-card-foreground/60" />
                                         <span className="text-xs font-thin font-body">
-                                            Created: {formatDate(product.createdAt)}
+                                            Created:{' '}
+                                            {formatDate(product.createdAt)}
                                         </span>
                                     </div>
                                 )}
@@ -456,8 +475,8 @@ export function ProductDetailsModal({
                                 Product Analytics
                             </h3>
                             <p className="text-xs uppercase text-muted-foreground font-body">
-                                Product analytics history will be displayed here in
-                                future updates.
+                                Product analytics history will be displayed here
+                                in future updates.
                             </p>
                         </div>
                     </div>
@@ -589,7 +608,9 @@ export function ProductDetailsModal({
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-red-800 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30 ${product.status === ProductStatus.OUTOFSTOCK ? 'bg-red-100 dark:bg-red-900/30' : ''}`}
                                 onClick={() =>
-                                    initiateStatusChange(ProductStatus.OUTOFSTOCK)
+                                    initiateStatusChange(
+                                        ProductStatus.OUTOFSTOCK,
+                                    )
                                 }
                                 title="Set as Out of Stock"
                             >
@@ -605,7 +626,9 @@ export function ProductDetailsModal({
                                 size="icon"
                                 className={`w-14 h-14 rounded-full text-purple-800 border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30 ${product.status === ProductStatus.BEST_SELLER ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`}
                                 onClick={() =>
-                                    initiateStatusChange(ProductStatus.BEST_SELLER)
+                                    initiateStatusChange(
+                                        ProductStatus.BEST_SELLER,
+                                    )
                                 }
                                 title="Set as Best Seller"
                             >
@@ -695,21 +718,50 @@ export function ProductDetailsModal({
                 </DialogContent>
             </Dialog>
 
-            {/* Edit Modal (Placeholder) */}
+            {/* Edit Modal */}
             {showEditModal && (
                 <Dialog
                     open={showEditModal}
                     onOpenChange={handleCloseEditModal}
                 >
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
                         <DialogHeader>
-                            <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                            <DialogTitle className="text-lg font-thin uppercase font-body">
+                                Edit Product
+                            </DialogTitle>
                         </DialogHeader>
-                        <div className="flex items-center justify-center h-64">
-                            <h2 className="text-xs font-thin uppercase font-body">
-                                Activating Soon
-                            </h2>
-                        </div>
+                        <EditProductForm
+                            productData={{
+                                name: product.name,
+                                description: product.description,
+                                category: product.category as any,
+                                price: product.price || 0,
+                                salePrice: product.salePrice,
+                                discount: product.discount,
+                                barcode: product.barcode || '',
+                                packageQuantity: product.packageQuantity || 1,
+                                brand: '',
+                                weight: product.weight || 0,
+                                stockQuantity: product.stockQuantity || 0,
+                                sku: product.sku || '',
+                                imageUrl: product.imageUrl,
+                                warehouseLocation: product.warehouseLocation,
+                                productReferenceCode: product.code || '',
+                                reorderPoint: product.reorderPoint,
+                                isOnPromotion: !!product.isOnPromotion,
+                                packageDetails: product.packageDetails,
+                                isDeleted: !!product.isDeleted,
+                                promotionStartDate: product.promotionStartDate
+                                    ? new Date(product.promotionStartDate)
+                                    : undefined,
+                                promotionEndDate: product.promotionEndDate
+                                    ? new Date(product.promotionEndDate)
+                                    : undefined,
+                                packageUnit: product.packageUnit as any,
+                                id: product.uid.toString(),
+                            }}
+                            isLoading={false}
+                        />
                     </DialogContent>
                 </Dialog>
             )}
@@ -729,9 +781,11 @@ export function ProductDetailsModal({
                                 CONFIRM STATUS CHANGE
                             </h2>
                             <p className="mb-6 text-sm text-center uppercase font-body">
-                                ARE YOU SURE YOU WANT TO CHANGE THE STATUS OF THIS PRODUCT TO{' '}
+                                ARE YOU SURE YOU WANT TO CHANGE THE STATUS OF
+                                THIS PRODUCT TO{' '}
                                 <span className="font-semibold">
-                                    {pendingStatus && getStatusDisplayName(pendingStatus)}
+                                    {pendingStatus &&
+                                        getStatusDisplayName(pendingStatus)}
                                 </span>
                                 ?
                             </p>
@@ -771,13 +825,16 @@ export function ProductDetailsModal({
                                 CONFIRM DELETE PRODUCT
                             </h2>
                             <p className="mb-6 text-sm text-center uppercase font-body">
-                                ARE YOU SURE YOU WANT TO DELETE THIS PRODUCT? THIS ACTION CANNOT BE UNDONE.
+                                ARE YOU SURE YOU WANT TO DELETE THIS PRODUCT?
+                                THIS ACTION CANNOT BE UNDONE.
                             </p>
                             <div className="flex justify-center gap-4">
                                 <Button
                                     variant="outline"
                                     className="w-32 h-10 text-xs text-white uppercase bg-red-600 border-0 font-body hover:bg-red-700"
-                                    onClick={() => setShowDeleteConfirmation(false)}
+                                    onClick={() =>
+                                        setShowDeleteConfirmation(false)
+                                    }
                                 >
                                     CANCEL
                                 </Button>

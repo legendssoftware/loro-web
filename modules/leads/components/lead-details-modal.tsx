@@ -532,7 +532,8 @@ export function LeadDetailsModal({
                     <div className="flex flex-col h-full">
                         {/* Chat Messages */}
                         <div className="flex flex-col flex-1 gap-3 py-3 overflow-y-auto max-h-[50vh]">
-                            {isLoadingInteractions && localInteractions.length === 0 ? (
+                            {isLoadingInteractions &&
+                            localInteractions.length === 0 ? (
                                 <div className="flex items-center justify-center h-20">
                                     <svg
                                         className="w-8 h-8 animate-spin text-primary"
@@ -566,101 +567,139 @@ export function LeadDetailsModal({
                                     </p>
                                 </div>
                             ) : (
-                                localInteractions.map((interaction) => (
-                                    <div
-                                        key={interaction?.uid}
-                                        className={`flex gap-3 ${interaction?.createdBy?.uid === Number(profileData?.uid) ? 'justify-end' : ''} ${interaction?.isOptimistic ? 'opacity-70' : ''}`}
-                                    >
-                                        {interaction?.createdBy?.uid !==
-                                            Number(profileData?.uid) && (
-                                            <Avatar className="w-8 h-8 mt-1 bg-gray-700">
-                                                <AvatarImage
-                                                    src={
-                                                        interaction?.createdBy
-                                                            ?.photoURL ||
-                                                        '/images/placeholder-avatar.jpg'
-                                                    }
-                                                    alt={
-                                                        interaction?.createdBy
-                                                            ?.name
-                                                    }
-                                                />
-                                                <AvatarFallback className="text-xs font-normal text-white uppercase font-body">
-                                                    {interaction?.createdBy?.name?.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        )}
+                                localInteractions.map((interaction) => {
+                                    // Determine if the message is from the current user
+                                    const isCurrentUser =
+                                        interaction?.createdBy?.uid ===
+                                        Number(profileData?.uid);
+                                    // Prepare sender name for display
+                                    const senderName = isCurrentUser
+                                        ? 'You' // Or keep empty if preferred
+                                        : `${interaction?.createdBy?.name || ''} ${interaction?.createdBy?.surname || ''}`.trim();
+                                    // Prepare initials for fallback avatar
+                                    const senderInitial =
+                                        (interaction?.createdBy?.name?.charAt(
+                                            0,
+                                        ) || '') +
+                                        (interaction?.createdBy?.surname?.charAt(
+                                            0,
+                                        ) || '');
+
+                                    return (
                                         <div
-                                            className={`max-w-[80%] rounded-md px-4 py-3 ${
-                                                interaction?.createdBy?.uid ===
-                                                Number(profileData?.uid)
-                                                    ? 'bg-purple-600 text-white'
-                                                    : 'bg-gray-800 text-white'
-                                            }`}
+                                            key={interaction?.uid}
+                                            className={`flex gap-2 flex-row ${isCurrentUser ? 'justify-end' : 'items-end'} ${interaction?.isOptimistic ? 'opacity-70' : ''}`}
                                         >
-                                            <p className="text-xs font-thin font-body md:text-sm">
-                                                {interaction?.message}
-                                            </p>
-                                            {interaction?.attachmentUrl && (
-                                                <div className="mt-2">
-                                                    {interaction?.attachmentUrl.match(
-                                                        /\.(jpeg|jpg|gif|png)$/i,
-                                                    ) ? (
-                                                        <img
-                                                            src={
-                                                                interaction?.attachmentUrl
-                                                            }
-                                                            alt="Attachment"
-                                                            className="object-cover max-w-full rounded-md max-h-48"
-                                                        />
-                                                    ) : (
-                                                        <a
-                                                            href={
-                                                                interaction?.attachmentUrl
-                                                            }
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex items-center gap-2 p-2 text-white rounded bg-black/30"
-                                                        >
-                                                            <FileIcon className="w-4 h-4" />
-                                                            <span className="text-xs underline">
-                                                                View Attachment
-                                                            </span>
-                                                        </a>
-                                                    )}
-                                                </div>
+                                            {/* Avatar for other users (left) */}
+                                            {!isCurrentUser && (
+                                                <Avatar className="w-8 h-8 bg-gray-700">
+                                                    <AvatarImage
+                                                        src={
+                                                            interaction
+                                                                ?.createdBy
+                                                                ?.photoURL ||
+                                                            '/images/placeholder-avatar.jpg'
+                                                        }
+                                                        alt={
+                                                            interaction
+                                                                ?.createdBy
+                                                                ?.name
+                                                        }
+                                                    />
+                                                    <AvatarFallback className="text-xs font-normal text-white uppercase font-body">
+                                                        {senderInitial.toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
                                             )}
-                                            <p className="mt-1 text-[10px] font-normal text-white/70 font-body uppercase">
-                                                {format(
-                                                    new Date(
-                                                        interaction?.createdAt,
-                                                    ),
-                                                    'MMM d, h:mm a',
+
+                                            {/* Message Content Column */}
+                                            <div
+                                                className={`flex flex-col max-w-[80%] ${isCurrentUser ? 'items-end' : 'items-start'}`}
+                                            >
+                                                {/* Sender Name (only for other users) */}
+                                                {!isCurrentUser && (
+                                                    <p className="mb-1 text-[10px] font-medium text-muted-foreground font-body ml-3">
+                                                        {senderName}
+                                                    </p>
                                                 )}
-                                                {interaction?.isOptimistic && " (sending...)"}
-                                            </p>
+
+                                                {/* Message Bubble */}
+                                                <div
+                                                    className={`px-4 py-2 rounded-lg ${
+                                                        isCurrentUser
+                                                            ? 'bg-purple-600 text-white rounded-br-none' // Current user bubble style
+                                                            : 'bg-gray-800 text-white rounded-bl-none' // Other user bubble style
+                                                    }`}
+                                                >
+                                                    <p className="text-xs font-thin font-body md:text-sm">
+                                                        {interaction?.message}
+                                                    </p>
+                                                    {interaction?.attachmentUrl && (
+                                                        <div className="mt-2">
+                                                            {interaction?.attachmentUrl.match(
+                                                                /\.(jpeg|jpg|gif|png)$/i,
+                                                            ) ? (
+                                                                <img
+                                                                    src={
+                                                                        interaction?.attachmentUrl
+                                                                    }
+                                                                    alt="Attachment"
+                                                                    className="object-cover max-w-full rounded-md max-h-48"
+                                                                />
+                                                            ) : (
+                                                                <a
+                                                                    href={
+                                                                        interaction?.attachmentUrl
+                                                                    }
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="flex items-center gap-2 p-2 text-white rounded bg-black/30"
+                                                                >
+                                                                    <FileIcon className="w-4 h-4" />
+                                                                    <span className="text-xs underline">
+                                                                        View
+                                                                        Attachment
+                                                                    </span>
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    <p className="mt-1 text-[10px] font-normal text-white/70 font-body uppercase">
+                                                        {format(
+                                                            new Date(
+                                                                interaction?.createdAt,
+                                                            ),
+                                                            'MMM d, h:mm a',
+                                                        )}
+                                                        {interaction?.isOptimistic &&
+                                                            ' (sending...)'}
+                                                    </p>
+                                                </div>
+                                                {/* Avatar for current user (right) */}
+                                                {isCurrentUser && (
+                                                    <Avatar className="w-8 h-8 mt-2">
+                                                        <AvatarImage
+                                                            src={
+                                                                interaction
+                                                                    ?.createdBy
+                                                                    ?.photoURL ||
+                                                                '/images/placeholder-avatar.jpg'
+                                                            }
+                                                            alt={
+                                                                interaction
+                                                                    ?.createdBy
+                                                                    ?.name
+                                                            }
+                                                        />
+                                                        <AvatarFallback className="text-xs font-normal text-white uppercase bg-gray-700 font-body">
+                                                            {senderInitial.toUpperCase()}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                )}
+                                            </div>
                                         </div>
-                                        {interaction?.createdBy?.uid ===
-                                            Number(profileData?.uid) && (
-                                            <Avatar className="mt-1 w-7 h-7">
-                                                <AvatarImage
-                                                    src={
-                                                        interaction?.createdBy
-                                                            ?.photoURL ||
-                                                        '/images/placeholder-avatar.jpg'
-                                                    }
-                                                    alt={
-                                                        interaction?.createdBy
-                                                            ?.name
-                                                    }
-                                                />
-                                                <AvatarFallback>
-                                                    {interaction?.createdBy?.name?.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        )}
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
 
@@ -837,7 +876,10 @@ export function LeadDetailsModal({
             const optimisticMessage = {
                 uid: Date.now(), // Temporary ID
                 message: newMessage,
-                attachmentUrl: attachments.length > 0 ? URL.createObjectURL(attachments[0]) : null,
+                attachmentUrl:
+                    attachments.length > 0
+                        ? URL.createObjectURL(attachments[0])
+                        : null,
                 type: InteractionType.MESSAGE,
                 createdBy: {
                     uid: Number(profileData?.uid),
@@ -850,7 +892,7 @@ export function LeadDetailsModal({
             };
 
             // Update local state immediately for responsive UI
-            setLocalInteractions(prev => [...prev, optimisticMessage]);
+            setLocalInteractions((prev) => [...prev, optimisticMessage]);
 
             // Clear form after sending (for responsive UI)
             setNewMessage('');
@@ -881,7 +923,9 @@ export function LeadDetailsModal({
             showErrorToast('Failed to send message. Please try again.', toast);
 
             // Remove optimistic message on failure
-            setLocalInteractions(prev => prev.filter(msg => !msg.isOptimistic));
+            setLocalInteractions((prev) =>
+                prev.filter((msg) => !msg.isOptimistic),
+            );
 
             // Restore message input on failure for better UX
             setNewMessage(newMessage);

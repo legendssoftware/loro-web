@@ -31,6 +31,15 @@ import {
     Edit,
     Save,
     PenLine,
+    UploadCloud,
+    ShoppingBag,
+    Package,
+    TruckIcon,
+    CreditCard,
+    Archive,
+    Undo,
+    Truck,
+    ArrowRight,
 } from 'lucide-react';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 import { cn } from '@/lib/utils';
@@ -91,6 +100,84 @@ export function QuotationDetailsModal({
         return (
             StatusColors[quotation.status] || StatusColors[OrderStatus.DRAFT]
         );
+    }, [quotation]);
+
+    // Get available next status options based on current status
+    const getAvailableNextStatuses = useMemo(() => {
+        if (!quotation) return [];
+
+        // Define allowed transitions for each status based on backend logic
+        const allowedTransitions: Record<string, OrderStatus[]> = {
+            [OrderStatus.DRAFT]: [OrderStatus.PENDING_INTERNAL, OrderStatus.PENDING_CLIENT, OrderStatus.CANCELLED],
+            [OrderStatus.PENDING_INTERNAL]: [OrderStatus.PENDING_CLIENT, OrderStatus.DRAFT, OrderStatus.CANCELLED],
+            [OrderStatus.PENDING_CLIENT]: [
+                OrderStatus.APPROVED,
+                OrderStatus.REJECTED,
+                OrderStatus.NEGOTIATION,
+                OrderStatus.PENDING_INTERNAL,
+                OrderStatus.CANCELLED,
+            ],
+            [OrderStatus.NEGOTIATION]: [
+                OrderStatus.PENDING_INTERNAL,
+                OrderStatus.PENDING_CLIENT,
+                OrderStatus.APPROVED,
+                OrderStatus.REJECTED,
+                OrderStatus.CANCELLED,
+            ],
+            [OrderStatus.APPROVED]: [
+                OrderStatus.SOURCING,
+                OrderStatus.PACKING,
+                OrderStatus.IN_FULFILLMENT,
+                OrderStatus.CANCELLED,
+                OrderStatus.NEGOTIATION,
+            ],
+            [OrderStatus.SOURCING]: [OrderStatus.PACKING, OrderStatus.IN_FULFILLMENT, OrderStatus.CANCELLED],
+            [OrderStatus.PACKING]: [OrderStatus.IN_FULFILLMENT, OrderStatus.OUTFORDELIVERY, OrderStatus.CANCELLED],
+            [OrderStatus.IN_FULFILLMENT]: [
+                OrderStatus.PAID,
+                OrderStatus.PACKING,
+                OrderStatus.OUTFORDELIVERY,
+                OrderStatus.CANCELLED,
+            ],
+            [OrderStatus.PAID]: [
+                OrderStatus.PACKING,
+                OrderStatus.OUTFORDELIVERY,
+                OrderStatus.DELIVERED,
+                OrderStatus.CANCELLED,
+            ],
+            [OrderStatus.OUTFORDELIVERY]: [OrderStatus.DELIVERED, OrderStatus.RETURNED, OrderStatus.CANCELLED],
+            [OrderStatus.DELIVERED]: [OrderStatus.COMPLETED, OrderStatus.RETURNED, OrderStatus.CANCELLED],
+            [OrderStatus.RETURNED]: [
+                OrderStatus.COMPLETED,
+                OrderStatus.CANCELLED,
+                OrderStatus.SOURCING,
+                OrderStatus.PACKING,
+            ],
+            // Legacy statuses support - using string values instead of enum
+            'pending': [
+                OrderStatus.INPROGRESS,
+                OrderStatus.APPROVED,
+                OrderStatus.REJECTED,
+                OrderStatus.CANCELLED,
+                OrderStatus.PENDING_INTERNAL,
+                OrderStatus.PENDING_CLIENT,
+            ],
+            [OrderStatus.INPROGRESS]: [
+                OrderStatus.COMPLETED,
+                OrderStatus.CANCELLED,
+                OrderStatus.IN_FULFILLMENT,
+                OrderStatus.SOURCING,
+                OrderStatus.PACKING,
+                OrderStatus.OUTFORDELIVERY,
+                OrderStatus.DELIVERED,
+            ],
+            // Default options for other statuses
+            [OrderStatus.COMPLETED]: [OrderStatus.CANCELLED],
+            [OrderStatus.REJECTED]: [OrderStatus.CANCELLED, OrderStatus.NEGOTIATION, OrderStatus.PENDING_INTERNAL],
+            [OrderStatus.CANCELLED]: [],
+        };
+
+        return allowedTransitions[quotation.status] || [];
     }, [quotation]);
 
     const handleTabChange = (tabId: string) => {
@@ -388,6 +475,114 @@ export function QuotationDetailsModal({
 
     const hasEdits = () => {
         return Object.keys(editedItems).length > 0 || editedDiscount > 0;
+    };
+
+    // Map status to icon and title for quick actions
+    const getStatusButtonConfig = (status: OrderStatus) => {
+        switch (status) {
+            case OrderStatus.DRAFT:
+                return {
+                    icon: <AlertCircle strokeWidth={1.2} className="text-yellow-600 w-7 h-7 dark:text-yellow-400" />,
+                    title: "Set as Draft",
+                    variant: getStatusButtonVariant(OrderStatus.DRAFT)
+                };
+            case OrderStatus.PENDING_INTERNAL:
+                return {
+                    icon: <Clock strokeWidth={1.2} className="text-orange-600 w-7 h-7 dark:text-orange-400" />,
+                    title: "Send for Internal Review",
+                    variant: getStatusButtonVariant(OrderStatus.PENDING_INTERNAL)
+                };
+            case OrderStatus.PENDING_CLIENT:
+                return {
+                    icon: <UploadCloud strokeWidth={1.2} className="text-blue-600 w-7 h-7 dark:text-blue-400" />,
+                    title: "Send to Client",
+                    variant: getStatusButtonVariant(OrderStatus.PENDING_CLIENT)
+                };
+            case OrderStatus.NEGOTIATION:
+                return {
+                    icon: <ArrowRight strokeWidth={1.2} className="text-indigo-600 w-7 h-7 dark:text-indigo-400" />,
+                    title: "Mark as In Negotiation",
+                    variant: getStatusButtonVariant(OrderStatus.NEGOTIATION)
+                };
+            case OrderStatus.APPROVED:
+                return {
+                    icon: <CheckCircle strokeWidth={1.2} className="text-green-600 w-7 h-7 dark:text-green-400" />,
+                    title: "Set as Approved",
+                    variant: getStatusButtonVariant(OrderStatus.APPROVED)
+                };
+            case OrderStatus.REJECTED:
+                return {
+                    icon: <Ban strokeWidth={1.2} className="text-red-600 w-7 h-7 dark:text-red-400" />,
+                    title: "Set as Rejected",
+                    variant: getStatusButtonVariant(OrderStatus.REJECTED)
+                };
+            case OrderStatus.SOURCING:
+                return {
+                    icon: <ShoppingBag strokeWidth={1.2} className="text-purple-600 w-7 h-7 dark:text-purple-400" />,
+                    title: "Start Sourcing",
+                    variant: getStatusButtonVariant(OrderStatus.SOURCING)
+                };
+            case OrderStatus.PACKING:
+                return {
+                    icon: <Package strokeWidth={1.2} className="text-blue-600 w-7 h-7 dark:text-blue-400" />,
+                    title: "Start Packing",
+                    variant: getStatusButtonVariant(OrderStatus.PACKING)
+                };
+            case OrderStatus.IN_FULFILLMENT:
+                return {
+                    icon: <Archive strokeWidth={1.2} className="text-indigo-600 w-7 h-7 dark:text-indigo-400" />,
+                    title: "Mark as In Fulfillment",
+                    variant: getStatusButtonVariant(OrderStatus.IN_FULFILLMENT)
+                };
+            case OrderStatus.PAID:
+                return {
+                    icon: <CreditCard strokeWidth={1.2} className="text-green-600 w-7 h-7 dark:text-green-400" />,
+                    title: "Mark as Paid",
+                    variant: getStatusButtonVariant(OrderStatus.PAID)
+                };
+            case OrderStatus.OUTFORDELIVERY:
+                return {
+                    icon: <Truck strokeWidth={1.2} className="text-blue-600 w-7 h-7 dark:text-blue-400" />,
+                    title: "Mark as Out for Delivery",
+                    variant: getStatusButtonVariant(OrderStatus.OUTFORDELIVERY)
+                };
+            case OrderStatus.DELIVERED:
+                return {
+                    icon: <TruckIcon strokeWidth={1.2} className="text-green-600 w-7 h-7 dark:text-green-400" />,
+                    title: "Mark as Delivered",
+                    variant: getStatusButtonVariant(OrderStatus.DELIVERED)
+                };
+            case OrderStatus.RETURNED:
+                return {
+                    icon: <Undo strokeWidth={1.2} className="text-orange-600 w-7 h-7 dark:text-orange-400" />,
+                    title: "Mark as Returned",
+                    variant: getStatusButtonVariant(OrderStatus.RETURNED)
+                };
+            case OrderStatus.COMPLETED:
+                return {
+                    icon: <CheckCheck strokeWidth={1.2} className="text-purple-600 w-7 h-7 dark:text-purple-400" />,
+                    title: "Set as Completed",
+                    variant: getStatusButtonVariant(OrderStatus.COMPLETED)
+                };
+            case OrderStatus.CANCELLED:
+                return {
+                    icon: <CalendarX2 strokeWidth={1.2} className="text-orange-600 w-7 h-7 dark:text-orange-400" />,
+                    title: "Set as Cancelled",
+                    variant: getStatusButtonVariant(OrderStatus.CANCELLED)
+                };
+            case OrderStatus.INPROGRESS:
+                return {
+                    icon: <Clock strokeWidth={1.2} className="text-blue-600 w-7 h-7 dark:text-blue-400" />,
+                    title: "Set as In Progress",
+                    variant: getStatusButtonVariant(OrderStatus.INPROGRESS)
+                };
+            default:
+                return {
+                    icon: <AlertCircle strokeWidth={1.2} className="w-7 h-7" />,
+                    title: `Change to ${status}`,
+                    variant: getStatusButtonVariant(status)
+                };
+        }
     };
 
     return (
@@ -1167,128 +1362,25 @@ export function QuotationDetailsModal({
                                     <h3 className="mb-4 text-xs font-thin text-center uppercase font-body">
                                         Quick Actions
                                     </h3>
-                                    <div className="flex items-center justify-center gap-4">
-                                        {/* Pending button */}
+                                    <div className="flex flex-wrap items-center justify-center gap-4">
+                                        {/* Dynamically render available status actions */}
+                                        {getAvailableNextStatuses.map((nextStatus: OrderStatus) => {
+                                            const config = getStatusButtonConfig(nextStatus);
+                                            return (
                                         <Button
+                                                    key={nextStatus}
                                             variant="outline"
                                             size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.DRAFT)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.DRAFT &&
-                                                handleStatusChange(
-                                                    OrderStatus.DRAFT,
-                                                )
-                                            }
-                                            title="Set as Pending"
-                                        >
-                                            <AlertCircle
-                                                strokeWidth={1.2}
-                                                className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                            />
+                                                    className={`w-14 h-14 rounded-full ${config.variant}`}
+                                                    onClick={() => handleStatusChange(nextStatus)}
+                                                    title={config.title}
+                                                >
+                                                    {config.icon}
                                         </Button>
+                                            );
+                                        })}
 
-                                        {/* In Progress button */}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.INPROGRESS)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.INPROGRESS &&
-                                                handleStatusChange(
-                                                    OrderStatus.INPROGRESS,
-                                                )
-                                            }
-                                            title="Set as In Progress"
-                                        >
-                                            <Clock
-                                                strokeWidth={1.2}
-                                                className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                            />
-                                        </Button>
-
-                                        {/* Approved button */}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.APPROVED)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.APPROVED &&
-                                                handleStatusChange(
-                                                    OrderStatus.APPROVED,
-                                                )
-                                            }
-                                            title="Set as Approved"
-                                        >
-                                            <CheckCircle
-                                                strokeWidth={1.2}
-                                                className="text-green-600 w-7 h-7 dark:text-green-400"
-                                            />
-                                        </Button>
-
-                                        {/* Rejected button */}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.REJECTED)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.REJECTED &&
-                                                handleStatusChange(
-                                                    OrderStatus.REJECTED,
-                                                )
-                                            }
-                                            title="Set as Rejected"
-                                        >
-                                            <Ban
-                                                strokeWidth={1.2}
-                                                className="text-red-600 w-7 h-7 dark:text-red-400"
-                                            />
-                                        </Button>
-
-                                        {/* Completed button */}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.COMPLETED)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.COMPLETED &&
-                                                handleStatusChange(
-                                                    OrderStatus.COMPLETED,
-                                                )
-                                            }
-                                            title="Set as Completed"
-                                        >
-                                            <CheckCheck
-                                                strokeWidth={1.2}
-                                                className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                            />
-                                        </Button>
-
-                                        {/* Cancelled button */}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(OrderStatus.CANCELLED)}`}
-                                            onClick={() =>
-                                                quotation.status !==
-                                                    OrderStatus.CANCELLED &&
-                                                handleStatusChange(
-                                                    OrderStatus.CANCELLED,
-                                                )
-                                            }
-                                            title="Set as Cancelled"
-                                        >
-                                            <CalendarX2
-                                                strokeWidth={1.2}
-                                                className="text-orange-600 w-7 h-7 dark:text-orange-400"
-                                            />
-                                        </Button>
-
-                                        {/* Add Edit Quotation button */}
+                                        {/* Edit button - always available */}
                                         <Button
                                             variant="outline"
                                             size="icon"
@@ -1302,7 +1394,7 @@ export function QuotationDetailsModal({
                                             />
                                         </Button>
 
-                                        {/* Delete button */}
+                                        {/* Delete button - always available */}
                                         <Button
                                             variant="destructive"
                                             size="icon"

@@ -167,7 +167,6 @@ export default function ClientsPage() {
 
                 setIsCreateDialogOpen(false);
             } catch (error) {
-                console.error('Error creating client:', error);
                 // Error toast is already shown in the mutation
             }
         },
@@ -184,7 +183,6 @@ export default function ClientsPage() {
                 // Explicitly refetch to ensure UI is updated
                 refetch();
             } catch (error) {
-                console.error('Error updating client status:', error);
                 // Error toast is already shown in the mutation
             }
         },
@@ -201,7 +199,6 @@ export default function ClientsPage() {
                 // Explicitly refetch to ensure UI is updated
                 refetch();
             } catch (error) {
-                console.error('Error deleting client:', error);
                 // Error toast is already shown in the mutation
             }
         },

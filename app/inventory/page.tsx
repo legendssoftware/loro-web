@@ -86,7 +86,6 @@ function CreateProductModal({
                 onClose();
             }
         } catch (error) {
-            console.error('Error creating product:', error);
             // Error is already shown via toast in the onCreateProduct function
         } finally {
             setIsSubmitting(false);

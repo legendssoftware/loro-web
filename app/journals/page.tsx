@@ -79,7 +79,6 @@ export default function JournalsPage() {
                 setError(null);
             } catch (err) {
                 setError(err as Error);
-                console.error('Error fetching journals:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -114,7 +113,6 @@ export default function JournalsPage() {
                     });
                 }
             } catch (err) {
-                console.error('Error updating journal status:', err);
                 toast.error('Failed to update journal status');
             }
         },
@@ -137,7 +135,6 @@ export default function JournalsPage() {
                 });
             }
         } catch (err) {
-            console.error('Error deleting journal:', err);
             toast.error('Failed to delete journal');
         }
     }, []);
@@ -160,7 +157,6 @@ export default function JournalsPage() {
                 toast.success('Journal created successfully');
             }
         } catch (err) {
-            console.error('Error creating journal:', err);
             toast.error('Failed to create journal');
         }
     }, []);

@@ -60,7 +60,6 @@ function validateToken(token: string): boolean {
 
         return true;
     } catch (error) {
-        console.error('Middleware: Error validating token:', error);
         return false;
     }
 }

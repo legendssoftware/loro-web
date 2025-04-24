@@ -188,13 +188,13 @@ export function TopNav() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="relative text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 w-auto px-2"
+                                className="relative w-auto px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
                                 onClick={endCall}
                             >
                                 <PhoneCall
                                     strokeWidth={1.2}
                                     size={20}
-                                    className="animate-pulse mr-1"
+                                    className="mr-1 animate-pulse"
                                 />
                                 {formattedTimeRemaining && (
                                     <span className="text-xs">{formattedTimeRemaining}</span>
@@ -213,7 +213,7 @@ export function TopNav() {
                                 disabled={isCallInitializing}
                             >
                                 <PhoneCall strokeWidth={1.2} size={20} />
-                                <span className="absolute top-0 right-0 w-2 h-2 bg-amber-500 rounded-full" />
+                                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-amber-500" />
                                 <span className="sr-only">Retry Assistant Call</span>
                             </Button>
                         ) : (

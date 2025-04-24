@@ -10,24 +10,22 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    ProductStatus,
-    ProductFilterParams,
-} from '@/hooks/use-products-query';
+import { ProductStatus, ProductFilterParams } from '@/hooks/use-products-query';
 import {
     X,
     ChevronDown,
     Package,
     Tag,
-    DollarSign,
     Check,
     PackageCheck,
     PackageX,
     AlertCircle,
     PackageMinus,
+    Search,
 } from 'lucide-react';
 import { useCallback, useState, useMemo } from 'react';
 import React from 'react';
+import { Input } from '@/components/ui/input';
 
 // Mapping of status values to their display labels
 const statusLabels: Record<string, string> = {
@@ -82,8 +80,7 @@ export function ProductsFilter({
     // State for filter values
     const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
     const [category, setCategory] = useState<string | undefined>(undefined);
-    const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
-    const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
+    const [search, setSearch] = useState<string>('');
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     // Get unique categories from products
@@ -97,6 +94,37 @@ export function ProductsFilter({
             ),
         ).sort();
     }, [products]);
+
+    // Handle search input changes
+    const handleSearchChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearch(e.target.value);
+            // Apply search filter with slight delay to avoid too many requests during typing
+            setTimeout(() => {
+                const filters: ProductFilterParams = {};
+                const newActiveFilters: string[] = [];
+
+                if (status) {
+                    filters.status = status;
+                    newActiveFilters.push('Status');
+                }
+
+                if (category) {
+                    filters.category = category;
+                    newActiveFilters.push('Category');
+                }
+
+                if (e.target.value) {
+                    filters.search = e.target.value;
+                    newActiveFilters.push('Search');
+                }
+
+                setActiveFilters(newActiveFilters);
+                onApplyFilters(filters);
+            }, 300);
+        },
+        [status, category, onApplyFilters],
+    );
 
     // Apply filters
     const handleApplyFilters = useCallback(() => {
@@ -113,32 +141,18 @@ export function ProductsFilter({
             newActiveFilters.push('Category');
         }
 
-        if (minPrice !== undefined) {
-            filters.minPrice = minPrice;
-            if (!newActiveFilters.includes('Price')) {
-                newActiveFilters.push('Price');
-            }
-        }
-
-        if (maxPrice !== undefined) {
-            filters.maxPrice = maxPrice;
-            if (!newActiveFilters.includes('Price')) {
-                newActiveFilters.push('Price');
-            }
+        if (search) {
+            filters.search = search;
+            newActiveFilters.push('Search');
         }
 
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
-    }, [status, category, minPrice, maxPrice, onApplyFilters]);
+    }, [status, category, search, onApplyFilters]);
 
     // Adding direct filter application helper to avoid setTimeout issues
     const applyFilter = useCallback(
-        (
-            filterType: 'status' | 'category' | 'price',
-            value: any,
-            minVal?: number,
-            maxVal?: number,
-        ) => {
+        (filterType: 'status' | 'category' | 'search', value: any) => {
             const filters: ProductFilterParams = {};
             const newActiveFilters: string[] = [];
 
@@ -153,18 +167,9 @@ export function ProductsFilter({
                 newActiveFilters.push('Category');
             }
 
-            if (minPrice !== undefined && filterType !== 'price') {
-                filters.minPrice = minPrice;
-                if (!newActiveFilters.includes('Price')) {
-                    newActiveFilters.push('Price');
-                }
-            }
-
-            if (maxPrice !== undefined && filterType !== 'price') {
-                filters.maxPrice = maxPrice;
-                if (!newActiveFilters.includes('Price')) {
-                    newActiveFilters.push('Price');
-                }
+            if (search && filterType !== 'search') {
+                filters.search = search;
+                newActiveFilters.push('Search');
             }
 
             // Add the new filter value
@@ -174,49 +179,55 @@ export function ProductsFilter({
             } else if (filterType === 'category' && value) {
                 filters.category = value;
                 newActiveFilters.push('Category');
-            } else if (filterType === 'price') {
-                if (minVal !== undefined) {
-                    filters.minPrice = minVal;
-                    if (!newActiveFilters.includes('Price')) {
-                        newActiveFilters.push('Price');
-                    }
-                }
-                if (maxVal !== undefined) {
-                    filters.maxPrice = maxVal;
-                    if (!newActiveFilters.includes('Price')) {
-                        newActiveFilters.push('Price');
-                    }
-                }
+            } else if (filterType === 'search' && value) {
+                filters.search = value;
+                newActiveFilters.push('Search');
             }
 
             setActiveFilters(newActiveFilters);
             onApplyFilters(filters);
         },
-        [status, category, minPrice, maxPrice, onApplyFilters],
+        [status, category, search, onApplyFilters],
     );
 
     // Clear all filters
     const handleClearFilters = useCallback(() => {
         setStatus(undefined);
         setCategory(undefined);
-        setMinPrice(undefined);
-        setMaxPrice(undefined);
+        setSearch('');
         setActiveFilters([]);
         onClearFilters();
     }, [onClearFilters]);
 
-    // Price range options
-    const priceRanges = [
-        { label: 'All Prices', min: undefined, max: undefined },
-        { label: 'Under R50', min: 0, max: 50 },
-        { label: 'R50 - R100', min: 50, max: 100 },
-        { label: 'R100 - R250', min: 100, max: 250 },
-        { label: 'R250 - R500', min: 250, max: 500 },
-        { label: 'Over R500', min: 500, max: undefined },
-    ];
-
     return (
         <div className="flex items-center justify-end flex-1 gap-2 px-2">
+            {/* Search Box */}
+            <div className="relative flex-1 max-w-sm">
+                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Input
+                    placeholder="search products..."
+                    value={search}
+                    onChange={handleSearchChange}
+                    className="h-10 rounded-md pl-9 pr-9 bg-card border-border placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
+                />
+                {search && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
+                        onClick={() => {
+                            setSearch('');
+                            if (activeFilters.includes('Search')) {
+                                handleApplyFilters();
+                            }
+                        }}
+                    >
+                        <X className="w-4 h-4" />
+                        <span className="sr-only">Clear search</span>
+                    </Button>
+                )}
+            </div>
+
             {/* Status Filter */}
             <div className="w-[180px]">
                 <DropdownMenu>
@@ -272,11 +283,15 @@ export function ProductsFilter({
                                             className="flex items-center gap-2 px-2 text-xs font-normal font-body"
                                             onClick={() => {
                                                 const newStatus =
-                                                    status === (key as ProductStatus)
+                                                    status ===
+                                                    (key as ProductStatus)
                                                         ? undefined
                                                         : (key as ProductStatus);
                                                 setStatus(newStatus);
-                                                applyFilter('status', newStatus);
+                                                applyFilter(
+                                                    'status',
+                                                    newStatus,
+                                                );
                                             }}
                                         >
                                             <Icon
@@ -290,7 +305,9 @@ export function ProductsFilter({
                                             <span
                                                 className={`text-[10px] font-normal font-body ${
                                                     status === key
-                                                        ? statusColors[key as ProductStatus]
+                                                        ? statusColors[
+                                                              key as ProductStatus
+                                                          ]
                                                         : ''
                                                 }`}
                                             >
@@ -363,7 +380,10 @@ export function ProductsFilter({
                                                     ? undefined
                                                     : cat;
                                             setCategory(newCategory);
-                                            applyFilter('category', newCategory);
+                                            applyFilter(
+                                                'category',
+                                                newCategory,
+                                            );
                                         }}
                                     >
                                         <Tag
@@ -394,87 +414,6 @@ export function ProductsFilter({
                                     </span>
                                 </div>
                             )}
-                            <DropdownMenuSeparator />
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
-            {/* Price Range Filter */}
-            <div className="w-[180px]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {minPrice !== undefined || maxPrice !== undefined ? (
-                                    <>
-                                        <DollarSign
-                                            className="w-4 h-4 text-purple-600"
-                                            strokeWidth={1.5}
-                                        />
-                                        <span className="text-[10px] font-thin text-purple-600 font-body">
-                                            {`R${minPrice || 0} - R${maxPrice || '∞'}`}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <DollarSign
-                                            className="w-4 h-4 text-muted-foreground"
-                                            strokeWidth={1.5}
-                                        />
-                                        <span className="text-[10px] font-thin font-body">
-                                            PRICE RANGE
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                            <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
-                                strokeWidth={1.5}
-                            />
-                        </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
-                            Select Price Range
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            {priceRanges.map((range, index) => (
-                                <DropdownMenuItem
-                                    key={index}
-                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                    onClick={() => {
-                                        const newMinPrice =
-                                            minPrice === range.min && maxPrice === range.max
-                                                ? undefined
-                                                : range.min;
-                                        const newMaxPrice =
-                                            minPrice === range.min && maxPrice === range.max
-                                                ? undefined
-                                                : range.max;
-                                        setMinPrice(newMinPrice);
-                                        setMaxPrice(newMaxPrice);
-                                        applyFilter('price', null, newMinPrice, newMaxPrice);
-                                    }}
-                                >
-                                    <span
-                                        className={`text-[10px] font-normal font-body ${
-                                            minPrice === range.min && maxPrice === range.max
-                                                ? 'text-purple-600'
-                                                : ''
-                                        }`}
-                                    >
-                                        {range.label}
-                                    </span>
-                                    {minPrice === range.min && maxPrice === range.max && (
-                                        <Check
-                                            className="w-4 h-4 ml-auto text-primary"
-                                            strokeWidth={1.5}
-                                        />
-                                    )}
-                                </DropdownMenuItem>
-                            ))}
                             <DropdownMenuSeparator />
                         </DropdownMenuGroup>
                     </DropdownMenuContent>

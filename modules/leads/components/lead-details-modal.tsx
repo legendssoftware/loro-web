@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -41,6 +41,11 @@ import {
     XCircle,
     RefreshCw,
     CalendarCheck,
+    Paperclip,
+    Send,
+    Image,
+    MessageSquare,
+    FileIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -51,9 +56,15 @@ import { ClientStatus } from '@/hooks/use-clients-query';
 import { toast } from 'react-hot-toast';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { TaskPriority, TaskType } from '@/lib/types/task';
-import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { axiosInstance } from '@/lib/services/api-client';
 import TaskForm from '@/modules/tasks/components/task-form';
+import { Textarea } from '@/components/ui/textarea';
+import {
+    useInteractionsQuery,
+    InteractionType,
+} from '@/hooks/use-interactions-query';
+import { useAuthStore, selectProfileData } from '@/store/auth-store';
+import { Progress } from '@/components/ui/progress';
 
 interface LeadDetailsModalProps {
     lead: Lead;
@@ -80,6 +91,32 @@ export function LeadDetailsModal({
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState<boolean>(false);
+    const [newMessage, setNewMessage] = useState<string>('');
+    const [attachments, setAttachments] = useState<File[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const profileData = useAuthStore(selectProfileData);
+
+    // Use the interactions query hook
+    const {
+        useLeadInteractions,
+        sendMessageWithAttachment,
+        uploadProgress,
+        isUploading,
+    } = useInteractionsQuery();
+
+    // Fetch interactions for the current lead
+    const {
+        data: interactions = [],
+        isLoading: isLoadingInteractions,
+        refetch: refetchInteractions,
+    } = useLeadInteractions(lead.uid);
+
+    // Refetch interactions when the modal is opened
+    useEffect(() => {
+        if (isOpen && lead.uid) {
+            refetchInteractions();
+        }
+    }, [isOpen, lead.uid, refetchInteractions]);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -193,6 +230,7 @@ export function LeadDetailsModal({
         { id: 'details', label: 'Details' },
         { id: 'activity', label: 'Activity' },
         { id: 'media', label: 'Media' },
+        { id: 'chat', label: 'Chat' },
     ];
 
     const formatAddress = (address?: any) => {
@@ -461,6 +499,280 @@ export function LeadDetailsModal({
                         )}
                     </div>
                 );
+            case 'chat':
+                return (
+                    <div className="flex flex-col h-full">
+                        {/* Chat Messages */}
+                        <div className="flex flex-col flex-1 gap-3 py-3 overflow-y-auto max-h-[50vh]">
+                            {isLoadingInteractions ? (
+                                <div className="flex items-center justify-center h-20">
+                                    <svg
+                                        className="w-8 h-8 animate-spin text-primary"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                            ) : interactions.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-32">
+                                    <MessageSquare
+                                        className="w-10 h-10 mb-2 text-muted-foreground"
+                                        strokeWidth={1}
+                                    />
+                                    <p className="text-xs font-light text-muted-foreground font-body">
+                                        No messages yet. Start the conversation!
+                                    </p>
+                                </div>
+                            ) : (
+                                interactions.map((interaction) => (
+                                    <div
+                                        key={interaction?.uid}
+                                        className={`flex gap-3 ${interaction?.createdBy?.uid === Number(profileData?.uid) ? 'justify-end' : ''}`}
+                                    >
+                                        {interaction?.createdBy?.uid !==
+                                            Number(profileData?.uid) && (
+                                            <Avatar className="w-8 h-8 mt-1 bg-gray-700">
+                                                <AvatarImage
+                                                    src={
+                                                        interaction?.createdBy
+                                                            ?.photoURL ||
+                                                        '/images/placeholder-avatar.jpg'
+                                                    }
+                                                    alt={
+                                                        interaction?.createdBy
+                                                            ?.name
+                                                    }
+                                                />
+                                                <AvatarFallback className="text-xs font-normal text-white uppercase font-body">
+                                                    {interaction?.createdBy?.name?.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                        <div
+                                            className={`max-w-[80%] rounded-md px-4 py-3 ${
+                                                interaction?.createdBy?.uid ===
+                                                Number(profileData?.uid)
+                                                    ? 'bg-purple-600 text-white'
+                                                    : 'bg-gray-800 text-white'
+                                            }`}
+                                        >
+                                            <p className="text-xs font-thin font-body md:text-sm">
+                                                {interaction?.message}
+                                            </p>
+                                            {interaction?.attachmentUrl && (
+                                                <div className="mt-2">
+                                                    {interaction?.attachmentUrl.match(
+                                                        /\.(jpeg|jpg|gif|png)$/i,
+                                                    ) ? (
+                                                        <img
+                                                            src={
+                                                                interaction?.attachmentUrl
+                                                            }
+                                                            alt="Attachment"
+                                                            className="object-cover max-w-full rounded-md max-h-48"
+                                                        />
+                                                    ) : (
+                                                        <a
+                                                            href={
+                                                                interaction?.attachmentUrl
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-2 p-2 text-white rounded bg-black/30"
+                                                        >
+                                                            <FileIcon className="w-4 h-4" />
+                                                            <span className="text-xs underline">
+                                                                View Attachment
+                                                            </span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <p className="mt-1 text-[10px] font-normal text-white/70 font-body uppercase">
+                                                {format(
+                                                    new Date(
+                                                        interaction?.createdAt,
+                                                    ),
+                                                    'MMM d, h:mm a',
+                                                )}
+                                            </p>
+                                        </div>
+                                        {interaction?.createdBy?.uid ===
+                                            Number(profileData?.uid) && (
+                                            <Avatar className="mt-1 w-7 h-7">
+                                                <AvatarImage
+                                                    src={
+                                                        interaction?.createdBy
+                                                            ?.photoURL ||
+                                                        '/images/placeholder-avatar.jpg'
+                                                    }
+                                                    alt={
+                                                        interaction?.createdBy
+                                                            ?.name
+                                                    }
+                                                />
+                                                <AvatarFallback>
+                                                    {interaction?.createdBy?.name?.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="pt-4 mt-auto">
+                            <div className="p-3 border border-gray-800 rounded-md bg-gray-950">
+                                <textarea
+                                    value={newMessage}
+                                    onChange={(e) =>
+                                        setNewMessage(e.target.value)
+                                    }
+                                    placeholder="type your message here..."
+                                    className="w-full min-h-[80px] bg-transparent placeholder:text-xs placeholder:font-thin border-0 focus:ring-0 text-[13px] text-white resize-none font-normal focus:outline-none font-body"
+                                />
+
+                                {/* Selected attachment preview */}
+                                {attachments?.length > 0 && (
+                                    <div className="p-2 mt-2 border border-gray-700 rounded">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <FileIcon
+                                                    className="w-4 h-4 mr-2 text-muted-foreground"
+                                                    strokeWidth={1.5}
+                                                />
+                                                <span className="text-xs font-light font-body truncate max-w-[150px] text-white">
+                                                    {attachments[0]?.name}
+                                                </span>
+                                                <span className="ml-2 text-xs text-muted-foreground">
+                                                    (
+                                                    {Math.round(
+                                                        attachments[0]?.size /
+                                                            1024,
+                                                    )}{' '}
+                                                    KB)
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="p-1 text-gray-400 rounded hover:bg-gray-800"
+                                                onClick={() =>
+                                                    setAttachments([])
+                                                }
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        {/* Progress bar */}
+                                        {isUploading &&
+                                            uploadProgress[
+                                                attachments[0].name
+                                            ] && (
+                                                <Progress
+                                                    value={
+                                                        uploadProgress[
+                                                            attachments[0]?.name
+                                                        ]
+                                                    }
+                                                    className="h-1 mt-2 bg-gray-700"
+                                                />
+                                            )}
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-800">
+                                    <div className="flex items-center gap-2">
+                                        <label className="flex items-center justify-center w-8 h-8 text-gray-400 transition rounded-full cursor-pointer hover:bg-gray-800">
+                                            <Paperclip className="w-4 h-4" />
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (
+                                                        e.target.files &&
+                                                        e.target.files.length >
+                                                            0
+                                                    ) {
+                                                        setAttachments([
+                                                            e.target.files[0],
+                                                        ]);
+                                                    }
+                                                }}
+                                                disabled={
+                                                    isLoading || isUploading
+                                                }
+                                            />
+                                        </label>
+                                    </div>
+                                    <button
+                                        onClick={handleSendMessage}
+                                        disabled={
+                                            (!newMessage.trim() &&
+                                                attachments.length === 0) ||
+                                            isLoading ||
+                                            isUploading
+                                        }
+                                        className="px-8 py-2 text-[10px] font-normal text-white transition-colors rounded-md bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                    >
+                                        {isLoading || isUploading ? (
+                                            <>
+                                                <span className="text-xs font-normal uppercase font-body">
+                                                    Sending...
+                                                </span>
+                                                <svg
+                                                    className="w-3 h-3 ml-1 animate-spin"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    ></path>
+                                                </svg>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-xs font-normal uppercase font-body">
+                                                    Send
+                                                </p>
+                                                <Send
+                                                    className="w-4 h-4 ml-1"
+                                                    strokeWidth={1.2}
+                                                />
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
             default:
                 return null;
         }
@@ -483,6 +795,54 @@ export function LeadDetailsModal({
             showErrorToast('Failed to create task', toast);
             console.error('Error creating task:', error);
         }
+    };
+
+    const handleSendMessage = async () => {
+        if ((!newMessage.trim() && attachments.length === 0) || isLoading)
+            return;
+
+        setIsLoading(true);
+
+        try {
+            // Send message with attachment if available
+            if (attachments.length > 0) {
+                await sendMessageWithAttachment({
+                    message: newMessage,
+                    file: attachments[0],
+                    type: InteractionType.MESSAGE,
+                    leadUid: lead.uid,
+                });
+            } else {
+                // Send message without attachment
+                await sendMessageWithAttachment({
+                    message: newMessage,
+                    type: InteractionType.MESSAGE,
+                    leadUid: lead.uid,
+                });
+            }
+
+            // Clear form after sending
+            setNewMessage('');
+            setAttachments([]);
+
+            // Refetch interactions to show the new message
+            refetchInteractions();
+        } catch (error) {
+            console.error('Error sending message:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            // Replace current attachments with new one (single file upload)
+            setAttachments([e.target.files[0]]);
+        }
+    };
+
+    const removeAttachment = () => {
+        setAttachments([]);
     };
 
     return (
@@ -543,145 +903,146 @@ export function LeadDetailsModal({
 
                     {/* Status Change Section */}
                     <DialogFooter className="flex-col items-center gap-6 pt-4 mt-6 border-t sm:gap-4">
-                        {lead.status !== LeadStatus.CONVERTED && (
-                            <div className="flex flex-col items-center w-full gap-4">
-                                <div className="flex items-center gap-2">
-                                    <p className="text-xs font-thin uppercase font-body">
-                                        Quick Actions
-                                    </p>
+                        {lead.status !== LeadStatus.CONVERTED &&
+                            activeTab !== 'chat' && (
+                                <div className="flex flex-col items-center w-full gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs font-thin uppercase font-body">
+                                            Quick Actions
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap justify-center w-full gap-3">
+                                        {/* PENDING */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.PENDING,
+                                                )
+                                            }
+                                            title="Set as Pending"
+                                        >
+                                            <Clock
+                                                strokeWidth={1.2}
+                                                className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                            />
+                                        </Button>
+                                        {/* REVIEW */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.REVIEW,
+                                                )
+                                            }
+                                            title="Set to Review"
+                                        >
+                                            <RefreshCw
+                                                strokeWidth={1.2}
+                                                className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                            />
+                                        </Button>
+                                        {/* CREATE TASK */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="rounded-full w-14 h-14 text-cyan-800 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300 dark:text-cyan-300 dark:hover:bg-cyan-900/20 dark:border-cyan-900/30"
+                                            onClick={handleCreateTask}
+                                            title="Create Task"
+                                        >
+                                            <CalendarCheck
+                                                strokeWidth={1.2}
+                                                className="text-cyan-600 w-7 h-7 dark:text-cyan-400"
+                                            />
+                                        </Button>
+                                        {/* DECLINED */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.DECLINED,
+                                                )
+                                            }
+                                            title="Set as Declined"
+                                        >
+                                            <XCircle
+                                                strokeWidth={1.2}
+                                                className="text-red-600 w-7 h-7 dark:text-red-400"
+                                            />
+                                        </Button>
+                                        {/* CANCELLED */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.CANCELLED,
+                                                )
+                                            }
+                                            title="Set as Cancelled"
+                                        >
+                                            <X
+                                                strokeWidth={1.2}
+                                                className="text-gray-600 w-7 h-7 dark:text-gray-400"
+                                            />
+                                        </Button>
+                                        {/* APPROVED */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.APPROVED,
+                                                )
+                                            }
+                                            title="Set as Approved"
+                                        >
+                                            <CheckCircle2
+                                                strokeWidth={1.2}
+                                                className="text-green-600 w-7 h-7 dark:text-green-400"
+                                            />
+                                        </Button>
+                                        {/* CONVERTED */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    LeadStatus.CONVERTED,
+                                                )
+                                            }
+                                            title="Set as Converted"
+                                        >
+                                            <Check
+                                                strokeWidth={1.2}
+                                                className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                            />
+                                        </Button>
+                                        {/* DELETE */}
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
+                                            onClick={handleDelete}
+                                            title="Delete Lead"
+                                        >
+                                            <Trash2
+                                                className="w-7 h-7"
+                                                strokeWidth={1.5}
+                                            />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="flex flex-wrap justify-center w-full gap-3">
-                                    {/* PENDING */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.PENDING)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.PENDING,
-                                            )
-                                        }
-                                        title="Set as Pending"
-                                    >
-                                        <Clock
-                                            strokeWidth={1.2}
-                                            className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
-                                        />
-                                    </Button>
-                                    {/* REVIEW */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.REVIEW)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.REVIEW,
-                                            )
-                                        }
-                                        title="Set to Review"
-                                    >
-                                        <RefreshCw
-                                            strokeWidth={1.2}
-                                            className="text-blue-600 w-7 h-7 dark:text-blue-400"
-                                        />
-                                    </Button>
-                                    {/* CREATE TASK */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="rounded-full w-14 h-14 text-cyan-800 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300 dark:text-cyan-300 dark:hover:bg-cyan-900/20 dark:border-cyan-900/30"
-                                        onClick={handleCreateTask}
-                                        title="Create Task"
-                                    >
-                                        <CalendarCheck
-                                            strokeWidth={1.2}
-                                            className="text-cyan-600 w-7 h-7 dark:text-cyan-400"
-                                        />
-                                    </Button>
-                                    {/* DECLINED */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.DECLINED)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.DECLINED,
-                                            )
-                                        }
-                                        title="Set as Declined"
-                                    >
-                                        <XCircle
-                                            strokeWidth={1.2}
-                                            className="text-red-600 w-7 h-7 dark:text-red-400"
-                                        />
-                                    </Button>
-                                    {/* CANCELLED */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CANCELLED)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.CANCELLED,
-                                            )
-                                        }
-                                        title="Set as Cancelled"
-                                    >
-                                        <X
-                                            strokeWidth={1.2}
-                                            className="text-gray-600 w-7 h-7 dark:text-gray-400"
-                                        />
-                                    </Button>
-                                    {/* APPROVED */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.APPROVED)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.APPROVED,
-                                            )
-                                        }
-                                        title="Set as Approved"
-                                    >
-                                        <CheckCircle2
-                                            strokeWidth={1.2}
-                                            className="text-green-600 w-7 h-7 dark:text-green-400"
-                                        />
-                                    </Button>
-                                    {/* CONVERTED */}
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className={`w-14 h-14 rounded-full ${getStatusButtonVariant(LeadStatus.CONVERTED)}`}
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                LeadStatus.CONVERTED,
-                                            )
-                                        }
-                                        title="Set as Converted"
-                                    >
-                                        <Check
-                                            strokeWidth={1.2}
-                                            className="text-purple-600 w-7 h-7 dark:text-purple-400"
-                                        />
-                                    </Button>
-                                    {/* DELETE */}
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="rounded-full w-14 h-14 dark:bg-red-900/80 dark:text-white dark:hover:bg-red-900 dark:border-none"
-                                        onClick={handleDelete}
-                                        title="Delete Lead"
-                                    >
-                                        <Trash2
-                                            className="w-7 h-7"
-                                            strokeWidth={1.5}
-                                        />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+                            )}
                         {lead.status === LeadStatus.CONVERTED && (
                             <div className="flex flex-col items-center w-full gap-4">
                                 <div className="flex items-center gap-2">

@@ -13,7 +13,6 @@ import {
     Clock,
     RefreshCw,
     User,
-    Calendar,
 } from 'lucide-react';
 import { LeadFilterParams, LeadStatus } from '@/lib/types/lead';
 import {

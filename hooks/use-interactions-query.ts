@@ -178,6 +178,7 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
                     : Promise.resolve([]),
             enabled: !!leadId,
             staleTime: 60000, // 1 minute
+            refetchInterval: 15000, // 15 seconds
         });
     };
 

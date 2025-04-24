@@ -58,7 +58,6 @@ import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { TaskPriority, TaskType } from '@/lib/types/task';
 import { axiosInstance } from '@/lib/services/api-client';
 import TaskForm from '@/modules/tasks/components/task-form';
-import { Textarea } from '@/components/ui/textarea';
 import {
     useInteractionsQuery,
     InteractionType,
@@ -95,6 +94,7 @@ export function LeadDetailsModal({
     const [attachments, setAttachments] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const profileData = useAuthStore(selectProfileData);
+    const [localInteractions, setLocalInteractions] = useState<any[]>([]);
 
     // Use the interactions query hook
     const {
@@ -111,12 +111,35 @@ export function LeadDetailsModal({
         refetch: refetchInteractions,
     } = useLeadInteractions(lead.uid);
 
+    // Update local interactions when server data changes
+    useEffect(() => {
+        if (interactions?.length > 0) {
+            setLocalInteractions(interactions);
+        }
+    }, [interactions]);
+
     // Refetch interactions when the modal is opened
     useEffect(() => {
         if (isOpen && lead.uid) {
             refetchInteractions();
         }
     }, [isOpen, lead.uid, refetchInteractions]);
+
+    // Set up polling to periodically check for new messages
+    useEffect(() => {
+        let pollingInterval: NodeJS.Timeout;
+
+        if (isOpen && activeTab === 'chat') {
+            // Poll every 10 seconds when chat tab is active
+            pollingInterval = setInterval(() => {
+                refetchInteractions();
+            }, 10000);
+        }
+
+        return () => {
+            if (pollingInterval) clearInterval(pollingInterval);
+        };
+    }, [isOpen, activeTab, refetchInteractions]);
 
     const formatDate = (date?: Date) => {
         if (!date) return 'Not set';
@@ -223,6 +246,11 @@ export function LeadDetailsModal({
     const handleTabChange = (tabId: string) => {
         if (activeTab !== tabId) {
             setActiveTab(tabId);
+
+            // Refetch interactions when switching to chat tab
+            if (tabId === 'chat') {
+                refetchInteractions();
+            }
         }
     };
 
@@ -504,7 +532,7 @@ export function LeadDetailsModal({
                     <div className="flex flex-col h-full">
                         {/* Chat Messages */}
                         <div className="flex flex-col flex-1 gap-3 py-3 overflow-y-auto max-h-[50vh]">
-                            {isLoadingInteractions ? (
+                            {isLoadingInteractions && localInteractions.length === 0 ? (
                                 <div className="flex items-center justify-center h-20">
                                     <svg
                                         className="w-8 h-8 animate-spin text-primary"
@@ -527,7 +555,7 @@ export function LeadDetailsModal({
                                         ></path>
                                     </svg>
                                 </div>
-                            ) : interactions.length === 0 ? (
+                            ) : localInteractions.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-32">
                                     <MessageSquare
                                         className="w-10 h-10 mb-2 text-muted-foreground"
@@ -538,10 +566,10 @@ export function LeadDetailsModal({
                                     </p>
                                 </div>
                             ) : (
-                                interactions.map((interaction) => (
+                                localInteractions.map((interaction) => (
                                     <div
                                         key={interaction?.uid}
-                                        className={`flex gap-3 ${interaction?.createdBy?.uid === Number(profileData?.uid) ? 'justify-end' : ''}`}
+                                        className={`flex gap-3 ${interaction?.createdBy?.uid === Number(profileData?.uid) ? 'justify-end' : ''} ${interaction?.isOptimistic ? 'opacity-70' : ''}`}
                                     >
                                         {interaction?.createdBy?.uid !==
                                             Number(profileData?.uid) && (
@@ -609,6 +637,7 @@ export function LeadDetailsModal({
                                                     ),
                                                     'MMM d, h:mm a',
                                                 )}
+                                                {interaction?.isOptimistic && " (sending...)"}
                                             </p>
                                         </div>
                                         {interaction?.createdBy?.uid ===
@@ -804,11 +833,35 @@ export function LeadDetailsModal({
         setIsLoading(true);
 
         try {
+            // Create optimistic update
+            const optimisticMessage = {
+                uid: Date.now(), // Temporary ID
+                message: newMessage,
+                attachmentUrl: attachments.length > 0 ? URL.createObjectURL(attachments[0]) : null,
+                type: InteractionType.MESSAGE,
+                createdBy: {
+                    uid: Number(profileData?.uid),
+                    name: profileData?.name,
+                    surname: profileData?.surname,
+                    photoURL: profileData?.photoURL,
+                },
+                createdAt: new Date().toISOString(),
+                isOptimistic: true, // Flag to identify optimistic updates
+            };
+
+            // Update local state immediately for responsive UI
+            setLocalInteractions(prev => [...prev, optimisticMessage]);
+
+            // Clear form after sending (for responsive UI)
+            setNewMessage('');
+            const submittedAttachments = [...attachments];
+            setAttachments([]);
+
             // Send message with attachment if available
-            if (attachments.length > 0) {
+            if (submittedAttachments.length > 0) {
                 await sendMessageWithAttachment({
                     message: newMessage,
-                    file: attachments[0],
+                    file: submittedAttachments[0],
                     type: InteractionType.MESSAGE,
                     leadUid: lead.uid,
                 });
@@ -821,14 +874,17 @@ export function LeadDetailsModal({
                 });
             }
 
-            // Clear form after sending
-            setNewMessage('');
-            setAttachments([]);
-
-            // Refetch interactions to show the new message
-            refetchInteractions();
+            // Refetch interactions to show the new message with real data
+            await refetchInteractions();
         } catch (error) {
             console.error('Error sending message:', error);
+            showErrorToast('Failed to send message. Please try again.', toast);
+
+            // Remove optimistic message on failure
+            setLocalInteractions(prev => prev.filter(msg => !msg.isOptimistic));
+
+            // Restore message input on failure for better UX
+            setNewMessage(newMessage);
         } finally {
             setIsLoading(false);
         }

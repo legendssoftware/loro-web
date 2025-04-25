@@ -59,6 +59,7 @@ export interface InteractionFilterParams {
     endDate?: Date;
     leadUid?: number;
     clientUid?: number;
+    quotationUid?: number;
 }
 
 // Interaction API client methods
@@ -76,6 +77,21 @@ const interactionApi = {
         }
     },
 
+    // Get interactions for a specific quotation
+    getQuotationInteractions: async (
+        quotationId: number,
+    ): Promise<Interaction[]> => {
+        try {
+            const response = await axiosInstance.get(
+                `/interactions/quotation/${quotationId}`,
+            );
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching quotation interactions:', error);
+            throw error;
+        }
+    },
+
     // Get all interactions with optional filters
     getInteractions: async (
         filters: InteractionFilterParams = {},
@@ -89,6 +105,7 @@ const interactionApi = {
                 endDate,
                 leadUid,
                 clientUid,
+                quotationUid,
             } = filters;
 
             let url = `/interactions?page=${page}&limit=${limit}`;
@@ -97,6 +114,7 @@ const interactionApi = {
             if (endDate) url += `&endDate=${endDate.toISOString()}`;
             if (leadUid) url += `&leadUid=${leadUid}`;
             if (clientUid) url += `&clientUid=${clientUid}`;
+            if (quotationUid) url += `&quotationUid=${quotationUid}`;
 
             const response = await axiosInstance.get(url);
             return response.data;
@@ -113,6 +131,7 @@ const interactionApi = {
         type?: InteractionType;
         leadUid?: number;
         clientUid?: number;
+        quotationUid?: number;
     }): Promise<any> => {
         try {
             const response = await axiosInstance.post('/interactions', data);
@@ -177,6 +196,20 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
                     ? interactionApi.getLeadInteractions(leadId)
                     : Promise.resolve([]),
             enabled: !!leadId,
+            staleTime: 60000, // 1 minute
+            refetchInterval: 15000, // 15 seconds
+        });
+    };
+
+    // Query for fetching quotation-specific interactions
+    const useQuotationInteractions = (quotationId?: number) => {
+        return useQuery({
+            queryKey: [INTERACTIONS_QUERY_KEY, 'quotation', quotationId],
+            queryFn: () =>
+                quotationId
+                    ? interactionApi.getQuotationInteractions(quotationId)
+                    : Promise.resolve([]),
+            enabled: !!quotationId,
             staleTime: 60000, // 1 minute
             refetchInterval: 15000, // 15 seconds
         });
@@ -247,12 +280,14 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
             type = InteractionType.MESSAGE,
             leadUid,
             clientUid,
+            quotationUid,
         }: {
             message: string;
             attachmentUrl?: string;
             type?: InteractionType;
             leadUid?: number;
             clientUid?: number;
+            quotationUid?: number;
         }) => {
             try {
                 const result = await interactionApi.createInteraction({
@@ -261,6 +296,7 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
                     type,
                     leadUid,
                     clientUid,
+                    quotationUid,
                 });
                 showSuccessToast('Message sent successfully.', toast);
                 return result;
@@ -289,12 +325,14 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
             type = InteractionType.MESSAGE,
             leadUid,
             clientUid,
+            quotationUid,
         }: {
             message: string;
             file?: File;
             type?: InteractionType;
             leadUid?: number;
             clientUid?: number;
+            quotationUid?: number;
         }) => {
             try {
                 let attachmentUrl: string | undefined;
@@ -311,6 +349,7 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
                     type,
                     leadUid,
                     clientUid,
+                    quotationUid,
                 });
             } catch (error) {
                 console.error('Error sending message with attachment:', error);
@@ -327,6 +366,7 @@ export function useInteractionsQuery(filters: InteractionFilterParams = {}) {
         error,
         refetch,
         useLeadInteractions,
+        useQuotationInteractions,
         createInteraction: createInteractionMutation.mutate,
         sendMessageWithAttachment,
         uploadFile: uploadFileMutation.mutate,

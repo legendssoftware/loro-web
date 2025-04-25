@@ -63,6 +63,12 @@ const nextConfig: NextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'www.makro.co.za',
+                port: '',
+                pathname: '/**',
+            },
         ],
     },
 };

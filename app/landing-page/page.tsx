@@ -21,11 +21,18 @@ import { PageTransition } from '@/components/animations/page-transition';
 import { toast } from 'react-hot-toast';
 import Vapi from '@vapi-ai/web';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
-import { handleVapiError, retryVapiOperation } from '@/lib/utils/vapi-error-handler';
+import {
+    handleVapiError,
+    retryVapiOperation,
+} from '@/lib/utils/vapi-error-handler';
 
 // Update the constants for call time management to use environment variables with fallbacks
-const CALL_MAX_DURATION_MS = parseInt(process.env.NEXT_PUBLIC_MAX_CALL_DURATION_MINUTES || '5', 10) * 60 * 1000; // Default: 5 minutes
-const WARNING_TIME_REMAINING_MS = parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
+const CALL_MAX_DURATION_MS =
+    parseInt(process.env.NEXT_PUBLIC_MAX_CALL_DURATION_MINUTES || '5', 10) *
+    60 *
+    1000; // Default: 5 minutes
+const WARNING_TIME_REMAINING_MS =
+    parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
 
 const LandingPage: React.FunctionComponent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -69,9 +76,12 @@ const LandingPage: React.FunctionComponent = () => {
             const remaining = Math.max(0, CALL_MAX_DURATION_MS - elapsed);
             setTimeRemaining(remaining);
 
-            if (remaining <= WARNING_TIME_REMAINING_MS && !warningShownRef.current) {
+            if (
+                remaining <= WARNING_TIME_REMAINING_MS &&
+                !warningShownRef.current
+            ) {
                 warningShownRef.current = true;
-                toast('1 minute remaining in your consultation call', {
+                toast('1 minute remaining in your call', {
                     style: {
                         borderRadius: '5px',
                         background: '#333',
@@ -136,7 +146,9 @@ const LandingPage: React.FunctionComponent = () => {
                 const apiKey = process.env.NEXT_PUBLIC_VAPI_KEY;
 
                 if (!apiKey) {
-                    throw new Error('Vapi API key is not defined in environment variables');
+                    throw new Error(
+                        'Vapi API key is not defined in environment variables',
+                    );
                 }
 
                 // Create Vapi instance only once
@@ -148,24 +160,25 @@ const LandingPage: React.FunctionComponent = () => {
                     setIsCallInitializing(false);
                     setConnectionError(null);
                     startCallTimer();
-                    showSuccessToast(
-                        'Consultation call connected to voice assistant',
-                        toast,
-                    );
+                    showSuccessToast('Connected to Loro AI Assistant', toast);
                 });
 
                 vapiInstance.on('call-end', () => {
                     setIsCallActive(false);
                     setConnectionError(null);
                     stopCallTimer();
-                    showSuccessToast('Consultation call ended. Thank you!', toast);
+                    showSuccessToast('Call ended. Thank you!', toast);
                 });
 
                 vapiInstance.on('error', (error) => {
                     setIsCallInitializing(false);
                     setIsCallActive(false);
                     stopCallTimer();
-                    setConnectionError(error instanceof Error ? error : new Error(String(error)));
+                    setConnectionError(
+                        error instanceof Error
+                            ? error
+                            : new Error(String(error)),
+                    );
 
                     // Use our enhanced error handler
                     handleVapiError(error, toast);
@@ -175,7 +188,9 @@ const LandingPage: React.FunctionComponent = () => {
                 return vapiInstance;
             } catch (error) {
                 // Handle initialization errors
-                setConnectionError(error instanceof Error ? error : new Error(String(error)));
+                setConnectionError(
+                    error instanceof Error ? error : new Error(String(error)),
+                );
                 handleVapiError(error, toast);
                 return null;
             }
@@ -200,12 +215,12 @@ const LandingPage: React.FunctionComponent = () => {
     // Start demo call with retry capability - doesn't require authentication
     const startDemoCall = async () => {
         if (!demoVapi) {
-            showErrorToast('Consultation call not available', toast);
+            showErrorToast('Call feature not available', toast);
             return;
         }
 
         if (isCallActive) {
-            toast('Consultation call is already ongoing', {
+            toast('Call is already ongoing', {
                 style: {
                     borderRadius: '5px',
                     background: '#333',
@@ -227,10 +242,7 @@ const LandingPage: React.FunctionComponent = () => {
         setConnectionError(null);
 
         // Show call initiation notification
-        showSuccessToast(
-            'Consultation call initiated. Connecting...',
-            toast,
-        );
+        showSuccessToast('Initiating call. Connecting...', toast);
 
         try {
             // Define the operation to retry if needed
@@ -239,7 +251,9 @@ const LandingPage: React.FunctionComponent = () => {
                 const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
 
                 if (!assistantId) {
-                    throw new Error('Assistant ID not found in environment variables');
+                    throw new Error(
+                        'Assistant ID not found in environment variables',
+                    );
                 }
 
                 // Start the demo call with the assistant ID
@@ -251,7 +265,7 @@ const LandingPage: React.FunctionComponent = () => {
                 onRetry: (attempt) => {
                     // Update UI during retry attempts
                     setIsCallInitializing(true);
-                }
+                },
             });
         } catch (error) {
             // If we got here, all retries failed or the error wasn't retryable
@@ -328,25 +342,29 @@ const LandingPage: React.FunctionComponent = () => {
                                 className="text-xs font-normal text-red-500 uppercase transition-colors cursor-pointer font-body hover:bg-red-100 dark:hover:bg-red-900/20"
                             >
                                 <PhoneCall
-                                    className="w-4 h-4 mr-2 animate-pulse"
+                                    className="w-5 h-5 mr-2 animate-pulse"
                                     size={22}
                                     strokeWidth={1.2}
                                 />
-                                <span>END CALL {formattedTimeRemaining && `(${formattedTimeRemaining})`}</span>
+                                <span>
+                                    END CALL{' '}
+                                    {formattedTimeRemaining &&
+                                        `(${formattedTimeRemaining})`}
+                                </span>
                             </Button>
                         ) : connectionError ? (
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={retryDemoCall}
-                                className="text-xs font-normal text-amber-500 uppercase transition-colors cursor-pointer font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                className="text-xs font-normal uppercase transition-colors cursor-pointer text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
                             >
                                 <PhoneCall
-                                    className="w-4 h-4 mr-2"
+                                    className="w-5 h-5 mr-2"
                                     size={22}
                                     strokeWidth={1.2}
                                 />
-                                <span>RETRY CONSULTATION CALL</span>
+                                <span>RETRY CALL</span>
                             </Button>
                         ) : (
                             <Button
@@ -359,7 +377,7 @@ const LandingPage: React.FunctionComponent = () => {
                                 {isCallInitializing ? (
                                     <>
                                         <PhoneCall
-                                            className="w-4 h-4 mr-2 animate-pulse"
+                                            className="w-5 h-5 mr-2 animate-pulse"
                                             size={22}
                                             strokeWidth={1.2}
                                         />
@@ -368,11 +386,11 @@ const LandingPage: React.FunctionComponent = () => {
                                 ) : (
                                     <>
                                         <PhoneCall
-                                            className="w-4 h-4 mr-2"
+                                            className="w-5 h-5 mr-2"
                                             size={22}
                                             strokeWidth={1.2}
                                         />
-                                        <span>FREE CONSULTATION CALL</span>
+                                        <span>LEARN ABOUT LORO</span>
                                     </>
                                 )}
                             </Button>
@@ -384,12 +402,12 @@ const LandingPage: React.FunctionComponent = () => {
                         >
                             {isAuthenticated ? (
                                 <>
-                                    <User className="w-4 h-4 mr-2" />
+                                    <User className="w-5 h-5 mr-2" />
                                     <span>Dashboard</span>
                                 </>
                             ) : (
                                 <>
-                                    <LogIn className="w-4 h-4 mr-2" />
+                                    <LogIn className="w-5 h-5 mr-2" />
                                     <span>Sign In</span>
                                 </>
                             )}
@@ -419,18 +437,20 @@ const LandingPage: React.FunctionComponent = () => {
                                                 className="justify-start w-full text-xs font-normal text-red-500 uppercase transition-colors bg-transparent font-body hover:bg-red-100 dark:hover:bg-red-900/20"
                                                 onClick={endDemoCall}
                                             >
-                                                <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                                <PhoneCall className="w-5 h-5 mr-2 animate-pulse" />
                                                 <span>
-                                                    END CALL {formattedTimeRemaining && `(${formattedTimeRemaining})`}
+                                                    END CALL{' '}
+                                                    {formattedTimeRemaining &&
+                                                        `(${formattedTimeRemaining})`}
                                                 </span>
                                             </Button>
                                         ) : connectionError ? (
                                             <Button
-                                                className="justify-start w-full text-xs font-normal text-amber-500 uppercase transition-colors bg-transparent font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                                className="justify-start w-full text-xs font-normal uppercase transition-colors bg-transparent text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
                                                 onClick={retryDemoCall}
                                             >
-                                                <PhoneCall className="w-4 h-4 mr-2" />
-                                                <span>RETRY CONSULTATION CALL</span>
+                                                <PhoneCall className="w-5 h-5 mr-2" />
+                                                <span>RETRY CALL</span>
                                             </Button>
                                         ) : (
                                             <Button
@@ -440,14 +460,16 @@ const LandingPage: React.FunctionComponent = () => {
                                             >
                                                 {isCallInitializing ? (
                                                     <>
-                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
-                                                        <span>CONNECTING...</span>
+                                                        <PhoneCall className="w-5 h-5 mr-2 animate-pulse" />
+                                                        <span>
+                                                            CONNECTING...
+                                                        </span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <PhoneCall className="w-4 h-4 mr-2 text-green-500" />
+                                                        <PhoneCall className="w-5 h-5 mr-2 text-green-500" />
                                                         <span className="text-card-foreground">
-                                                            FREE CONSULTATION
+                                                            LEARN ABOUT LORO
                                                         </span>
                                                     </>
                                                 )}
@@ -459,12 +481,12 @@ const LandingPage: React.FunctionComponent = () => {
                                         >
                                             {isAuthenticated ? (
                                                 <>
-                                                    <User className="w-4 h-4 mr-2" />
+                                                    <User className="w-5 h-5 mr-2" />
                                                     <span>Dashboard</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <LogIn className="w-4 h-4 mr-2" />
+                                                    <LogIn className="w-5 h-5 mr-2" />
                                                     <span>Sign In</span>
                                                 </>
                                             )}
@@ -587,7 +609,7 @@ const LandingPage: React.FunctionComponent = () => {
                                     className="inline-block"
                                 >
                                     <Button className="px-8 py-6 text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body">
-                                        <Download className="w-4 h-4 mr-2" />
+                                        <Download className="w-5 h-5 mr-2" />
                                         <span>Download Android APK</span>
                                     </Button>
                                 </a>

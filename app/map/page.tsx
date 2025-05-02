@@ -95,8 +95,6 @@ export default function MapPage() {
         enabled: isClient, // Only enable the query when client-side
     });
 
-    console.log(workers, clients, competitors, quotations, 'here');
-
     // Set isClient to true when component mounts
     useEffect(() => {
         setIsClient(true);

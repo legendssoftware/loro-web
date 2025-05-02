@@ -137,7 +137,7 @@ function ProductCardComponent({
                                 alt={product.name}
                                 width={100}
                                 height={100}
-                                className="object-cover w-full h-full"
+                                className="object-contain w-full h-full"
                             />
                         ) : (
                             <div className="flex items-center justify-center w-full h-full bg-muted">

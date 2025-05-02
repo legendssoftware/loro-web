@@ -25,6 +25,12 @@ import {
     handleVapiError,
     retryVapiOperation,
 } from '@/lib/utils/vapi-error-handler';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // Update the constants for call time management to use environment variables with fallbacks
 const CALL_MAX_DURATION_MS =
@@ -626,6 +632,134 @@ const LandingPage: React.FunctionComponent = () => {
                                 in your device settings to install.
                             </p>
                         </motion.div>
+                    </div>
+                </section>
+
+                {/* FAQ Section */}
+                <section className="py-16 bg-background">
+                    <div className="container px-4 mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="max-w-3xl mx-auto"
+                        >
+                            <h2 className="mb-8 text-2xl font-normal text-center uppercase md:text-3xl font-body">
+                                Frequently Asked Questions
+                            </h2>
+                            <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        What apps does Loro CRM offer?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Loro CRM offers a powerful web-based dashboard for comprehensive management via any modern browser. We also provide a native mobile application specifically designed for Android devices, enabling field access and offline capabilities. An iOS application is planned for future development.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-2">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        How is my data used and protected?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Your data is strictly used to deliver and enhance the Loro CRM service, as detailed in our Privacy Policy. We prioritize data protection through industry-standard security practices, including robust encryption for data both in transit and at rest, strict access controls based on user roles, and regular security assessments to prevent unauthorized access.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-3">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        Is Loro CRM secure and safe to use?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Absolutely. Security is fundamental to Loro CRM. We employ secure token-based authentication, enforce Role-Based Access Control (RBAC) across the platform, and utilize secure infrastructure with continuous monitoring. Measures like data encryption, regular backups, and adherence to privacy regulations ensure the integrity and safety of your data.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-4">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        What kind of business problems does Loro CRM solve?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Loro CRM is designed for businesses managing field operations, sales processes, and client relationships. It helps track leads, manage tasks and routes for mobile teams, handle claims, oversee client interactions, manage product quotations/orders, and provides real-time location tracking and comprehensive reporting across all modules.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-5">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        Can I use Loro CRM without an internet connection?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Yes, the Loro CRM mobile application for Android is designed to work seamlessly both online and offline. This allows field staff maximum flexibility, ensuring they can access necessary information and log activities even in areas with poor connectivity. The web dashboard requires an active internet connection.
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-6">
+                                    <AccordionTrigger className="text-sm font-normal text-left uppercase font-body hover:no-underline">
+                                        Can Loro CRM be customized for my company?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 text-xs uppercase text-muted-foreground font-body">
+                                        Loro CRM offers customization options at the organizational level. Administrators can manage company structure, define operating hours, and potentially adjust appearance settings through the dashboard to better fit specific business needs.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Features Section */}
+                <section className="py-16 bg-gradient-to-r from-background to-background/90">
+                    <div className="container px-4 mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="text-center"
+                        >
+                            <h2 className="mb-12 text-2xl font-normal uppercase md:text-3xl font-body">
+                                Many Needs, One Unified Platform.
+                            </h2>
+                        </motion.div>
+                        <div className="grid gap-8 md:grid-cols-3">
+                            {/* Card 1: Automation */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                className="p-6 text-center transition-shadow duration-300 bg-card rounded-xl hover:shadow-lg"
+                            >
+                                <h3 className="mt-4 mb-2 text-lg font-normal uppercase font-body">
+                                    Automate Workflows
+                                </h3>
+                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                    Streamline lead assignments, task scheduling, and activity tracking so your team can focus on core business goals.
+                                </p>
+                            </motion.div>
+
+                            {/* Card 2: Prioritization */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="p-6 text-center transition-shadow duration-300 bg-card rounded-xl hover:shadow-lg"
+                            >
+                                <h3 className="mt-4 mb-2 text-lg font-normal uppercase font-body">
+                                    Prioritize Effectively
+                                </h3>
+                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                    Utilize smart features to manage leads and tasks, ensuring your team always focuses on the highest-impact activities.
+                                </p>
+                            </motion.div>
+
+                            {/* Card 3: Efficiency */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="p-6 text-center transition-shadow duration-300 bg-card rounded-xl hover:shadow-lg"
+                            >
+                                <h3 className="mt-4 mb-2 text-lg font-normal uppercase font-body">
+                                    Reduce Manual Effort
+                                </h3>
+                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                    Generate quotations quickly, manage tasks visually with drag-and-drop boards, and minimize repetitive data entry across the platform.
+                                </p>
+                            </motion.div>
+                        </div>
                     </div>
                 </section>
 

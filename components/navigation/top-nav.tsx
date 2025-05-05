@@ -183,11 +183,11 @@ export function TopNav() {
                             size="icon"
                             className="cursor-pointer"
                             onClick={() => setDrawerOpen(true)}
-                            id="tour-step-side-drawer-trigger"
                         >
                             <LayoutDashboardIcon
                                 strokeWidth={1.5}
                                 size={23}
+                                id="tour-step-side-drawer-trigger"
                             />
                         </Button>
                         <div
@@ -211,10 +211,10 @@ export function TopNav() {
                             size="icon"
                             onClick={handleSignOut}
                             className="text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
-                            id="tour-step-sign-out"
                         >
                             <Power
                                 className="w-5 h-5"
+                                id="tour-step-sign-out"
                             />
                             <span className="sr-only">Sign out</span>
                         </Button>
@@ -229,11 +229,11 @@ export function TopNav() {
                                     variant="ghost"
                                     size="icon"
                                     className={`relative text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20 ${isCallActive && 'bg-red-100 dark:bg-red-900/20 text-red-500'}`}
-                                    id="tour-step-help-trigger"
                                 >
                                     <HelpCircle
                                         strokeWidth={1.2}
                                         size={20}
+                                        id="tour-step-help-trigger"
                                     />
                                     {isCallActive && (
                                         <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -288,20 +288,23 @@ export function TopNav() {
                                 <DropdownMenuItem
                                     onClick={handleStartTour}
                                     className="p-3 cursor-pointer"
-                                    id="tour-step-start-tour"
                                 >
                                     <PlayCircle
                                         className="w-4 h-4 mr-2"
+                                        id="tour-step-start-tour"
                                     />
                                     <span>Start Interactive Tour</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <div id="tour-step-theme-toggler">
+                        <div >
                             <ThemeToggler />
                         </div>
-                        <div className="relative" id="tour-step-avatar">
-                            <Avatar className="w-8 h-8 ring-2 ring-primary">
+                        <div className="relative">
+                            <Avatar
+                                className="w-8 h-8 ring-2 ring-primary"
+                                id="tour-step-avatar"
+                            >
                                 {profileData?.photoURL && (
                                     <AvatarImage
                                         src={profileData?.photoURL}

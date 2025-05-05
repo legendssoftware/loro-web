@@ -8,7 +8,7 @@ export default function Home() {
     return (
         <ProtectedRoute>
             <PageTransition type="slide-up">
-                <div className="container mx-auto">
+                <div id="tour-step-home-content" className="container mx-auto">
                     <LiveOverviewReport />
                 </div>
             </PageTransition>

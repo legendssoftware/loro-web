@@ -7,16 +7,34 @@ import { isAuthRoute } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/use-app-store';
-import { LayoutDashboardIcon, Power, PhoneCall } from 'lucide-react';
+import { useInteractiveTour } from '@/hooks/use-interactive-tour';
+import {
+    LayoutDashboardIcon,
+    Power,
+    PhoneCall,
+    HelpCircle,
+    PlayCircle,
+} from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useHelp } from '@/hooks/use-help';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
 
 export function TopNav() {
     const pathname = usePathname();
     const { signOut, profileData, accessToken, isAuthenticated } =
         useAuthStore();
     const { isDrawerOpen, setDrawerOpen } = useAppStore();
+    const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
+    const { startTour } = useInteractiveTour();
 
     // Always call the hook, regardless of authentication status
     const {
@@ -35,7 +53,7 @@ export function TopNav() {
             if (process.env.NODE_ENV === 'development') {
                 console.error('TopNav - Voice assistant error:', error);
             }
-        }
+        },
     });
 
     // Wrap startCall to only work when authenticated
@@ -60,6 +78,12 @@ export function TopNav() {
         }
 
         originalStartCall();
+        setHelpDropdownOpen(false);
+    };
+
+    const handleStartTour = () => {
+        startTour();
+        setHelpDropdownOpen(false);
     };
 
     // Check if user is a client by examining profileData or JWT token
@@ -159,10 +183,17 @@ export function TopNav() {
                             size="icon"
                             className="cursor-pointer"
                             onClick={() => setDrawerOpen(true)}
+                            id="tour-step-side-drawer-trigger"
                         >
-                            <LayoutDashboardIcon strokeWidth={1.5} size={23} />
+                            <LayoutDashboardIcon
+                                strokeWidth={1.5}
+                                size={23}
+                            />
                         </Button>
-                        <div className="flex items-center gap-2">
+                        <div
+                            className="flex items-center gap-2"
+                            id="tour-step-branch-name"
+                        >
                             {isClient ? (
                                 <span className="text-xs font-thin uppercase text-primary font-body">
                                     Client Portal
@@ -179,60 +210,97 @@ export function TopNav() {
                             variant="ghost"
                             size="icon"
                             onClick={handleSignOut}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
+                            className="text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
+                            id="tour-step-sign-out"
                         >
-                            <Power className="w-5 h-5" />
+                            <Power
+                                className="w-5 h-5"
+                            />
                             <span className="sr-only">Sign out</span>
                         </Button>
-                        {isCallActive ? (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative w-auto px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
-                                onClick={endCall}
+
+                        {/* Help Dropdown Menu */}
+                        <DropdownMenu
+                            open={helpDropdownOpen}
+                            onOpenChange={setHelpDropdownOpen}
+                        >
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={`relative text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20 ${isCallActive && 'bg-red-100 dark:bg-red-900/20 text-red-500'}`}
+                                    id="tour-step-help-trigger"
+                                >
+                                    <HelpCircle
+                                        strokeWidth={1.2}
+                                        size={20}
+                                    />
+                                    {isCallActive && (
+                                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                    )}
+                                    <span className="sr-only">
+                                        Help & Support
+                                    </span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                className="w-56 mt-2"
                             >
-                                <PhoneCall
-                                    strokeWidth={1.2}
-                                    size={20}
-                                    className="mr-1 animate-pulse"
-                                />
-                                {formattedTimeRemaining && (
-                                    <span className="text-xs">{formattedTimeRemaining}</span>
+                                <DropdownMenuLabel>
+                                    Help & Support
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {isCallActive ? (
+                                    <DropdownMenuItem
+                                        onClick={endCall}
+                                        className="p-3 cursor-pointer"
+                                    >
+                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                        <span>
+                                            End Call{' '}
+                                            {formattedTimeRemaining &&
+                                                `(${formattedTimeRemaining})`}
+                                        </span>
+                                    </DropdownMenuItem>
+                                ) : lastError ? (
+                                    <DropdownMenuItem
+                                        onClick={retryLastCall}
+                                        disabled={isCallInitializing}
+                                        className="p-3 cursor-pointer"
+                                    >
+                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                        <span>Retry Call</span>
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <DropdownMenuItem
+                                        onClick={startCall}
+                                        disabled={isCallInitializing}
+                                        className="p-3 cursor-pointer"
+                                    >
+                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                        <span>Call for Assistance</span>
+                                        {isCallInitializing && (
+                                            <span className="w-2 h-2 ml-2 rounded-full bg-amber-500 animate-pulse" />
+                                        )}
+                                    </DropdownMenuItem>
                                 )}
-                                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                <span className="sr-only">
-                                    End Assistant Call
-                                </span>
-                            </Button>
-                        ) : lastError ? (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/20"
-                                onClick={retryLastCall}
-                                disabled={isCallInitializing}
-                            >
-                                <PhoneCall strokeWidth={1.2} size={20} />
-                                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-amber-500" />
-                                <span className="sr-only">Retry Assistant Call</span>
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative text-green-500 hover:bg-green-100 dark:hover:bg-green-900/20"
-                                onClick={startCall}
-                                disabled={isCallInitializing}
-                            >
-                                <PhoneCall strokeWidth={1.2} size={20} />
-                                {isCallInitializing && (
-                                    <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                                )}
-                                <span className="sr-only">Voice Assistant</span>
-                            </Button>
-                        )}
-                        <ThemeToggler />
-                        <div className="relative">
+                                <DropdownMenuItem
+                                    onClick={handleStartTour}
+                                    className="p-3 cursor-pointer"
+                                    id="tour-step-start-tour"
+                                >
+                                    <PlayCircle
+                                        className="w-4 h-4 mr-2"
+                                    />
+                                    <span>Start Interactive Tour</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <div id="tour-step-theme-toggler">
+                            <ThemeToggler />
+                        </div>
+                        <div className="relative" id="tour-step-avatar">
                             <Avatar className="w-8 h-8 ring-2 ring-primary">
                                 {profileData?.photoURL && (
                                     <AvatarImage

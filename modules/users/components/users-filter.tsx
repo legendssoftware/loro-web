@@ -190,7 +190,10 @@ export function UsersFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div
+                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
+                            id="user-status-filter-trigger"
+                        >
                             <div className="flex items-center gap-2">
                                 {status ? (
                                     <>
@@ -226,7 +229,7 @@ export function UsersFilter({
                             />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start">
+                    <DropdownMenuContent className="w-56" align="start" id="user-status-filter-content">
                         <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Filter by Status
                         </DropdownMenuLabel>
@@ -282,7 +285,10 @@ export function UsersFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div
+                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
+                            id="user-access-level-filter-trigger"
+                        >
                             <div className="flex items-center gap-2">
                                 {accessLevel ? (
                                     <>
@@ -367,7 +373,10 @@ export function UsersFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                        <div
+                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
+                            id="user-branch-filter-trigger"
+                        >
                             <div className="flex items-center gap-2">
                                 {branchId &&
                                 branches.find(

@@ -202,7 +202,7 @@ export function ProductsFilter({
     return (
         <div className="flex items-center justify-end flex-1 gap-2 px-2">
             {/* Search Box */}
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative flex-1 max-w-sm" id="product-search-input">
                 <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
                 <Input
                     placeholder="search products..."
@@ -229,7 +229,7 @@ export function ProductsFilter({
             </div>
 
             {/* Status Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="product-status-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
@@ -330,7 +330,7 @@ export function ProductsFilter({
             </div>
 
             {/* Category Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="product-category-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">

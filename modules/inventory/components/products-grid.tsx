@@ -68,7 +68,7 @@ function ProductsGridComponent({
     console.log(`Products grid: Showing page ${effectiveCurrentPage} of ${effectiveTotalPages}, ${displayedProducts.length} items`);
 
     return (
-        <div className="relative flex-1 w-full overflow-hidden">
+        <div className="relative flex-1 w-full overflow-hidden" id="inventory-table">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {displayedProducts.map((product, index) => (
                     <ProductCard

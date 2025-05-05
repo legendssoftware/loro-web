@@ -63,7 +63,7 @@ function ClientsGridComponent({
     const displayedClients = isExternalPagination ? clients : paginatedClients;
 
     return (
-        <div className="relative flex-1 w-full overflow-hidden">
+        <div className="relative flex-1 w-full overflow-hidden" id="clients-table">
             <div className="grid grid-cols-1 gap-2 px-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {displayedClients.map((client, index) => (
                     <ClientCard

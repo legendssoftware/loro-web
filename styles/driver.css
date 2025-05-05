@@ -85,6 +85,7 @@
 }
 .driver-popover-description {
     margin-bottom: 0;
+    margin-top: 10px;
     font:
         14px / normal Unbounded,
         sans-serif;

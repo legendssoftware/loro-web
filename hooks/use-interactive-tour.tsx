@@ -92,9 +92,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '🎉 ALL SET!',
                 description:
-                    "That covers the main navigation! You\'re ready to explore the dashboard.",
+                    "That's the main navigation! You\'re all set to explore the dashboard.",
                 align: 'center',
             },
         },
@@ -109,17 +108,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👋 LEADS DASHBOARD',
                 description:
-                    "Welcome to the Leads section! Manage potential customer interactions and track their progress.",
-                side: 'bottom',
-                align: 'start',
-            },
-        },
-        {
-            element: '#add-lead-button',
-            popover: {
-                title: 'ADD NEW LEAD',
-                description:
-                    '➕ Use this button to capture details for a new potential customer, often entered via the dashboard.',
+                    'Welcome to the Leads section! Manage potential customer interactions and track their progress.',
                 side: 'bottom',
                 align: 'start',
             },
@@ -139,7 +128,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: 'LEAD DETAILS',
                 description:
-                    "🖱️ Clicking a lead opens a detailed modal. Here you can review information, see activity history, and use quick actions.",
+                    '🖱️ Clicking a lead opens a detailed modal. Here you can review information, see activity history, and use quick actions.',
                 side: 'right',
                 align: 'start',
             },
@@ -156,9 +145,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 LEADS TOUR COMPLETE',
                 description:
-                    "You've got the basics of managing leads! Keep statuses updated for accurate tracking.",
+                    "That's the Leads page! You\'re ready to manage your potential customers.",
                 align: 'center',
             },
         },
@@ -173,8 +161,54 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👋 CLIENT MANAGEMENT',
                 description:
-                    "Manage all your active clients, view their details, and track interactions.",
+                    'Manage all your active clients, view their details, and track interactions.',
                 side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#client-status-filter-trigger',
+            popover: {
+                title: 'FILTER BY STATUS',
+                description:
+                    '🚦 Filter the client list by their status (Active, Inactive, Pending, etc.).',
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#client-category-filter-trigger',
+            popover: {
+                title: 'FILTER BY CATEGORY',
+                description:
+                    '🏷️ Filter the list by client category, if applicable.',
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#client-industry-filter-trigger',
+            popover: {
+                title: 'FILTER BY INDUSTRY',
+                description: "🏭 Filter the list by the client's industry.",
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#client-risk-level-filter-trigger',
+            popover: {
+                title: 'FILTER BY RISK LEVEL',
+                description:
+                    '⚠️ Filter clients based on their assigned risk level (Low, Medium, High, Critical).',
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#clear-client-filters-button',
+            popover: {
+                title: 'CLEAR FILTERS',
+                description:
+                    '❌ This button appears when filters are active. Click it to remove all filters and view the full client list.',
+                side: 'left',
+                align: 'end',
             },
         },
         {
@@ -188,22 +222,13 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#clients-filters',
-            popover: {
-                title: 'FILTER & SEARCH CLIENTS',
-                description:
-                    '🔍 Find specific clients using search or filter by status, risk level, or other criteria.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
             element: '#clients-table',
             popover: {
                 title: 'CLIENT LIST',
                 description:
-                    '📋 Browse, search, and manage your existing clients here. Click to view details.',
+                    '📋 Browse, search, and manage your existing clients here based on active filters. Click a row to view details.',
                 side: 'top',
+                align: 'center',
             },
         },
         {
@@ -211,15 +236,15 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: 'CLIENT DETAILS',
                 description:
-                    '🖱️ Clicking a client opens their detailed profile, showing contact info, address, history, associated tasks, and more.',
+                    '🖱️ Clicking a client opens their detailed profile, showing contact info, address, history, associated tasks, status, risk level, and more.',
                 side: 'right',
                 align: 'start',
             },
         },
         {
             popover: {
-                title: '💡 CLIENTS TOUR COMPLETE',
-                description: 'You now know how to navigate the Clients page!',
+                description:
+                    "That covers the Clients section! You\'re ready to manage your customer base.",
                 align: 'center',
             },
         },
@@ -236,16 +261,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 description:
                     'Manage your team members, roles, and permissions here.',
                 side: 'bottom',
-            },
-        },
-        {
-            element: '#add-staff-button',
-            popover: {
-                title: 'ADD STAFF MEMBER',
-                description:
-                    '➕ Onboard new employees and assign their roles and branch.',
-                side: 'bottom',
-                align: 'start',
             },
         },
         {
@@ -273,6 +288,16 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 description:
                     '🏢 Filter the staff list to show members of a specific branch.',
                 side: 'bottom',
+            },
+        },
+        {
+            element: '#add-staff-button',
+            popover: {
+                title: 'ADD STAFF MEMBER',
+                description:
+                    '➕ Onboard new employees and assign their roles and branch.',
+                side: 'bottom',
+                align: 'start',
             },
         },
         {
@@ -306,8 +331,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 STAFF TOUR COMPLETE',
-                description: 'Now you know how to manage your staff records and access!',
+                description:
+                    "That's the Staff section! You\'re all set to manage your team.",
                 align: 'center',
             },
         },
@@ -337,31 +362,13 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#task-view-switcher',
-            popover: {
-                title: 'CHANGE VIEW',
-                description:
-                    '👀 Switch between List, Board (Kanban), or Calendar views to visualize tasks in the way that suits you best.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
-            element: '#tasks-filters',
-            popover: {
-                title: 'FILTER TASKS',
-                description:
-                    '🔍 Use filters to find tasks by status (Pending, In Progress, Done), priority, assignee, client, or due date.',
-                side: 'bottom',
-            },
-        },
-        {
             element: '#tasks-board',
             popover: {
                 title: 'TASK OVERVIEW',
                 description:
                     '📋 See all tasks based on your current view and filters. Drag and drop (on Board view) to change status or click a task card/row to see full details.',
                 side: 'top',
+                align: 'center',
             },
         },
         {
@@ -376,8 +383,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 TASKS TOUR COMPLETE',
-                description: 'You\'re ready to manage your team\'s workload effectively!',
+                description:
+                    "That's Task Management! You\'re ready to organize your team\'s work.",
                 align: 'center',
             },
         },
@@ -393,15 +400,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 title: '💸 CLAIMS MANAGEMENT',
                 description:
                     'Review, approve, or reject expense and other claims submitted by staff efficiently.',
-                side: 'bottom',
-            },
-        },
-        {
-            element: '#claims-filters',
-            popover: {
-                title: 'FILTER CLAIMS',
-                description:
-                    '🔍 Find specific claims using filters for status (Pending, Approved, Rejected), submitting user, claim type, or date range.',
                 side: 'bottom',
             },
         },
@@ -426,8 +424,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 CLAIMS TOUR COMPLETE',
-                description: 'You can now efficiently manage and process staff claims!',
+                description:
+                    "That covers Claims! You\'re ready to manage submissions efficiently.",
                 align: 'center',
             },
         },
@@ -443,15 +441,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 title: '📓 JOURNALS & ACTIVITY LOGS',
                 description:
                     'Review activity logs, notes, and interactions entered by staff, often linked to clients or tasks.',
-                side: 'bottom',
-            },
-        },
-        {
-            element: '#journals-filters',
-            popover: {
-                title: 'FILTER JOURNAL ENTRIES',
-                description:
-                    '🔍 Search for specific journal entries by the user who created them, a date range, or the client/task they are linked to.',
                 side: 'bottom',
             },
         },
@@ -476,8 +465,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 JOURNALS TOUR COMPLETE',
-                description: 'Stay informed about team activities and client interactions!',
+                description:
+                    "That's the Journals section! You\'re ready to review activity logs.",
                 align: 'center',
             },
         },
@@ -529,8 +518,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 MAP TOUR COMPLETE',
-                description: 'Get a real-time geographical overview of your operations!',
+                description:
+                    "That's the Live Map! You\'re ready to visualize your operations.",
                 align: 'center',
             },
         },
@@ -546,25 +535,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 title: '📝 QUOTATION MANAGEMENT',
                 description:
                     'Create, send, manage, and track customer quotations. Monitor their status from draft to conversion into orders.',
-                side: 'bottom',
-            },
-        },
-        {
-            element: '#add-quotation-button',
-            popover: {
-                title: 'CREATE NEW QUOTATION',
-                description:
-                    '➕ Generate new quotations for clients. Add products or services, specify quantities, and set pricing.',
-                side: 'bottom',
-                align: 'start',
-            },
-        },
-        {
-            element: '#quotations-filters',
-            popover: {
-                title: 'FILTER QUOTATIONS',
-                description:
-                    '🔍 Find quotations by status (Draft, Sent, Approved, Rejected, Converted), client, or date range.',
                 side: 'bottom',
             },
         },
@@ -589,8 +559,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 QUOTATIONS TOUR COMPLETE',
-                description: 'Streamline your sales workflow from initial quote to confirmed order!',
+                description:
+                    "That covers Quotations! You\'re ready to manage your sales pipeline.",
                 align: 'center',
             },
         },
@@ -607,15 +577,43 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 description:
                     'Track product stock levels across locations, manage inventory value, and perform stock adjustments.',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
-            element: '#inventory-search-filter',
+            element: '#product-search-input',
             popover: {
-                title: 'SEARCH & FILTER PRODUCTS',
+                title: 'SEARCH PRODUCTS',
                 description:
-                    '🔍 Quickly find specific products by name or SKU. Filter the list by category, location, or stock status (e.g., show only low stock items).',
+                    '🔍 Quickly find specific products by name or SKU using the search bar.',
                 side: 'bottom',
+            },
+        },
+        {
+            element: '#product-status-filter-trigger',
+            popover: {
+                title: 'FILTER BY STATUS',
+                description:
+                    '🚦 Filter the product list by status (Active, Inactive, Out of Stock, New, etc.).',
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#product-category-filter-trigger',
+            popover: {
+                title: 'FILTER BY CATEGORY',
+                description: '🏷️ Filter the list by product category.',
+                side: 'bottom',
+            },
+        },
+        {
+            element: '#clear-product-filters-button',
+            popover: {
+                title: 'CLEAR FILTERS',
+                description:
+                    '❌ This button appears when filters are active. Click to remove search and filters.',
+                side: 'left',
+                align: 'end',
             },
         },
         {
@@ -623,34 +621,15 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: 'STOCK LEVEL OVERVIEW',
                 description:
-                    '📋 View current stock quantities, cost, and total value for all products based on your filters. Monitor stock movements.',
+                    '📋 View current stock quantities, cost, and total value for all products based on your filters. Click a product for more actions.',
                 side: 'top',
+                align: 'center',
             },
         },
         {
-            element: '#adjust-stock-button',
             popover: {
-                title: 'ADJUST STOCK QUANTITIES',
                 description:
-                    '📊 Use this function (permissions permitting) to manually update stock quantities after a physical count, receiving new stock, or correcting discrepancies.',
-                side: 'left',
-                align: 'start',
-            },
-        },
-        {
-            element: '#inventory-reports-link',
-            popover: {
-                title: 'INVENTORY REPORTS',
-                description:
-                    '📈 Access detailed reports on inventory valuation, stock movement history, and low stock alerts.',
-                side: 'left',
-                align: 'end',
-            },
-        },
-        {
-            popover: {
-                title: '💡 INVENTORY TOUR COMPLETE',
-                description: 'Keep your stock levels accurate and gain insights into inventory value!',
+                    "That's Inventory Management! You\'re ready to track your stock.",
                 align: 'center',
             },
         },
@@ -690,8 +669,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '💡 SETTINGS TOUR COMPLETE',
-                description: 'Tailor the application settings to perfectly fit your organization\'s needs!',
+                description:
+                    "That's the Settings area! You\'re ready to configure the application.",
                 align: 'center',
             },
         },

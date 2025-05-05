@@ -373,7 +373,7 @@ export default function MapPage() {
                     />
 
                     {/* Top Navigation Bar */}
-                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[2500] flex items-center gap-2">
+                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[2500] flex items-center gap-2" id="map-filters">
                         <div className="relative">
                             <button
                                 onClick={() => toggleDropdown('filter')}

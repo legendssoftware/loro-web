@@ -68,7 +68,7 @@ export function ClaimsKanban({
     );
 
     return (
-        <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden">
+        <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden" id="claims-table">
             {renderColumn(
                 ClaimStatus.PENDING,
                 'Pending',

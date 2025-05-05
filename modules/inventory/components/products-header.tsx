@@ -22,7 +22,7 @@ export function ProductsHeader({
                 onApplyFilters={onApplyFilters}
                 onClearFilters={onClearFilters}
             />
-            <Button onClick={onAddProduct} size="sm">
+            <Button onClick={onAddProduct} size="sm" id="add-product-button">
                 <PackagePlus className="w-4 h-4 mr-2 text-white" />
                 <span className="text-[10px] font-normal uppercase font-body text-white">
                     Add Product

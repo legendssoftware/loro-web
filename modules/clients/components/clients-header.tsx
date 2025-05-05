@@ -22,7 +22,7 @@ export function ClientsHeader({
                 onApplyFilters={onApplyFilters}
                 onClearFilters={onClearFilters}
             />
-            <Button onClick={onAddClient} size="sm">
+            <Button onClick={onAddClient} size="sm" id="add-client-button">
                 <UserPlus className="w-4 h-4 mr-2 text-white" />
                 <span className="text-[10px] font-normal uppercase font-body text-white">
                     Add Client

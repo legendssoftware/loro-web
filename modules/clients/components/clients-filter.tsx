@@ -47,11 +47,13 @@ interface ClientsFilterProps {
 }
 
 // Base styling for filter buttons
-const filterButtonClass = "flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer transition-colors hover:bg-accent bg-card border-border";
-const filterLabelClass = "text-[10px] font-thin uppercase font-body";
-const filterIconClass = "w-4 h-4";
-const filterItemClass = "flex items-center gap-2 px-2 py-1.5 text-xs font-normal font-body rounded hover:bg-accent cursor-pointer";
-const activeItemClass = "bg-accent/40";
+const filterButtonClass =
+    'flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer transition-colors hover:bg-accent bg-card border-border';
+const filterLabelClass = 'text-[10px] font-thin uppercase font-body';
+const filterIconClass = 'w-4 h-4';
+const filterItemClass =
+    'flex items-center gap-2 px-2 py-1.5 text-xs font-normal font-body rounded hover:bg-accent cursor-pointer';
+const activeItemClass = 'bg-accent/40';
 
 export function ClientsFilter({
     onApplyFilters,
@@ -63,10 +65,14 @@ export function ClientsFilter({
     const [status, setStatus] = useState<ClientStatus | undefined>(undefined);
     const [category, setCategory] = useState<string | undefined>(undefined);
     const [industry, setIndustry] = useState<string | undefined>(undefined);
-    const [riskLevel, setRiskLevel] = useState<ClientRiskLevel | undefined>(undefined);
+    const [riskLevel, setRiskLevel] = useState<ClientRiskLevel | undefined>(
+        undefined,
+    );
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-    const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset | undefined>(undefined);
+    const [dateRangePreset, setDateRangePreset] = useState<
+        DateRangePreset | undefined
+    >(undefined);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
     // Extract unique values from clients
@@ -93,14 +99,15 @@ export function ClientsFilter({
     }, [clients]);
 
     const riskLevels = useMemo(() => {
-        if (!clients || clients.length === 0) return Object.values(ClientRiskLevel);
+        if (!clients || clients.length === 0)
+            return Object.values(ClientRiskLevel);
 
         const availableRiskLevels = Array.from(
             new Set(
                 clients
                     .filter((client) => client.riskLevel)
-                    .map((client) => client.riskLevel as ClientRiskLevel)
-            )
+                    .map((client) => client.riskLevel as ClientRiskLevel),
+            ),
         );
 
         return availableRiskLevels.length > 0
@@ -149,23 +156,47 @@ export function ClientsFilter({
 
         setActiveFilters(newActiveFilters);
         onApplyFilters(filters);
-    }, [search, status, category, industry, riskLevel, startDate, endDate, onApplyFilters]);
+    }, [
+        search,
+        status,
+        category,
+        industry,
+        riskLevel,
+        startDate,
+        endDate,
+        onApplyFilters,
+    ]);
 
     // Direct filter application helper - improved to ensure correct data passing
     const applyFilter = useCallback(
         (
-            filterType: 'status' | 'category' | 'industry' | 'riskLevel' | 'dateRange' | 'search',
+            filterType:
+                | 'status'
+                | 'category'
+                | 'industry'
+                | 'riskLevel'
+                | 'dateRange'
+                | 'search',
             value: any,
             filterStartDate?: Date,
-            filterEndDate?: Date
+            filterEndDate?: Date,
         ) => {
-            console.log(`Applying filter: ${filterType}`, { value, currentValue:
-                filterType === 'status' ? status :
-                filterType === 'category' ? category :
-                filterType === 'industry' ? industry :
-                filterType === 'riskLevel' ? riskLevel :
-                filterType === 'search' ? search :
-                filterType === 'dateRange' ? { startDate, endDate } : null
+            console.log(`Applying filter: ${filterType}`, {
+                value,
+                currentValue:
+                    filterType === 'status'
+                        ? status
+                        : filterType === 'category'
+                          ? category
+                          : filterType === 'industry'
+                            ? industry
+                            : filterType === 'riskLevel'
+                              ? riskLevel
+                              : filterType === 'search'
+                                ? search
+                                : filterType === 'dateRange'
+                                  ? { startDate, endDate }
+                                  : null,
             });
 
             // Create a copy of the current filters state
@@ -244,13 +275,27 @@ export function ClientsFilter({
             }
 
             // Log the final filter state
-            console.log('Applying filters:', filters, 'Active filters:', newActiveFilters);
+            console.log(
+                'Applying filters:',
+                filters,
+                'Active filters:',
+                newActiveFilters,
+            );
 
             // Update active filters and apply
             setActiveFilters(newActiveFilters);
             onApplyFilters(filters);
         },
-        [search, status, category, industry, riskLevel, startDate, endDate, onApplyFilters]
+        [
+            search,
+            status,
+            category,
+            industry,
+            riskLevel,
+            startDate,
+            endDate,
+            onApplyFilters,
+        ],
     );
 
     // Clear all filters
@@ -300,21 +345,29 @@ export function ClientsFilter({
     // Item is selected helper
     const isSelected = (type: string, value: any) => {
         switch (type) {
-            case 'status': return status === value;
-            case 'category': return category === value;
-            case 'industry': return industry === value;
-            case 'riskLevel': return riskLevel === value;
-            default: return false;
+            case 'status':
+                return status === value;
+            case 'category':
+                return category === value;
+            case 'industry':
+                return industry === value;
+            case 'riskLevel':
+                return riskLevel === value;
+            default:
+                return false;
         }
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2 px-2">
+        <div
+            className="flex items-center justify-end flex-1 gap-2 px-2"
+            id="clients-filters"
+        >
             {/* Status Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="client-status-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className={filterButtonClass}>
+                        <div className={filterButtonClass} id="status-filter">
                             <div className="flex items-center gap-2">
                                 {status ? (
                                     <>
@@ -364,13 +417,20 @@ export function ClientsFilter({
                                     return (
                                         <DropdownMenuItem
                                             key={key}
-                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            className={cn(
+                                                filterItemClass,
+                                                selected && activeItemClass,
+                                            )}
                                             onClick={() => {
                                                 const newStatus =
-                                                    status === (key as ClientStatus)
+                                                    status ===
+                                                    (key as ClientStatus)
                                                         ? undefined
                                                         : (key as ClientStatus);
-                                                applyFilter('status', newStatus);
+                                                applyFilter(
+                                                    'status',
+                                                    newStatus,
+                                                );
                                             }}
                                         >
                                             <Icon
@@ -384,7 +444,9 @@ export function ClientsFilter({
                                             <span
                                                 className={`text-[10px] font-normal font-body ${
                                                     selected
-                                                        ? statusColors[key as ClientStatus]
+                                                        ? statusColors[
+                                                              key as ClientStatus
+                                                          ]
                                                         : ''
                                                 }`}
                                             >
@@ -407,7 +469,7 @@ export function ClientsFilter({
             </div>
 
             {/* Category Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="client-category-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className={filterButtonClass}>
@@ -418,7 +480,9 @@ export function ClientsFilter({
                                             className={`${filterIconClass} text-blue-600`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className={`${filterLabelClass} text-blue-600`}>
+                                        <span
+                                            className={`${filterLabelClass} text-blue-600`}
+                                        >
                                             {category.toUpperCase()}
                                         </span>
                                     </>
@@ -449,18 +513,27 @@ export function ClientsFilter({
                             {categories.length > 0 ? (
                                 categories.map((cat) => {
                                     if (!cat) return null;
-                                    const selected = isSelected('category', cat);
+                                    const selected = isSelected(
+                                        'category',
+                                        cat,
+                                    );
 
                                     return (
                                         <DropdownMenuItem
                                             key={cat}
-                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            className={cn(
+                                                filterItemClass,
+                                                selected && activeItemClass,
+                                            )}
                                             onClick={() => {
                                                 const newCategory =
                                                     category === cat
                                                         ? undefined
                                                         : cat;
-                                                applyFilter('category', newCategory);
+                                                applyFilter(
+                                                    'category',
+                                                    newCategory,
+                                                );
                                             }}
                                         >
                                             <Tag
@@ -499,7 +572,7 @@ export function ClientsFilter({
             </div>
 
             {/* Industry Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="client-industry-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className={filterButtonClass}>
@@ -510,7 +583,9 @@ export function ClientsFilter({
                                             className={`${filterIconClass} text-purple-600`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className={`${filterLabelClass} text-purple-600`}>
+                                        <span
+                                            className={`${filterLabelClass} text-purple-600`}
+                                        >
                                             {industry.toUpperCase()}
                                         </span>
                                     </>
@@ -541,18 +616,27 @@ export function ClientsFilter({
                             {industries.length > 0 ? (
                                 industries.map((ind) => {
                                     if (!ind) return null;
-                                    const selected = isSelected('industry', ind);
+                                    const selected = isSelected(
+                                        'industry',
+                                        ind,
+                                    );
 
                                     return (
                                         <DropdownMenuItem
                                             key={ind}
-                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            className={cn(
+                                                filterItemClass,
+                                                selected && activeItemClass,
+                                            )}
                                             onClick={() => {
                                                 const newIndustry =
                                                     industry === ind
                                                         ? undefined
                                                         : ind;
-                                                applyFilter('industry', newIndustry);
+                                                applyFilter(
+                                                    'industry',
+                                                    newIndustry,
+                                                );
                                             }}
                                         >
                                             <Building
@@ -591,7 +675,7 @@ export function ClientsFilter({
             </div>
 
             {/* Risk Level Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="client-risk-level-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className={filterButtonClass}>
@@ -635,29 +719,43 @@ export function ClientsFilter({
                             {riskLevels.length > 0 ? (
                                 riskLevels.map((value) => {
                                     if (!value) return null;
-                                    const selected = isSelected('riskLevel', value);
+                                    const selected = isSelected(
+                                        'riskLevel',
+                                        value,
+                                    );
 
                                     return (
                                         <DropdownMenuItem
                                             key={value}
-                                            className={cn(filterItemClass, selected && activeItemClass)}
+                                            className={cn(
+                                                filterItemClass,
+                                                selected && activeItemClass,
+                                            )}
                                             onClick={() => {
-                                                const newRiskLevel = riskLevel === value
-                                                    ? undefined
-                                                    : value as ClientRiskLevel;
-                                                applyFilter('riskLevel', newRiskLevel);
+                                                const newRiskLevel =
+                                                    riskLevel === value
+                                                        ? undefined
+                                                        : (value as ClientRiskLevel);
+                                                applyFilter(
+                                                    'riskLevel',
+                                                    newRiskLevel,
+                                                );
                                             }}
                                         >
                                             <AlertTriangle
                                                 className={`${filterIconClass} mr-2 ${
-                                                    riskLevelColors[value as ClientRiskLevel] || 'text-gray-600'
+                                                    riskLevelColors[
+                                                        value as ClientRiskLevel
+                                                    ] || 'text-gray-600'
                                                 }`}
                                                 strokeWidth={1.5}
                                             />
                                             <span
                                                 className={`text-[10px] font-normal font-body ${
                                                     selected
-                                                        ? riskLevelColors[value as ClientRiskLevel] || 'text-gray-600'
+                                                        ? riskLevelColors[
+                                                              value as ClientRiskLevel
+                                                          ] || 'text-gray-600'
                                                         : ''
                                                 }`}
                                             >

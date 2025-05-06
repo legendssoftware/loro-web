@@ -234,7 +234,7 @@ export const metadata: Metadata = {
         canonical: 'https://loro.co.za',
         languages: {
             'en-ZA': 'https://loro.co.za',
-            'en-US': 'https://loro.com',
+            'en-US': 'https://loro.co.za',
         },
     },
     category: 'Business Software',

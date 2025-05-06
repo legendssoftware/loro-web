@@ -101,7 +101,10 @@ export function TasksKanban({
     );
 
     return (
-        <div className="flex flex-row items-start w-full h-full gap-6 overflow-x-scroll overflow-y-hidden" id="tasks-board">
+        <div
+            className="flex flex-row items-start w-full h-full gap-6 overflow-x-scroll overflow-y-hidden"
+            id="tasks-board"
+        >
             {/* Stage 1: Planning/Waiting */}
             <div className="flex flex-col">
                 <div className="flex gap-2">

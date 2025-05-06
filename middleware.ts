@@ -65,23 +65,53 @@ function validateToken(token: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
-    const response = NextResponse.next(); // Start with a pass-through response
+    const { pathname, searchParams, origin } = request.nextUrl; // Get searchParams and origin
+    const response = NextResponse.next();
+    const accessToken = request.cookies.get('accessToken')?.value;
+    const isAuthenticated = accessToken && validateToken(accessToken); // Check authentication status
 
-    // Check if the path requires authentication
+    // If user is authenticated and tries to access a public-only path like /sign-in
+    if (isAuthenticated && publicPaths.some(publicPath => pathname.startsWith(publicPath))) {
+        let callbackUrlStr = searchParams.get('callbackUrl');
+        let targetUrl = '/'; // Default redirect target
+
+        if (callbackUrlStr) {
+            try {
+                const parsedCallbackUrl = new URL(callbackUrlStr);
+                // Ensure callbackUrl is from the same origin to prevent open redirects
+                if (parsedCallbackUrl.origin === origin) {
+                    targetUrl = parsedCallbackUrl.pathname + parsedCallbackUrl.search + parsedCallbackUrl.hash;
+                } else {
+                    console.warn(`Middleware: Invalid callbackUrl origin. Defaulting to /. Original: ${callbackUrlStr}`);
+                }
+            } catch (e) {
+                // If callbackUrl is not a valid URL (e.g., just a path like '/dashboard')
+                if (callbackUrlStr.startsWith('/')) {
+                    targetUrl = callbackUrlStr;
+                } else {
+                    console.warn(`Middleware: Invalid callbackUrl format. Defaulting to /. Original: ${callbackUrlStr}`);
+                }
+            }
+        }
+
+        // Ensure targetUrl is at least '/'
+        if (!targetUrl.startsWith('/')) {
+            targetUrl = '/';
+        }
+
+        console.log(`Middleware: Authenticated user on public path ${pathname}. Redirecting to ${targetUrl}.`);
+        return NextResponse.redirect(new URL(targetUrl, request.url));
+    }
+
+    // If path is protected and user is not authenticated
     if (isProtectedPath(pathname)) {
-        const accessToken = request.cookies.get('accessToken')?.value;
-
-        if (!accessToken || !validateToken(accessToken)) {
+        if (!isAuthenticated) { // Use the already determined isAuthenticated status
             console.log(`Middleware: No valid token for protected path: ${pathname}. Redirecting to sign-in.`);
-
-            // Prepare redirect URL
             const signInUrl = new URL('/sign-in', request.url);
-            signInUrl.searchParams.set('callbackUrl', request.url); // Use the full requested URL
+            // Preserve the original intended URL as callbackUrl for the sign-in page
+            signInUrl.searchParams.set('callbackUrl', request.url.toString()); // Use full request URL string
 
-            // Create a redirect response
             const redirectResponse = NextResponse.redirect(signInUrl);
-
             // Clear the invalid/missing accessToken cookie
             redirectResponse.cookies.set('accessToken', '', {
                 path: '/',
@@ -95,12 +125,11 @@ export function middleware(request: NextRequest) {
 
             return redirectResponse; // Execute the redirect and cookie clearing
         }
-
-        // If token is valid, proceed with the original request
+        // If token is valid for protected path, proceed
         return response;
     }
 
-    // For public paths or static assets/API routes, just proceed
+    // For public paths (and user is not authenticated) or static assets/API routes
     return response;
 }
 

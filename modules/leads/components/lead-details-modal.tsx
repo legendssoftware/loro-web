@@ -402,6 +402,40 @@ export function LeadDetailsModal({
                             </div>
                         )}
 
+                        {/* Lead Assignees */}
+                        {lead.assignees && lead.assignees.length > 0 && (
+                            <div>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Assignees
+                                </h3>
+                                <div className="space-y-3">
+                                    {lead.assignees.map((assignee: any) => (
+                                        <div key={assignee.uid} className="flex items-center p-3 border rounded-lg border-card">
+                                            <Avatar className="w-12 h-12 mr-3 border border-primary">
+                                                <AvatarImage
+                                                    src={assignee.photoURL || ''}
+                                                    alt={assignee.name || ''}
+                                                />
+                                                <AvatarFallback>
+                                                    {assignee.name?.charAt(0) || ''}
+                                                    {assignee.surname?.charAt(0) || ''}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="text-xs font-medium font-body">
+                                                    {assignee.name || ''}{' '}
+                                                    {assignee.surname || ''}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground font-body">
+                                                    {assignee.email || ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Lead Owner */}
                         {lead.owner && (
                             <div>

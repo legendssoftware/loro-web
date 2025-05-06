@@ -4,6 +4,8 @@ import { Lead, LeadStatus, StatusColors } from '@/lib/types/lead';
 import { useCallback, memo } from 'react';
 import { LeadCard } from './lead-card';
 import { cn } from '@/lib/utils';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface LeadsKanbanProps {
     leadsByStatus: Record<LeadStatus, Lead[]>;
@@ -35,19 +37,32 @@ export function LeadsKanban({
 
             return (
                 <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
-                    <div className="flex items-center justify-between mb-2">
-                        <div
-                            className={cn(
-                                'px-2 py-0.5 rounded text-[10px] font-normal flex items-center flex-row justify-between',
-                                colors.bg,
-                                colors.text,
-                            )}
-                        >
-                            <span className="uppercase font-body">{title}</span>
-                            <span className="ml-2 px-1.5 py-0.5 bg-background/30 rounded-full font-body uppercase text-xl">
-                                {count}
-                            </span>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-2">
+                            <div
+                                className={cn(
+                                    'px-2 py-0.5 rounded text-[10px] font-normal flex items-center flex-row justify-between',
+                                    colors.bg,
+                                    colors.text,
+                                )}
+                            >
+                                <span className="uppercase font-body">
+                                    {title}
+                                </span>
+                                <span className="ml-2 px-1.5 py-0.5 bg-background/30 rounded-full font-body uppercase text-xl">
+                                    {count}
+                                </span>
+                            </div>
                         </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-6 h-6"
+                            onClick={() => onAddLead?.()}
+                            id="add-lead-button"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                        </Button>
                     </div>
                     <div className="space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2">
                         {leads?.map((lead, index) => (
@@ -68,7 +83,10 @@ export function LeadsKanban({
     );
 
     return (
-        <div className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden" id="leads-table">
+        <div
+            className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden"
+            id="leads-table"
+        >
             {/* PENDING */}
             {renderColumn(
                 LeadStatus.PENDING,

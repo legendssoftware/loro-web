@@ -14,6 +14,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import LeadsForm from '@/modules/leads/components/leads-form';
 
 // Tab configuration
 const tabs = [{ id: 'leads', label: 'Leads' }];
@@ -22,22 +23,35 @@ const tabs = [{ id: 'leads', label: 'Leads' }];
 function CreateLeadModal({
     isOpen,
     onClose,
+    onCreateLead,
 }: {
     isOpen: boolean;
     onClose: () => void;
     onCreateLead?: (leadData: any) => void;
 }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (data: any) => {
+        try {
+            setIsSubmitting(true);
+            if (onCreateLead) {
+                await onCreateLead(data);
+            }
+            onClose();
+        } catch (error) {
+            console.error('Error creating lead:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">Create New Lead</DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center justify-center h-64">
-                    <h2 className="text-xs font-thin uppercase font-body">
-                        Activating Soon
-                    </h2>
-                </div>
+                <LeadsForm onSubmit={handleSubmit} isLoading={isSubmitting} />
             </DialogContent>
         </Dialog>
     );

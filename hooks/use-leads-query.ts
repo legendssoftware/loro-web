@@ -5,6 +5,11 @@ import toast from 'react-hot-toast';
 import { useLeadApi } from './use-lead-api';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
+// Branch type with uid as required by the API
+interface BranchRef {
+    uid: number;
+}
+
 const LEADS_QUERY_KEY = 'leads';
 
 export function useLeadsQuery(filters: LeadFilterParams = {}) {

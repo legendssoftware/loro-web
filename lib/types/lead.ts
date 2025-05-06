@@ -96,6 +96,8 @@ export interface Lead {
         email: string;
         phone: string;
     };
+    assignees?: { uid: number }[];
+    assignTo?: { uid: number }[];
 }
 
 export interface PaginatedLeadsResponse {

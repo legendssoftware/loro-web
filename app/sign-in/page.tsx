@@ -42,7 +42,7 @@ const UserSignInForm = () => {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-    const { signIn, isLoading, error, clearAuthError } = useAuthStore();
+    const { signIn, isLoading, error, clearAuthError, profileData } = useAuthStore();
 
     const [form, setForm] = useState<SignInSchema>({
         username: '',
@@ -122,16 +122,37 @@ const UserSignInForm = () => {
                         : hour < 18
                           ? 'Good afternoon'
                           : 'Good evening';
+
+                // Use profileData from the store, which should be updated by signIn
+                // or fallback to response.profileData if store isn't updated yet.
+                const nameToGreet = profileData?.name || response?.profileData?.name || 'User';
+
                 showSuccessToast(
-                    `${greeting},  ${response?.profileData?.name}!`,
+                    `${greeting},  ${nameToGreet}!`,
                     toast,
                 );
 
                 // Shorter wait time before redirect
                 await new Promise((resolve) => setTimeout(resolve, 500));
 
-                // Always redirect employee users to the home dashboard
-                router.push('/');
+                // Validate and use callbackUrl for redirection
+                let redirectTarget = '/';
+                if (callbackUrl) {
+                    try {
+                        const parsedCallback = callbackUrl.startsWith('/')
+                            ? new URL(callbackUrl, window.location.origin)
+                            : new URL(callbackUrl);
+
+                        if (parsedCallback.origin === window.location.origin && parsedCallback.pathname.startsWith('/')) {
+                            redirectTarget = parsedCallback.pathname + parsedCallback.search + parsedCallback.hash;
+                        } else {
+                            console.warn('UserSignInForm: Invalid callbackUrl origin. Defaulting to /.');
+                        }
+                    } catch (e) {
+                        console.warn('UserSignInForm: Invalid callbackUrl format. Defaulting to /.');
+                    }
+                }
+                router.push(redirectTarget);
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);

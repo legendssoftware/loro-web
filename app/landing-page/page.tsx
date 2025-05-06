@@ -563,15 +563,49 @@ const LandingPage: React.FunctionComponent = () => {
     // Initialize the tour
     const { startTour } = useInteractiveTour();
 
-    // Start the tour when the component mounts
+    // Start the tour when the component mounts, only if not played before
     useEffect(() => {
-        // Small delay to ensure DOM elements are fully rendered
-        const tourTimer = setTimeout(() => {
-            startTour();
-        }, 1000);
+        const tourPlayedKey = 'loroCrmLandingTourPlayed_v1';
+        let tourTimerId: NodeJS.Timeout | null = null;
 
-        return () => clearTimeout(tourTimer);
-    }, [startTour]);
+        try {
+            const hasPlayedTour = localStorage.getItem(tourPlayedKey);
+
+            if (!hasPlayedTour) {
+                // Small delay to ensure DOM elements are fully rendered
+                tourTimerId = setTimeout(() => {
+                    startTour();
+                    // Mark as played.
+                    // Ideally, this would be in an onEnd callback of the tour itself.
+                    // For now, setting it when the tour is initiated.
+                    try {
+                        localStorage.setItem(tourPlayedKey, 'true');
+                    } catch (e) {
+                        console.error(
+                            'Failed to set tour played flag in localStorage:',
+                            e,
+                        );
+                    }
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Error accessing localStorage for tour:', error);
+            // Fallback: If localStorage is inaccessible (e.g., private browsing, security settings),
+            // the tour might run on every visit. This ensures the user sees it at least once
+            // even if storage fails, but it would repeat without storage.
+            tourTimerId = setTimeout(() => {
+                // Ensure tourTimerId is assigned here too
+                startTour();
+            }, 1000);
+        }
+
+        return () => {
+            if (tourTimerId) {
+                // Check tourTimerId
+                clearTimeout(tourTimerId);
+            }
+        };
+    }, [startTour]); // startTour is a dependency
 
     return (
         <PageTransition type="fade">
@@ -659,7 +693,7 @@ const LandingPage: React.FunctionComponent = () => {
                             <span>Sign In</span>
                         </Link>
                         <Link
-                            href="/sign-in"
+                            href="/sign-up"
                             className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
                         >
                             <span>Sign Up</span>
@@ -1049,6 +1083,10 @@ const LandingPage: React.FunctionComponent = () => {
                         {/* Swiper Carousel replacing the grid layout */}
                         <div className="flex items-center justify-center px-4 py-2">
                             <Swiper
+                                effect="fade"
+                                fadeEffect={{
+                                    crossFade: true,
+                                }}
                                 slidesPerView={1}
                                 spaceBetween={20}
                                 centeredSlides={true}
@@ -1085,12 +1123,6 @@ const LandingPage: React.FunctionComponent = () => {
                                                 fill
                                                 className="object-contain"
                                             />
-                                            {/* Title Overlay */}
-                                            <div className="absolute left-0 w-full h-20 p-2 text-center transition-opacity duration-300 bg-primary -bottom-12">
-                                                <span className="text-[10px] text-white uppercase font-body">
-                                                    {item.title}
-                                                </span>
-                                            </div>
                                         </div>
                                     </SwiperSlide>
                                 ))}

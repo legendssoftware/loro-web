@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { AppLoader } from '@/components/loaders/page-loader';
 
@@ -16,6 +16,7 @@ interface PublicOnlyRouteProps {
  */
 export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isAuthenticated, isLoading } = useAuthStore();
 
     useEffect(() => {
@@ -24,15 +25,33 @@ export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteP
 
         // If authenticated, redirect to the specified path
         if (isAuthenticated) {
-            // Sanitize and validate the redirect URL
-            const sanitizedRedirect = typeof redirectTo === 'string' && redirectTo.startsWith('/')
-                ? redirectTo
-                : '/';
+            let finalRedirectTo = redirectTo;
+            const callbackUrlFromParams = searchParams.get('callbackUrl');
 
-            // Use replace instead of push for faster redirection without adding to history
-            router.replace(sanitizedRedirect);
+            if (callbackUrlFromParams) {
+                try {
+                    // Attempt to parse callbackUrlFromParams relative to current origin if it's a path
+                    // Or parse it as an absolute URL
+                    const url = callbackUrlFromParams.startsWith('/')
+                        ? new URL(callbackUrlFromParams, window.location.origin)
+                        : new URL(callbackUrlFromParams);
+
+                    // Ensure it's a relative path starting with / and on the same origin
+                    if (url.origin === window.location.origin && url.pathname.startsWith('/')) {
+                        finalRedirectTo = url.pathname + url.search + url.hash;
+                    } else {
+                        // Log if callbackUrl is from a different origin, but still use fallback (redirectTo)
+                        console.warn('PublicOnlyRoute: callbackUrl from different origin, using fallback.');
+                    }
+                } catch (e) {
+                    // Invalid callbackUrl format, use the default redirectTo
+                    console.warn('PublicOnlyRoute: Invalid callbackUrl format, using fallback.', e);
+                }
+            }
+
+            router.replace(finalRedirectTo);
         }
-    }, [isAuthenticated, isLoading, router, redirectTo]);
+    }, [isAuthenticated, isLoading, router, redirectTo, searchParams]);
 
     // Reduce loading time by not showing loader for too long
     if (isLoading) {

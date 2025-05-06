@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Menu,
     Download,
@@ -44,7 +44,6 @@ import {
     Settings,
     Layers,
     Users,
-    PlayCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 // Import Swiper React components
@@ -201,6 +200,15 @@ const mobileFeaturesData = [
 // Define data for the dashboard features tabs
 const dashboardFeaturesData = [
     {
+        value: 'reporting',
+        title: 'Reporting',
+        icon: BarChart3,
+        description:
+            'Access comprehensive reports across all modules. Filter data, view charts and tables, analyze trends, and export data for deeper insights.',
+        img: '/images/covers/reporting.png',
+        alt: 'Dashboard Reporting and Analytics',
+    },
+    {
         value: 'leads',
         title: 'Lead Management',
         icon: Target,
@@ -236,15 +244,6 @@ const dashboardFeaturesData = [
         img: '/images/covers/webtracking.png',
         alt: 'Dashboard Real-time Tracking',
     },
-    {
-        value: 'reporting',
-        title: 'Reporting',
-        icon: BarChart3,
-        description:
-            'Access comprehensive reports across all modules. Filter data, view charts and tables, analyze trends, and export data for deeper insights.',
-        img: '/images/covers/reporting.png',
-        alt: 'Dashboard Reporting and Analytics',
-    },
 ];
 
 const LandingPage: React.FunctionComponent = () => {
@@ -260,6 +259,32 @@ const LandingPage: React.FunctionComponent = () => {
     const callStartTimeRef = useRef<number | null>(null);
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const warningShownRef = useRef(false);
+    const [billingPeriod, setBillingPeriod] = useState('monthly');
+
+    // Phrases for the animated H1
+    const heroPhrases = [
+        'Streamline Your Field Operations',
+        'Real-Time Visibility, Anywhere',
+        'Smart Expense Management',
+        'Your Mobile Office, Optimized!',
+        'Helping You Make Data-Driven Decisions',
+        'Secure, Scalable, and Simple',
+        'One Platform, Endless Possibilities',
+        'Always Connected, Always Updated',
+        'Built for Growth',
+    ];
+    const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+    // Effect to cycle through phrases
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentPhraseIndex(
+                (prevIndex) => (prevIndex + 1) % heroPhrases.length,
+            );
+        }, 4000); // Change phrase every 4 seconds
+
+        return () => clearInterval(intervalId);
+    }, [heroPhrases.length]);
 
     const formattedTimeRemaining = useMemo(() => {
         if (timeRemaining === null) return null;
@@ -651,9 +676,7 @@ const LandingPage: React.FunctionComponent = () => {
                             className="p-0 ml-2"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
-                            <Menu
-                                className="w-5 h-5"
-                            />
+                            <Menu className="w-5 h-5" />
                         </Button>
 
                         {/* Mobile Menu */}
@@ -731,14 +754,27 @@ const LandingPage: React.FunctionComponent = () => {
                         transition={{ duration: 0.6 }}
                         className="w-full"
                     >
-                        <h1 className="max-w-3xl mx-auto text-4xl font-normal uppercase md:text-5xl lg:text-6xl font-body">
-                            Unified Business Platform That Works Anywhere
-                        </h1>
+                        <div className="relative h-32 mb-5">
+                            {' '}
+                            {/* Container to manage height */}
+                            <AnimatePresence mode="wait">
+                                <motion.h1
+                                    key={currentPhraseIndex}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.8 }}
+                                    className="absolute inset-0 flex items-center justify-center max-w-3xl mx-auto text-4xl font-normal text-center uppercase ease-in-out md:text-5xl lg:text-6xl font-body"
+                                >
+                                    {heroPhrases[currentPhraseIndex]}
+                                </motion.h1>
+                            </AnimatePresence>
+                        </div>
                         <p className="max-w-2xl mx-auto mt-6 text-xs uppercase text-muted-foreground font-body">
-                            A comprehensive enterprise resource planning and
-                            customer relationship management system that works
-                            seamlessly online and offline, providing maximum
-                            flexibility for field and office staff
+                            Unify sales, field operations, and back-office tasks
+                            with Loro's powerful, all-in-one platform. Empower
+                            your team with seamless online & offline access for
+                            unmatched productivity.
                         </p>
                     </motion.div>
                     <motion.div
@@ -818,16 +854,16 @@ const LandingPage: React.FunctionComponent = () => {
                                 Your Command Center
                             </h2>
                             <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Dive into the core functionalities that make
-                                Loro CRM the central hub for your business
-                                operations, from lead tracking to in-depth
-                                reporting.
+                                Take Control of Your Operations. Loro's
+                                intuitive dashboard provides a real-time,
+                                360-degree view of your business – from leads to
+                                analytics.
                             </p>
                         </motion.div>
 
                         <Tabs
                             defaultValue={dashboardFeaturesData[0].value}
-                            className="w-full max-w-5xl mx-auto"
+                            className="w-full max-w-6xl mx-auto"
                             onValueChange={setActiveDashboardTab}
                         >
                             {/* Use flex-nowrap and overflow-x-auto for TabsList to ensure items stay on one line */}
@@ -854,7 +890,19 @@ const LandingPage: React.FunctionComponent = () => {
                                             className="w-5 h-5 mr-2"
                                             strokeWidth={1.5}
                                         />
-                                        <span>{tab.title}</span>
+                                        <span>
+                                            {tab.value === 'reporting'
+                                                ? 'Drive Decisions with Data'
+                                                : tab.value === 'leads'
+                                                  ? 'Master Your Leads'
+                                                  : tab.value === 'tasks'
+                                                    ? 'Streamline Team Tasks'
+                                                    : tab.value === 'sales'
+                                                      ? 'Accelerate Your Sales Cycle'
+                                                      : tab.value === 'tracking'
+                                                        ? 'Optimize Field Operations'
+                                                        : tab.title}
+                                        </span>
                                     </TabsTrigger>
                                 ))}
                             </TabsList>
@@ -874,10 +922,33 @@ const LandingPage: React.FunctionComponent = () => {
                                     >
                                         <div className="flex-1 text-center md:text-left">
                                             <h3 className="mb-3 text-xl font-normal uppercase font-body">
-                                                {tab.title}
+                                                {tab.value === 'reporting'
+                                                    ? 'Drive Decisions with Data'
+                                                    : tab.value === 'leads'
+                                                      ? 'Master Your Leads'
+                                                      : tab.value === 'tasks'
+                                                        ? 'Streamline Team Tasks'
+                                                        : tab.value === 'sales'
+                                                          ? 'Accelerate Your Sales Cycle'
+                                                          : tab.value ===
+                                                              'tracking'
+                                                            ? 'Optimize Field Operations'
+                                                            : tab.title}
                                             </h3>
                                             <p className="text-xs uppercase text-muted-foreground font-body">
-                                                {tab.description}
+                                                {tab.value === 'leads'
+                                                    ? 'Capture, track, and convert more leads. Visualize prospect locations, monitor sales pipeline progress with custom statuses, and analyze your conversion funnel for actionable insights.'
+                                                    : tab.value === 'tasks'
+                                                      ? 'Effortlessly create, assign, and track team tasks. Manage workflows your way with list, Kanban board, or calendar views, ensuring deadlines are met and productivity soars.'
+                                                      : tab.value === 'sales'
+                                                        ? 'From product catalog to order fulfillment, manage your entire sales process. Create professional quotations, collaborate via in-quotation chat, and seamlessly convert quotes to orders, all linked with real-time inventory.'
+                                                        : tab.value ===
+                                                            'tracking'
+                                                          ? 'Gain complete visibility of your field team. Monitor live locations on an interactive map, view user status, overlay client and task data, and leverage geofencing for enhanced efficiency and accountability.'
+                                                          : tab.value ===
+                                                              'reporting'
+                                                            ? 'Unlock actionable insights with comprehensive reports across all Loro modules. Filter data, visualize trends with dynamic charts and tables, and export information to fuel your strategic decisions.'
+                                                            : tab.description}
                                             </p>
                                             {/* Optional Button */}
                                             <Button
@@ -966,7 +1037,7 @@ const LandingPage: React.FunctionComponent = () => {
                             className="text-center"
                         >
                             <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Glimpses of our Field Sales Management App
+                                Explore Our App
                             </h2>
                             <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
                                 Empower your field team with powerful tools
@@ -976,7 +1047,7 @@ const LandingPage: React.FunctionComponent = () => {
                             </p>
                         </motion.div>
                         {/* Swiper Carousel replacing the grid layout */}
-                        <div className="flex items-center justify-center px-4 py-8">
+                        <div className="flex items-center justify-center px-4 py-2">
                             <Swiper
                                 slidesPerView={1}
                                 spaceBetween={20}
@@ -990,10 +1061,6 @@ const LandingPage: React.FunctionComponent = () => {
                                     clickable: true,
                                 }}
                                 breakpoints={{
-                                    640: {
-                                        slidesPerView: 2,
-                                        spaceBetween: 2,
-                                    },
                                     768: {
                                         slidesPerView: 3,
                                         spaceBetween: 3,
@@ -1036,19 +1103,19 @@ const LandingPage: React.FunctionComponent = () => {
                             .mobile-showcase-swiper .swiper-slide {
                                 transition: transform 0.3s;
                                 opacity: 0.6;
-                                transform: scale(0.7);
+                                transform: scale(0.6);
                             }
 
                             .mobile-showcase-swiper .swiper-slide-active {
                                 opacity: 1;
-                                transform: scale(1.1);
+                                transform: scale(1);
                                 z-index: 10;
                             }
 
                             .mobile-showcase-swiper .swiper-slide-prev,
                             .mobile-showcase-swiper .swiper-slide-next {
                                 opacity: 0.8;
-                                transform: scale(0.9);
+                                transform: scale(0.8);
                                 z-index: 5;
                             }
 
@@ -1109,43 +1176,294 @@ const LandingPage: React.FunctionComponent = () => {
                     </div>
                 </section>
 
-                {/* Video/Tutorial Section */}
-                <section className="py-16 bg-gradient-to-r from-background to-background/90">
+                {/* Pricing Section */}
+                <section className="py-16 bg-background">
                     <div className="container px-4 mx-auto">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="flex flex-col items-center gap-8 md:flex-row"
+                            className="text-center"
                         >
-                            <div className="flex-1 text-center md:text-left">
-                                <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                    See Loro In Action
-                                </h2>
-                                <p className="max-w-xl mx-auto mb-6 text-xs uppercase md:mx-0 text-muted-foreground font-body">
-                                    Watch our quick overview video to understand
-                                    how Loro CRM can transform your business
-                                    workflows, boost productivity, and provide
-                                    unparalleled flexibility for your entire
-                                    team.
-                                </p>
-                                <Button className="text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body">
-                                    <PlayCircle className="w-5 h-5 mr-2" />
-                                    <span>Watch Demo Video</span>
-                                </Button>
-                            </div>
-                            <div className="relative flex-1 w-full overflow-hidden rounded-lg shadow-xl aspect-video bg-muted group">
-                                <Image
-                                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png"
-                                    alt="Loro CRM Demo Video Thumbnail"
-                                    fill
-                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black/30 group-hover:bg-black/50">
-                                    <PlayCircle className="w-16 h-16 text-white/80" />
+                            <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
+                                Clear and Fair Pricing for Everyone.
+                            </h2>
+                            <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
+                                Over 100,000 entrepreneurs have launched their
+                                businesses effortlessly with Loro.
+                            </p>
+
+                            {/* Billing toggle */}
+                            <div className="flex items-center justify-center mb-12">
+                                <div className="inline-flex items-center p-1 rounded-md bg-muted">
+                                    <button
+                                        onClick={() =>
+                                            setBillingPeriod('monthly')
+                                        }
+                                        className={`px-4 py-2 text-xs uppercase transition-colors rounded-md ${
+                                            billingPeriod === 'monthly'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-transparent'
+                                        } font-body`}
+                                    >
+                                        Monthly
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setBillingPeriod('annual')
+                                        }
+                                        className={`px-4 py-2 text-xs uppercase transition-colors rounded-md ${
+                                            billingPeriod === 'annual'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-transparent'
+                                        } font-body`}
+                                    >
+                                        Annual
+                                    </button>
                                 </div>
                             </div>
                         </motion.div>
+
+                        {/* Pricing Cards */}
+                        <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
+                            {/* Basic Plan */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                className="overflow-hidden border rounded-lg shadow-sm border-border max-w-96"
+                            >
+                                <div className="p-6">
+                                    <h3 className="text-xl font-normal uppercase font-body">
+                                        Basic
+                                    </h3>
+                                    <p className="mt-2 text-xs text-muted-foreground font-body">
+                                        Essential tools for field teams and
+                                        basic customer management.
+                                    </p>
+                                    <div className="flex items-end mt-4">
+                                        <span className="text-4xl font-normal font-body">
+                                            {billingPeriod === 'annual'
+                                                ? 'R1,999'
+                                                : 'R199'}
+                                        </span>
+                                        <span className="ml-1 text-sm text-muted-foreground font-body">
+                                            per{' '}
+                                            {billingPeriod === 'annual'
+                                                ? 'year'
+                                                : 'month'}
+                                        </span>
+                                    </div>
+                                    <ul className="mt-6 space-y-3">
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Lead Management (Basic)
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Task Management (Limited)
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Mobile App Access
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Basic Client Management
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Simple Reporting
+                                        </li>
+                                    </ul>
+                                    <Button
+                                        className="w-full mt-6 text-xs uppercase font-body"
+                                        variant="outline"
+                                    >
+                                        Current Plan
+                                    </Button>
+                                </div>
+                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
+                                    30-day money-back guarantee
+                                </div>
+                            </motion.div>
+
+                            {/* Pro Plan */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="overflow-hidden border rounded-lg shadow-sm border-primary/30 bg-card max-w-96"
+                            >
+                                <div className="p-2 text-center text-white bg-primary">
+                                    <span className="text-xs uppercase font-body">
+                                        Most Popular
+                                    </span>
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="text-xl font-normal uppercase font-body">
+                                        Pro
+                                    </h3>
+                                    <p className="mt-2 text-xs text-muted-foreground font-body">
+                                        Advanced field team management with
+                                        sales and tracking capabilities.
+                                    </p>
+                                    <div className="flex items-end mt-4">
+                                        <span className="text-4xl font-normal font-body">
+                                            {billingPeriod === 'annual'
+                                                ? 'R4,999'
+                                                : 'R499'}
+                                        </span>
+                                        <span className="ml-2 text-sm line-through text-muted-foreground font-body">
+                                            {billingPeriod === 'annual'
+                                                ? 'R5,988'
+                                                : ''}
+                                        </span>
+                                        <span className="ml-1 text-sm text-muted-foreground font-body">
+                                            per{' '}
+                                            {billingPeriod === 'annual'
+                                                ? 'year'
+                                                : 'month'}
+                                        </span>
+                                    </div>
+                                    <ul className="mt-6 space-y-3">
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Everything in Basic
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Full Lead Management
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Claims Management
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            GPS Tracking & Mapping
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Shop & Quotation System
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Advanced Reporting
+                                        </li>
+                                    </ul>
+                                    <Button className="w-full mt-6 text-xs text-white uppercase bg-primary hover:bg-primary/90 font-body">
+                                        Upgrade to Pro
+                                    </Button>
+                                </div>
+                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
+                                    30-day money-back guarantee
+                                </div>
+                            </motion.div>
+
+                            {/* Enterprise Plan */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="overflow-hidden border rounded-lg shadow-sm border-border max-w-96"
+                            >
+                                <div className="p-6">
+                                    <h3 className="text-xl font-normal uppercase font-body">
+                                        Enterprise
+                                    </h3>
+                                    <p className="mt-2 text-xs text-muted-foreground font-body">
+                                        Complete business management suite with
+                                        advanced features.
+                                    </p>
+                                    <div className="flex items-end mt-4">
+                                        <span className="text-4xl font-normal font-body">
+                                            {billingPeriod === 'annual'
+                                                ? 'R6,999'
+                                                : 'R699'}
+                                        </span>
+                                        <span className="ml-1 text-sm text-muted-foreground font-body">
+                                            per{' '}
+                                            {billingPeriod === 'annual'
+                                                ? 'year'
+                                                : 'agent'}
+                                        </span>
+                                    </div>
+                                    <ul className="mt-6 space-y-3">
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Everything in Pro
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Inventory Management
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Competitor Analysis Tools
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Client Portal Access
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Custom Branding Options
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            API Access & Integrations
+                                        </li>
+                                        <li className="flex items-start text-xs font-body">
+                                            <span className="mt-0.5 mr-2 text-primary">
+                                                ✓
+                                            </span>
+                                            Priority Support
+                                        </li>
+                                    </ul>
+                                    <Button className="w-full mt-6 text-xs uppercase font-body">
+                                        Upgrade to Enterprise
+                                    </Button>
+                                </div>
+                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
+                                    30-day money-back guarantee
+                                </div>
+                            </motion.div>
+                        </div>
                     </div>
                 </section>
 

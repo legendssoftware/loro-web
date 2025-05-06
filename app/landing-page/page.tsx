@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import {
     Menu,
-    LogIn,
-    User,
     Download,
     Smartphone,
     PhoneCall,
@@ -22,6 +20,7 @@ import { PageTransition } from '@/components/animations/page-transition';
 import { toast } from 'react-hot-toast';
 import Vapi from '@vapi-ai/web';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { useInteractiveTour } from '@/hooks/use-interactive-tour';
 import {
     handleVapiError,
     retryVapiOperation,
@@ -536,6 +535,19 @@ const LandingPage: React.FunctionComponent = () => {
         dashboardFeaturesData[0].value,
     );
 
+    // Initialize the tour
+    const { startTour } = useInteractiveTour();
+
+    // Start the tour when the component mounts
+    useEffect(() => {
+        // Small delay to ensure DOM elements are fully rendered
+        const tourTimer = setTimeout(() => {
+            startTour();
+        }, 1000);
+
+        return () => clearTimeout(tourTimer);
+    }, [startTour]);
+
     return (
         <PageTransition type="fade">
             <div className="relative flex flex-col min-h-screen bg-background">
@@ -591,7 +603,7 @@ const LandingPage: React.FunctionComponent = () => {
                                 size="sm"
                                 onClick={startDemoCall}
                                 disabled={isCallInitializing}
-                                className="text-xs font-normal text-green-500 uppercase transition-colors cursor-pointer font-body hover:bg-green-100 dark:hover:bg-green-900/20"
+                                className="hidden text-xs font-normal text-green-500 uppercase transition-colors cursor-pointer font-body hover:bg-green-100 dark:hover:bg-green-900/20 md:inline-flex"
                             >
                                 {isCallInitializing ? (
                                     <>
@@ -615,22 +627,18 @@ const LandingPage: React.FunctionComponent = () => {
                             </Button>
                         )}
                         <ThemeToggler />
-                        <Button
-                            className="text-xs font-normal text-white uppercase transition-colors bg-primary font-body hover:bg-primary/80"
-                            onClick={handleAccountClick}
+                        <Link
+                            href="/sign-in"
+                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
                         >
-                            {isAuthenticated ? (
-                                <>
-                                    <User className="w-5 h-5 mr-2" />
-                                    <span>Dashboard</span>
-                                </>
-                            ) : (
-                                <>
-                                    <LogIn className="w-5 h-5 mr-2" />
-                                    <span>Sign In</span>
-                                </>
-                            )}
-                        </Button>
+                            <span>Sign In</span>
+                        </Link>
+                        <Link
+                            href="/sign-in"
+                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                        >
+                            <span>Sign Up</span>
+                        </Link>
                     </div>
 
                     {/* Mobile Navigation */}
@@ -643,7 +651,9 @@ const LandingPage: React.FunctionComponent = () => {
                             className="p-0 ml-2"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
-                            <Menu className="w-5 h-5" />
+                            <Menu
+                                className="w-5 h-5"
+                            />
                         </Button>
 
                         {/* Mobile Menu */}
@@ -694,22 +704,18 @@ const LandingPage: React.FunctionComponent = () => {
                                                 )}
                                             </Button>
                                         )}
-                                        <Button
-                                            className="justify-start w-full text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body"
-                                            onClick={handleAccountClick}
+                                        <Link
+                                            href="/sign-in"
+                                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary text-card-foreground"
                                         >
-                                            {isAuthenticated ? (
-                                                <>
-                                                    <User className="w-5 h-5 mr-2" />
-                                                    <span>Dashboard</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <LogIn className="w-5 h-5 mr-2" />
-                                                    <span>Sign In</span>
-                                                </>
-                                            )}
-                                        </Button>
+                                            <span>Sign In</span>
+                                        </Link>
+                                        <Link
+                                            href="/sign-in"
+                                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary text-card-foreground"
+                                        >
+                                            <span>Sign Up</span>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
@@ -882,7 +888,7 @@ const LandingPage: React.FunctionComponent = () => {
                                                 <ArrowRight className="w-4 h-4 ml-1" />
                                             </Button>
                                         </div>
-                                        <div className="relative flex-shrink-0 w-[200px] lg:w-[400px] h-[200px] lg:h-[400px] mt-4 overflow-hidden rounded-md aspect-video md:w-1/2 md:mt-0">
+                                        <div className="relative flex-shrink-0 w-[200px] lg:w-[600px] h-[200px] lg:h-[600px] mt-4 overflow-hidden rounded-md aspect-video md:w-1/2 md:mt-0">
                                             <Image
                                                 src={tab.img}
                                                 alt={tab.alt}
@@ -997,7 +1003,7 @@ const LandingPage: React.FunctionComponent = () => {
                                         spaceBetween: 4,
                                     },
                                 }}
-                                modules={[Pagination, Autoplay, ]}
+                                modules={[Pagination, Autoplay]}
                                 className="flex items-center justify-center w-full px-4 py-8 mySwiper mobile-showcase-swiper"
                             >
                                 {mobileFeaturesData.map((item, index) => (

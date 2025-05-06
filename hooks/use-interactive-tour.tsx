@@ -9,6 +9,38 @@ import { toast } from 'react-hot-toast';
 // Define tour steps for different routes
 const tourSteps: { [key: string]: DriveStep[] } = {
     // ====================
+    // Landing Page Tour (/landing-page)
+    // ====================
+    '/landing-page': [
+        {
+            popover: {
+                title: '👋 Hey there!',
+                description:
+                    "Welcome to Loro CRM!, Let's explore our landing page and learn how to get the most out of your visit.",
+                align: 'center',
+            },
+        },
+        {
+            element: '#learn-about-loro-button',
+            popover: {
+                title: '📞 INSTANT ASSISTANCE',
+                description:
+                    "Have questions about Loro? On desktop, click the green learn about loro button in the top menu to start a voice call with our AI assistant. On mobile, tap the menu icon in the top-right to access this feature. Ask anything about Loro's capabilities!",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: 'DISCOVER LORO CRM',
+                description:
+                    "Scroll down to explore Loro's powerful features, or click Sign In or Sign Up to get started with your account.",
+                align: 'center',
+            },
+        },
+    ],
+
+    // ====================
     // Home Page Tour (/)
     // ====================
     '/': [

@@ -149,53 +149,53 @@ const enhancedFeaturesData = [
 const mobileFeaturesData = [
     {
         title: 'Leads On-the-Go',
-        img: '/placeholder-mobile-screen-1.png',
+        img: '/images/covers/mobileleads.png',
         alt: 'Mobile Leads Screen',
     },
     {
         title: 'Task Management',
-        img: '/placeholder-mobile-screen-2.png',
+        img: '/images/covers/taskdetail.png',
         alt: 'Mobile Tasks Screen',
     },
     {
         title: 'Claim Submission',
-        img: '/placeholder-mobile-screen-3.png',
+        img: '/images/covers/claims.png',
         alt: 'Mobile Claims Screen',
     },
     {
         title: 'Product Catalog',
-        img: '/placeholder-mobile-screen-4.png',
+        img: '/images/covers/product.png',
         alt: 'Mobile Shop Screen',
     },
     {
-        title: 'Offline Tracking',
-        img: '/placeholder-mobile-screen-5.png',
-        alt: 'Mobile Map Screen',
+        title: 'Attendance',
+        img: '/images/covers/home2.png',
+        alt: 'Mobile Attendance Screen',
     },
     {
         title: 'Leads On-the-Go',
-        img: '/placeholder-mobile-screen-1.png',
+        img: '/images/covers/mobileleads.png',
         alt: 'Mobile Leads Screen',
     },
     {
         title: 'Task Management',
-        img: '/placeholder-mobile-screen-2.png',
+        img: '/images/covers/taskdetail.png',
         alt: 'Mobile Tasks Screen',
     },
     {
         title: 'Claim Submission',
-        img: '/placeholder-mobile-screen-3.png',
+        img: '/images/covers/claims.png',
         alt: 'Mobile Claims Screen',
     },
     {
         title: 'Product Catalog',
-        img: '/placeholder-mobile-screen-4.png',
+        img: '/images/covers/product.png',
         alt: 'Mobile Shop Screen',
     },
     {
-        title: 'Offline Tracking',
-        img: '/placeholder-mobile-screen-5.png',
-        alt: 'Mobile Map Screen',
+        title: 'Attendance',
+        img: '/images/covers/home2.png',
+        alt: 'Mobile Attendance Screen',
     },
 ];
 
@@ -207,7 +207,7 @@ const dashboardFeaturesData = [
         icon: Target,
         description:
             'Centralize potential customers, track progress with statuses & categories, visualize locations, and analyze conversion funnels.',
-        img: '/placeholder-dashboard-1.png',
+        img: '/images/covers/webleads.png',
         alt: 'Dashboard Leads Management',
     },
     {
@@ -216,7 +216,7 @@ const dashboardFeaturesData = [
         icon: CheckSquare,
         description:
             'Create, assign, and monitor tasks with statuses, priorities, and deadlines. Utilize list, board, or calendar views for flexible workflow management.',
-        img: '/placeholder-dashboard-2.png',
+        img: '/images/covers/webtasks.png',
         alt: 'Dashboard Task Coordination',
     },
     {
@@ -225,7 +225,7 @@ const dashboardFeaturesData = [
         icon: ShoppingCart,
         description:
             'Manage products, generate quotations, process orders, and track fulfillment. Includes inventory linking and in-quotation chat features.',
-        img: '/placeholder-dashboard-3.png',
+        img: '/images/covers/salesweb.png',
         alt: 'Dashboard Sales and Quotations',
     },
     {
@@ -234,7 +234,7 @@ const dashboardFeaturesData = [
         icon: MapPin,
         description:
             'Monitor field team locations in real-time on an interactive map. View user status, overlay client/task locations, and manage geofences.',
-        img: '/placeholder-dashboard-4.png',
+        img: '/images/covers/webtracking.png',
         alt: 'Dashboard Real-time Tracking',
     },
     {
@@ -243,7 +243,7 @@ const dashboardFeaturesData = [
         icon: BarChart3,
         description:
             'Access comprehensive reports across all modules. Filter data, view charts and tables, analyze trends, and export data for deeper insights.',
-        img: '/placeholder-dashboard-5.png',
+        img: '/images/covers/reporting.png',
         alt: 'Dashboard Reporting and Analytics',
     },
 ];
@@ -769,7 +769,7 @@ const LandingPage: React.FunctionComponent = () => {
                             >
                                 <div className="relative w-full h-full drop-shadow-2xl">
                                     <Image
-                                        src="/mobile.png"
+                                        src="/images/covers/onboadingpage.png"
                                         alt="LORO CRM Mobile App Interface"
                                         fill
                                         className="object-contain"
@@ -882,12 +882,12 @@ const LandingPage: React.FunctionComponent = () => {
                                                 <ArrowRight className="w-4 h-4 ml-1" />
                                             </Button>
                                         </div>
-                                        <div className="relative flex-shrink-0 w-full mt-4 overflow-hidden rounded-md aspect-video md:w-1/2 md:mt-0">
+                                        <div className="relative flex-shrink-0 w-[200px] lg:w-[400px] h-[200px] lg:h-[400px] mt-4 overflow-hidden rounded-md aspect-video md:w-1/2 md:mt-0">
                                             <Image
-                                                src="/web.png" // Updated image source
+                                                src={tab.img}
                                                 alt={tab.alt}
                                                 fill
-                                                className="object-contain" // Ensure object-contain
+                                                className="object-contain"
                                             />
                                         </div>
                                     </motion.div>
@@ -997,7 +997,7 @@ const LandingPage: React.FunctionComponent = () => {
                                         spaceBetween: 4,
                                     },
                                 }}
-                                modules={[Pagination, Autoplay]}
+                                modules={[Pagination, Autoplay, ]}
                                 className="flex items-center justify-center w-full px-4 py-8 mySwiper mobile-showcase-swiper"
                             >
                                 {mobileFeaturesData.map((item, index) => (
@@ -1007,7 +1007,7 @@ const LandingPage: React.FunctionComponent = () => {
                                     >
                                         <div className="relative overflow-hidden rounded-lg shadow-lg aspect-[9/16] p-2 mx-auto max-w-[250px] cursor-pointer transition-all duration-300">
                                             <Image
-                                                src="/mobile.png"
+                                                src={item.img}
                                                 alt={item.alt}
                                                 fill
                                                 className="object-contain"

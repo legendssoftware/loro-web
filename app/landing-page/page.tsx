@@ -752,7 +752,7 @@ const LandingPage: React.FunctionComponent = () => {
                                 className="relative w-full h-full"
                             >
                                 <Image
-                                    src="/web.png"
+                                    src="/images/covers/web.png"
                                     alt="LORO CRM Dashboard Interface"
                                     fill
                                     className="object-contain"

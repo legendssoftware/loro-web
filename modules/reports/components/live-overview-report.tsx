@@ -17,6 +17,7 @@ import {
     MapPin, // Added for check-ins
     Key, // Added for license
     BarChartHorizontal, // Added for bar chart visualization
+    Clock, // Added for Attendance
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -598,6 +599,14 @@ export function LiveOverviewReport({
                         Workforce
                     </TabsTrigger>
                     <TabsTrigger
+                        value="attendance" // New Attendance Tab Trigger
+                        className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-attendance"
+                    >
+                        <Clock className="w-4 h-4 mr-2" />
+                        Attendance
+                    </TabsTrigger>
+                    <TabsTrigger
                         value="tasks"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
                         id="live-overview-tab-trigger-tasks"
@@ -720,6 +729,39 @@ export function LiveOverviewReport({
                                 </CardContent>
                             </Card>
                         )}
+                    </div>
+                </TabsContent>
+
+                {/* Attendance Tab */}
+                <TabsContent value="attendance" className="pt-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <SummaryCard
+                            title="Attendance Records Today"
+                            icon={<ClipboardCheck className="w-4 h-4" />}
+                            primaryMetric={report?.metrics?.workforce?.totalAttendanceRecordsToday || 0}
+                            primaryLabel="Total records created"
+                            secondaryMetric={report?.metrics?.workforce?.completedShiftsToday || 0}
+                            secondaryLabel="Completed Shifts"
+                            id="live-overview-summary-card-attendance-records"
+                        />
+                        <SummaryCard
+                            title="Avg. Shift Duration"
+                            icon={<Clock className="w-4 h-4" />}
+                            primaryMetric={`${report?.metrics?.workforce?.averageShiftDurationHours || 0} hrs`}
+                            primaryLabel="Average for completed shifts"
+                            secondaryMetric={`${report?.metrics?.workforce?.averageBreakDurationMinutes || 0} mins`}
+                            secondaryLabel="Avg. Break Duration"
+                            id="live-overview-summary-card-attendance-duration"
+                        />
+                        <SummaryCard
+                            title="Avg. Check-In / Out Time"
+                            icon={<Clock className="w-4 h-4" />}
+                            primaryMetric={report?.metrics?.workforce?.averageCheckInTime || 'N/A'}
+                            primaryLabel="Average Check-In"
+                            secondaryMetric={report?.metrics?.workforce?.averageCheckOutTime || 'N/A'}
+                            secondaryLabel="Avg. Check-Out (Completed)"
+                            id="live-overview-summary-card-attendance-times"
+                        />
                     </div>
                 </TabsContent>
 

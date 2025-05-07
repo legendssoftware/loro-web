@@ -14,10 +14,14 @@ import {
     Flag,
     Receipt,
     BookOpen,
+    MapPin, // Added for check-ins
+    Key, // Added for license
+    BarChartHorizontal, // Added for bar chart visualization
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 import {
     WorkforceHourlyActivityChart,
@@ -54,6 +58,7 @@ import {
     LineChart,
     Line,
 } from 'recharts';
+import { format } from 'date-fns'; // For formatting license date
 
 // Define interface for lead generator data
 interface LeadGenerator {
@@ -134,6 +139,13 @@ interface Journal {
     ownerName: string;
 }
 
+// Define interface for demographics data
+interface DemographicsData {
+    name: string;
+    value: number;
+    color: string;
+}
+
 interface LiveOverviewReportProps {
     organizationId?: number;
     branchId?: number;
@@ -150,12 +162,123 @@ export function LiveOverviewReport({
     });
 
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+    const [assigneeMetric, setAssigneeMetric] = useState('totalTasks');
+    const [leadGeneratorMetric, setLeadGeneratorMetric] = useState('leadCount');
+    const [claimCreatorMetric, setClaimCreatorMetric] = useState('claimCount');
 
     const handleRefresh = useCallback(async () => {
         setIsRefreshing(true);
         await refreshData();
         setIsRefreshing(false);
     }, [refreshData]);
+
+    // Function to generate colors for pie/bar charts
+    function getColorForIndex(name: string, index?: number): string {
+        // Define a specific color map for known categories/statuses
+        const specificColorMap: Record<string, string> = {
+            // Lead Statuses
+            PENDING: '#F59E0B', // Amber
+            APPROVED: '#10B981', // Green
+            REVIEW: '#4F46E5', // Indigo
+            DECLINED: '#EF4444', // Red
+            CONVERTED: '#8B5CF6', // Purple
+            CANCELLED: '#9CA3AF', // Gray
+            // Lead Categories
+            'Uncategorized': '#9CA3AF',    // Gray
+            'Walk-in': '#4F46E5',          // Indigo
+            'Referral': '#10B981',         // Green
+            'Website': '#8B5CF6',          // Purple
+            'Phone': '#F59E0B',            // Amber
+            'Email': '#EC4899',            // Pink
+            'Social Media': '#3B82F6',     // Blue
+            'Business': '#6366F1',         // Blue-indigo
+            'Personal': '#14B8A6',         // Teal
+            // Task Priorities
+            LOW: '#10B981', // Green
+            MEDIUM: '#F59E0B', // Amber
+            HIGH: '#EF4444', // Red
+            URGENT: '#7C3AED', // Purple
+            // Task Flag Statuses
+            OPEN: '#EF4444', // Red
+            IN_PROGRESS: '#F59E0B', // Amber
+            RESOLVED: '#10B981', // Green
+            CLOSED: '#9CA3AF', // Gray
+            // Task Aging Statuses
+            OVERDUE: '#EF4444', // Red
+            POSTPONED: '#8B5CF6', // Purple
+            MISSED: '#EC4899', // Pink
+            // Product Categories
+            'MEAT_POULTRY': '#EF4444',  // Red
+            'SEAFOOD': '#3B82F6',       // Blue
+            'DAIRY': '#F59E0B',         // Amber
+            'BAKERY': '#F97316',        // Orange
+            'PRODUCE': '#10B981',       // Green
+            'BEVERAGES': '#06B6D4',     // Cyan
+            'SNACKS': '#EC4899',        // Pink
+            'CANNED_GOODS': '#9CA3AF',  // Gray
+            'FROZEN_FOODS': '#60A5FA',  // Light Blue
+            'CLEANING': '#6366F1',      // Indigo
+            'PERSONAL_CARE': '#8B5CF6', // Purple
+            'OTHER': '#78716C',         // Stone
+            'UNCATEGORIZED': '#64748B', // Slate
+            // Product Statuses
+            'active': '#10B981',       // Green
+            'new': '#3B82F6',          // Blue
+            'outofstock': '#EF4444',   // Red
+            'bestseller': '#8B5CF6',  // Purple
+            'inactive': '#9CA3AF',     // Gray
+            'discontinued': '#F59E0B', // Amber
+            'hotdeals': '#F97316',     // Orange
+            'special': '#EC4899',      // Pink
+            'hidden': '#64748B',       // Slate
+            'deleted': '#7F1D1D',      // Dark Red
+            // Claims Statuses
+            'pending': '#F59E0B',    // Amber
+            'approved': '#10B981',   // Green
+            'rejected': '#EF4444',   // Red
+            'paid': '#3B82F6',       // Blue
+            'cancelled': '#9CA3AF',  // Gray
+            'declined': '#F43F5E',   // Rose
+            // Journal Statuses
+            'PUBLISHED': '#10B981',  // Green
+            'REJECTED': '#EF4444',   // Red
+            'DRAFT': '#3B82F6',      // Blue
+            // Client Categories
+            'software': '#3B82F6',   // Blue
+            'contract': '#10B981',   // Green
+            'retail': '#F59E0B',     // Amber
+            'service': '#8B5CF6',    // Purple
+            'manufacturing': '#EC4899', // Pink
+            'consulting': '#06B6D4',  // Cyan
+            'other': '#9CA3AF',      // Gray
+            // Client Risk Levels
+            'low': '#10B981',        // Green
+            'medium': '#F59E0B',     // Amber
+            'high': '#EF4444',       // Red
+            'critical': '#7F1D1D',   // Dark Red
+             // Workforce Demographics
+            'Male': '#3B82F6', // Blue
+            'Female': '#EC4899', // Pink
+            'Other': '#8B5CF6', // Purple
+            'Unknown': '#9CA3AF', // Gray (Default for unknown demographics)
+            // Add more specific mappings as needed
+        };
+
+        // Check if the name has a specific mapping
+        if (specificColorMap[name]) {
+            return specificColorMap[name];
+        }
+
+        // Fallback for unknown categories/statuses using index
+        const fallbackColors = [
+            '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
+            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
+            '#6366F1', '#F97316', '#14B8A6', '#A855F7',
+            '#D946EF', '#F43F5E', '#0EA5E9', '#22D3EE'
+        ];
+
+        return fallbackColors[(index ?? 0) % fallbackColors.length];
+    }
 
     if (isLoading) {
         return <ReportSkeleton />;
@@ -182,71 +305,41 @@ export function LiveOverviewReport({
         );
     }
 
-    // Convert status distribution and category distribution to array format for pie charts
+    // --- Prepare data for charts --- (Existing logic for statusDistributionData, leadsByCategoryData, productivityData, weeklyRevenueData)
     const statusDistributionData = Object.entries(
         report?.metrics?.leads?.statusDistribution || {}
-    ).map(([name, value]) => {
-        // Map status to colors
-        const colorMap: Record<string, string> = {
-            PENDING: '#F59E0B',
-            APPROVED: '#10B981',
-            REVIEW: '#4F46E5',
-            DECLINED: '#EF4444',
-            CONVERTED: '#8B5CF6',
-            CANCELLED: '#9CA3AF',
-        };
-
-        return {
-            name,
-            value: Number(value),
-            color: colorMap[name] || '#9CA3AF',
-        };
-    });
+    ).map(([name, value], index) => ({
+        name,
+        value: Number(value),
+        color: getColorForIndex(name, index),
+    }));
 
     const leadsByCategoryData = Object.entries(
         report?.metrics?.leads?.leadsByCategory || {}
-    ).map(([name, value]) => {
-        // Map categories to colors with a richer color palette that matches status colors
-        const colorMap: Record<string, string> = {
-            'Uncategorized': '#9CA3AF',    // Gray
-            'Walk-in': '#4F46E5',          // Indigo (same as REVIEW)
-            'Referral': '#10B981',         // Green (same as APPROVED)
-            'Website': '#8B5CF6',          // Purple (same as CONVERTED)
-            'Phone': '#F59E0B',            // Amber (same as PENDING)
-            'Email': '#EC4899',            // Pink
-            'Social Media': '#3B82F6',     // Blue
-            'Business': '#6366F1',         // Blue-indigo
-            'Personal': '#14B8A6',         // Teal
-        };
+    ).map(([name, value], index) => ({
+        name,
+        value: Number(value),
+        color: getColorForIndex(name, index),
+    }));
 
-        return {
-            name,
-            value: Number(value),
-            color: colorMap[name] || '#9CA3AF', // Default to gray for unknown categories
-        };
-    });
-
-    // Create workforce productivity data
     const productivityData = [
         {
             name: 'Productive',
             value: report?.metrics?.workforce?.productivityRate || 0,
-            color: '#10B981',
+            color: getColorForIndex('Productive'),
         },
         {
             name: 'Idle/Other',
             value: 100 - (report?.metrics?.workforce?.productivityRate || 0),
-            color: '#F59E0B',
+            color: getColorForIndex('Idle/Other'),
         },
     ];
 
-    // Create weekly revenue data from pending quotations
     const weeklyRevenueData = report?.metrics?.sales?.pendingQuotations?.map((quotation: PendingQuotation) => ({
         date: quotation.createdAt.split(' ')[0], // Use the date part
         revenue: quotation.amount
     })) || [];
 
-    // Add today's revenue as the final data point if it exists
     if (report?.metrics?.sales?.revenueToday > 0) {
         weeklyRevenueData.push({
             date: 'Today',
@@ -254,7 +347,6 @@ export function LiveOverviewReport({
         });
     }
 
-    // Ensure we have at least one data point for the chart
     if (weeklyRevenueData.length === 0) {
         weeklyRevenueData.push({
             date: 'Today',
@@ -262,11 +354,11 @@ export function LiveOverviewReport({
         });
     }
 
-    // Prepare task data for charts
+    // Prepare task data (Existing: taskVolumeTrendsData, taskCompletionRatesData, taskPriorityData, taskTypeData, taskFlagStatusData, taskAgingData)
     const taskVolumeTrendsData = [
-        { name: 'Weekly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.weekly || 0 },
-        { name: 'Monthly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.monthly || 0 },
-        { name: 'Quarterly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.quarterly || 0 },
+        { name: 'Weekly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.weekly || 0, color: getColorForIndex('Weekly') },
+        { name: 'Monthly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.monthly || 0, color: getColorForIndex('Monthly') },
+        { name: 'Quarterly', value: report?.metrics?.tasks?.comprehensive?.volumeTrends?.quarterly || 0, color: getColorForIndex('Quarterly') },
     ];
 
     const taskCompletionRatesData = [
@@ -287,124 +379,43 @@ export function LiveOverviewReport({
         },
     ];
 
-    // Prepare task priority data for pie chart
     const taskPriorityData = Object.entries(
         report?.metrics?.tasks?.comprehensive?.priorityAnalysis || {}
-    ).map(([name, data]: [string, any]) => {
-        // Map priority to colors
-        const colorMap: Record<string, string> = {
-            LOW: '#10B981',
-            MEDIUM: '#F59E0B',
-            HIGH: '#EF4444',
-            URGENT: '#7C3AED',
-        };
+    ).map(([name, data]: [string, any], index) => ({
+        name,
+        value: data.totalCount || 0,
+        color: getColorForIndex(name.toUpperCase(), index),
+    }));
 
-        return {
-            name,
-            value: data.totalCount || 0,
-            color: colorMap[name] || '#9CA3AF',
-        };
-    });
-
-    // Prepare task type data for pie chart
     const taskTypeData = Object.entries(
         report?.metrics?.tasks?.comprehensive?.taskTypeDistribution || {}
     )
     .filter(([_, data]: [string, any]) => data.totalCount > 0)
-    .map(([name, data]: [string, any]) => {
-        return {
-            name,
-            value: data.totalCount || 0,
-            color: getColorForIndex(name),
-        };
-    });
+    .map(([name, data]: [string, any], index) => ({
+        name,
+        value: data.totalCount || 0,
+        color: getColorForIndex(name, index),
+    }));
 
-    // Prepare task flag status data for pie chart
     const taskFlagStatusData = Object.entries(
         report?.metrics?.tasks?.flags?.statusDistribution || {}
-    ).map(([name, value]: [string, any]) => {
-        // Map status to colors
-        const colorMap: Record<string, string> = {
-            OPEN: '#EF4444',
-            IN_PROGRESS: '#F59E0B',
-            RESOLVED: '#10B981',
-            CLOSED: '#9CA3AF',
-        };
+    ).map(([name, value]: [string, any], index) => ({
+        name,
+        value: Number(value) || 0,
+        color: getColorForIndex(name.toUpperCase(), index),
+    })).filter(item => item.value > 0);
 
-        return {
-            name,
-            value: Number(value) || 0,
-            color: colorMap[name] || '#9CA3AF',
-        };
-    }).filter(item => item.value > 0);
-
-    // Prepare task aging data
     const taskAgingData = Object.entries(
         report?.metrics?.tasks?.comprehensive?.taskAging || {}
     )
     .filter(([status]) => status !== 'COMPLETED' && status !== 'CANCELLED')
-    .map(([status, data]: [string, any]) => {
-        // Map status to colors
-        const statusColorMap: Record<string, string> = {
-            PENDING: '#F59E0B',     // Amber
-            IN_PROGRESS: '#3B82F6', // Blue
-            OVERDUE: '#EF4444',     // Red
-            POSTPONED: '#8B5CF6',   // Purple
-            MISSED: '#EC4899',      // Pink
-        };
+    .map(([status, data]: [string, any], index) => ({
+        name: status,
+        count: data.count || 0,
+        color: getColorForIndex(status.toUpperCase(), index),
+    }));
 
-        return {
-            name: status,
-            count: data.count || 0,
-            color: statusColorMap[status] || '#9CA3AF', // Default gray if status not found
-        };
-    });
-
-    // Function to generate colors for task types
-    function getColorForIndex(name: string): string {
-        // Define a specific color map for known categories
-        const categoryColorMap: Record<string, string> = {
-            'MEAT_POULTRY': '#EF4444',  // Red
-            'SEAFOOD': '#3B82F6',       // Blue
-            'DAIRY': '#F59E0B',         // Amber
-            'BAKERY': '#F97316',        // Orange
-            'PRODUCE': '#10B981',       // Green
-            'BEVERAGES': '#06B6D4',     // Cyan
-            'SNACKS': '#EC4899',        // Pink
-            'CANNED_GOODS': '#9CA3AF',  // Gray
-            'FROZEN_FOODS': '#60A5FA',  // Light Blue
-            'CLEANING': '#6366F1',      // Indigo
-            'PERSONAL_CARE': '#8B5CF6', // Purple
-            'OTHER': '#78716C',         // Stone
-            'UNCATEGORIZED': '#64748B', // Slate
-        };
-
-        // Check if the category exists in our map
-        if (categoryColorMap[name]) {
-            return categoryColorMap[name];
-        }
-
-        // For unknown categories, use the hash-based approach with a better color palette
-        const fallbackColors = [
-            '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
-            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
-            '#6366F1', '#F97316', '#14B8A6', '#A855F7',
-            '#D946EF', '#F43F5E', '#0EA5E9', '#22D3EE'
-        ];
-
-        // Simple hash function to get consistent color
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-
-        return fallbackColors[Math.abs(hash) % fallbackColors.length];
-    }
-
-    // Format assignee performance data
     const assigneePerformanceData = report?.metrics?.tasks?.comprehensive?.assigneePerformance || [];
-
-    // Define assignee interface for TypeScript
     interface AssigneePerformance {
         assigneeId: number;
         assigneeName: string;
@@ -418,8 +429,27 @@ export function LiveOverviewReport({
         highPriorityCompletionRate: number;
     }
 
+    // Prepare Workforce Demographics Data
+    const workforceDemographics = report?.metrics?.workforce?.demographics || {};
+    const genderData = Object.entries(workforceDemographics.genderDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+    const ethnicityData = Object.entries(workforceDemographics.ethnicityDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+    const maritalStatusData = Object.entries(workforceDemographics.maritalStatusDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+    const bodyTypeData = Object.entries(workforceDemographics.bodyTypeDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+    const smokingHabitsData = Object.entries(workforceDemographics.smokingHabitsDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+    // Age data might need sorting if used in Line chart
+    const ageData = Object.entries(workforceDemographics.ageDistribution || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+
+    // Prepare Check-in Data
+    const checkInSummary = report?.metrics?.checkIns || {};
+    const checkInsByPurposeData = Object.entries(checkInSummary.checkInsByPurpose || {}).map(([name, value], index) => ({ name, value: Number(value), color: getColorForIndex(name, index) }));
+
+    // Prepare Top Lead Generators Data
+    const topLeadGeneratorsData = report?.metrics?.leads?.topLeadGenerators || [];
+
+    // --- Render Component ---
     return (
         <div className="space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between mb-4" id="live-overview-header">
                 <div>
                     <h1 className="text-xl font-normal uppercase font-body">
@@ -453,8 +483,30 @@ export function LiveOverviewReport({
                 </div>
             </div>
 
+            {/* License Info Display (Example) */}
+            {report?.licenseInfo && (
+                <Card className="mb-4" id="live-overview-license-info">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <h3 className="text-sm font-normal uppercase font-body">
+                            License Information
+                        </h3>
+                        <div className="p-1 rounded-md bg-primary/10 text-primary">
+                            <Key className="w-4 h-4" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="text-xs font-thin uppercase text-muted-foreground font-body">
+                        <p>Plan: <span className="font-medium text-foreground">{report.licenseInfo.plan} ({report.licenseInfo.type})</span></p>
+                        <p>Status: <span className="font-medium text-foreground">{report.licenseInfo.status}</span></p>
+                        {report.licenseInfo.validUntil && (
+                            <p>Valid Until: <span className="font-medium text-foreground">{format(new Date(report.licenseInfo.validUntil), 'PP')}</span></p>
+                        )}
+                        <p>Users: <span className="font-medium text-foreground">{report.summary.totalEmployees} / {report.licenseInfo.maxUsers}</span></p>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" id="live-overview-summary-cards-grid">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6" id="live-overview-summary-cards-grid"> {/* Changed to 6 cols */}
                 <SummaryCard
                     title="Workforce"
                     icon={<Users className="w-4 h-4" />}
@@ -481,6 +533,15 @@ export function LiveOverviewReport({
                     }
                     secondaryLabel="In Progress"
                     id="live-overview-summary-card-tasks"
+                />
+                 <SummaryCard
+                    title="Check-Ins"
+                    icon={<MapPin className="w-4 h-4" />} // New Icon
+                    primaryMetric={report?.summary?.totalCheckInsToday || 0}
+                    primaryLabel="Total Today"
+                    secondaryMetric={checkInSummary.clientCheckInsToday || 0}
+                    secondaryLabel="Client Visits"
+                    id="live-overview-summary-card-checkins"
                 />
                 <SummaryCard
                     title="Leads"
@@ -619,14 +680,46 @@ export function LiveOverviewReport({
                 </TabsContent>
 
                 {/* Workforce Tab */}
-                <TabsContent value="workforce-tab" className="pt-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col">
-                            <WorkforceHourlyActivityChart
-                                data={report?.metrics?.workforce?.hourlyData || []}
-                            />
-                        </div>
+                <TabsContent value="workforce" className="pt-6"> {/* Changed value */}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"> {/* Changed grid layout */}
+                        {/* Existing Workforce Charts */}
+                        <WorkforceHourlyActivityChart
+                            data={report?.metrics?.workforce?.hourlyData || []}
+                        />
                         <WorkforceProductivityChart data={productivityData} />
+
+                        {/* New Demographics Charts */}
+                        <DemographicPieChart title="Gender Distribution" data={genderData} />
+                        <DemographicBarChart title="Ethnicity Distribution" data={ethnicityData} />
+                        <DemographicPieChart title="Marital Status" data={maritalStatusData} />
+                        <DemographicBarChart title="Body Type" data={bodyTypeData} />
+                        <DemographicPieChart title="Smoking Habits" data={smokingHabitsData} />
+                        {/* You might want a Bar or Line chart for age */}
+                        <DemographicBarChart title="Age Distribution" data={ageData} />
+
+                        {/* New Check-in Chart (Example) */}
+                        {checkInsByPurposeData.length > 0 && (
+                             <Card className="border shadow-sm border-border/60 bg-card">
+                                <CardHeader className="pb-2">
+                                    <h3 className="text-sm font-normal uppercase font-body">Check-Ins by Purpose</h3>
+                                </CardHeader>
+                                <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={checkInsByPurposeData} layout="vertical" barSize={20}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1}/>
+                                            <XAxis type="number" hide />
+                                            <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} tickLine={false} axisLine={false}/>
+                                            <Tooltip cursor={false} content={<CustomTooltip />} />
+                                            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                                {checkInsByPurposeData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={getColorForIndex(entry.name, index)} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </TabsContent>
 
@@ -1202,66 +1295,44 @@ export function LiveOverviewReport({
                             </CardContent>
                         </Card>
 
-                        {/* Assignee Performance Table */}
+                        {/* Assignee Performance BAR CHART */}
                         <Card className="border shadow-sm border-border/60 bg-card">
                             <CardHeader className="pb-2">
-                                <h3 className="text-sm font-normal uppercase font-body">
-                                    Assignee Performance
-                                </h3>
-                                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                    Task performance metrics by assignee
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-normal uppercase font-body">Assignee Performance</h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">Task metrics by assignee</p>
+                                    </div>
+                                    <Select value={assigneeMetric} onValueChange={setAssigneeMetric}>
+                                        <SelectTrigger className="w-[180px] h-8 text-[10px] uppercase font-body">
+                                            <SelectValue placeholder="Select Metric" className="text-[10px] uppercase font-body" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="totalTasks" className="text-[10px] uppercase font-body">Total Tasks</SelectItem>
+                                            <SelectItem value="completedTasks" className="text-[10px] uppercase font-body">Completed Tasks</SelectItem>
+                                            <SelectItem value="completionRate" className="text-[10px] uppercase font-body">Completion Rate (%)</SelectItem>
+                                            <SelectItem value="avgCompletionTimeHours" className="text-[10px] uppercase font-body" >Avg. Time (Hrs)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </CardHeader>
-                            <CardContent className="p-4 overflow-auto border rounded h-96 border-border/30 bg-card/50">
-                                <table className="w-full">
-                                    <thead className="border-b">
-                                        <tr>
-                                            <th className="p-2 text-xs font-normal text-left uppercase font-body">Assignee</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Total</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Completed</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Rate</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Avg Time (hrs)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {assigneePerformanceData.length > 0 ? (
-                                            assigneePerformanceData.map((assignee: AssigneePerformance, index: number) => (
-                                                <tr key={index} className="border-b border-border/20">
-                                                    <td className="p-2 text-xs font-normal uppercase font-body">
-                                                        <div className="flex flex-row items-center justify-start gap-2">
-                                                            <Avatar className="w-8 h-8 ring-2 ring-primary">
-                                                                {assignee.assigneePhotoURL && (
-                                                                    <AvatarImage
-                                                                        src={assignee.assigneePhotoURL}
-                                                                        alt={assignee.assigneeName}
-                                                                    />
-                                                                )}
-                                                                <AvatarFallback
-                                                                    className="bg-black text-white text-[10px] font-body uppercase"
-                                                                >
-                                                                    {assignee.assigneeName?.split(' ').map(n => n[0]).join('')}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <span className="text-[10px] font-normal uppercase font-body">
-                                                                {assignee.assigneeName}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{assignee.totalTasks}</td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{assignee.completedTasks}</td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{assignee.completionRate}%</td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{assignee.avgCompletionTimeHours}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={5} className="p-4 text-xs font-normal text-center uppercase text-muted-foreground font-body">
-                                                    No assignee performance data available
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={assigneePerformanceData} layout="vertical" barSize={15}>
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1}/>
+                                        <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false}/>
+                                        <YAxis
+                                            dataKey="assigneeName"
+                                            type="category"
+                                            width={100}
+                                            tick={{ fontSize: 10 }}
+                                            tickLine={false}
+                                            axisLine={false}
+                                        />
+                                        <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                                        <Bar dataKey={assigneeMetric} radius={[0, 4, 4, 0]} fill="#3b82f6" />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </CardContent>
                         </Card>
                     </div>
@@ -1598,56 +1669,42 @@ export function LiveOverviewReport({
                         />
                         <LeadsByCategoryChart data={leadsByCategoryData} />
 
-                        {/* Top Lead Generators Table */}
+                        {/* Top Lead Generators BAR CHART */}
                         <Card className="border shadow-sm border-border/60 bg-card">
                             <CardHeader className="pb-2">
-                                <h3 className="text-sm font-normal uppercase font-body">
-                                    Top Lead Generators
-                                </h3>
-                                <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                    Staff performance for lead generation
-                                </p>
+                               <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-normal uppercase font-body">Top Lead Generators</h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">Staff lead generation performance</p>
+                                    </div>
+                                    <Select value={leadGeneratorMetric} onValueChange={setLeadGeneratorMetric}>
+                                        <SelectTrigger className="w-[180px] h-8 text-[10px] uppercase font-body">
+                                            <SelectValue placeholder="Select Metric" className="text-[10px] uppercase font-body" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="leadCount" className="text-[10px] uppercase font-body">Lead Count</SelectItem>
+                                            <SelectItem value="conversionRate" className="text-[10px] uppercase font-body">Conversion Rate (%)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </CardHeader>
-                            <CardContent className="p-4 overflow-auto border rounded h-96 border-border/30 bg-card/50">
-                                <table className="w-full">
-                                    <thead className="border-b">
-                                        <tr>
-                                            <th className="p-2 text-xs font-normal text-left uppercase font-body">Staff Member</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Lead Count</th>
-                                            <th className="p-2 text-xs font-normal text-right uppercase font-body">Conversion Rate</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {report?.metrics?.leads?.topLeadGenerators?.length > 0 ? (
-                                            report.metrics.leads.topLeadGenerators.map((generator: LeadGenerator, index: number) => (
-                                                <tr key={index} className="border-b border-border/20">
-                                                    <td className="p-2 text-xs font-normal uppercase font-body">
-                                                        <div className="flex flex-row items-center justify-start gap-2">
-                                                            <Avatar className="w-8 h-8 ring-2 ring-primary">
-                                                                <AvatarFallback
-                                                                    className="bg-black text-white text-[10px] font-body uppercase"
-                                                                >
-                                                                    {generator.userName?.split(' ').map((n: string) => n[0]).join('')}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <span className="text-[10px] font-normal uppercase font-body">
-                                                                {generator.userName}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{generator.leadCount}</td>
-                                                    <td className="p-2 text-xs font-normal text-right uppercase font-body">{generator.conversionRate}%</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={3} className="p-4 text-xs font-normal text-center uppercase text-muted-foreground font-body">
-                                                    No lead generation data available
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={topLeadGeneratorsData} layout="vertical" barSize={15}>
+                                         <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1}/>
+                                        <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false}/>
+                                        <YAxis
+                                            dataKey="userName"
+                                            type="category"
+                                            width={100}
+                                            tick={{ fontSize: 10 }}
+                                            tickLine={false}
+                                            axisLine={false}
+                                        />
+                                        <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                                        <Bar dataKey={leadGeneratorMetric} radius={[0, 4, 4, 0]} fill="#8B5CF6" />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </CardContent>
                         </Card>
                     </div>
@@ -2300,53 +2357,43 @@ export function LiveOverviewReport({
                             {/* Top Claim Creators */}
                             <Card className="border shadow-sm border-border/60 bg-card">
                                 <CardHeader className="pb-2">
-                                    <h3 className="text-xs font-normal uppercase font-body">
-                                        Top Claim Creators
-                                    </h3>
-                                    <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                                        Top claim creators by count and value
-                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-sm font-normal uppercase font-body">
+                                                Top Claim Creators
+                                            </h3>
+                                            <p className="text-xs font-thin uppercase text-muted-foreground font-body">
+                                                Top claim creators by count and value
+                                            </p>
+                                        </div>
+                                        <Select value={claimCreatorMetric} onValueChange={setClaimCreatorMetric}>
+                                            <SelectTrigger className="w-[180px] h-8 text-xs">
+                                                <SelectValue placeholder="Select Metric" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="claimCount" className="text-xs">Claim Count</SelectItem>
+                                                <SelectItem value="totalValue" className="text-xs">Total Value</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </CardHeader>
-                                <CardContent className="p-4 overflow-auto border rounded h-96 border-border/30 bg-card/50">
-                                    <table className="w-full">
-                                        <thead className="border-b">
-                                            <tr>
-                                                <th className="p-2 text-xs font-normal text-left uppercase font-body">Staff Member</th>
-                                                <th className="p-2 text-xs font-normal text-right uppercase font-body">Claims</th>
-                                                <th className="p-2 text-xs font-normal text-right uppercase font-body">Total Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {report?.metrics?.claims?.topClaimCreators?.length > 0 ? (
-                                                report.metrics.claims.topClaimCreators.map((creator: ClaimCreator, index: number) => (
-                                                    <tr key={index} className="border-b border-border/20">
-                                                        <td className="p-2 text-xs font-normal uppercase font-body">
-                                                            <div className="flex flex-row items-center justify-start gap-2">
-                                                                <Avatar className="w-8 h-8 ring-2 ring-primary">
-                                                                    <AvatarFallback
-                                                                        className="bg-black text-white text-[10px] font-body uppercase"
-                                                                    >
-                                                                        {creator.userName?.split(' ').map((n: string) => n[0]).join('')}
-                                                                    </AvatarFallback>
-                                                                </Avatar>
-                                                                <span className="text-[10px] font-normal uppercase font-body">
-                                                                    {creator.userName}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="p-2 text-xs font-normal text-right uppercase font-body">{creator.claimCount}</td>
-                                                        <td className="p-2 text-xs font-normal text-right uppercase font-body">{creator.formattedValue}</td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan={3} className="p-4 text-xs font-normal text-center uppercase text-muted-foreground font-body">
-                                                        No claim creator data available
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={report?.metrics?.claims?.topClaimCreators || []} layout="vertical" barSize={15}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1}/>
+                                            <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false}/>
+                                            <YAxis
+                                                dataKey="userName"
+                                                type="category"
+                                                width={100}
+                                                tick={{ fontSize: 10 }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                            />
+                                            <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                                            <Bar dataKey={claimCreatorMetric} radius={[0, 4, 4, 0]} fill="#FF8C00" /> {/* DarkOrange color */}
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </CardContent>
                             </Card>
 
@@ -3191,3 +3238,114 @@ function ReportSkeleton() {
         </div>
     );
 }
+
+// Helper component for Pie Charts
+function DemographicPieChart({ title, data }: { title: string; data: DemographicsData[] }) {
+    if (!data || data.length === 0) return null;
+    return (
+        <Card className="border shadow-sm border-border/60 bg-card">
+            <CardHeader className="pb-2">
+                <h3 className="text-sm font-normal uppercase font-body">{title}</h3>
+            </CardHeader>
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            innerRadius={50}
+                            dataKey="value"
+                            paddingAngle={2}
+                            cornerRadius={4}
+                            stroke="transparent"
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                            formatter={(value, entry) => (
+                                <span className="text-[10px] uppercase font-body" style={{ color: entry.color }}>
+                                    {value}
+                                </span>
+                            )}
+                            iconSize={10}
+                            layout="horizontal"
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: '10px' }}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+// Helper component for Bar Charts
+function DemographicBarChart({ title, data }: { title: string; data: DemographicsData[] }) {
+     if (!data || data.length === 0) return null;
+    return (
+        <Card className="border shadow-sm border-border/60 bg-card">
+            <CardHeader className="pb-2">
+                <h3 className="text-sm font-normal uppercase font-body">{title}</h3>
+            </CardHeader>
+            <CardContent className="p-6 border rounded h-96 border-border/30 bg-card/50">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} layout="vertical" barSize={20}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.1}/>
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10}} tickLine={false} axisLine={false}/>
+                        <Tooltip cursor={false} content={<CustomTooltip />} />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        const name = data.name || label || data.assigneeName || data.userName; // Adapt based on chart data
+        const value = payload[0].value;
+        const color = payload[0].fill || data.color; // Get color from payload or data
+        const metricName = payload[0].name || 'Value'; // E.g., 'Total Tasks', 'Lead Count', 'value'
+
+        // Calculate percentage for Pie charts if total is available
+        let percentage = null;
+        if (payload[0]?.payload?.value && payload[0]?.payload?.name && payload.length === 1) { // Basic check for pie-like data
+             // This requires the Pie chart data source to be accessible here, which is tricky.
+             // A simpler approach is to pass total value or pre-calculate percentage in data.
+             // For now, we omit percentage calculation in the generic tooltip.
+        }
+
+        return (
+            <div className="p-3 text-xs border rounded shadow-md bg-card dark:bg-background dark:border-border/50 font-body">
+                <p className="font-normal uppercase ">{name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                    <p className="font-normal uppercase text-muted-foreground">
+                        {metricName.replace(/([A-Z])/g, ' $1').trim()}: <span className="font-medium text-foreground">{value}</span>
+                    </p>
+                </div>
+                {percentage !== null && (
+                    <p className="mt-1 text-xs font-normal uppercase text-muted-foreground">
+                        Percentage: <span className="font-medium text-foreground">{percentage}%</span>
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    return null;
+};

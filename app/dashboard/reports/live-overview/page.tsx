@@ -17,7 +17,7 @@ export default function LiveOverviewPage() {
         <ProtectedRoute>
             <PageTransition type="slide-up">
                 <div className="container py-6 mx-auto">
-                    <div className="mb-6">
+                    <div id="live-overview-breadcrumbs" className="mb-6">
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
@@ -34,7 +34,9 @@ export default function LiveOverviewPage() {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
-                    <LiveOverviewReport />
+                    <div id="live-overview-report-main-wrapper">
+                        <LiveOverviewReport />
+                    </div>
                 </div>
             </PageTransition>
         </ProtectedRoute>

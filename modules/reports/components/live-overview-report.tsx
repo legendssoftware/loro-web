@@ -421,7 +421,7 @@ export function LiveOverviewReport({
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4" id="live-overview-header">
                 <div>
                     <h1 className="text-xl font-normal uppercase font-body">
                         Live Organization Overview
@@ -437,6 +437,7 @@ export function LiveOverviewReport({
                         onClick={handleRefresh}
                         size="sm"
                         className="text-gray-500 hover:text-gray-700"
+                        id="live-overview-refresh-button"
                     >
                         {isRefreshing ? (
                             <>
@@ -454,7 +455,7 @@ export function LiveOverviewReport({
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" id="live-overview-summary-cards-grid">
                 <SummaryCard
                     title="Workforce"
                     icon={<Users className="w-4 h-4" />}
@@ -462,6 +463,7 @@ export function LiveOverviewReport({
                     primaryLabel="Total Employees"
                     secondaryMetric={report?.metrics?.workforce?.activeCount || 0}
                     secondaryLabel="Active Now"
+                    id="live-overview-summary-card-workforce"
                 />
                 <SummaryCard
                     title="Tasks"
@@ -479,6 +481,7 @@ export function LiveOverviewReport({
                         report?.metrics?.tasks?.comprehensive?.taskAging?.IN_PROGRESS?.count || 0
                     }
                     secondaryLabel="In Progress"
+                    id="live-overview-summary-card-tasks"
                 />
                 <SummaryCard
                     title="Leads"
@@ -489,6 +492,7 @@ export function LiveOverviewReport({
                         report?.metrics?.leads?.statusDistribution?.PENDING || 0
                     }
                     secondaryLabel="Pending"
+                    id="live-overview-summary-card-leads"
                 />
                 <SummaryCard
                     title="Sales"
@@ -497,6 +501,7 @@ export function LiveOverviewReport({
                     primaryLabel="Revenue Today"
                     secondaryMetric={report?.metrics?.sales?.quotationsToday || 0}
                     secondaryLabel="Quotations"
+                    id="live-overview-summary-card-sales"
                 />
                 <SummaryCard
                     title="Clients"
@@ -505,6 +510,7 @@ export function LiveOverviewReport({
                     primaryLabel="Interactions Today"
                     secondaryMetric={report?.metrics?.clients?.newClientsToday || 0}
                     secondaryLabel="New Clients"
+                    id="live-overview-summary-card-clients"
                 />
             </div>
 
@@ -514,10 +520,11 @@ export function LiveOverviewReport({
                 value={activeTab}
                 onValueChange={setActiveTab}
             >
-                <TabsList className="w-full h-auto p-0 bg-transparent rounded-none">
+                <TabsList className="w-full h-auto p-0 bg-transparent rounded-none" id="live-overview-tabs-list">
                     <TabsTrigger
                         value="overview"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-custom-report"
                     >
                         <BarChart2 className="w-4 h-4 mr-2" />
                         Custom Report
@@ -525,6 +532,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="workforce"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-workforce"
                     >
                         <Users className="w-4 h-4 mr-2" />
                         Workforce
@@ -532,6 +540,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="tasks"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-tasks"
                     >
                         <ClipboardCheck className="w-4 h-4 mr-2" />
                         Tasks
@@ -539,6 +548,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="taskflags"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-taskflags"
                     >
                         <Flag className="w-4 h-4 mr-2" />
                         Task Flags
@@ -546,6 +556,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="leads"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-leads"
                     >
                         <Briefcase className="w-4 h-4 mr-2" />
                         Leads
@@ -553,6 +564,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="sales"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-sales"
                     >
                         <DollarSign className="w-4 h-4 mr-2" />
                         Sales
@@ -560,6 +572,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="products"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-products"
                     >
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         Products
@@ -567,6 +580,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="claims"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-claims"
                     >
                         <Receipt className="w-4 h-4 mr-2" />
                         Claims
@@ -574,6 +588,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="journals"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-journals"
                     >
                         <BookOpen className="w-4 h-4 mr-2" />
                         Journals
@@ -581,6 +596,7 @@ export function LiveOverviewReport({
                     <TabsTrigger
                         value="clients"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
+                        id="live-overview-tab-trigger-clients"
                     >
                         <Users className="w-4 h-4 mr-2" />
                         Clients
@@ -588,7 +604,7 @@ export function LiveOverviewReport({
                 </TabsList>
 
                 {/* Overview Tab (renamed to Custom Report) */}
-                <TabsContent value="overview" className="pt-6">
+                <TabsContent value="overview" className="pt-6" id="live-overview-tab-content-custom-report">
                     <div className="flex flex-col items-center justify-center min-h-[400px]">
                         <BarChart2 className="w-12 h-12 mb-4 text-primary/50" />
                         <h3 className="text-lg font-normal uppercase font-body">Custom Report</h3>
@@ -3100,6 +3116,7 @@ function SummaryCard({
     primaryLabel,
     secondaryMetric,
     secondaryLabel,
+    id,
 }: {
     title: string;
     icon: React.ReactNode;
@@ -3107,9 +3124,10 @@ function SummaryCard({
     primaryLabel: string;
     secondaryMetric: number | string;
     secondaryLabel: string;
+    id?: string;
 }) {
     return (
-        <Card>
+        <Card id={id}>
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <h3 className="text-sm font-normal uppercase font-body">
                     {title}

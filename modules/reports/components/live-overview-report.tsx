@@ -9,7 +9,6 @@ import {
     Briefcase,
     DollarSign,
     UserCheck,
-    BarChart2,
     RefreshCw,
     ShoppingBag,
     Flag,
@@ -144,7 +143,7 @@ export function LiveOverviewReport({
     organizationId,
     branchId,
 }: LiveOverviewReportProps) {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('sales');
     const { report, isLoading, error, refreshData } = useLiveOverviewReport({
         organizationId,
         branchId,
@@ -516,18 +515,18 @@ export function LiveOverviewReport({
 
             {/* Tabs for different sections */}
             <Tabs
-                defaultValue="overview"
+                defaultValue="sales"
                 value={activeTab}
                 onValueChange={setActiveTab}
             >
                 <TabsList className="w-full h-auto p-0 bg-transparent rounded-none" id="live-overview-tabs-list">
                     <TabsTrigger
-                        value="overview"
+                        value="sales"
                         className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-                        id="live-overview-tab-trigger-custom-report"
+                        id="live-overview-tab-trigger-sales"
                     >
-                        <BarChart2 className="w-4 h-4 mr-2" />
-                        Custom Report
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Sales
                     </TabsTrigger>
                     <TabsTrigger
                         value="workforce"
@@ -560,14 +559,6 @@ export function LiveOverviewReport({
                     >
                         <Briefcase className="w-4 h-4 mr-2" />
                         Leads
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="sales"
-                        className="px-6 py-2 text-xs font-normal uppercase rounded-none font-body data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none"
-                        id="live-overview-tab-trigger-sales"
-                    >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        Sales
                     </TabsTrigger>
                     <TabsTrigger
                         value="products"
@@ -603,14 +594,27 @@ export function LiveOverviewReport({
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Overview Tab (renamed to Custom Report) */}
-                <TabsContent value="overview" className="pt-6" id="live-overview-tab-content-custom-report">
-                    <div className="flex flex-col items-center justify-center min-h-[400px]">
-                        <BarChart2 className="w-12 h-12 mb-4 text-primary/50" />
-                        <h3 className="text-lg font-normal uppercase font-body">Custom Report</h3>
-                        <p className="text-xs font-thin uppercase text-muted-foreground font-body">
-                            Activating soon
-                        </p>
+                {/* Sales Tab */}
+                <TabsContent value="sales" className="pt-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div className="flex flex-col">
+                            <SalesHourlyActivityChart
+                                data={report?.metrics?.sales?.hourlySales || []}
+                            />
+                        </div>
+                        <WeeklyRevenueChart data={weeklyRevenueData} />
+                        <TopPerformersPieChart
+                            data={report?.metrics?.sales?.topPerformers || []}
+                        />
+                        <AverageOrderValueChart
+                            quotationsData={[
+                                ...(report?.metrics?.sales?.recentQuotations || []),
+                                ...(report?.metrics?.sales?.pendingQuotations || [])
+                            ]}
+                        />
+                        <QuotationItemsChart
+                            quotationsData={report?.metrics?.sales?.recentQuotations || []}
+                        />
                     </div>
                 </TabsContent>
 
@@ -1646,30 +1650,6 @@ export function LiveOverviewReport({
                                 </table>
                             </CardContent>
                         </Card>
-                    </div>
-                </TabsContent>
-
-                {/* Sales Tab */}
-                <TabsContent value="sales" className="pt-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col">
-                            <SalesHourlyActivityChart
-                                data={report?.metrics?.sales?.hourlySales || []}
-                            />
-                        </div>
-                        <WeeklyRevenueChart data={weeklyRevenueData} />
-                        <TopPerformersPieChart
-                            data={report?.metrics?.sales?.topPerformers || []}
-                        />
-                        <AverageOrderValueChart
-                            quotationsData={[
-                                ...(report?.metrics?.sales?.recentQuotations || []),
-                                ...(report?.metrics?.sales?.pendingQuotations || [])
-                            ]}
-                        />
-                        <QuotationItemsChart
-                            quotationsData={report?.metrics?.sales?.recentQuotations || []}
-                        />
                     </div>
                 </TabsContent>
 

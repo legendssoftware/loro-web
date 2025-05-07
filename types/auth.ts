@@ -63,8 +63,8 @@ export const rolePermissions: Record<AccessLevel, RolePermissions> = {
     features: ['claims', 'tasks', 'leads', 'quotations', 'clients', 'staff'],
   },
   [AccessLevel.USER]: {
-    routes: ['/claims', '/tasks', '/leads', '/quotations'],
-    features: ['claims', 'tasks', 'leads', 'quotations'],
+    routes: ['/claims', '/tasks', '/leads', '/quotations', '/journals'],
+    features: ['claims', 'tasks', 'leads', 'quotations', 'journals'],
   },
   // Define permissions for other roles
   [AccessLevel.DEVELOPER]: { routes: ['*'], features: ['*'] },

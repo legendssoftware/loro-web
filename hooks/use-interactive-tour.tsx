@@ -123,164 +123,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#live-overview-summary-card-workforce',
-            popover: {
-                title: 'WORKFORCE AT A GLANCE',
-                description:
-                    '👥 View key metrics about your workforce, such as online users, team performance, or recent activity. Click to dive deeper into staff management or live tracking.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-summary-card-tasks',
-            popover: {
-                title: 'TASKS SNAPSHOT',
-                description:
-                    '✅ Get a quick look at task distribution, including pending, in-progress, and completed tasks. Click to navigate to the detailed task management board or list.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-summary-card-leads',
-            popover: {
-                title: 'LEADS FUNNEL',
-                description:
-                    '📈 See the current status of your sales leads, new inquiries, and conversion highlights. Click to manage leads, update their status, or analyze lead sources.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-summary-card-sales',
-            popover: {
-                title: 'SALES PERFORMANCE',
-                description:
-                    '💰 Track key sales metrics, recent orders, or quotation statuses. Click to explore detailed sales reports, manage quotations, or view product performance.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-summary-card-clients',
-            popover: {
-                title: 'CLIENTS STATUS',
-                description:
-                    '🤝 Monitor client relationships, recent interactions, and account statuses. Click to access detailed client profiles, communication history, and engagement metrics.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#tour-step-help-trigger',
-            popover: {
-                title: 'REMEMBER, HELP IS ALWAYS HERE',
-                description:
-                    '🎯 Need assistance anytime? Just click this help icon to restart the tour or use the voice assistant for immediate support with any features or questions.',
-                side: 'bottom',
-                align: 'end',
-            },
-        },
-        {
-            popover: {
-                title: '📊 DETAILED REPORTS PER ORGANIZATION & BRANCH',
-                description:
-                    "Now, let's explore the detailed analytics tabs that provide in-depth insights for each area of your business. These tabs offer comprehensive data tailored to your organization and branch.",
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-workforce',
-            popover: {
-                title: '👥 WORKFORCE REPORTS',
-                description:
-                    'Dive deep into staff performance metrics, time tracking, productivity trends, and attendance patterns. Monitor team efficiency and identify top performers across departments.',
-                side: 'top',
-                align: 'start',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-tasks',
-            popover: {
-                title: '✅ TASKS ANALYTICS',
-                description:
-                    'Analyze task completion rates, overdue assignments, priority distribution, and team workload balance. Track project milestones and identify process bottlenecks.',
-                side: 'top',
-                align: 'start',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-taskflags',
-            popover: {
-                title: '🚩 TASK FLAGS MONITORING',
-                description:
-                    'Review flagged tasks requiring attention, escalation patterns, recurring issues, and resolution times. Essential for quality control and process improvement.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-leads',
-            popover: {
-                title: '🌱 LEADS DASHBOARD',
-                description:
-                    'Track lead generation performance, conversion rates, source effectiveness, and pipeline velocity. Optimize your customer acquisition strategy with detailed funnel analytics.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-sales',
-            popover: {
-                title: '💰 SALES PERFORMANCE',
-                description:
-                    'Monitor revenue trends, sales team metrics, product performance, and deal closure rates. Compare actual results against targets and identify growth opportunities.',
-                side: 'top',
-                align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-products',
-            popover: {
-                title: '🛍️ PRODUCT ANALYTICS',
-                description:
-                    'Examine product performance metrics, inventory status, category analysis, and margin contribution. Identify best-selling items and optimize your product portfolio.',
-                side: 'top',
-                align: 'end',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-claims',
-            popover: {
-                title: '📝 CLAIMS OVERVIEW',
-                description:
-                    'Review expense claims statistics, approval rates, processing times, and category distribution. Important for financial oversight and budget management.',
-                side: 'top',
-                align: 'end',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-journals',
-            popover: {
-                title: '📓 JOURNALS INSIGHTS',
-                description:
-                    'Analyze communication logs, field notes quality, client interaction records, and information sharing patterns across your organization.',
-                side: 'top',
-                align: 'end',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-clients',
-            popover: {
-                title: '🤝 CLIENT ANALYTICS',
-                description:
-                    'Study client acquisition trends, retention rates, satisfaction scores, and lifetime value metrics. Segment clients by various attributes for targeted strategies.',
-                side: 'top',
-                align: 'end',
-            },
-        },
-        {
             popover: {
                 title: '🔄 REAL-TIME DATA ARCHITECTURE',
                 description:
@@ -307,9 +149,250 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
+            element: '#toggle-license-info-button',
             popover: {
+                title: '👁️ TOGGLE VISIBILITY',
                 description:
-                    "That's the main dashboard! You\'re all set to explore the full power of Loro CRM.",
+                    'Click this button to hide or show the License Information card below, giving you more space if needed.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-license-info',
+            popover: {
+                title: '🔑 LICENSE DETAILS',
+                description:
+                    'Displays your current Loro CRM license plan, status, validity, and user/branch limits. Keep an eye on this to ensure smooth operation!',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#toggle-summary-cards-button',
+            popover: {
+                title: '👁️ TOGGLE SUMMARY VISIBILITY',
+                description:
+                    'Use this button to collapse or expand the entire grid of summary cards below. Handy for focusing on the detailed charts!',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-summary-cards-grid',
+            popover: {
+                title: '📊 Key Metrics at a Glance!',
+                description:
+                    "This top section gives you a powerful, summarized view of your core operational areas. Each card highlights crucial numbers for Workforce, Tasks, Leads, Sales, and Clients. Let's look at them one by one! 👇",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-attendance-stats',
+            popover: {
+                title: '⏱️ ATTENDANCE AVERAGES',
+                description:
+                    'Quickly see the average shift duration and average break time for your team today. Useful for understanding overall work patterns.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-checkins',
+            popover: {
+                title: '📍 CHECK-IN COUNT',
+                description:
+                    'Shows the total number of check-ins recorded today, including client visits. Helps monitor daily activity levels.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-workforce',
+            popover: {
+                title: '👥 Workforce Snapshot',
+                description:
+                    "Check your team's pulse! See the \"Total Employees\" (14) and how many are \"Active Now\" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-tasks',
+            popover: {
+                title: '✅ Tasks Tracker',
+                description:
+                    "Stay on top of productivity! This card shows how many tasks were \"Completed Today\" (7) and how many are currently \"In Progress\" (2). Essential for monitoring workflow and efficiency. 🗓️",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-leads',
+            popover: {
+                title: '💡 Leads Funnel Overview',
+                description:
+                    "How are your new opportunities looking? See how many leads were \"Generated Today\" (2) and the number of \"Pending\" leads (35) that need attention. Key for your sales pipeline! 🚀",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-sales',
+            popover: {
+                title: '💰 Sales Performance',
+                description:
+                    "Money talks! View your \"Revenue Today\" (R 1,574.98) and the number of \"Quotations\" made (3). This is a direct indicator of your daily sales success. 📈",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-summary-card-clients',
+            popover: {
+                title: '🤝 Client Engagement',
+                description:
+                    "Keep your clients happy! Track \"Interactions Today\" (0) and see how many \"New Clients\" (0) you've welcomed. Vital for customer relationship management. 😊",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tabs-list',
+            popover: {
+                title: '🔍 Dive Deeper with Tabs!',
+                description:
+                    "Want more detail? This Tab Bar is your gateway to in-depth analytics for each specific area. The currently selected tab's content is shown below. Let's explore each tab! 👇",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-custom-report',
+            popover: {
+                title: '📊 Custom Report',
+                description:
+                    "Currently selected, this tab shows 'Activating Soon', meaning customizable reporting features are coming. This will let you build reports tailored to your specific business needs. 🔮",
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-workforce',
+            popover: {
+                title: '👥 Workforce Analytics',
+                description:
+                    "Click here to see detailed workforce metrics like employee hourly activity trends, productivity rates, attendance patterns, and more. Perfect for monitoring team efficiency and engagement. 📉",
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-tasks',
+            popover: {
+                title: '✅ Tasks Insights',
+                description:
+                    "Access comprehensive task analytics including completion rates, priority distribution, aging analysis, and assignee performance. Helps identify workflow bottlenecks and star performers. 📋",
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-taskflags',
+            popover: {
+                title: '🚩 Task Flags Analysis',
+                description:
+                    "Monitor issues and blockers with detailed flag analytics. See flag status distribution, most flagged tasks, top flag creators, and recent flags that need attention. Crucial for quality management. ⚠️",
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-leads',
+            popover: {
+                title: '🌱 Leads Performance',
+                description:
+                    "Analyze your lead generation efforts with charts showing hourly activity, status distribution by category, and top performing lead generators. Optimize your customer acquisition strategy. 💰",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-sales',
+            popover: {
+                title: '💵 Sales Analytics',
+                description:
+                    "Track your revenue performance with detailed sales metrics. View hourly sales activity, weekly revenue trends, top performers, average order values, and quotation analysis. 📊",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-products',
+            popover: {
+                title: '🛍️ Product Insights',
+                description:
+                    "Get visibility into your product performance with category and status distribution charts, top performing products data, and inventory stats including low stock alerts. 📦",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-claims',
+            popover: {
+                title: '📝 Claims Overview',
+                description:
+                    "Monitor expense claims with detailed analytics on status and category distribution, top claim creators, and recent claim submissions. Essential for financial oversight. 💸",
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-journals',
+            popover: {
+                title: '📓 Journals Analytics',
+                description:
+                    "Review journal entry metrics including status distribution, top creators, and recent entries. Perfect for tracking field notes, client interactions, and internal communications. 📔",
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-clients',
+            popover: {
+                title: '🤝 CLIENT ANALYTICS',
+                description:
+                    'Study client acquisition trends, retention rates, satisfaction scores, and lifetime value metrics. Segment clients by various attributes for targeted strategies.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-tab-content-custom-report',
+            popover: {
+                title: '💡 Tab Content Area',
+                description:
+                    "This space displays the detailed data for whichever tab you've selected above. Each tab reveals different charts, tables, and metrics specific to that area of your business. Try clicking different tabs to explore! 📈",
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#tour-step-help-trigger',
+            popover: {
+                title: '🔍 Need Help Anytime?',
+                description:
+                    "If you ever need assistance understanding any metrics or features, simply click this help icon to restart the tour or access the voice assistant for immediate support. We're here to help you get the most from your analytics! 🤝",
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            popover: {
+                title: '🎉 You\'re All Set to Explore! 🎉',
+                description:
+                    "That covers the Live Organization Overview! Remember to click through the different tabs to see detailed analytics for each section. Use the refresh button to get the latest data, and enjoy your real-time insights! Happy exploring! 🚀",
                 align: 'center',
             },
         },
@@ -1098,16 +1181,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                     "Want more detail? This Tab Bar is your gateway to in-depth analytics for each specific area. The currently selected tab's content is shown below. Let's explore each tab! 👇",
                 side: 'bottom',
                 align: 'center',
-            },
-        },
-        {
-            element: '#live-overview-tab-trigger-custom-report',
-            popover: {
-                title: '📊 Custom Report',
-                description:
-                    "Currently selected, this tab shows 'Activating Soon', meaning customizable reporting features are coming. This will let you build reports tailored to your specific business needs. 🔮",
-                side: 'bottom',
-                align: 'start',
             },
         },
         {

@@ -496,6 +496,7 @@ export function LiveOverviewReport({
                         size="sm"
                         onClick={() => setIsLicenseInfoVisible(!isLicenseInfoVisible)}
                         className="text-xs uppercase font-body text-muted-foreground hover:text-foreground"
+                        id="toggle-license-info-button"
                     >
                         {isLicenseInfoVisible ? (
                             <><ChevronUp className="w-3 h-3 mr-1" /> Hide License Info</>
@@ -537,6 +538,7 @@ export function LiveOverviewReport({
                     size="sm"
                     onClick={() => setIsSummaryCardsVisible(!isSummaryCardsVisible)}
                     className="text-xs uppercase font-body text-muted-foreground hover:text-foreground"
+                    id="toggle-summary-cards-button"
                 >
                     {isSummaryCardsVisible ? (
                         <><ChevronUp className="w-3 h-3 mr-1" /> Hide Summary</>
@@ -718,6 +720,7 @@ export function LiveOverviewReport({
 
                 {/* Sales Tab */}
                 <TabsContent value="sales" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-sales-header">Sales Overview</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="flex flex-col">
                             <SalesHourlyActivityChart
@@ -741,8 +744,9 @@ export function LiveOverviewReport({
                 </TabsContent>
 
                 {/* Workforce Tab */}
-                <TabsContent value="workforce" className="pt-6"> {/* Changed value */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"> {/* Changed grid layout */}
+                <TabsContent value="workforce" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-workforce-header">Workforce Analytics</h2>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {/* Existing Workforce Charts */}
                         <WorkforceHourlyActivityChart
                             data={report?.metrics?.workforce?.hourlyData || []}
@@ -786,6 +790,7 @@ export function LiveOverviewReport({
 
                 {/* Attendance Tab */}
                 <TabsContent value="attendance" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-attendance-header">Attendance Summary</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         <SummaryCard
                             title="Attendance Records Today"
@@ -819,6 +824,7 @@ export function LiveOverviewReport({
 
                 {/* Tasks Tab */}
                 <TabsContent value="tasks" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-tasks-header">Task Metrics</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         {/* Task Volume Trends */}
                         <Card className="border shadow-sm border-border/60 bg-card">
@@ -1435,7 +1441,7 @@ export function LiveOverviewReport({
                 {/* Task Flags Tab */}
                 <TabsContent value="taskflags" className="pt-6">
                     <div className="space-y-6">
-                        <h2 className="text-lg font-normal uppercase font-body">Task Flags</h2>
+                        <h2 className="text-lg font-normal uppercase font-body" id="live-overview-taskflags-header">Task Flags</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="shadow-sm bg-card">
                                 <CardContent className="p-6">
@@ -1752,6 +1758,7 @@ export function LiveOverviewReport({
 
                 {/* Leads Tab */}
                 <TabsContent value="leads" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-leads-header">Leads Pipeline</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="flex flex-col">
                             <LeadsHourlyActivityChart
@@ -1806,6 +1813,7 @@ export function LiveOverviewReport({
 
                 {/* Products Tab */}
                 <TabsContent value="products" className="pt-6">
+                    <h2 className="mb-4 text-lg font-normal uppercase font-body" id="live-overview-products-header">Product & Inventory</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         {/* Product Category Distribution */}
                         <Card className="border shadow-sm border-border/60 bg-card">
@@ -2174,7 +2182,7 @@ export function LiveOverviewReport({
                 {/* Claims Tab */}
                 <TabsContent value="claims" className="pt-6">
                     <div className="space-y-6">
-                        <h2 className="text-lg font-normal uppercase font-body">Claims Overview</h2>
+                        <h2 className="text-lg font-normal uppercase font-body" id="live-overview-claims-header">Claims Overview</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="shadow-sm bg-card">
                                 <CardContent className="p-6">
@@ -2575,7 +2583,7 @@ export function LiveOverviewReport({
                 {/* Journals Tab */}
                 <TabsContent value="journals" className="pt-6">
                     <div className="space-y-6">
-                        <h2 className="text-lg font-normal uppercase font-body">Journals</h2>
+                        <h2 className="text-lg font-normal uppercase font-body" id="live-overview-journals-header">Journals</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             <Card className="shadow-sm bg-card">
                                 <CardContent className="p-6">
@@ -2863,7 +2871,7 @@ export function LiveOverviewReport({
                 {/* Clients Tab */}
                 <TabsContent value="clients" className="pt-6">
                     <div className="space-y-6">
-                        <h2 className="text-lg font-normal uppercase font-body">Clients Overview</h2>
+                        <h2 className="text-lg font-normal uppercase font-body" id="live-overview-clients-header">Clients Overview</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="shadow-sm bg-card">
                                 <CardContent className="p-6">

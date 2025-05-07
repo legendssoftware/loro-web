@@ -184,6 +184,130 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
+                title: '📊 DETAILED REPORTS PER ORGANIZATION & BRANCH',
+                description:
+                    "Now, let's explore the detailed analytics tabs that provide in-depth insights for each area of your business. These tabs offer comprehensive data tailored to your organization and branch.",
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-workforce',
+            popover: {
+                title: '👥 WORKFORCE REPORTS',
+                description:
+                    'Dive deep into staff performance metrics, time tracking, productivity trends, and attendance patterns. Monitor team efficiency and identify top performers across departments.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-tasks',
+            popover: {
+                title: '✅ TASKS ANALYTICS',
+                description:
+                    'Analyze task completion rates, overdue assignments, priority distribution, and team workload balance. Track project milestones and identify process bottlenecks.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-taskflags',
+            popover: {
+                title: '🚩 TASK FLAGS MONITORING',
+                description:
+                    'Review flagged tasks requiring attention, escalation patterns, recurring issues, and resolution times. Essential for quality control and process improvement.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-leads',
+            popover: {
+                title: '🌱 LEADS DASHBOARD',
+                description:
+                    'Track lead generation performance, conversion rates, source effectiveness, and pipeline velocity. Optimize your customer acquisition strategy with detailed funnel analytics.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-sales',
+            popover: {
+                title: '💰 SALES PERFORMANCE',
+                description:
+                    'Monitor revenue trends, sales team metrics, product performance, and deal closure rates. Compare actual results against targets and identify growth opportunities.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-products',
+            popover: {
+                title: '🛍️ PRODUCT ANALYTICS',
+                description:
+                    'Examine product performance metrics, inventory status, category analysis, and margin contribution. Identify best-selling items and optimize your product portfolio.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-claims',
+            popover: {
+                title: '📝 CLAIMS OVERVIEW',
+                description:
+                    'Review expense claims statistics, approval rates, processing times, and category distribution. Important for financial oversight and budget management.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-journals',
+            popover: {
+                title: '📓 JOURNALS INSIGHTS',
+                description:
+                    'Analyze communication logs, field notes quality, client interaction records, and information sharing patterns across your organization.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#live-overview-tab-trigger-clients',
+            popover: {
+                title: '🤝 CLIENT ANALYTICS',
+                description:
+                    'Study client acquisition trends, retention rates, satisfaction scores, and lifetime value metrics. Segment clients by various attributes for targeted strategies.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            popover: {
+                title: '🔄 REAL-TIME DATA ARCHITECTURE',
+                description:
+                    'Our dashboard operates with a 0.5% error rate and refreshes every 5 minutes. Data is cached for optimal performance with a 15-minute expiration to balance freshness and system load.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '📊 LIVE DATA PROCESSING',
+                description:
+                    'Live metrics are processed using a distributed stream architecture with incremental updates. This provides near real-time insights while maintaining system stability across high user loads.',
+                align: 'center',
+            },
+        },
+        {
+            element: '#live-overview-refresh-button',
+            popover: {
+                title: '🔄 MANUAL REFRESH',
+                description:
+                    'Need the very latest data immediately? Click this refresh button at any time to pull the most current metrics directly from our data services. Perfect when making time-sensitive decisions.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            popover: {
                 description:
                     "That's the main dashboard! You\'re all set to explore the full power of Loro CRM.",
                 align: 'center',
@@ -973,10 +1097,10 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#live-overview-tab-trigger-clients',
             popover: {
-                title: '👨‍💼 Client Analytics',
+                title: '🤝 CLIENT ANALYTICS',
                 description:
-                    "Get comprehensive client data with charts showing category and risk level distribution, recent clients, and engagement metrics. Crucial for client relationship management. 🤝",
-                side: 'bottom',
+                    'Study client acquisition trends, retention rates, satisfaction scores, and lifetime value metrics. Segment clients by various attributes for targeted strategies.',
+                side: 'top',
                 align: 'end',
             },
         },

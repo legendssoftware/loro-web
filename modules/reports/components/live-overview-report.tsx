@@ -615,7 +615,7 @@ export function LiveOverviewReport({
                 </TabsContent>
 
                 {/* Workforce Tab */}
-                <TabsContent value="workforce" className="pt-6">
+                <TabsContent value="workforce-tab" className="pt-6">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="flex flex-col">
                             <WorkforceHourlyActivityChart

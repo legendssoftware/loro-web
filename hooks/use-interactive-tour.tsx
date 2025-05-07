@@ -330,39 +330,135 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#leads-table',
             popover: {
-                title: 'LEADS COLLECTION',
+                title: '📋 LEADS BOARD OVERVIEW',
                 description:
-                    '📋 This list shows leads, primarily collected by field agents via the Loro mobile app (available on app stores or the landing page). Click a lead to view details.',
+                    'This is your kanban-style leads management board. Leads are organized by status columns showing the full lifecycle from initial contact to conversion or decline.',
+                align: 'center',
+            },
+        },
+        {
+            element: '#pending-leads-column',
+            popover: {
+                title: '⏱️ PENDING LEADS',
+                description:
+                    'New leads start here. These are fresh opportunities that need initial review and follow-up. The number shows how many leads are waiting for your attention.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#approved-leads-column',
+            popover: {
+                title: '✅ APPROVED LEADS',
+                description:
+                    'These leads have been qualified and approved for follow-up. They\'re promising opportunities that your team is actively pursuing.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#review-leads-column',
+            popover: {
+                title: '🔍 UNDER REVIEW',
+                description:
+                    'Leads requiring additional information or verification before proceeding. They\'re being evaluated for potential or waiting for specific details.',
                 side: 'top',
                 align: 'center',
             },
         },
         {
-            element: '.lead-card',
+            element: '#declined-leads-column',
             popover: {
-                title: 'LEAD DETAILS',
+                title: '❌ DECLINED LEADS',
                 description:
-                    '🖱️ Clicking a lead opens a detailed modal. Here you can review information, see activity history, and use quick actions.',
+                    'These opportunities were evaluated but determined not to be a good fit. Keeping them visible helps track patterns and improve lead qualification.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#cancelled-leads-column',
+            popover: {
+                title: '🚫 CANCELLED LEADS',
+                description:
+                    'Leads that were initially promising but later cancelled due to changed circumstances or requirements. Different from declined as these had positive initial engagement.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#converted-leads-column',
+            popover: {
+                title: '🎯 CONVERTED TO CLIENTS',
+                description:
+                    'Success! These leads have been successfully converted into paying clients. They\'ve completed the sales funnel and are now in your client database.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        {
+            element: '#lead-card-example',
+            popover: {
+                title: '📇 LEAD CARD',
+                description:
+                    'Each card represents one lead. The color band shows status, and cards display key contact information, notes, creation date, and the team member who added them.',
                 side: 'right',
                 align: 'start',
             },
         },
         {
-            element: '#lead-quick-actions-footer',
+            element: '#lead-name-field',
             popover: {
-                title: 'QUICK ACTIONS (in Modal)',
+                title: '👤 LEAD NAME & DETAILS',
                 description:
-                    '⚡ Use the buttons in the modal footer to quickly update status (Pending, Review, Approved, Declined, Cancelled), Create a Task, Convert to Client, or Delete the lead.',
+                    'The primary lead information including name, business, and a brief note about their interest or situation. Click on any lead to see full details and contact information.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        {
+            element: '#lead-contact-details',
+            popover: {
+                title: '📞 CONTACT DETAILS',
+                description:
+                    'Essential contact information for follow-up. Depending on the lead, you\'ll see email, phone number, and business location for quick reference.',
                 side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#lead-metadata-section',
+            popover: {
+                title: '📅 LEAD METADATA',
+                description:
+                    'See at a glance when the lead was created and other important timestamps. Historical data helps you make informed decisions about follow-up timing.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#lead-quick-actions',
+            popover: {
+                title: '⚡ QUICK ACTIONS',
+                description:
+                    'Access common actions directly from the lead card, i.e call, email, message as a way to save time and improve efficiency.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            popover: {
+                title: '📊 LEADS INSIGHTS',
+                description:
+                    'Pay attention to the numbers at the top of each column. They provide a quick snapshot of your sales funnel and help identify bottlenecks or opportunities for improvement.',
                 align: 'center',
             },
         },
         {
             popover: {
                 description:
-                    "That's the Leads page! You\'re ready to manage your potential customers.",
+                    "That's the Leads page! You're now equipped to effectively manage your sales pipeline from initial contact to client conversion.",
                 align: 'center',
             },
         },

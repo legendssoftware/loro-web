@@ -209,7 +209,7 @@ export function LeadsFilter({
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2">
+        <div className="flex items-center justify-end flex-1 gap-2" id="leads-filter-container">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
                 <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />

@@ -30,13 +30,14 @@ export function LeadsKanban({
     onDeleteLead,
     onAddLead,
 }: LeadsKanbanProps) {
+
     const renderColumn = useCallback(
-        (status: LeadStatus, title: string, count: number) => {
+        (status: LeadStatus, title: string, count: number, id: string) => {
             const leads = leadsByStatus[status] || [];
             const colors = StatusColors[status];
 
             return (
-                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
+                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col" id={id}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-between mb-2">
                             <div
@@ -72,6 +73,7 @@ export function LeadsKanban({
                                 onUpdateStatus={onUpdateLeadStatus}
                                 onDelete={onDeleteLead}
                                 index={index}
+                                id={status === LeadStatus.PENDING && index === 0 ? "lead-card-example" : undefined}
                             />
                         ))}
                         {leads?.length === 0 && <EmptyColumn />}
@@ -85,43 +87,50 @@ export function LeadsKanban({
     return (
         <div
             className="flex flex-row items-start w-full h-full gap-2 overflow-x-scroll overflow-y-hidden"
-            id="leads-table"
+            id="leads-kanban"
+            data-drag-drop-area="true"
         >
             {/* PENDING */}
             {renderColumn(
                 LeadStatus.PENDING,
                 'Pending',
                 leadsByStatus[LeadStatus.PENDING]?.length || 0,
+                'pending-leads-column',
             )}
             {/* APPROVED */}
             {renderColumn(
                 LeadStatus.APPROVED,
                 'Approved',
                 leadsByStatus[LeadStatus.APPROVED]?.length || 0,
+                'approved-leads-column',
             )}
             {/* REVIEW */}
             {renderColumn(
                 LeadStatus.REVIEW,
                 'Review',
                 leadsByStatus[LeadStatus.REVIEW]?.length || 0,
+                'review-leads-column',
             )}
             {/* DECLINED */}
             {renderColumn(
                 LeadStatus.DECLINED,
                 'Declined',
                 leadsByStatus[LeadStatus.DECLINED]?.length || 0,
+                'declined-leads-column',
             )}
             {/* CANCELLED */}
             {renderColumn(
                 LeadStatus.CANCELLED,
                 'Cancelled',
                 leadsByStatus[LeadStatus.CANCELLED]?.length || 0,
+                'cancelled-leads-column',
             )}
             {/* CONVERTED */}
             {renderColumn(
                 LeadStatus.CONVERTED,
                 'Converted to Clients',
                 leadsByStatus[LeadStatus.CONVERTED]?.length || 0,
+                'converted-leads-column',
             )}
         </div>
     );

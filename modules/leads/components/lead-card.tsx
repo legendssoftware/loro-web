@@ -2,17 +2,26 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Lead, LeadStatus } from '@/lib/types/lead';
-import { Clock, Building, Mail, Phone } from 'lucide-react';
+import {
+    Clock,
+    Building,
+    Mail,
+    Phone,
+    PhoneCall,
+    MessageSquare,
+} from 'lucide-react';
 import { useState, useCallback, memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { LeadDetailsModal } from './lead-details-modal';
+import { toast } from 'react-hot-toast';
 
 interface LeadCardProps {
     lead: Lead;
     onUpdateStatus?: (leadId: number, newStatus: string) => void;
     onDelete?: (leadId: number) => void;
     index?: number;
+    id?: string;
 }
 
 // Create the LeadCard as a standard component
@@ -21,6 +30,7 @@ function LeadCardComponent({
     onUpdateStatus,
     onDelete,
     index = 0,
+    id,
 }: LeadCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -79,9 +89,32 @@ function LeadCardComponent({
         setIsModalOpen(false);
     }, []);
 
+    const handleActionClick = useCallback(
+        (e: React.MouseEvent, action: string) => {
+            e.stopPropagation();
+            toast('Activating soon', {
+                icon: '⏳',
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+            });
+        },
+        [],
+    );
+
     return (
         <>
             <div
+                id={id}
                 className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
                 style={cardStyle}
                 onClick={openModal}
@@ -89,9 +122,43 @@ function LeadCardComponent({
                 <div className="flex items-center justify-between mb-2">
                     {/* Lead Name & Status Badge */}
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
-                            {lead.name}
-                        </h3>
+                        <div
+                            className="flex items-center gap-2"
+                            id="lead-quick-actions"
+                        >
+                            <h3
+                                id="lead-name-field"
+                                className="text-sm font-medium uppercase truncate text-card-foreground font-body"
+                            >
+                                {lead.name}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                <PhoneCall
+                                    strokeWidth={1.5}
+                                    size={18}
+                                    className="cursor-pointer text-muted-foreground/50 hover:text-muted-foreground"
+                                    onClick={(e) =>
+                                        handleActionClick(e, 'call')
+                                    }
+                                />
+                                <Mail
+                                    strokeWidth={1.5}
+                                    size={18}
+                                    className="cursor-pointer text-muted-foreground/50 hover:text-muted-foreground"
+                                    onClick={(e) =>
+                                        handleActionClick(e, 'email')
+                                    }
+                                />
+                                <MessageSquare
+                                    strokeWidth={1.5}
+                                    size={18}
+                                    className="cursor-pointer text-muted-foreground/50 hover:text-muted-foreground"
+                                    onClick={(e) =>
+                                        handleActionClick(e, 'message')
+                                    }
+                                />
+                            </div>
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge
                                 variant="outline"
@@ -115,7 +182,10 @@ function LeadCardComponent({
                     )}
 
                     {/* Lead Meta Information */}
-                    <div className="grid grid-cols-2 gap-1">
+                    <div
+                        id="lead-contact-details"
+                        className="grid grid-cols-2 gap-1"
+                    >
                         {/* Email */}
                         <div className="flex items-center col-span-2">
                             <Mail className="w-4 h-4 mr-1" />
@@ -143,7 +213,10 @@ function LeadCardComponent({
                         )}
 
                         {/* Created Date */}
-                        <div className="flex items-center col-span-2">
+                        <div
+                            id="lead-metadata-section"
+                            className="flex items-center col-span-2"
+                        >
                             <Clock className="w-3 h-3 mr-1" />
                             <span className="text-[10px] font-normal uppercase font-body">
                                 Created: {formatDate(lead?.createdAt)}

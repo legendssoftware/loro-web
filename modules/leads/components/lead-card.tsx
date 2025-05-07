@@ -123,7 +123,7 @@ function LeadCardComponent({
                     {/* Lead Name & Status Badge */}
                     <div className="flex-1 min-w-0">
                         <div
-                            className="flex items-center gap-2"
+                            className="flex items-center justify-between w-full gap-2"
                             id="lead-quick-actions"
                         >
                             <h3

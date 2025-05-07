@@ -18,6 +18,8 @@ import {
     Key, // Added for license
     BarChartHorizontal, // Added for bar chart visualization
     Clock, // Added for Attendance
+    ChevronDown, // Icon for toggle
+    ChevronUp, // Icon for toggle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -166,6 +168,8 @@ export function LiveOverviewReport({
     const [assigneeMetric, setAssigneeMetric] = useState('totalTasks');
     const [leadGeneratorMetric, setLeadGeneratorMetric] = useState('leadCount');
     const [claimCreatorMetric, setClaimCreatorMetric] = useState('claimCount');
+    const [isLicenseInfoVisible, setIsLicenseInfoVisible] = useState(true); // State for license info visibility
+    const [isSummaryCardsVisible, setIsSummaryCardsVisible] = useState(true); // State for summary cards visibility
 
     const handleRefresh = useCallback(async () => {
         setIsRefreshing(true);
@@ -484,18 +488,38 @@ export function LiveOverviewReport({
                 </div>
             </div>
 
-            {/* License Info Display (Example) */}
+            {/* Toggle for License Info */}
             {report?.licenseInfo && (
+                <div className="flex justify-end mb-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsLicenseInfoVisible(!isLicenseInfoVisible)}
+                        className="text-xs uppercase font-body text-muted-foreground hover:text-foreground"
+                    >
+                        {isLicenseInfoVisible ? (
+                            <><ChevronUp className="w-3 h-3 mr-1" /> Hide License Info</>
+                        ) : (
+                            <><ChevronDown className="w-3 h-3 mr-1" /> Show License Info</>
+                        )}
+                    </Button>
+                </div>
+            )}
+
+            {/* License Info Display */}
+            {report?.licenseInfo && isLicenseInfoVisible && (
                 <Card className="mb-4" id="live-overview-license-info">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <h3 className="text-sm font-normal uppercase font-body">
                             License Information
                         </h3>
-                        <div className="p-1 rounded-md bg-primary/10 text-primary">
-                            <Key className="w-4 h-4" />
+                        <div className="flex items-center">
+                            <div className="p-1 mr-2 rounded-md bg-primary/10 text-primary">
+                                <Key className="w-4 h-4" />
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="text-xs font-thin uppercase text-muted-foreground font-body">
+                    <CardContent className="pt-2 text-xs font-thin uppercase text-muted-foreground font-body">
                         <p>Plan: <span className="font-medium text-foreground">{report.licenseInfo.plan} ({report.licenseInfo.type})</span></p>
                         <p>Status: <span className="font-medium text-foreground">{report.licenseInfo.status}</span></p>
                         {report.licenseInfo.validUntil && (
@@ -506,74 +530,102 @@ export function LiveOverviewReport({
                 </Card>
             )}
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6" id="live-overview-summary-cards-grid"> {/* Changed to 6 cols */}
-                <SummaryCard
-                    title="Workforce"
-                    icon={<Users className="w-4 h-4" />}
-                    primaryMetric={report?.summary?.totalEmployees || 0}
-                    primaryLabel="Total Employees"
-                    secondaryMetric={report?.metrics?.workforce?.activeCount || 0}
-                    secondaryLabel="Active Now"
-                    id="live-overview-summary-card-workforce"
-                />
-                <SummaryCard
-                    title="Tasks"
-                    icon={<ClipboardCheck className="w-4 h-4" />}
-                    primaryMetric={
-                        report?.metrics?.tasks?.comprehensive?.taskTypeDistribution
-                            ? Object.values(report.metrics.tasks.comprehensive.taskTypeDistribution).reduce(
-                                (sum, type: any) => sum + (type.completedCount || 0),
-                                0
-                              ) as number
-                            : 0
-                    }
-                    primaryLabel="Completed Today"
-                    secondaryMetric={
-                        report?.metrics?.tasks?.comprehensive?.taskAging?.IN_PROGRESS?.count || 0
-                    }
-                    secondaryLabel="In Progress"
-                    id="live-overview-summary-card-tasks"
-                />
-                 <SummaryCard
-                    title="Check-Ins"
-                    icon={<MapPin className="w-4 h-4" />} // New Icon
-                    primaryMetric={report?.summary?.totalCheckInsToday || 0}
-                    primaryLabel="Total Today"
-                    secondaryMetric={checkInSummary.clientCheckInsToday || 0}
-                    secondaryLabel="Client Visits"
-                    id="live-overview-summary-card-checkins"
-                />
-                <SummaryCard
-                    title="Leads"
-                    icon={<Briefcase className="w-4 h-4" />}
-                    primaryMetric={report?.metrics?.leads?.newLeadsToday || 0}
-                    primaryLabel="Generated Today"
-                    secondaryMetric={
-                        report?.metrics?.leads?.statusDistribution?.PENDING || 0
-                    }
-                    secondaryLabel="Pending"
-                    id="live-overview-summary-card-leads"
-                />
-                <SummaryCard
-                    title="Sales"
-                    icon={<DollarSign className="w-4 h-4" />}
-                    primaryMetric={report?.metrics?.sales?.revenueFormatted || "R 0,00"}
-                    primaryLabel="Revenue Today"
-                    secondaryMetric={report?.metrics?.sales?.quotationsToday || 0}
-                    secondaryLabel="Quotations"
-                    id="live-overview-summary-card-sales"
-                />
-                <SummaryCard
-                    title="Clients"
-                    icon={<UserCheck className="w-4 h-4" />}
-                    primaryMetric={report?.metrics?.clients?.interactionsToday || 0}
-                    primaryLabel="Interactions Today"
-                    secondaryMetric={report?.metrics?.clients?.newClientsToday || 0}
-                    secondaryLabel="New Clients"
-                    id="live-overview-summary-card-clients"
-                />
+            {/* Toggle for Summary Cards */}
+            <div className="flex justify-end mb-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSummaryCardsVisible(!isSummaryCardsVisible)}
+                    className="text-xs uppercase font-body text-muted-foreground hover:text-foreground"
+                >
+                    {isSummaryCardsVisible ? (
+                        <><ChevronUp className="w-3 h-3 mr-1" /> Hide Summary</>
+                    ) : (
+                        <><ChevronDown className="w-3 h-3 mr-1" /> Show Summary</>
+                    )}
+                </Button>
             </div>
+
+            {/* Summary Cards */}
+            {isSummaryCardsVisible && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" id="live-overview-summary-cards-grid">
+                    <SummaryCard
+                        title="Workforce"
+                        icon={<Users className="w-4 h-4" />}
+                        primaryMetric={report?.summary?.totalEmployees || 0}
+                        primaryLabel="Total Employees"
+                        secondaryMetric={report?.metrics?.workforce?.activeCount || 0}
+                        secondaryLabel="Active Now"
+                        id="live-overview-summary-card-workforce"
+                    />
+                    <SummaryCard
+                        title="Tasks"
+                        icon={<ClipboardCheck className="w-4 h-4" />}
+                        primaryMetric={
+                            report?.metrics?.tasks?.comprehensive?.taskTypeDistribution
+                                ? Object.values(report.metrics.tasks.comprehensive.taskTypeDistribution).reduce(
+                                    (sum, type: any) => sum + (type.completedCount || 0),
+                                    0
+                                  ) as number
+                                : 0
+                        }
+                        primaryLabel="Completed Today"
+                        secondaryMetric={
+                            report?.metrics?.tasks?.comprehensive?.taskAging?.IN_PROGRESS?.count || 0
+                        }
+                        secondaryLabel="In Progress"
+                        id="live-overview-summary-card-tasks"
+                    />
+                    {/* New Attendance Stats Card Here */}
+                    <SummaryCard
+                        title="Attendance Stats"
+                        icon={<Clock className="w-4 h-4" />}
+                        primaryMetric={`${report?.summary?.averageShiftDurationHours || 0} hrs`}
+                        primaryLabel="Avg Shift Duration"
+                        secondaryMetric={`${report?.summary?.averageBreakDurationMinutes || 0} mins`}
+                        secondaryLabel="Avg Break Time"
+                        id="live-overview-summary-card-attendance-stats"
+                    />
+                    <SummaryCard
+                        title="Check-Ins"
+                        icon={<MapPin className="w-4 h-4" />} // New Icon
+                        primaryMetric={report?.summary?.totalCheckInsToday || 0}
+                        primaryLabel="Total Today"
+                        secondaryMetric={checkInSummary.clientCheckInsToday || 0}
+                        secondaryLabel="Client Visits"
+                        id="live-overview-summary-card-checkins"
+                    />
+                    <SummaryCard
+                        title="Leads"
+                        icon={<Briefcase className="w-4 h-4" />}
+                        primaryMetric={report?.metrics?.leads?.newLeadsToday || 0}
+                        primaryLabel="Generated Today"
+                        secondaryMetric={
+                            report?.metrics?.leads?.statusDistribution?.PENDING || 0
+                        }
+                        secondaryLabel="Pending"
+                        id="live-overview-summary-card-leads"
+                    />
+                    <SummaryCard
+                        title="Sales"
+                        icon={<DollarSign className="w-4 h-4" />}
+                        primaryMetric={report?.metrics?.sales?.revenueFormatted || "R 0,00"}
+                        primaryLabel="Revenue Today"
+                        secondaryMetric={report?.metrics?.sales?.quotationsToday || 0}
+                        secondaryLabel="Quotations"
+                        id="live-overview-summary-card-sales"
+                    />
+                    <SummaryCard
+                        title="Clients"
+                        icon={<UserCheck className="w-4 h-4" />}
+                        primaryMetric={report?.metrics?.clients?.interactionsToday || 0}
+                        primaryLabel="Interactions Today"
+                        secondaryMetric={report?.metrics?.clients?.newClientsToday || 0}
+                        secondaryLabel="New Clients"
+                        id="live-overview-summary-card-clients"
+                    />
+                </div>
+            )}
 
             {/* Tabs for different sections */}
             <Tabs

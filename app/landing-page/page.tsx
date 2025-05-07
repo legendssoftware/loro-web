@@ -933,7 +933,8 @@ const LandingPage: React.FunctionComponent = () => {
                                                     ? 'Streamline Team Tasks'
                                                     : tab.value === 'sales'
                                                       ? 'Accelerate Your Sales Cycle'
-                                                      : tab.value === 'tracking'
+                                                      : tab.value ===
+                                                          'tracking'
                                                         ? 'Optimize Field Operations'
                                                         : tab.title}
                                         </span>
@@ -1257,7 +1258,7 @@ const LandingPage: React.FunctionComponent = () => {
                         </motion.div>
 
                         {/* Pricing Cards */}
-                        <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-1 md:grid-cols-3 justify-items-center">
                             {/* Basic Plan */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}

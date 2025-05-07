@@ -229,7 +229,11 @@ export function UsersFilter({
                             />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start" id="user-status-filter-content">
+                    <DropdownMenuContent
+                        className="w-56"
+                        align="start"
+                        id="user-status-filter-content"
+                    >
                         <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Filter by Status
                         </DropdownMenuLabel>

@@ -14,7 +14,16 @@ import { useState, useCallback, memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { LeadDetailsModal } from './lead-details-modal';
-import { toast } from 'react-hot-toast';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetFooter,
+    SheetClose,
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 interface LeadCardProps {
     lead: Lead;
@@ -23,6 +32,9 @@ interface LeadCardProps {
     index?: number;
     id?: string;
 }
+
+// Define action types for the sheets
+type ActionType = 'call' | 'email' | 'message' | null;
 
 // Create the LeadCard as a standard component
 function LeadCardComponent({
@@ -33,6 +45,7 @@ function LeadCardComponent({
     id,
 }: LeadCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeSheet, setActiveSheet] = useState<ActionType>(null);
 
     // Use CSS variables for animation delay - match tasks component's variable name
     const cardStyle = {
@@ -90,26 +103,44 @@ function LeadCardComponent({
     }, []);
 
     const handleActionClick = useCallback(
-        (e: React.MouseEvent, action: string) => {
-            e.stopPropagation();
-            toast('Activating soon', {
-                icon: '⏳',
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
-            });
+        (e: React.MouseEvent, action: ActionType) => {
+            e.stopPropagation(); // Prevent the card click event
+            setActiveSheet(action);
         },
         [],
     );
+
+    const closeSheet = useCallback(() => {
+        setActiveSheet(null);
+    }, []);
+
+    // Get sheet title based on action type
+    const getSheetTitle = () => {
+        switch (activeSheet) {
+            case 'call':
+                return `Call ${lead.name}`;
+            case 'email':
+                return `Email ${lead.name}`;
+            case 'message':
+                return `Message ${lead.name}`;
+            default:
+                return '';
+        }
+    };
+
+    // Get sheet description based on action type
+    const getSheetDescription = () => {
+        switch (activeSheet) {
+            case 'call':
+                return 'Call this lead directly from the app using templates';
+            case 'email':
+                return 'Send an email to this lead using predefined templates';
+            case 'message':
+                return 'Send a message to this lead using predefined templates';
+            default:
+                return '';
+        }
+    };
 
     return (
         <>
@@ -258,6 +289,89 @@ function LeadCardComponent({
                     onDelete={handleDelete}
                 />
             )}
+
+            {/* Action Sheets */}
+            <Sheet open={activeSheet !== null} onOpenChange={(open) => !open && setActiveSheet(null)}>
+                <SheetContent side="right" className="sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle className="text-xs font-normal uppercase font-body" >{getSheetTitle()}</SheetTitle>
+                        <SheetDescription className="text-[10px] font-normal font-body">
+                            {getSheetDescription()}
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="py-6">
+                        {activeSheet === 'call' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Call Templates</h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to use predefined call scripts and templates
+                                        to ensure consistent communication with leads.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <PhoneCall className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">{lead.phone}</p>
+                                        <p className="text-[10px] text-muted-foreground font-body">Click to call directly</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSheet === 'email' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Email Templates</h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to select from various email templates
+                                        designed for different stages of the lead nurturing process.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <Mail className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">{lead.email}</p>
+                                        <p className="text-[10px] text-muted-foreground font-body">Send personalized emails</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSheet === 'message' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Message Templates</h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to send text messages using predefined templates,
+                                        making communication with leads efficient and consistent.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <MessageSquare className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">{lead.phone}</p>
+                                        <p className="text-[10px] text-muted-foreground font-body">Send personalized messages</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <SheetFooter>
+                        <SheetClose asChild>
+                            <Button variant="outline" className="text-xs font-normal uppercase font-body">Close</Button>
+                        </SheetClose>
+                        <Button type="button" disabled className="text-xs font-normal text-white uppercase font-body">
+                            Coming Soon
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

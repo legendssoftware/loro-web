@@ -283,7 +283,6 @@ export function LeadDetailsModal({
 
     const tabs = [
         { id: 'details', label: 'Details' },
-        { id: 'activity', label: 'Activity' },
         { id: 'media', label: 'Media' },
         { id: 'history', label: 'History' },
         { id: 'chat', label: 'Chat' },
@@ -473,142 +472,26 @@ export function LeadDetailsModal({
                                 <div className="flex items-center p-3 border rounded-lg border-card">
                                     <Avatar className="w-12 h-12 mr-3 border border-primary">
                                         <AvatarImage
-                                            src={lead.owner.photoURL}
-                                            alt={lead.owner.name}
+                                            src={lead?.owner?.photoURL}
+                                            alt={lead?.owner?.name}
                                         />
                                         <AvatarFallback>
-                                            {lead.owner.name?.charAt(0)}
-                                            {lead.owner.surname?.charAt(0)}
+                                            {lead?.owner?.name?.charAt(0)}
+                                            {lead?.owner?.surname?.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <p className="text-xs font-medium font-body">
-                                            {lead.owner.name}{' '}
-                                            {lead.owner.surname}
+                                            {lead?.owner?.name}{' '}
+                                            {lead?.owner?.surname}
                                         </p>
                                         <p className="text-[10px] text-muted-foreground font-body">
-                                            {lead.owner.email}
+                                            {lead?.owner?.email}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         )}
-                    </div>
-                );
-            case 'activity':
-                return (
-                    <div className="space-y-6">
-                        <div className="p-4 rounded-lg bg-card">
-                            <h3 className="mb-4 text-xs font-thin uppercase font-body">
-                                Activity Timeline
-                            </h3>
-                            <div className="relative pl-8 space-y-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-green-500 dark:before:bg-green-600">
-                                <div className="relative">
-                                    <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-green-500 dark:bg-green-600 text-white">
-                                        <Plus className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <p className="text-xs font-normal uppercase font-body">
-                                            Lead created
-                                        </p>
-                                        <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
-                                            {formatDate(lead.createdAt)}{' '}
-                                            {formatTime(lead.createdAt)}
-                                        </p>
-                                        <p className="text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body">
-                                            Created by{' '}
-                                            {lead?.owner?.name || 'System'}
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                {/* Status Change History */}
-                                {lead?.changeHistory && lead.changeHistory.length > 0 && 
-                                    lead.changeHistory.map((history: LeadStatusHistoryEntry, index: number) => (
-                                        <div key={`history-${index}`} className="relative">
-                                            <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white">
-                                                <RefreshCw className="w-4 h-4" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center">
-                                                    <p className="text-xs font-normal uppercase font-body">
-                                                        Status changed to{' '}
-                                                        <span className={`font-medium ${getStatusBadgeColor(history.newStatus)}`}>
-                                                            {history.newStatus.replace('_', ' ')}
-                                                        </span>
-                                                    </p>
-                                                </div>
-                                                <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
-                                                    {formatDate(history.timestamp)}{' '}
-                                                    {formatTime(history.timestamp)}
-                                                </p>
-                                                {history.reason && (
-                                                    <div className="mt-2">
-                                                        <span className="text-[10px] font-medium uppercase font-body">Reason:</span> 
-                                                        <span className="text-[10px] font-thin uppercase font-body ml-1">{history.reason}</span>
-                                                    </div>
-                                                )}
-                                                {history.description && (
-                                                    <div className="mt-1">
-                                                        <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
-                                                    </div>
-                                                )}
-                                                {history.userId && (
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        {history.user ? (
-                                                            <>
-                                                                <Avatar className="w-6 h-6">
-                                                                    <AvatarImage src={history.user.photoURL} alt={history.user.name} />
-                                                                    <AvatarFallback>{history.user.name?.[0]}{history.user.surname?.[0]}</AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-[10px] font-medium">{history.user.name} {history.user.surname}</span>
-                                                                    <span className="text-[9px] text-muted-foreground">{history.user.email} • {history.user.accessLevel}</span>
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            <span className="text-[10px] text-muted-foreground">
-                                                                Changed by User ID: {history.userId}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                }
-                                
-                                {lead?.updatedAt &&
-                                    formatDate(lead?.updatedAt) !==
-                                        formatDate(lead?.createdAt) && (
-                                        <div className="relative">
-                                            <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white">
-                                                <Edit className="w-4 h-4" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <p className="text-xs font-normal uppercase font-body">
-                                                    Lead updated
-                                                </p>
-                                                <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
-                                                    {formatDate(
-                                                        lead?.updatedAt,
-                                                    )}{' '}
-                                                    {formatTime(
-                                                        lead?.updatedAt,
-                                                    )}
-                                                </p>
-                                                <p className="text-[10px] font-normal text-card-foreground/60 uppercase dark:text-gray-400 font-body">
-                                                    Status:{' '}
-                                                    {lead?.status.replace(
-                                                        '_',
-                                                        ' ',
-                                                    )}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
                     </div>
                 );
             case 'media':
@@ -622,17 +505,17 @@ export function LeadDetailsModal({
                                 <div className="flex flex-col items-center">
                                     <div className="w-full max-w-lg overflow-hidden border rounded-md border-border">
                                         <img
-                                            src={lead.image}
-                                            alt={`${lead.name}'s media`}
+                                            src={lead?.image}
+                                            alt={`${lead?.name}'s media`}
                                             className="object-cover w-full h-auto"
                                         />
                                     </div>
-                                    {lead.companyName && (
+                                    {lead?.companyName && (
                                         <p className="mt-4 text-xs font-thin font-body">
                                             <span className="font-normal">
                                                 Company:
                                             </span>{' '}
-                                            {lead.companyName}
+                                            {lead?.companyName}
                                         </p>
                                     )}
                                 </div>
@@ -653,9 +536,9 @@ export function LeadDetailsModal({
                             <h3 className="mb-4 text-xs font-normal uppercase font-body">
                                 Status Change History
                             </h3>
-                            {lead.changeHistory && lead.changeHistory.length > 0 ? (
+                            {lead?.changeHistory && lead?.changeHistory?.length > 0 ? (
                                 <div className="space-y-4">
-                                    {lead.changeHistory.map((history, index) => (
+                                    {lead?.changeHistory?.map((history, index) => (
                                         <div key={`history-${index}`} className="p-3 border rounded-lg border-border">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center">
@@ -666,7 +549,7 @@ export function LeadDetailsModal({
                                                             getStatusBadgeColor(history.newStatus)
                                                         )}
                                                     >
-                                                        {history.newStatus.replace('_', ' ')}
+                                                        {history?.newStatus?.replace('_', ' ')}
                                                     </Badge>
                                                     {history.oldStatus && (
                                                         <>
@@ -684,7 +567,7 @@ export function LeadDetailsModal({
                                                     )}
                                                 </div>
                                                 <p className="text-[10px] uppercase text-muted-foreground font-body">
-                                                    {formatDate(history.timestamp)} {formatTime(history.timestamp)}
+                                                    {formatDate(history.timestamp)}
                                                 </p>
                                             </div>
                                             {history.reason && (
@@ -698,17 +581,17 @@ export function LeadDetailsModal({
                                                     <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
                                                 </div>
                                             )}
-                                            {history.userId && (
+                                            {history?.userId && (
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    {history.user ? (
+                                                    {history?.user ? (
                                                         <>
                                                             <Avatar className="w-6 h-6">
-                                                                <AvatarImage src={history.user.photoURL} alt={history.user.name} />
-                                                                <AvatarFallback>{history.user.name?.[0]}{history.user.surname?.[0]}</AvatarFallback>
+                                                                <AvatarImage src={history?.user?.photoURL} alt={history?.user?.name} />
+                                                                <AvatarFallback>{history?.user?.name?.[0]}{history?.user?.surname?.[0]}</AvatarFallback>
                                                             </Avatar>
                                                             <div className="flex flex-col">
-                                                                <span className="text-[10px] font-medium font-body">{history.user.name} {history.user.surname}</span>
-                                                                <span className="text-[9px] text-muted-foreground font-body">{history.user.email} • {history.user.accessLevel}</span>
+                                                                <span className="text-[10px] font-medium font-body">{history?.user?.name} {history?.user?.surname}</span>
+                                                                <span className="text-[9px] text-muted-foreground font-body">{history?.user?.email} • {history?.user?.accessLevel}</span>
                                                             </div>
                                                         </>
                                                     ) : (

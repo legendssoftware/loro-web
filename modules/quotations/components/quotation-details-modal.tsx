@@ -22,6 +22,7 @@ import {
     Phone,
     X,
     CheckCheck,
+    FileDown,
     CalendarX2,
     Ban,
     CheckCircle,
@@ -69,6 +70,7 @@ import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import { showErrorToast } from '@/lib/utils/toast-config';
+import Link from 'next/link';
 
 interface QuotationDetailsModalProps {
     onUpdateStatus: (
@@ -325,7 +327,6 @@ export function QuotationDetailsModal({
                 }
                 // Error handling is now taken care of in the updateStatusMutation
             } catch (error) {
-                console.error('Error updating quotation status:', error);
                 // No need to throw here, as errors are handled in the mutation
             } finally {
                 setIsUpdating(false);
@@ -897,6 +898,20 @@ export function QuotationDetailsModal({
                                 </Badge>
                             </DialogTitle>
                             <div className="flex items-center gap-2">
+                                {quotation.pdfURL && (
+                                    <Link
+                                        href={quotation.pdfURL}
+                                        target="_blank"
+                                        className="cursor-pointer"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <FileDown
+                                            size={18}
+                                            strokeWidth={1.5}
+                                            className="text-muted-foreground/50 hover:text-muted-foreground"
+                                        />
+                                    </Link>
+                                )}
                                 <Button
                                     variant="ghost"
                                     size="icon"

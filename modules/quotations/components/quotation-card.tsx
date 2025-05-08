@@ -16,14 +16,38 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
-import { CreditCard, Calendar, Clock, User, Package } from 'lucide-react';
+import {
+    CreditCard,
+    Calendar,
+    Clock,
+    User,
+    Package,
+    FileDown,
+    PhoneCall,
+    Mail,
+    MessageSquare,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetFooter,
+    SheetClose,
+} from '@/components/ui/sheet';
 
 interface QuotationCardProps {
     quotation: Quotation;
     onDragStart: (quotationId: number) => void;
     index?: number;
 }
+
+// Define action types for the sheets
+type ActionType = 'call' | 'email' | 'message' | null;
 
 function QuotationCardComponent({
     quotation,
@@ -32,6 +56,7 @@ function QuotationCardComponent({
 }: QuotationCardProps) {
     const { onOpen } = useQuotationDetailsModal();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [activeSheet, setActiveSheet] = useState<ActionType>(null);
 
     // Use CSS variables for animation delay
     const cardStyle = {
@@ -59,6 +84,46 @@ function QuotationCardComponent({
         onOpen(quotation);
     }, [onOpen, quotation]);
 
+    const handleActionClick = useCallback(
+        (e: React.MouseEvent, action: ActionType) => {
+            e.stopPropagation(); // Prevent the card click event
+            setActiveSheet(action);
+        },
+        [],
+    );
+
+    const closeSheet = useCallback(() => {
+        setActiveSheet(null);
+    }, []);
+
+    // Get sheet title based on action type
+    const getSheetTitle = () => {
+        switch (activeSheet) {
+            case 'call':
+                return `Call Client`;
+            case 'email':
+                return `Email Client`;
+            case 'message':
+                return `Message Client`;
+            default:
+                return '';
+        }
+    };
+
+    // Get sheet description based on action type
+    const getSheetDescription = () => {
+        switch (activeSheet) {
+            case 'call':
+                return 'Call this client directly from the app using templates';
+            case 'email':
+                return 'Send an email to this client using predefined templates';
+            case 'message':
+                return 'Send a message to this client using predefined templates';
+            default:
+                return '';
+        }
+    };
+
     return (
         <>
             <div
@@ -68,12 +133,29 @@ function QuotationCardComponent({
                 onDragStart={handleDragStart}
                 onClick={handleClick}
             >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between w-full mb-2">
                     {/* Amount & Title */}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
-                            #{quotation.quotationNumber}
-                        </h3>
+                    <div className="flex-1 w-full min-w-0">
+                        <div className="flex items-center justify-between w-full gap-2">
+                            <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
+                                #{quotation?.quotationNumber}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                {quotation.pdfURL && (
+                                    <Link
+                                        href={quotation.pdfURL}
+                                        target="_blank"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <FileDown
+                                            size={18}
+                                            strokeWidth={1.5}
+                                            className="cursor-pointer text-muted-foreground/50 hover:text-muted-foreground"
+                                        />
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge
                                 variant="outline"
@@ -177,6 +259,129 @@ function QuotationCardComponent({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Action Sheets */}
+            <Sheet
+                open={activeSheet !== null}
+                onOpenChange={(open) => !open && setActiveSheet(null)}
+            >
+                <SheetContent side="right" className="sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle className="text-xs font-normal uppercase font-body">
+                            {getSheetTitle()}
+                        </SheetTitle>
+                        <SheetDescription className="text-[10px] font-normal font-body">
+                            {getSheetDescription()}
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="py-6">
+                        {activeSheet === 'call' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Call Templates
+                                    </h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to use predefined call
+                                        scripts and templates to ensure
+                                        consistent communication with clients.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <PhoneCall className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">
+                                            {quotation.client?.phone ||
+                                                'No phone available'}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Click to call directly
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSheet === 'email' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Email Templates
+                                    </h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to select from various
+                                        email templates designed for different
+                                        stages of the client communication
+                                        process.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <Mail className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">
+                                            {quotation.client?.email ||
+                                                'No email available'}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Send personalized emails
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeSheet === 'message' && (
+                            <div className="space-y-4">
+                                <div className="p-4 border rounded-lg border-border bg-background/50">
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Message Templates
+                                    </h3>
+                                    <p className="text-[10px] text-muted-foreground font-body">
+                                        You will be able to send text messages
+                                        using predefined templates, making
+                                        communication with clients efficient and
+                                        consistent.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center p-3 border rounded-lg border-border">
+                                    <MessageSquare className="w-5 h-5 mr-3 text-primary" />
+                                    <div>
+                                        <p className="text-xs font-medium font-body">
+                                            {quotation.client?.phone ||
+                                                'No phone available'}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Send personalized messages
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <SheetFooter>
+                        <SheetClose asChild>
+                            <Button
+                                variant="outline"
+                                className="text-xs font-normal uppercase font-body"
+                            >
+                                Close
+                            </Button>
+                        </SheetClose>
+                        <Button
+                            type="button"
+                            disabled
+                            className="text-xs font-normal text-white uppercase font-body"
+                        >
+                            Coming Soon
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

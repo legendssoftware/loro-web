@@ -128,6 +128,7 @@ export interface Quotation {
     createdAt: Date;
     updatedAt: Date;
     validUntil?: Date;
+    pdfURL?: string;
     branch?: {
         uid: number;
         name: string;

@@ -23,6 +23,9 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
     AlertCircle,
     Calendar,
@@ -65,11 +68,31 @@ import {
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { Progress } from '@/components/ui/progress';
 
+// Add the history interface
+interface LeadStatusHistoryEntry {
+    timestamp: Date;
+    oldStatus?: LeadStatus;
+    newStatus: LeadStatus;
+    reason?: string;
+    description?: string;
+    userId?: number;
+}
+
+// Extend Lead interface to include changeHistory
+interface ExtendedLead extends Lead {
+    changeHistory?: LeadStatusHistoryEntry[];
+}
+
 interface LeadDetailsModalProps {
-    lead: Lead;
+    lead: ExtendedLead;
     isOpen: boolean;
     onClose: () => void;
-    onUpdateStatus?: (leadId: number, newStatus: string) => void;
+    onUpdateStatus?: (
+        leadId: number, 
+        newStatus: string, 
+        reason?: string, 
+        description?: string
+    ) => void;
     onDelete?: (leadId: number) => void;
 }
 
@@ -87,6 +110,8 @@ export function LeadDetailsModal({
         useState<boolean>(false);
     const [pendingStatusChange, setPendingStatusChange] =
         useState<LeadStatus | null>(null);
+    const [statusChangeReason, setStatusChangeReason] = useState<string>('');
+    const [statusChangeDescription, setStatusChangeDescription] = useState<string>('');
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState<boolean>(false);
@@ -212,22 +237,39 @@ export function LeadDetailsModal({
             // After successful submission, update the lead status
             if (pendingStatusChange && onUpdateStatus) {
                 setCurrentStatus(pendingStatusChange);
-                onUpdateStatus(lead.uid, pendingStatusChange);
+                onUpdateStatus(
+                    lead.uid, 
+                    pendingStatusChange,
+                    "Lead converted to client", // Default reason
+                    `Converted to client with ID: ${data.ref || 'N/A'}` // Default description
+                );
             }
             setIsClientFormOpen(false);
             onClose();
         } catch (error) {
             showErrorToast('Failed to convert lead to client', toast);
-            console.error('Error converting lead to client:', error);
         }
     };
 
     const confirmStatusChange = () => {
         if (onUpdateStatus && pendingStatusChange) {
-            onUpdateStatus(Number(lead.uid), pendingStatusChange);
+
+            // Call the parent component's update function with the reason and description
+            onUpdateStatus(
+                Number(lead.uid), 
+                pendingStatusChange,
+                statusChangeReason,
+                statusChangeDescription
+            );
+
+            // Update local state
             setCurrentStatus(pendingStatusChange);
+            
+            // Reset the dialog state
             setConfirmStatusChangeOpen(false);
             setPendingStatusChange(null);
+            setStatusChangeReason('');
+            setStatusChangeDescription('');
         }
     };
 
@@ -258,6 +300,7 @@ export function LeadDetailsModal({
         { id: 'details', label: 'Details' },
         { id: 'activity', label: 'Activity' },
         { id: 'media', label: 'Media' },
+        { id: 'history', label: 'History' },
         { id: 'chat', label: 'Chat' },
     ];
 
@@ -493,6 +536,43 @@ export function LeadDetailsModal({
                                         </p>
                                     </div>
                                 </div>
+                                
+                                {/* Status Change History */}
+                                {lead?.changeHistory && lead.changeHistory.length > 0 && 
+                                    lead.changeHistory.map((history: LeadStatusHistoryEntry, index: number) => (
+                                        <div key={`history-${index}`} className="relative">
+                                            <div className="absolute left-[-32px] top-0 flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 dark:bg-blue-600 text-white">
+                                                <RefreshCw className="w-4 h-4" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center">
+                                                    <p className="text-xs font-normal uppercase font-body">
+                                                        Status changed to{' '}
+                                                        <span className={`font-medium ${getStatusBadgeColor(history.newStatus)}`}>
+                                                            {history.newStatus.replace('_', ' ')}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                                <p className="text-xs font-thin uppercase text-card-f6reground/50 dark:text-gray-400 font-body">
+                                                    {formatDate(history.timestamp)}{' '}
+                                                    {formatTime(history.timestamp)}
+                                                </p>
+                                                {history.reason && (
+                                                    <div className="mt-2">
+                                                        <span className="text-[10px] font-medium uppercase font-body">Reason:</span> 
+                                                        <span className="text-[10px] font-thin uppercase font-body ml-1">{history.reason}</span>
+                                                    </div>
+                                                )}
+                                                {history.description && (
+                                                    <div className="mt-1">
+                                                        <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                                
                                 {lead?.updatedAt &&
                                     formatDate(lead?.updatedAt) !==
                                         formatDate(lead?.createdAt) && (
@@ -559,6 +639,76 @@ export function LeadDetailsModal({
                                 </p>
                             </div>
                         )}
+                    </div>
+                );
+            case 'history':
+                return (
+                    <div className="space-y-6">
+                        <div className="p-4 rounded-lg bg-card">
+                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                Status Change History
+                            </h3>
+                            {lead.changeHistory && lead.changeHistory.length > 0 ? (
+                                <div className="space-y-4">
+                                    {lead.changeHistory.map((history, index) => (
+                                        <div key={`history-${index}`} className="p-3 border rounded-lg border-border">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center">
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={cn(
+                                                            'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
+                                                            getStatusBadgeColor(history.newStatus)
+                                                        )}
+                                                    >
+                                                        {history.newStatus.replace('_', ' ')}
+                                                    </Badge>
+                                                    {history.oldStatus && (
+                                                        <>
+                                                            <span className="mx-2 text-[10px] uppercase text-muted-foreground font-body">from</span>
+                                                            <Badge 
+                                                                variant="outline" 
+                                                                className={cn(
+                                                                    'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
+                                                                    getStatusBadgeColor(history.oldStatus)
+                                                                )}
+                                                            >
+                                                                {history.oldStatus.replace('_', ' ')}
+                                                            </Badge>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] uppercase text-muted-foreground font-body">
+                                                    {formatDate(history.timestamp)} {formatTime(history.timestamp)}
+                                                </p>
+                                            </div>
+                                            {history.reason && (
+                                                <div className="mt-2">
+                                                    <span className="text-[10px] font-medium uppercase font-body">Reason:</span> 
+                                                    <span className="text-[10px] font-thin uppercase font-body ml-1">{history.reason}</span>
+                                                </div>
+                                            )}
+                                            {history.description && (
+                                                <div className="mt-1">
+                                                    <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
+                                                </div>
+                                            )}
+                                            {history.userId && (
+                                                <div className="mt-1 text-[10px] text-muted-foreground">
+                                                    Changed by User ID: {history.userId}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center p-8 border border-dashed rounded-lg border-muted-foreground/20">
+                                    <p className="text-xs font-thin text-muted-foreground">
+                                        No status change history available
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 );
             case 'chat':
@@ -1222,12 +1372,12 @@ export function LeadDetailsModal({
                     <ClientForm
                         onSubmit={handleClientFormSubmit}
                         initialData={{
-                            name: lead.name,
-                            email: lead.email,
-                            phone: lead.phone,
-                            contactPerson: lead.name,
+                            name: lead?.name,
+                            email: lead?.email,
+                            phone: lead?.phone,
+                            contactPerson: lead?.name,
                             status: ClientStatus.ACTIVE,
-                            description: lead.notes,
+                            description: lead?.notes,
                             address: {
                                 street: '',
                                 suburb: '',
@@ -1246,20 +1396,58 @@ export function LeadDetailsModal({
             {/* Confirmation Dialog for Status Change */}
             <AlertDialog
                 open={confirmStatusChangeOpen}
-                onOpenChange={setConfirmStatusChangeOpen}
+                onOpenChange={(open) => {
+                    setConfirmStatusChangeOpen(open);
+                    if (!open) {
+                        setStatusChangeReason('');
+                        setStatusChangeDescription('');
+                    }
+                }}
             >
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-md">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Change Lead Status</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to change the status of this
-                            lead? This action cannot be undone.
+                            {pendingStatusChange && `Change status to ${pendingStatusChange.replace('_', ' ')}`}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    
+                    <div className="my-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="statusChangeReason" className="text-xs font-normal font-body">
+                                Reason for Change <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="statusChangeReason"
+                                value={statusChangeReason}
+                                onChange={(e) => setStatusChangeReason(e.target.value)}
+                                placeholder="Brief reason for this status change"
+                                className="w-full text-xs font-thin font-body placeholder:text-muted-foreground"
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="statusChangeDescription" className="text-xs font-normal font-body">
+                                Detailed Description
+                            </Label>
+                            <Textarea
+                                id="statusChangeDescription"
+                                value={statusChangeDescription}
+                                onChange={(e) => setStatusChangeDescription(e.target.value)}
+                                placeholder="Additional details (optional)"
+                                className="w-full min-h-[100px] text-xs font-thin font-body placeholder:text-muted-foreground"
+                            />
+                        </div>
+                    </div>
+                    
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmStatusChange}>
-                            Continue
+                        <AlertDialogAction 
+                            onClick={confirmStatusChange}
+                            disabled={!statusChangeReason.trim()}
+                            className={!statusChangeReason.trim() ? 'opacity-50 cursor-not-allowed' : ''}
+                        >
+                            Save & Change Status
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

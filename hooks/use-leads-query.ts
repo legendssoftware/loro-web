@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Lead, LeadStatus, LeadFilterParams, LeadsByStatus } from '@/lib/types/lead';
+import {
+    Lead,
+    LeadStatus,
+    LeadFilterParams,
+    LeadsByStatus,
+} from '@/lib/types/lead';
 import toast from 'react-hot-toast';
 import { useLeadApi } from './use-lead-api';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
@@ -17,21 +22,26 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
     const leadApi = useLeadApi();
 
     // Ensure we always use a limit of 500
-    const enhancedFilters = useMemo(() => ({
-        ...filters,
-        limit: 500,
-    }), [filters]);
+    const enhancedFilters = useMemo(
+        () => ({
+            ...filters,
+            limit: 500,
+        }),
+        [filters],
+    );
 
     // Fetch leads with React Query
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: [LEADS_QUERY_KEY, enhancedFilters],
         queryFn: () => leadApi.getLeads(enhancedFilters),
-        placeholderData: previousData => previousData,
+        placeholderData: (previousData) => previousData,
         staleTime: 1000 * 60, // 1 minute
         // Add retry and error handling
         retry: 2,
-        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: Object.keys(enhancedFilters)?.length > 0 || !enhancedFilters?.hasOwnProperty('page'),
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        enabled:
+            Object.keys(enhancedFilters)?.length > 0 ||
+            !enhancedFilters?.hasOwnProperty('page'),
     });
 
     // Group leads by status
@@ -47,7 +57,7 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
 
         if (data?.items) {
             // Group leads by status
-            data.items.forEach(lead => {
+            data.items.forEach((lead) => {
                 if (!lead.isDeleted) {
                     statusGroups[lead.status].push(lead);
                 }
@@ -65,7 +75,10 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
                 showSuccessToast('Lead created successfully.', toast);
                 return result;
             } catch (error) {
-                showErrorToast('Failed to create lead. Please try again.', toast);
+                showErrorToast(
+                    'Failed to create lead. Please try again.',
+                    toast,
+                );
                 console.error('Create lead error:', error);
                 throw error;
             }
@@ -78,13 +91,22 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
 
     // Update lead mutation
     const updateLeadMutation = useMutation({
-        mutationFn: async ({ leadId, updates }: { leadId: number; updates: Partial<Lead> }) => {
+        mutationFn: async ({
+            leadId,
+            updates,
+        }: {
+            leadId: number;
+            updates: Partial<Lead>;
+        }) => {
             try {
                 await leadApi.updateLead(leadId, updates);
                 showSuccessToast('Lead updated successfully.', toast);
                 return { success: true };
             } catch (error) {
-                showErrorToast('Failed to update lead. Please try again.', toast);
+                showErrorToast(
+                    'Failed to update lead. Please try again.',
+                    toast,
+                );
                 throw error;
             }
         },
@@ -102,7 +124,10 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
                 showSuccessToast('Lead deleted successfully.', toast);
                 return { success: true };
             } catch (error) {
-                showErrorToast('Failed to delete lead. Please try again.', toast);
+                showErrorToast(
+                    'Failed to delete lead. Please try again.',
+                    toast,
+                );
                 throw error;
             }
         },
@@ -138,10 +163,19 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
 
     // Update lead status wrapper function
     const updateLeadStatus = useCallback(
-        async (leadId: number, newStatus: string) => {
+        async (
+            leadId: number,
+            newStatus: string,
+            reason?: string,
+            description?: string,
+        ) => {
             return updateLeadMutation.mutate({
                 leadId,
-                updates: { status: newStatus as LeadStatus }
+                updates: {
+                    status: newStatus as LeadStatus,
+                    statusChangeReason: reason,
+                    statusChangeDescription: description,
+                },
             });
         },
         [updateLeadMutation],

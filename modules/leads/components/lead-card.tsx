@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 
 interface LeadCardProps {
     lead: Lead;
-    onUpdateStatus?: (leadId: number, newStatus: string) => void;
+    onUpdateStatus?: (leadId: number, newStatus: string, reason?: string, description?: string) => void;
     onDelete?: (leadId: number) => void;
     index?: number;
     id?: string;
@@ -53,9 +53,9 @@ function LeadCardComponent({
     } as React.CSSProperties;
 
     const handleStatusChange = useCallback(
-        (leadId: number, newStatus: string) => {
+        (leadId: number, newStatus: string, reason?: string, description?: string) => {
             if (onUpdateStatus) {
-                onUpdateStatus(leadId, newStatus);
+                onUpdateStatus(leadId, newStatus, reason, description);
             }
         },
         [onUpdateStatus],
@@ -291,10 +291,15 @@ function LeadCardComponent({
             )}
 
             {/* Action Sheets */}
-            <Sheet open={activeSheet !== null} onOpenChange={(open) => !open && setActiveSheet(null)}>
+            <Sheet
+                open={activeSheet !== null}
+                onOpenChange={(open) => !open && setActiveSheet(null)}
+            >
                 <SheetContent side="right" className="sm:max-w-md">
                     <SheetHeader>
-                        <SheetTitle className="text-xs font-normal uppercase font-body" >{getSheetTitle()}</SheetTitle>
+                        <SheetTitle className="text-xs font-normal uppercase font-body">
+                            {getSheetTitle()}
+                        </SheetTitle>
                         <SheetDescription className="text-[10px] font-normal font-body">
                             {getSheetDescription()}
                         </SheetDescription>
@@ -304,18 +309,25 @@ function LeadCardComponent({
                         {activeSheet === 'call' && (
                             <div className="space-y-4">
                                 <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Call Templates</h3>
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Call Templates
+                                    </h3>
                                     <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to use predefined call scripts and templates
-                                        to ensure consistent communication with leads.
+                                        You will be able to use predefined call
+                                        scripts and templates to ensure
+                                        consistent communication with leads.
                                     </p>
                                 </div>
 
                                 <div className="flex items-center p-3 border rounded-lg border-border">
                                     <PhoneCall className="w-5 h-5 mr-3 text-primary" />
                                     <div>
-                                        <p className="text-xs font-medium font-body">{lead.phone}</p>
-                                        <p className="text-[10px] text-muted-foreground font-body">Click to call directly</p>
+                                        <p className="text-xs font-medium font-body">
+                                            {lead.phone}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Click to call directly
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -324,18 +336,25 @@ function LeadCardComponent({
                         {activeSheet === 'email' && (
                             <div className="space-y-4">
                                 <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Email Templates</h3>
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Email Templates
+                                    </h3>
                                     <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to select from various email templates
-                                        designed for different stages of the lead nurturing process.
+                                        You will be able to select from various
+                                        email templates designed for different
+                                        stages of the lead nurturing process.
                                     </p>
                                 </div>
 
                                 <div className="flex items-center p-3 border rounded-lg border-border">
                                     <Mail className="w-5 h-5 mr-3 text-primary" />
                                     <div>
-                                        <p className="text-xs font-medium font-body">{lead.email}</p>
-                                        <p className="text-[10px] text-muted-foreground font-body">Send personalized emails</p>
+                                        <p className="text-xs font-medium font-body">
+                                            {lead.email}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Send personalized emails
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -344,18 +363,26 @@ function LeadCardComponent({
                         {activeSheet === 'message' && (
                             <div className="space-y-4">
                                 <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">Message Templates</h3>
+                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                        Message Templates
+                                    </h3>
                                     <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to send text messages using predefined templates,
-                                        making communication with leads efficient and consistent.
+                                        You will be able to send text messages
+                                        using predefined templates, making
+                                        communication with leads efficient and
+                                        consistent.
                                     </p>
                                 </div>
 
                                 <div className="flex items-center p-3 border rounded-lg border-border">
                                     <MessageSquare className="w-5 h-5 mr-3 text-primary" />
                                     <div>
-                                        <p className="text-xs font-medium font-body">{lead.phone}</p>
-                                        <p className="text-[10px] text-muted-foreground font-body">Send personalized messages</p>
+                                        <p className="text-xs font-medium font-body">
+                                            {lead.phone}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-body">
+                                            Send personalized messages
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -364,9 +391,18 @@ function LeadCardComponent({
 
                     <SheetFooter>
                         <SheetClose asChild>
-                            <Button variant="outline" className="text-xs font-normal uppercase font-body">Close</Button>
+                            <Button
+                                variant="outline"
+                                className="text-xs font-normal uppercase font-body"
+                            >
+                                Close
+                            </Button>
                         </SheetClose>
-                        <Button type="button" disabled className="text-xs font-normal text-white uppercase font-body">
+                        <Button
+                            type="button"
+                            disabled
+                            className="text-xs font-normal text-white uppercase font-body"
+                        >
                             Coming Soon
                         </Button>
                     </SheetFooter>

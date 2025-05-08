@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 interface LeadsKanbanProps {
     leadsByStatus: Record<LeadStatus, Lead[]>;
-    onUpdateLeadStatus: (leadId: number, newStatus: string) => void;
+    onUpdateLeadStatus: (leadId: number, newStatus: string, reason?: string, description?: string) => void;
     onDeleteLead: (leadId: number) => void;
     onAddLead?: () => void;
 }

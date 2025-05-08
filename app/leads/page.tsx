@@ -101,8 +101,8 @@ export default function LeadsPage() {
 
     // Handlers
     const handleUpdateLeadStatus = useCallback(
-        async (leadId: number, newStatus: string) => {
-            await updateLeadStatus(leadId, newStatus);
+        async (leadId: number, newStatus: string, reason?: string, description?: string) => {
+            await updateLeadStatus(leadId, newStatus, reason, description);
         },
         [updateLeadStatus],
     );

@@ -553,6 +553,26 @@ export function LeadDetailsModal({
                                                         <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
                                                     </div>
                                                 )}
+                                                {history.userId && (
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        {history.user ? (
+                                                            <>
+                                                                <Avatar className="w-6 h-6">
+                                                                    <AvatarImage src={history.user.photoURL} alt={history.user.name} />
+                                                                    <AvatarFallback>{history.user.name?.[0]}{history.user.surname?.[0]}</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[10px] font-medium">{history.user.name} {history.user.surname}</span>
+                                                                    <span className="text-[9px] text-muted-foreground">{history.user.email} • {history.user.accessLevel}</span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-[10px] text-muted-foreground">
+                                                                Changed by User ID: {history.userId}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
@@ -679,8 +699,23 @@ export function LeadDetailsModal({
                                                 </div>
                                             )}
                                             {history.userId && (
-                                                <div className="mt-1 text-[10px] text-muted-foreground">
-                                                    Changed by User ID: {history.userId}
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    {history.user ? (
+                                                        <>
+                                                            <Avatar className="w-6 h-6">
+                                                                <AvatarImage src={history.user.photoURL} alt={history.user.name} />
+                                                                <AvatarFallback>{history.user.name?.[0]}{history.user.surname?.[0]}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-medium font-body">{history.user.name} {history.user.surname}</span>
+                                                                <span className="text-[9px] text-muted-foreground font-body">{history.user.email} • {history.user.accessLevel}</span>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-[10px] text-muted-foreground">
+                                                            Changed by User ID: {history.userId}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

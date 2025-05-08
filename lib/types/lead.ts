@@ -53,6 +53,17 @@ export interface LeadStatusHistoryEntry {
     reason?: string;
     description?: string;
     userId?: number;
+    user?: {
+        uid: number;
+        username?: string;
+        name?: string;
+        surname?: string;
+        email?: string;
+        phone?: string;
+        photoURL?: string;
+        accessLevel?: string;
+        status?: string;
+    };
 }
 
 export interface Lead {

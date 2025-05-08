@@ -46,6 +46,15 @@ export const StatusColors: Record<LeadStatus, StatusColorConfig> = {
     },
 };
 
+export interface LeadStatusHistoryEntry {
+    timestamp: Date;
+    oldStatus?: LeadStatus;
+    newStatus: LeadStatus;
+    reason?: string;
+    description?: string;
+    userId?: number;
+}
+
 export interface Lead {
     uid: number;
     name: string;
@@ -98,6 +107,9 @@ export interface Lead {
     };
     assignees?: { uid: number }[];
     assignTo?: { uid: number }[];
+    statusChangeReason?: string;
+    statusChangeDescription?: string;
+    changeHistory?: LeadStatusHistoryEntry[];
 }
 
 export interface PaginatedLeadsResponse {

@@ -18,7 +18,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Lead, LeadStatus } from '@/lib/types/lead';
+import { Lead, LeadStatus, LeadStatusHistoryEntry } from '@/lib/types/lead';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -68,23 +68,8 @@ import {
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { Progress } from '@/components/ui/progress';
 
-// Add the history interface
-interface LeadStatusHistoryEntry {
-    timestamp: Date;
-    oldStatus?: LeadStatus;
-    newStatus: LeadStatus;
-    reason?: string;
-    description?: string;
-    userId?: number;
-}
-
-// Extend Lead interface to include changeHistory
-interface ExtendedLead extends Lead {
-    changeHistory?: LeadStatusHistoryEntry[];
-}
-
 interface LeadDetailsModalProps {
-    lead: ExtendedLead;
+    lead: Lead;
     isOpen: boolean;
     onClose: () => void;
     onUpdateStatus?: (

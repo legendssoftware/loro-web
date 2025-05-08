@@ -688,7 +688,7 @@ export function LeadDetailsModal({
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center p-8 border border-dashed rounded-lg border-muted-foreground/20">
-                                    <p className="text-xs font-thin text-muted-foreground">
+                                    <p className="text-xs font-thin text-muted-foreground font-body">
                                         No status change history available
                                     </p>
                                 </div>

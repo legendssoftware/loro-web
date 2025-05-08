@@ -284,7 +284,7 @@ export function LeadDetailsModal({
     const tabs = [
         { id: 'details', label: 'Details' },
         { id: 'media', label: 'Media' },
-        { id: 'history', label: 'History' },
+        { id: 'activity', label: 'Activity' },
         { id: 'chat', label: 'Chat' },
     ];
 
@@ -529,7 +529,7 @@ export function LeadDetailsModal({
                         )}
                     </div>
                 );
-            case 'history':
+            case 'activity':
                 return (
                     <div className="space-y-6">
                         <div className="p-4 rounded-lg bg-card">
@@ -539,7 +539,7 @@ export function LeadDetailsModal({
                             {lead?.changeHistory && lead?.changeHistory?.length > 0 ? (
                                 <div className="space-y-4">
                                     {lead?.changeHistory?.map((history, index) => (
-                                        <div key={`history-${index}`} className="p-3 border rounded-lg border-border">
+                                        <div key={`activity-${index}`} className="p-3 border rounded-lg border-border">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center">
                                                     <Badge 

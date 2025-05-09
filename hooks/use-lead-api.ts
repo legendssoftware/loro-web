@@ -114,22 +114,22 @@ export const useLeadApi = () => {
             // Ensure we only pass the branch uid to match API expectations
             if (leadData.branch) {
                 const branchUid = (leadData.branch as any).uid || (leadData.branch as any).id;
-                
+
                 // Create a new object with just the required branch data
                 const submissionData = {
                     ...leadData,
                     branch: { uid: branchUid }
                 };
-                
+
                 // Handle assignTo field conversion to assignees expected by the API
                 if (leadData.assignTo) {
                     submissionData.assignees = leadData.assignTo;
                     delete submissionData.assignTo;
                 }
-                
+
                 // The controller endpoint is /leads for POST
                 const response = await axiosInstance.post('/leads', submissionData);
-                
+
                 if (!response.data) {
                     throw new Error('Invalid API response');
                 }

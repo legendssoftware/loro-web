@@ -22,7 +22,14 @@ export interface OrganisationSettings {
       number: string;
     };
     website: string;
-    address: string;
+    address: {
+      street: string;
+      suburb?: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+    };
   };
   regional?: {
     language: string;

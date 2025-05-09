@@ -52,6 +52,7 @@ export interface LeadStatusHistoryEntry {
     newStatus: LeadStatus;
     reason?: string;
     description?: string;
+    nextStep?: string;
     userId?: number;
     user?: {
         uid: number;
@@ -120,6 +121,7 @@ export interface Lead {
     assignTo?: { uid: number }[];
     statusChangeReason?: string;
     statusChangeDescription?: string;
+    nextStep?: string;
     changeHistory?: LeadStatusHistoryEntry[];
 }
 

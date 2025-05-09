@@ -49,7 +49,9 @@ function CreateLeadModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-thin uppercase font-body">Create New Lead</DialogTitle>
+                    <DialogTitle className="text-lg font-thin uppercase font-body">
+                        Create New Lead
+                    </DialogTitle>
                 </DialogHeader>
                 <LeadsForm onSubmit={handleSubmit} isLoading={isSubmitting} />
             </DialogContent>
@@ -101,8 +103,20 @@ export default function LeadsPage() {
 
     // Handlers
     const handleUpdateLeadStatus = useCallback(
-        async (leadId: number, newStatus: string, reason?: string, description?: string) => {
-            await updateLeadStatus(leadId, newStatus, reason, description);
+        async (
+            leadId: number,
+            newStatus: string,
+            reason?: string,
+            description?: string,
+            nextStep?: string,
+        ) => {
+            await updateLeadStatus(
+                leadId,
+                newStatus,
+                reason,
+                description,
+                nextStep,
+            );
         },
         [updateLeadStatus],
     );

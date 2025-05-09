@@ -18,7 +18,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Lead, LeadStatus, LeadStatusHistoryEntry } from '@/lib/types/lead';
+import { Lead, LeadStatus, LeadStatusHistoryEntry as LeadStatusHistoryEntryType } from '@/lib/types/lead';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -68,15 +68,21 @@ import {
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { Progress } from '@/components/ui/progress';
 
+// Ensure this interface matches the one in lead.entity.ts or your shared types
+interface LeadStatusHistoryEntry extends LeadStatusHistoryEntryType {
+    nextStep?: string;
+}
+
 interface LeadDetailsModalProps {
     lead: Lead;
     isOpen: boolean;
     onClose: () => void;
     onUpdateStatus?: (
-        leadId: number, 
-        newStatus: string, 
-        reason?: string, 
-        description?: string
+        leadId: number,
+        newStatus: string,
+        reason?: string,
+        description?: string,
+        nextStep?: string
     ) => void;
     onDelete?: (leadId: number) => void;
 }
@@ -97,6 +103,7 @@ export function LeadDetailsModal({
         useState<LeadStatus | null>(null);
     const [statusChangeReason, setStatusChangeReason] = useState<string>('');
     const [statusChangeDescription, setStatusChangeDescription] = useState<string>('');
+    const [statusChangeNextStep, setStatusChangeNextStep] = useState<string>('');
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState<boolean>(false);
@@ -223,10 +230,11 @@ export function LeadDetailsModal({
             if (pendingStatusChange && onUpdateStatus) {
                 setCurrentStatus(pendingStatusChange);
                 onUpdateStatus(
-                    lead.uid, 
+                    lead.uid,
                     pendingStatusChange,
                     "Lead converted to client", // Default reason
-                    `Converted to client with ID: ${data.ref || 'N/A'}` // Default description
+                    `Converted to client with ID: ${data.ref || 'N/A'}`, // Default description
+                    "Next step: Client conversion completed" // Default next step
                 );
             }
             setIsClientFormOpen(false);
@@ -241,20 +249,22 @@ export function LeadDetailsModal({
 
             // Call the parent component's update function with the reason and description
             onUpdateStatus(
-                Number(lead.uid), 
+                Number(lead.uid),
                 pendingStatusChange,
                 statusChangeReason,
-                statusChangeDescription
+                statusChangeDescription,
+                statusChangeNextStep
             );
 
             // Update local state
             setCurrentStatus(pendingStatusChange);
-            
+
             // Reset the dialog state
             setConfirmStatusChangeOpen(false);
             setPendingStatusChange(null);
             setStatusChangeReason('');
             setStatusChangeDescription('');
+            setStatusChangeNextStep('');
         }
     };
 
@@ -542,8 +552,8 @@ export function LeadDetailsModal({
                                         <div key={`activity-${index}`} className="p-3 border rounded-lg border-border">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center">
-                                                    <Badge 
-                                                        variant="outline" 
+                                                    <Badge
+                                                        variant="outline"
                                                         className={cn(
                                                             'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
                                                             getStatusBadgeColor(history.newStatus)
@@ -554,8 +564,8 @@ export function LeadDetailsModal({
                                                     {history.oldStatus && (
                                                         <>
                                                             <span className="mx-2 text-[10px] uppercase text-muted-foreground font-body">from</span>
-                                                            <Badge 
-                                                                variant="outline" 
+                                                            <Badge
+                                                                variant="outline"
                                                                 className={cn(
                                                                     'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
                                                                     getStatusBadgeColor(history.oldStatus)
@@ -572,13 +582,20 @@ export function LeadDetailsModal({
                                             </div>
                                             {history.reason && (
                                                 <div className="mt-2">
-                                                    <span className="text-[10px] font-medium uppercase font-body">Reason:</span> 
+                                                    <span className="text-[10px] font-medium uppercase font-body">Reason:</span>
                                                     <span className="text-[10px] font-thin uppercase font-body ml-1">{history.reason}</span>
                                                 </div>
                                             )}
                                             {history.description && (
                                                 <div className="mt-1">
-                                                    <span className="text-[10px] font-thin uppercase font-body text-muted-foreground">{history.description}</span>
+                                                    <span className="text-[10px] font-medium uppercase font-body">Description:</span>
+                                                    <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">{history.description}</span>
+                                                </div>
+                                            )}
+                                            {(history as any).nextStep && (
+                                                <div className="mt-1">
+                                                    <span className="text-[10px] font-medium uppercase font-body">Next Step:</span>
+                                                    <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">{(history as any).nextStep}</span>
                                                 </div>
                                             )}
                                             {history?.userId && (
@@ -1304,6 +1321,7 @@ export function LeadDetailsModal({
                     if (!open) {
                         setStatusChangeReason('');
                         setStatusChangeDescription('');
+                        setStatusChangeNextStep('');
                     }
                 }}
             >
@@ -1314,7 +1332,7 @@ export function LeadDetailsModal({
                             {pendingStatusChange && `Change status to ${pendingStatusChange.replace('_', ' ')}`}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    
+
                     <div className="my-4 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="statusChangeReason" className="text-xs font-normal font-body">
@@ -1328,7 +1346,7 @@ export function LeadDetailsModal({
                                 className="w-full text-xs font-thin font-body placeholder:text-muted-foreground"
                             />
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label htmlFor="statusChangeDescription" className="text-xs font-normal font-body">
                                 Detailed Description
@@ -1341,11 +1359,24 @@ export function LeadDetailsModal({
                                 className="w-full min-h-[100px] text-xs font-thin font-body placeholder:text-muted-foreground"
                             />
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="statusChangeNextStep" className="text-xs font-normal font-body">
+                                Next Step
+                            </Label>
+                            <Textarea
+                                id="statusChangeNextStep"
+                                value={statusChangeNextStep}
+                                onChange={(e) => setStatusChangeNextStep(e.target.value)}
+                                placeholder="What is the next planned action for this lead? (optional)"
+                                className="w-full min-h-[100px] text-xs font-thin font-body placeholder:text-muted-foreground"
+                            />
+                        </div>
                     </div>
-                    
+
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                             onClick={confirmStatusChange}
                             disabled={!statusChangeReason.trim()}
                             className={!statusChangeReason.trim() ? 'opacity-50 cursor-not-allowed' : ''}

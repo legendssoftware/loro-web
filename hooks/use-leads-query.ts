@@ -168,6 +168,7 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
             newStatus: string,
             reason?: string,
             description?: string,
+            nextStep?: string,
         ) => {
             return updateLeadMutation.mutate({
                 leadId,
@@ -175,6 +176,7 @@ export function useLeadsQuery(filters: LeadFilterParams = {}) {
                     status: newStatus as LeadStatus,
                     statusChangeReason: reason,
                     statusChangeDescription: description,
+                    nextStep: nextStep,
                 },
             });
         },

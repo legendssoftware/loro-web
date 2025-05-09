@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 
 interface LeadCardProps {
     lead: Lead;
-    onUpdateStatus?: (leadId: number, newStatus: string, reason?: string, description?: string) => void;
+    onUpdateStatus?: (leadId: number, newStatus: string, reason?: string, description?: string, nextStep?: string) => void;
     onDelete?: (leadId: number) => void;
     index?: number;
     id?: string;
@@ -53,9 +53,9 @@ function LeadCardComponent({
     } as React.CSSProperties;
 
     const handleStatusChange = useCallback(
-        (leadId: number, newStatus: string, reason?: string, description?: string) => {
+        (leadId: number, newStatus: string, reason?: string, description?: string, nextStep?: string) => {
             if (onUpdateStatus) {
-                onUpdateStatus(leadId, newStatus, reason, description);
+                onUpdateStatus(leadId, newStatus, reason, description, nextStep);
             }
         },
         [onUpdateStatus],

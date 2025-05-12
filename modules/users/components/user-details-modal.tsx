@@ -25,6 +25,7 @@ import {
     UserCog,
     Shield,
     AtSign,
+    Gauge,
 } from 'lucide-react';
 import { User, UserStatus, AccessLevel } from '@/lib/types/user';
 import { useState } from 'react';
@@ -33,6 +34,9 @@ import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/badge';
 import UserEditForm, { UserEditServerData } from './user-edit-form';
 import { useUsersQuery } from '@/hooks/use-users-query';
+import UserTargetForm, { UserTargetFormValues } from './user-target-form';
+import { axiosInstance } from '@/lib/services/api-client';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 interface UserDetailsModalProps {
     user: User;
@@ -57,6 +61,7 @@ export function UserDetailsModal({
         useState<UserStatus | null>(null);
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
+    const [showTargetsModal, setShowTargetsModal] = useState<boolean>(false);
 
     // Get the updateUser function from our hook
     const { updateUser } = useUsersQuery({});
@@ -98,7 +103,7 @@ export function UserDetailsModal({
         if (onDelete) {
             onDelete(user.uid);
             setShowDeleteConfirmation(false);
-            toast.success('User deleted successfully');
+            showSuccessToast('User deleted successfully', toast);
             onClose();
         }
     };
@@ -111,6 +116,39 @@ export function UserDetailsModal({
             setShowEditModal(false);
         } catch (error) {
             console.error("Error updating user:", error);
+        }
+    };
+
+    // Handle form submission from the UserTargetForm
+    const handleUpdateUserTargets = async (userData: UserTargetFormValues, hasExistingTargets: boolean) => {
+        try {
+            // Convert form values to API expected format
+            const targetData = {
+                ...userData,
+                // Remove any undefined values
+                ...(userData.targetSalesAmount !== undefined && { targetSalesAmount: userData.targetSalesAmount }),
+                ...(userData.targetHoursWorked !== undefined && { targetHoursWorked: userData.targetHoursWorked }),
+                ...(userData.targetNewClients !== undefined && { targetNewClients: userData.targetNewClients }),
+                ...(userData.targetNewLeads !== undefined && { targetNewLeads: userData.targetNewLeads }),
+                ...(userData.targetCheckIns !== undefined && { targetCheckIns: userData.targetCheckIns }),
+                ...(userData.targetCalls !== undefined && { targetCalls: userData.targetCalls }),
+            };
+
+            // Choose the appropriate HTTP method based on whether user has existing targets
+            if (hasExistingTargets) {
+                // Update existing targets with PATCH
+                await axiosInstance.patch(`/user/${user.uid}/target`, targetData);
+                showSuccessToast('User targets updated successfully', toast);
+            } else {
+                // Create new targets with POST
+                await axiosInstance.post(`/user/${user.uid}/target`, targetData);
+                showSuccessToast('User targets created successfully', toast);
+            }
+
+            setShowTargetsModal(false);
+        } catch (error) {
+            console.error("Error managing user targets:", error);
+            showErrorToast('Failed to save user targets', toast);
         }
     };
 
@@ -129,6 +167,16 @@ export function UserDetailsModal({
     // Close the edit modal
     const handleCloseEditModal = () => {
         setShowEditModal(false);
+    };
+
+    // Show the targets modal when Targets button is clicked
+    const handleTargetsClick = () => {
+        setShowTargetsModal(true);
+    };
+
+    // Close the targets modal
+    const handleCloseTargetsModal = () => {
+        setShowTargetsModal(false);
     };
 
     // Get status badge color
@@ -491,6 +539,18 @@ export function UserDetailsModal({
                                     className="text-blue-600 w-7 h-7 dark:text-blue-400"
                                 />
                             </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-teal-800 border-teal-200 rounded-full w-14 h-14 hover:bg-teal-50 hover:border-teal-300 dark:text-teal-300 dark:hover:bg-teal-900/20 dark:border-teal-900/30"
+                                onClick={handleTargetsClick}
+                                title="Manage User Targets"
+                            >
+                                <Gauge
+                                    strokeWidth={1.2}
+                                    className="text-teal-600 w-7 h-7 dark:text-teal-400"
+                                />
+                            </Button>
                             {onDelete && (
                                 <Button
                                     variant="outline"
@@ -611,6 +671,27 @@ export function UserDetailsModal({
                         <UserEditForm
                             initialData={user}
                             onSubmit={handleUpdateUser}
+                            isLoading={false}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* User Targets Modal */}
+            <Dialog open={showTargetsModal} onOpenChange={handleCloseTargetsModal}>
+                <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-card">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-thin uppercase font-body">
+                            Manage Targets: {user.name} {user.surname}
+                        </DialogTitle>
+                        <DialogDescription className="text-xs font-thin font-body">
+                            Set performance targets for this user
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <UserTargetForm
+                            userId={user.uid}
+                            onSubmit={handleUpdateUserTargets}
                             isLoading={false}
                         />
                     </div>

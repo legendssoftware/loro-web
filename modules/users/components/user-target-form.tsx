@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Form,
     FormControl,
@@ -628,7 +627,7 @@ export default function UserTargetForm({
                                                                 'PPP',
                                                             )
                                                         ) : (
-                                                            <span>
+                                                            <span className="text-[10px] font-thin uppercase font-body">
                                                                 Pick a date
                                                             </span>
                                                         )}
@@ -681,7 +680,7 @@ export default function UserTargetForm({
                                                                 'PPP',
                                                             )
                                                         ) : (
-                                                            <span>
+                                                            <span className="text-[10px] font-thin uppercase font-body">
                                                                 Pick a date
                                                             </span>
                                                         )}
@@ -741,7 +740,7 @@ export default function UserTargetForm({
                         <Button
                             type="submit"
                             disabled={isSubmitting || isLoading || isDeleting}
-                            className="font-thin bg-primary text-primary-foreground hover:bg-primary/90 font-body"
+                            className="text-xs font-thin text-white uppercase bg-primary hover:bg-primary/90 font-body"
                         >
                             {isSubmitting || isLoading
                                 ? 'Saving...'

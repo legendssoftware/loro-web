@@ -39,12 +39,12 @@ export function TasksKanban({
     onUpdateSubtaskStatus,
 }: TasksKanbanProps) {
     const renderColumn = useCallback(
-        (status: TaskStatus, title: string, count: number) => {
+        (status: TaskStatus, title: string, count: number, columnId?: string, exampleCard?: boolean) => {
             const tasks = tasksByStatus[status] || [];
             const colors = StatusColors[status];
 
             return (
-                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
+                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col" id={columnId}>
                     <div className="flex items-center justify-between mb-2">
                         <div
                             className={cn(
@@ -77,10 +77,9 @@ export function TasksKanban({
                                         task={task}
                                         onUpdateStatus={onUpdateTaskStatus}
                                         onDelete={onDeleteTask}
-                                        onUpdateSubtaskStatus={
-                                            onUpdateSubtaskStatus
-                                        }
+                                        onUpdateSubtaskStatus={onUpdateSubtaskStatus}
                                         index={index}
+                                        id={exampleCard && index === 0 ? 'task-card-example' : undefined}
                                     />
                                 ))
                             ) : (
@@ -112,11 +111,14 @@ export function TasksKanban({
                         TaskStatus.PENDING,
                         'Pending',
                         tasksByStatus[TaskStatus.PENDING]?.length || 0,
+                        'pending-tasks-column',
+                        true
                     )}
                     {renderColumn(
                         TaskStatus.POSTPONED,
                         'Postponed',
                         tasksByStatus[TaskStatus.POSTPONED]?.length || 0,
+                        'postponed-tasks-column'
                     )}
                 </div>
             </div>
@@ -127,6 +129,7 @@ export function TasksKanban({
                         TaskStatus.IN_PROGRESS,
                         'In Progress',
                         tasksByStatus[TaskStatus.IN_PROGRESS]?.length || 0,
+                        'inprogress-tasks-column'
                     )}
                 </div>
             </div>
@@ -137,11 +140,13 @@ export function TasksKanban({
                         TaskStatus.OVERDUE,
                         'Overdue',
                         tasksByStatus[TaskStatus.OVERDUE]?.length || 0,
+                        'overdue-tasks-column'
                     )}
                     {renderColumn(
                         TaskStatus.MISSED,
                         'Missed',
                         tasksByStatus[TaskStatus.MISSED]?.length || 0,
+                        'missed-tasks-column'
                     )}
                 </div>
             </div>
@@ -152,6 +157,7 @@ export function TasksKanban({
                         TaskStatus.CANCELLED,
                         'Cancelled',
                         tasksByStatus[TaskStatus.CANCELLED]?.length || 0,
+                        'cancelled-tasks-column'
                     )}
                 </div>
             </div>
@@ -162,6 +168,7 @@ export function TasksKanban({
                         TaskStatus.COMPLETED,
                         'Completed',
                         tasksByStatus[TaskStatus.COMPLETED]?.length || 0,
+                        'completed-tasks-column'
                     )}
                 </div>
             </div>

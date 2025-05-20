@@ -241,7 +241,7 @@ export default function UserTargetForm({
                             targetSalesAmount: userTarget.targetSalesAmount
                                 ? userTarget.targetSalesAmount.toString()
                                 : '',
-                            targetCurrency: userTarget.targetCurrency || 'USD',
+                            targetCurrency: userTarget.targetCurrency || 'ZAR',
                             targetHoursWorked: userTarget.targetHoursWorked
                                 ? userTarget.targetHoursWorked.toString()
                                 : '',
@@ -327,7 +327,7 @@ export default function UserTargetForm({
             setCurrentTarget(null);
             form.reset({
                 targetSalesAmount: '',
-                targetCurrency: 'USD',
+                targetCurrency: 'ZAR',
                 targetHoursWorked: '',
                 targetNewClients: '',
                 targetNewLeads: '',
@@ -380,9 +380,12 @@ export default function UserTargetForm({
                                     name="targetSalesAmount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-amount"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 Target Amount
-                                            </FormLabel>
+                                            </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -400,9 +403,12 @@ export default function UserTargetForm({
                                     name="targetCurrency"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-currency"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 Currency
-                                            </FormLabel>
+                                            </label>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
@@ -447,9 +453,12 @@ export default function UserTargetForm({
                                 name="targetHoursWorked"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-xs font-body">
+                                        <label
+                                            htmlFor="target-hours-worked"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
                                             Target Hours Worked
-                                        </FormLabel>
+                                        </label>
                                         <FormControl>
                                             <Input
                                                 {...field}
@@ -475,9 +484,12 @@ export default function UserTargetForm({
                                     name="targetNewClients"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-new-clients"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 New Clients
-                                            </FormLabel>
+                                            </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -495,9 +507,12 @@ export default function UserTargetForm({
                                     name="targetNewLeads"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-new-leads"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 New Leads
-                                            </FormLabel>
+                                            </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -524,9 +539,12 @@ export default function UserTargetForm({
                                     name="targetCheckIns"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-check-ins"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 Check-ins
-                                            </FormLabel>
+                                            </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -544,9 +562,12 @@ export default function UserTargetForm({
                                     name="targetCalls"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-body">
+                                            <label
+                                                htmlFor="target-calls"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
                                                 Calls
-                                            </FormLabel>
+                                            </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -574,9 +595,12 @@ export default function UserTargetForm({
                                 name="targetPeriod"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-xs font-body">
+                                        <label
+                                            htmlFor="target-period"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
                                             Period Type
-                                        </FormLabel>
+                                        </label>
                                         <Select
                                             onValueChange={field.onChange}
                                             defaultValue={field.value}
@@ -607,9 +631,12 @@ export default function UserTargetForm({
                                 name="periodStartDate"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel className="text-xs font-body">
+                                        <label
+                                            htmlFor="target-start-date"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
                                             Start Date
-                                        </FormLabel>
+                                        </label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <FormControl>
@@ -660,9 +687,12 @@ export default function UserTargetForm({
                                 name="periodEndDate"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel className="text-xs font-body">
+                                        <label
+                                            htmlFor="target-end-date"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
                                             End Date
-                                        </FormLabel>
+                                        </label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <FormControl>
@@ -730,7 +760,7 @@ export default function UserTargetForm({
                                 disabled={
                                     isSubmitting || isLoading || isDeleting
                                 }
-                                className="font-thin text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-900/30 dark:hover:bg-red-900/20 font-body"
+                                className="font-thin text-red-600 border-red-200 upercase hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-900/30 dark:hover:bg-red-900/20 font-body"
                             >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Delete Targets

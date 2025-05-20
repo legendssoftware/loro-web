@@ -16,8 +16,7 @@ import {
     MapPin,
     Warehouse,
     Settings,
-    Zap,
-    Computer,
+    Building,
 } from 'lucide-react';
 import {
     Sheet,

@@ -690,7 +690,7 @@ export function UserDetailsModal({
                     </DialogHeader>
                     <div className="py-4">
                         <UserTargetForm
-                            userId={user.uid}
+                            userId={user?.uid}
                             onSubmit={handleUpdateUserTargets}
                             isLoading={false}
                         />

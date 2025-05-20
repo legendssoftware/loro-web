@@ -213,7 +213,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Snapshot',
                 description:
-                    "Check your team's pulse! See the \"Total Employees\" (14) and how many are \"Active Now\" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪",
+                    'Check your team\'s pulse! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
                 side: 'bottom',
                 align: 'center',
             },
@@ -223,7 +223,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ Tasks Tracker',
                 description:
-                    "Stay on top of productivity! This card shows how many tasks were \"Completed Today\" (7) and how many are currently \"In Progress\" (2). Essential for monitoring workflow and efficiency. 🗓️",
+                    'Stay on top of productivity! This card shows how many tasks were "Completed Today" (7) and how many are currently "In Progress" (2). Essential for monitoring workflow and efficiency. 🗓️',
                 side: 'bottom',
                 align: 'center',
             },
@@ -233,7 +233,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💡 Leads Funnel Overview',
                 description:
-                    "How are your new opportunities looking? See how many leads were \"Generated Today\" (2) and the number of \"Pending\" leads (35) that need attention. Key for your sales pipeline! 🚀",
+                    'How are your new opportunities looking? See how many leads were "Generated Today" (2) and the number of "Pending" leads (35) that need attention. Key for your sales pipeline! 🚀',
                 side: 'bottom',
                 align: 'center',
             },
@@ -243,7 +243,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💰 Sales Performance',
                 description:
-                    "Money talks! View your \"Revenue Today\" (R 1,574.98) and the number of \"Quotations\" made (3). This is a direct indicator of your daily sales success. 📈",
+                    'Money talks! View your "Revenue Today" (R 1,574.98) and the number of "Quotations" made (3). This is a direct indicator of your daily sales success. 📈',
                 side: 'bottom',
                 align: 'center',
             },
@@ -253,7 +253,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🤝 Client Engagement',
                 description:
-                    "Keep your clients happy! Track \"Interactions Today\" (0) and see how many \"New Clients\" (0) you've welcomed. Vital for customer relationship management. 😊",
+                    'Keep your clients happy! Track "Interactions Today" (0) and see how many "New Clients" (0) you\'ve welcomed. Vital for customer relationship management. 😊',
                 side: 'bottom',
                 align: 'center',
             },
@@ -283,7 +283,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Analytics',
                 description:
-                    "Click here to see detailed workforce metrics like employee hourly activity trends, productivity rates, attendance patterns, and more. Perfect for monitoring team efficiency and engagement. 📉",
+                    'Click here to see detailed workforce metrics like employee hourly activity trends, productivity rates, attendance patterns, and more. Perfect for monitoring team efficiency and engagement. 📉',
                 side: 'bottom',
                 align: 'start',
             },
@@ -293,7 +293,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ Tasks Insights',
                 description:
-                    "Access comprehensive task analytics including completion rates, priority distribution, aging analysis, and assignee performance. Helps identify workflow bottlenecks and star performers. 📋",
+                    'Access comprehensive task analytics including completion rates, priority distribution, aging analysis, and assignee performance. Helps identify workflow bottlenecks and star performers. 📋',
                 side: 'bottom',
                 align: 'start',
             },
@@ -303,7 +303,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🚩 Task Flags Analysis',
                 description:
-                    "Monitor issues and blockers with detailed flag analytics. See flag status distribution, most flagged tasks, top flag creators, and recent flags that need attention. Crucial for quality management. ⚠️",
+                    'Monitor issues and blockers with detailed flag analytics. See flag status distribution, most flagged tasks, top flag creators, and recent flags that need attention. Crucial for quality management. ⚠️',
                 side: 'bottom',
                 align: 'start',
             },
@@ -313,7 +313,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🌱 Leads Performance',
                 description:
-                    "Analyze your lead generation efforts with charts showing hourly activity, status distribution by category, and top performing lead generators. Optimize your customer acquisition strategy. 💰",
+                    'Analyze your lead generation efforts with charts showing hourly activity, status distribution by category, and top performing lead generators. Optimize your customer acquisition strategy. 💰',
                 side: 'bottom',
                 align: 'center',
             },
@@ -323,7 +323,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💵 Sales Analytics',
                 description:
-                    "Track your revenue performance with detailed sales metrics. View hourly sales activity, weekly revenue trends, top performers, average order values, and quotation analysis. 📊",
+                    'Track your revenue performance with detailed sales metrics. View hourly sales activity, weekly revenue trends, top performers, average order values, and quotation analysis. 📊',
                 side: 'bottom',
                 align: 'center',
             },
@@ -333,7 +333,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🛍️ Product Insights',
                 description:
-                    "Get visibility into your product performance with category and status distribution charts, top performing products data, and inventory stats including low stock alerts. 📦",
+                    'Get visibility into your product performance with category and status distribution charts, top performing products data, and inventory stats including low stock alerts. 📦',
                 side: 'bottom',
                 align: 'center',
             },
@@ -343,7 +343,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📝 Claims Overview',
                 description:
-                    "Monitor expense claims with detailed analytics on status and category distribution, top claim creators, and recent claim submissions. Essential for financial oversight. 💸",
+                    'Monitor expense claims with detailed analytics on status and category distribution, top claim creators, and recent claim submissions. Essential for financial oversight. 💸',
                 side: 'bottom',
                 align: 'center',
             },
@@ -353,7 +353,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📓 Journals Analytics',
                 description:
-                    "Review journal entry metrics including status distribution, top creators, and recent entries. Perfect for tracking field notes, client interactions, and internal communications. 📔",
+                    'Review journal entry metrics including status distribution, top creators, and recent entries. Perfect for tracking field notes, client interactions, and internal communications. 📔',
                 side: 'bottom',
                 align: 'end',
             },
@@ -390,9 +390,9 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '🎉 You\'re All Set to Explore! 🎉',
+                title: "🎉 You're All Set to Explore! 🎉",
                 description:
-                    "That covers the Live Organization Overview! Remember to click through the different tabs to see detailed analytics for each section. Use the refresh button to get the latest data, and enjoy your real-time insights! Happy exploring! 🚀",
+                    'That covers the Live Organization Overview! Remember to click through the different tabs to see detailed analytics for each section. Use the refresh button to get the latest data, and enjoy your real-time insights! Happy exploring! 🚀',
                 align: 'center',
             },
         },
@@ -435,7 +435,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ APPROVED LEADS',
                 description:
-                    'These leads have been qualified and approved for follow-up. They\'re promising opportunities that your team is actively pursuing.',
+                    "These leads have been qualified and approved for follow-up. They're promising opportunities that your team is actively pursuing.",
                 side: 'top',
                 align: 'start',
             },
@@ -445,7 +445,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🔍 UNDER REVIEW',
                 description:
-                    'Leads requiring additional information or verification before proceeding. They\'re being evaluated for potential or waiting for specific details.',
+                    "Leads requiring additional information or verification before proceeding. They're being evaluated for potential or waiting for specific details.",
                 side: 'top',
                 align: 'center',
             },
@@ -475,7 +475,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🎯 CONVERTED TO CLIENTS',
                 description:
-                    'Success! These leads have been successfully converted into paying clients. They\'ve completed the sales funnel and are now in your client database.',
+                    "Success! These leads have been successfully converted into paying clients. They've completed the sales funnel and are now in your client database.",
                 side: 'top',
                 align: 'end',
             },
@@ -505,7 +505,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📞 CONTACT DETAILS',
                 description:
-                    'Essential contact information for follow-up. Depending on the lead, you\'ll see email, phone number, and business location for quick reference.',
+                    "Essential contact information for follow-up. Depending on the lead, you'll see email, phone number, and business location for quick reference.",
                 side: 'bottom',
                 align: 'start',
             },
@@ -696,16 +696,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#clear-user-filters-button',
-            popover: {
-                title: 'CLEAR FILTERS',
-                description:
-                    '❌ Click here to remove all active filters and view the full staff list.',
-                side: 'left',
-                align: 'end',
-            },
-        },
-        {
             element: '#staff-table',
             popover: {
                 title: 'STAFF LIST',
@@ -742,44 +732,163 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ TASK MANAGEMENT',
                 description:
-                    'Create, assign, and monitor work tasks for your team. Track progress and ensure timely completion.',
-                side: 'bottom',
-            },
-        },
-        {
-            element: '#add-task-button',
-            popover: {
-                title: 'CREATE NEW TASK',
-                description:
-                    '➕ Define new tasks, add descriptions, link them to clients or projects, assign users, and set priorities and deadlines.',
+                    'Welcome to the Tasks section! Here you can create, assign, and monitor work tasks for your team. Track progress and ensure timely completion.',
                 side: 'bottom',
                 align: 'start',
             },
         },
         {
-            element: '#tasks-board',
             popover: {
-                title: 'TASK OVERVIEW',
+                title: '📋 TASKS BOARD OVERVIEW',
                 description:
-                    '📋 See all tasks based on your current view and filters. Drag and drop (on Board view) to change status or click a task card/row to see full details.',
+                    'This is your kanban-style task management board. Tasks are organized by status columns showing the full lifecycle from planning to completion or cancellation.',
+                align: 'center',
+            },
+        },
+        // Pending Column
+        {
+            element: '#pending-tasks-column',
+            popover: {
+                title: '⏱️ PENDING TASKS',
+                description:
+                    'New tasks start here. These are tasks that are waiting to be started. The number shows how many tasks are pending.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // Postponed Column
+        {
+            element: '#postponed-tasks-column',
+            popover: {
+                title: '⏳ POSTPONED TASKS',
+                description:
+                    'Tasks that have been postponed for later action. Keep an eye on these to avoid missing deadlines.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // In Progress Column
+        {
+            element: '#inprogress-tasks-column',
+            popover: {
+                title: '🚧 IN PROGRESS',
+                description:
+                    'Tasks currently being worked on. Move tasks here when your team starts working on them.',
                 side: 'top',
                 align: 'center',
             },
         },
+        // Overdue Column
         {
-            element: '.task-card',
+            element: '#overdue-tasks-column',
             popover: {
-                title: 'TASK DETAILS',
+                title: '⏰ OVERDUE TASKS',
                 description:
-                    '🖱️ Clicking a task opens its details. Review the description, check linked client info, see updates, and change its status.',
+                    'Tasks that have missed their deadline. Review and take action to get these back on track.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Missed Column
+        {
+            element: '#missed-tasks-column',
+            popover: {
+                title: '❌ MISSED TASKS',
+                description:
+                    'Tasks that were not completed as planned. Analyze these to improve future performance.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Cancelled Column
+        {
+            element: '#cancelled-tasks-column',
+            popover: {
+                title: '🚫 CANCELLED TASKS',
+                description:
+                    'Tasks that have been cancelled and will not be completed. These are kept for record-keeping.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        // Completed Column
+        {
+            element: '#completed-tasks-column',
+            popover: {
+                title: '🎉 COMPLETED TASKS',
+                description:
+                    "Tasks that have been successfully completed. Celebrate your team's achievements here!",
+                side: 'top',
+                align: 'end',
+            },
+        },
+        // Example Task Card (first card in Pending column)
+        {
+            element: '#task-card-example',
+            popover: {
+                title: '🗂️ TASK CARD',
+                description:
+                    'Each card represents a task. Cards display the title, status, priority, assignees, progress, and more. Click a card to view full details and take action.',
                 side: 'right',
+                align: 'start',
+            },
+        },
+        // Task Title
+        {
+            element: '#task-card-example #task-title-field',
+            popover: {
+                title: '📝 TASK TITLE',
+                description:
+                    'This is the main title of the task. Make titles clear and descriptive for easy tracking.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Task Status Badge
+        {
+            element: '#task-card-example #task-status-badge',
+            popover: {
+                title: '📌 STATUS BADGE',
+                description:
+                    'Shows the current status of the task (Pending, In Progress, Completed, etc.).',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Task Assignees
+        {
+            element: '#task-card-example #task-assignees',
+            popover: {
+                title: '👥 ASSIGNEES',
+                description:
+                    'Displays the team members assigned to this task. Assign tasks to the right people for efficient workflow.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        // Task Progress (if subtasks exist)
+        {
+            element: '#task-card-example #task-progress-bar',
+            popover: {
+                title: '📈 TASK PROGRESS',
+                description:
+                    'Shows how much of the task is complete, based on subtasks. Keep an eye on progress to ensure timely completion.',
+                side: 'bottom',
                 align: 'start',
             },
         },
         {
             popover: {
+                title: '📊 TASKS INSIGHTS',
                 description:
-                    "That's Task Management! You\'re ready to organize your team\'s work.",
+                    'Pay attention to the numbers at the top of each column. They provide a quick snapshot of your workflow and help identify bottlenecks or opportunities for improvement.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                description:
+                    "That's the Tasks page! You're now equipped to effectively manage your team's work from planning to completion.",
                 align: 'center',
             },
         },
@@ -1088,7 +1197,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🗺️ Your Navigational Compass',
                 description:
-                    "Lost? Never! These breadcrumbs show your current path within the Loro dashboard. You can easily click back to the main \"Reports\" section or the primary \"Dashboard\". It's your quick way to navigate! 🧭",
+                    'Lost? Never! These breadcrumbs show your current path within the Loro dashboard. You can easily click back to the main "Reports" section or the primary "Dashboard". It\'s your quick way to navigate! 🧭',
                 side: 'bottom',
                 align: 'start',
             },
@@ -1098,7 +1207,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📢 Report Title & Purpose',
                 description:
-                    "You're looking at the \"LIVE ORGANIZATION OVERVIEW\" – your central hub for real-time metrics and performance analytics across your organization. It's all about giving you the latest data, right now! ⏱️",
+                    'You\'re looking at the "LIVE ORGANIZATION OVERVIEW" – your central hub for real-time metrics and performance analytics across your organization. It\'s all about giving you the latest data, right now! ⏱️',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1128,7 +1237,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Snapshot',
                 description:
-                    "Check your team's pulse! See the \"Total Employees\" (14) and how many are \"Active Now\" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪",
+                    'Check your team\'s pulse! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1138,7 +1247,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ Tasks Tracker',
                 description:
-                    "Stay on top of productivity! This card shows how many tasks were \"Completed Today\" (7) and how many are currently \"In Progress\" (2). Essential for monitoring workflow and efficiency. 🗓️",
+                    'Stay on top of productivity! This card shows how many tasks were "Completed Today" (7) and how many are currently "In Progress" (2). Essential for monitoring workflow and efficiency. 🗓️',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1148,7 +1257,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💡 Leads Funnel Overview',
                 description:
-                    "How are your new opportunities looking? See how many leads were \"Generated Today\" (2) and the number of \"Pending\" leads (35) that need attention. Key for your sales pipeline! 🚀",
+                    'How are your new opportunities looking? See how many leads were "Generated Today" (2) and the number of "Pending" leads (35) that need attention. Key for your sales pipeline! 🚀',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1158,7 +1267,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💰 Sales Performance',
                 description:
-                    "Money talks! View your \"Revenue Today\" (R 1,574.98) and the number of \"Quotations\" made (3). This is a direct indicator of your daily sales success. 📈",
+                    'Money talks! View your "Revenue Today" (R 1,574.98) and the number of "Quotations" made (3). This is a direct indicator of your daily sales success. 📈',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1168,7 +1277,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🤝 Client Engagement',
                 description:
-                    "Keep your clients happy! Track \"Interactions Today\" (0) and see how many \"New Clients\" (0) you've welcomed. Vital for customer relationship management. 😊",
+                    'Keep your clients happy! Track "Interactions Today" (0) and see how many "New Clients" (0) you\'ve welcomed. Vital for customer relationship management. 😊',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1188,7 +1297,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Analytics',
                 description:
-                    "Click here to see detailed workforce metrics like employee hourly activity trends, productivity rates, attendance patterns, and more. Perfect for monitoring team efficiency and engagement. 📉",
+                    'Click here to see detailed workforce metrics like employee hourly activity trends, productivity rates, attendance patterns, and more. Perfect for monitoring team efficiency and engagement. 📉',
                 side: 'bottom',
                 align: 'start',
             },
@@ -1198,7 +1307,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '✅ Tasks Insights',
                 description:
-                    "Access comprehensive task analytics including completion rates, priority distribution, aging analysis, and assignee performance. Helps identify workflow bottlenecks and star performers. 📋",
+                    'Access comprehensive task analytics including completion rates, priority distribution, aging analysis, and assignee performance. Helps identify workflow bottlenecks and star performers. 📋',
                 side: 'bottom',
                 align: 'start',
             },
@@ -1208,7 +1317,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🚩 Task Flags Analysis',
                 description:
-                    "Monitor issues and blockers with detailed flag analytics. See flag status distribution, most flagged tasks, top flag creators, and recent flags that need attention. Crucial for quality management. ⚠️",
+                    'Monitor issues and blockers with detailed flag analytics. See flag status distribution, most flagged tasks, top flag creators, and recent flags that need attention. Crucial for quality management. ⚠️',
                 side: 'bottom',
                 align: 'start',
             },
@@ -1218,7 +1327,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🌱 Leads Performance',
                 description:
-                    "Analyze your lead generation efforts with charts showing hourly activity, status distribution by category, and top performing lead generators. Optimize your customer acquisition strategy. 💰",
+                    'Analyze your lead generation efforts with charts showing hourly activity, status distribution by category, and top performing lead generators. Optimize your customer acquisition strategy. 💰',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1228,7 +1337,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💵 Sales Analytics',
                 description:
-                    "Track your revenue performance with detailed sales metrics. View hourly sales activity, weekly revenue trends, top performers, average order values, and quotation analysis. 📊",
+                    'Track your revenue performance with detailed sales metrics. View hourly sales activity, weekly revenue trends, top performers, average order values, and quotation analysis. 📊',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1238,7 +1347,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🛍️ Product Insights',
                 description:
-                    "Get visibility into your product performance with category and status distribution charts, top performing products data, and inventory stats including low stock alerts. 📦",
+                    'Get visibility into your product performance with category and status distribution charts, top performing products data, and inventory stats including low stock alerts. 📦',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1248,7 +1357,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📝 Claims Overview',
                 description:
-                    "Monitor expense claims with detailed analytics on status and category distribution, top claim creators, and recent claim submissions. Essential for financial oversight. 💸",
+                    'Monitor expense claims with detailed analytics on status and category distribution, top claim creators, and recent claim submissions. Essential for financial oversight. 💸',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1258,7 +1367,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📓 Journals Analytics',
                 description:
-                    "Review journal entry metrics including status distribution, top creators, and recent entries. Perfect for tracking field notes, client interactions, and internal communications. 📔",
+                    'Review journal entry metrics including status distribution, top creators, and recent entries. Perfect for tracking field notes, client interactions, and internal communications. 📔',
                 side: 'bottom',
                 align: 'end',
             },
@@ -1295,9 +1404,9 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
         {
             popover: {
-                title: '🎉 You\'re All Set to Explore! 🎉',
+                title: "🎉 You're All Set to Explore! 🎉",
                 description:
-                    "That covers the Live Organization Overview! Remember to click through the different tabs to see detailed analytics for each section. Use the refresh button to get the latest data, and enjoy your real-time insights! Happy exploring! 🚀",
+                    'That covers the Live Organization Overview! Remember to click through the different tabs to see detailed analytics for each section. Use the refresh button to get the latest data, and enjoy your real-time insights! Happy exploring! 🚀',
                 align: 'center',
             },
         },

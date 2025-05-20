@@ -31,12 +31,12 @@ export function JournalsKanban({
     onAddJournal,
 }: JournalsKanbanProps) {
     const renderColumn = useCallback(
-        (status: JournalStatus, title: string, count: number) => {
+        (status: JournalStatus, title: string, count: number, columnId?: string, exampleCard?: boolean) => {
             const journals = journalsByStatus[status] || [];
             const colors = StatusColors[status];
 
             return (
-                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
+                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col" id={columnId}>
                     <div className="flex items-center justify-between mb-2">
                         <div
                             className={cn(
@@ -60,6 +60,7 @@ export function JournalsKanban({
                                 onDelete={onDeleteJournal}
                                 onViewDetails={onViewDetails}
                                 index={index}
+                                id={exampleCard && index === 0 ? 'journal-card-example' : undefined}
                             />
                         ))}
                         {journals?.length === 0 && <EmptyColumn />}
@@ -82,26 +83,32 @@ export function JournalsKanban({
                 JournalStatus.PENDING_REVIEW,
                 'Pending',
                 journalsByStatus[JournalStatus.PENDING_REVIEW]?.length || 0,
+                'pending-journals-column',
+                true
             )}
             {renderColumn(
                 JournalStatus.DRAFT,
                 'Draft',
                 journalsByStatus[JournalStatus.DRAFT]?.length || 0,
+                'draft-journals-column'
             )}
             {renderColumn(
                 JournalStatus.REJECTED,
                 'Rejected',
                 journalsByStatus[JournalStatus.REJECTED]?.length || 0,
+                'rejected-journals-column'
             )}
             {renderColumn(
                 JournalStatus.ARCHIVED,
                 'Archived',
                 journalsByStatus[JournalStatus.ARCHIVED]?.length || 0,
+                'archived-journals-column'
             )}
             {renderColumn(
                 JournalStatus.PUBLISHED,
                 'Published',
                 journalsByStatus[JournalStatus.PUBLISHED]?.length || 0,
+                'published-journals-column'
             )}
         </div>
     );

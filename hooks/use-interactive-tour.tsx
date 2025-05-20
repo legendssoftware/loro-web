@@ -597,16 +597,6 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             },
         },
         {
-            element: '#clear-client-filters-button',
-            popover: {
-                title: 'CLEAR FILTERS',
-                description:
-                    '❌ This button appears when filters are active. Click it to remove all filters and view the full client list.',
-                side: 'left',
-                align: 'end',
-            },
-        },
-        {
             element: '#add-client-button',
             popover: {
                 title: 'ADD NEW CLIENT',
@@ -903,33 +893,141 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '💸 CLAIMS MANAGEMENT',
                 description:
-                    'Review, approve, or reject expense and other claims submitted by staff efficiently.',
+                    'Welcome to the Claims section! Here you can review, approve, reject, and track expense and other claims submitted by staff.',
                 side: 'bottom',
-            },
-        },
-        {
-            element: '#claims-table',
-            popover: {
-                title: 'CLAIMS LIST',
-                description:
-                    '📋 This table shows all submitted claims matching your filters. See key info like submitter, amount, and status at a glance.',
-                side: 'top',
-            },
-        },
-        {
-            element: '.claim-row',
-            popover: {
-                title: 'REVIEW CLAIM DETAILS',
-                description:
-                    '🖱️ Click on a claim row to open the details modal. Review the submitted information, check any attached receipts or documents, and then Approve or Reject the claim with an optional comment.',
-                side: 'right',
                 align: 'start',
             },
         },
         {
             popover: {
+                title: '📋 CLAIMS BOARD OVERVIEW',
                 description:
-                    "That covers Claims! You\'re ready to manage submissions efficiently.",
+                    'This is your kanban-style claims management board. Claims are organized by status columns showing the full lifecycle from submission to approval, payment, or rejection.',
+                align: 'center',
+            },
+        },
+        // Pending Column
+        {
+            element: '#pending-claims-column',
+            popover: {
+                title: '⏱️ PENDING CLAIMS',
+                description:
+                    'New claims start here. These are claims that are waiting for review. The number shows how many claims are pending.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // Cancelled Column
+        {
+            element: '#cancelled-claims-column',
+            popover: {
+                title: '🚫 CANCELLED CLAIMS',
+                description:
+                    'Claims that have been cancelled and will not be processed. These are kept for record-keeping.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        // Declined Column
+        {
+            element: '#declined-claims-column',
+            popover: {
+                title: '❌ DECLINED CLAIMS',
+                description:
+                    'Claims that were not approved. Analyze these to improve future submissions.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Approved Column
+        {
+            element: '#approved-claims-column',
+            popover: {
+                title: '✅ APPROVED CLAIMS',
+                description:
+                    'Claims that have been approved and are ready for payment.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Paid Column
+        {
+            element: '#paid-claims-column',
+            popover: {
+                title: '💵 PAID CLAIMS',
+                description:
+                    "Claims that have been paid out. Keep track of your organization's expenses here.",
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Rejected Column
+        {
+            element: '#rejected-claims-column',
+            popover: {
+                title: '🚫 REJECTED CLAIMS',
+                description:
+                    'Claims that have been rejected. Review reasons for rejection to help staff submit better claims in the future.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Example Claim Card (first card in Pending column)
+        {
+            element: '#claim-card-example',
+            popover: {
+                title: '🗂️ CLAIM CARD',
+                description:
+                    'Each card represents a claim. Cards display the amount, status, owner, and more. Click a card to view full details and take action.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Claim Amount/Title
+        {
+            element: '#claim-card-example #claim-title-field',
+            popover: {
+                title: '💰 CLAIM AMOUNT',
+                description:
+                    'This is the amount being claimed. Review carefully before approving.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Claim Status Badge
+        {
+            element: '#claim-card-example #claim-status-badge',
+            popover: {
+                title: '📌 STATUS BADGE',
+                description:
+                    'Shows the current status of the claim (Pending, Approved, Paid, etc.).',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Claim Owner
+        {
+            element: '#claim-card-example #claim-owner',
+            popover: {
+                title: '👤 CLAIM OWNER',
+                description:
+                    'Displays the staff member who submitted this claim. Ensure the claim is from a valid user.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            popover: {
+                title: '📊 CLAIMS INSIGHTS',
+                description:
+                    'Pay attention to the numbers at the top of each column. They provide a quick snapshot of your claims workflow and help identify bottlenecks or opportunities for improvement.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                description:
+                    "That's the Claims page! You're now equipped to efficiently manage, review, and process claims from submission to payment.",
                 align: 'center',
             },
         },
@@ -944,33 +1042,130 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📓 JOURNALS & ACTIVITY LOGS',
                 description:
-                    'Review activity logs, notes, and interactions entered by staff, often linked to clients or tasks.',
+                    'Welcome to the Journals section! Here you can review, manage, and track activity logs, notes, and interactions entered by staff.',
                 side: 'bottom',
-            },
-        },
-        {
-            element: '#journals-table',
-            popover: {
-                title: 'JOURNAL FEED / LIST',
-                description:
-                    '📋 Browse the chronological log of activities and notes submitted by your team according to your filters.',
-                side: 'top',
-            },
-        },
-        {
-            element: '.journal-entry',
-            popover: {
-                title: 'VIEW ENTRY DETAILS',
-                description:
-                    '📄 Click an entry to read the full note or log details entered by the staff member.',
-                side: 'right',
                 align: 'start',
             },
         },
         {
             popover: {
+                title: '📋 JOURNALS BOARD OVERVIEW',
                 description:
-                    "That's the Journals section! You\'re ready to review activity logs.",
+                    'This is your kanban-style journals management board. Journals are organized by status columns showing the full lifecycle from draft to published or archived.',
+                align: 'center',
+            },
+        },
+        // Pending Column
+        {
+            element: '#pending-journals-column',
+            popover: {
+                title: '⏱️ PENDING REVIEW',
+                description:
+                    'New journals start here. These are journals that are waiting for review or approval. The number shows how many journals are pending.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // Draft Column
+        {
+            element: '#draft-journals-column',
+            popover: {
+                title: '📝 DRAFTS',
+                description:
+                    'Journals that are being drafted and not yet published. Continue editing or submit for review when ready.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // Rejected Column
+        {
+            element: '#rejected-journals-column',
+            popover: {
+                title: '❌ REJECTED JOURNALS',
+                description:
+                    'Journals that were not approved. Review feedback and update as needed.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Archived Column
+        {
+            element: '#archived-journals-column',
+            popover: {
+                title: '📦 ARCHIVED JOURNALS',
+                description:
+                    'Journals that have been archived for record-keeping. These are not active but are kept for reference.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        // Published Column
+        {
+            element: '#published-journals-column',
+            popover: {
+                title: '✅ PUBLISHED JOURNALS',
+                description:
+                    'Journals that have been reviewed and published. These are visible to the relevant users.',
+                side: 'top',
+                align: 'end',
+            },
+        },
+        // Example Journal Card (first card in Pending column)
+        {
+            element: '#journal-card-example',
+            popover: {
+                title: '🗂️ JOURNAL CARD',
+                description:
+                    'Each card represents a journal entry. Cards display the title, status, owner, and more. Click a card to view full details and take action.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Journal Title
+        {
+            element: '#journal-card-example #journal-title-field',
+            popover: {
+                title: '📝 JOURNAL TITLE',
+                description:
+                    'This is the main title of the journal entry. Make titles clear and descriptive for easy tracking.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Journal Status Badge
+        {
+            element: '#journal-card-example #journal-status-badge',
+            popover: {
+                title: '📌 STATUS BADGE',
+                description:
+                    'Shows the current status of the journal (Pending Review, Draft, Published, etc.).',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        // Journal Owner
+        {
+            element: '#journal-card-example #journal-owner',
+            popover: {
+                title: '👤 JOURNAL OWNER',
+                description:
+                    'Displays the staff member who created this journal entry. Ensure the entry is from a valid user.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            popover: {
+                title: '📊 JOURNALS INSIGHTS',
+                description:
+                    'Pay attention to the numbers at the top of each column. They provide a quick snapshot of your journals workflow and help identify bottlenecks or opportunities for improvement.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                description:
+                    "That's the Journals page! You're now equipped to efficiently manage, review, and publish activity logs and notes.",
                 align: 'center',
             },
         },
@@ -1036,35 +1231,226 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#quotations-page-title',
             popover: {
-                title: '📝 QUOTATION MANAGEMENT',
+                title: '🧾 QUOTATIONS MANAGEMENT',
                 description:
-                    'Create, send, manage, and track customer quotations. Monitor their status from draft to conversion into orders.',
+                    'Welcome to the Quotations section! Here you can create, review, and manage sales quotations for your clients.',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
-            element: '#quotations-table',
             popover: {
-                title: 'QUOTATION LIST',
+                title: '📋 QUOTATIONS BOARD OVERVIEW',
                 description:
-                    '📋 View all quotations matching your filters, their current status, total value, and associated client. Click any row to manage it.',
+                    'This is your kanban-style quotations management board. Quotations are organized by status, making it easy to track their progress from draft to completion.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#draft-quotations-column',
+            popover: {
+                title: 'Draft Quotations',
+                description:
+                    'All new quotations start here as drafts. You can edit, send, or move them to the next stage.',
                 side: 'top',
+                align: 'start',
             },
         },
         {
-            element: '.quotation-row',
+            element: '#pendinginternal-quotations-column',
             popover: {
-                title: 'MANAGE QUOTATION DETAILS',
+                title: 'Internal Review',
                 description:
-                    '🖱️ Open a quotation to review/edit items, adjust pricing, use the integrated chat to discuss with the client (if applicable), send it, and finally convert it to an order upon client approval.',
+                    'Quotations under internal review before being sent to the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#pendingclient-quotations-column',
+            popover: {
+                title: 'Client Review',
+                description:
+                    'Quotations sent to the client for their review and approval.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#negotiation-quotations-column',
+            popover: {
+                title: 'Negotiation',
+                description: 'Quotations in negotiation with the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#approved-quotations-column',
+            popover: {
+                title: 'Approved',
+                description:
+                    'Quotations that have been approved by the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#rejected-quotations-column',
+            popover: {
+                title: 'Rejected',
+                description:
+                    'Quotations that have been rejected by the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#sourcing-quotations-column',
+            popover: {
+                title: 'Sourcing',
+                description:
+                    'Quotations in the sourcing stage, preparing for fulfillment.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#packing-quotations-column',
+            popover: {
+                title: 'Packing',
+                description: 'Quotations being packed for delivery.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#infulfillment-quotations-column',
+            popover: {
+                title: 'In Fulfillment',
+                description: 'Quotations currently being fulfilled.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#paid-quotations-column',
+            popover: {
+                title: 'Paid',
+                description: 'Quotations that have been paid by the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#outfordelivery-quotations-column',
+            popover: {
+                title: 'Out for Delivery',
+                description:
+                    'Quotations that are out for delivery to the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#delivered-quotations-column',
+            popover: {
+                title: 'Delivered',
+                description:
+                    'Quotations that have been delivered to the client.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#returned-quotations-column',
+            popover: {
+                title: 'Returned',
+                description: 'Quotations that have been returned.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#completed-quotations-column',
+            popover: {
+                title: 'Completed',
+                description: 'Quotations that have been fully completed.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#cancelled-quotations-column',
+            popover: {
+                title: 'Cancelled',
+                description: 'Quotations that have been cancelled.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#postponed-quotations-column',
+            popover: {
+                title: 'Postponed',
+                description: 'Quotations that have been postponed.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        // Example card and fields
+        {
+            element: '#quotation-card-example',
+            popover: {
+                title: 'Quotation Card Example',
+                description:
+                    'This is an example quotation card. Click to view more details or take actions.',
                 side: 'right',
+                align: 'center',
+            },
+        },
+        {
+            element: '#quotation-title-field',
+            popover: {
+                title: 'Quotation Number',
+                description: 'Displays the unique quotation number.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#quotation-status-badge',
+            popover: {
+                title: 'Status Badge',
+                description: 'Shows the current status of the quotation.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#quotation-client',
+            popover: {
+                title: 'Client',
+                description:
+                    'Displays the client associated with this quotation.',
+                side: 'top',
+                align: 'start',
+            },
+        },
+        {
+            element: '#quotation-amount',
+            popover: {
+                title: 'Total Amount',
+                description: 'Shows the total value of the quotation.',
+                side: 'top',
                 align: 'start',
             },
         },
         {
             popover: {
                 description:
-                    "That covers Quotations! You\'re ready to manage your sales pipeline.",
+                    "That's the Quotations page! You're now equipped to manage, track, and process quotations from draft to completion.",
                 align: 'center',
             },
         },

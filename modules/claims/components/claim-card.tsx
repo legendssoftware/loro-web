@@ -23,6 +23,7 @@ interface ClaimCardProps {
     onUpdateStatus: (claimId: number, newStatus: string) => void;
     onDelete: (claimId: number) => void;
     index?: number;
+    id?: string;
 }
 
 function ClaimCardComponent({
@@ -30,6 +31,7 @@ function ClaimCardComponent({
     onUpdateStatus,
     onDelete,
     index = 0,
+    id,
 }: ClaimCardProps) {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,17 +75,19 @@ function ClaimCardComponent({
                 className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-claim-appear"
                 style={cardStyle}
                 onClick={openModal}
+                id={id}
             >
                 <div className="flex items-center justify-between mb-2">
                     {/* Amount & Title */}
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
+                        <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body" id="claim-title-field">
                             {claim.amount}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge
                                 variant="outline"
                                 className={`text-[9px] font-normal uppercase font-body px-4 py-1 border-0 ${StatusColors[claim.status].bg} ${StatusColors[claim.status].text}`}
+                                id="claim-status-badge"
                             >
                                 {claim?.status?.toUpperCase()}
                             </Badge>
@@ -142,7 +146,7 @@ function ClaimCardComponent({
 
                 {/* Claim owner */}
                 {claim?.owner && (
-                    <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
+                    <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20" id="claim-owner">
                         <div className="flex -space-x-2">
                             <Avatar className="border h-9 w-9 border-primary">
                                 <AvatarImage

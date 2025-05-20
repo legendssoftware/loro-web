@@ -66,12 +66,12 @@ export function QuotationsKanban({
 
     // Render a column for a status
     const renderColumn = useCallback(
-        (status: OrderStatus, title: string, count: number) => {
+        (status: OrderStatus, title: string, count: number, columnId?: string, exampleCard?: boolean) => {
             const quotations = quotationsByStatus[status] || [];
             const colors = StatusColors[status];
 
             return (
-                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
+                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col" id={columnId}>
                     <div className="flex items-center justify-between mb-2">
                         <div
                             className={cn(
@@ -97,6 +97,7 @@ export function QuotationsKanban({
                                 quotation={quotation}
                                 onDragStart={handleDragStart}
                                 index={index}
+                                id={exampleCard && index === 0 ? 'quotation-card-example' : undefined}
                             />
                         ))}
                         {quotations?.length === 0 && <EmptyColumn />}
@@ -122,87 +123,98 @@ export function QuotationsKanban({
                 OrderStatus.DRAFT,
                 'Draft',
                 quotationsByStatus[OrderStatus.DRAFT]?.length || 0,
+                'draft-quotations-column',
+                true
             )}
             {renderColumn(
                 OrderStatus.PENDING_INTERNAL,
                 'Internal Review',
                 quotationsByStatus[OrderStatus.PENDING_INTERNAL]?.length || 0,
+                'pendinginternal-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.PENDING_CLIENT,
                 'Client Review',
                 quotationsByStatus[OrderStatus.PENDING_CLIENT]?.length || 0,
+                'pendingclient-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.NEGOTIATION,
                 'Negotiation',
                 quotationsByStatus[OrderStatus.NEGOTIATION]?.length || 0,
+                'negotiation-quotations-column'
             )}
-
-            {/* Approval/Rejection */}
             {renderColumn(
                 OrderStatus.APPROVED,
                 'Approved',
                 quotationsByStatus[OrderStatus.APPROVED]?.length || 0,
+                'approved-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.REJECTED,
                 'Rejected',
                 quotationsByStatus[OrderStatus.REJECTED]?.length || 0,
+                'rejected-quotations-column'
             )}
-
-            {/* Fulfillment process */}
             {renderColumn(
                 OrderStatus.SOURCING,
                 'Sourcing',
                 quotationsByStatus[OrderStatus.SOURCING]?.length || 0,
+                'sourcing-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.PACKING,
                 'Packing',
                 quotationsByStatus[OrderStatus.PACKING]?.length || 0,
+                'packing-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.IN_FULFILLMENT,
                 'In Fulfillment',
                 quotationsByStatus[OrderStatus.IN_FULFILLMENT]?.length || 0,
+                'infulfillment-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.PAID,
                 'Paid',
                 quotationsByStatus[OrderStatus.PAID]?.length || 0,
+                'paid-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.OUTFORDELIVERY,
                 'Out for Delivery',
                 quotationsByStatus[OrderStatus.OUTFORDELIVERY]?.length || 0,
+                'outfordelivery-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.DELIVERED,
                 'Delivered',
                 quotationsByStatus[OrderStatus.DELIVERED]?.length || 0,
+                'delivered-quotations-column'
             )}
-
-            {/* Final statuses */}
             {renderColumn(
                 OrderStatus.RETURNED,
                 'Returned',
                 quotationsByStatus[OrderStatus.RETURNED]?.length || 0,
+                'returned-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.COMPLETED,
                 'Completed',
                 quotationsByStatus[OrderStatus.COMPLETED]?.length || 0,
+                'completed-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.CANCELLED,
                 'Cancelled',
                 quotationsByStatus[OrderStatus.CANCELLED]?.length || 0,
+                'cancelled-quotations-column'
             )}
             {renderColumn(
                 OrderStatus.POSTPONED,
                 'Postponed',
                 quotationsByStatus[OrderStatus.POSTPONED]?.length || 0,
+                'postponed-quotations-column'
             )}
         </div>
     );

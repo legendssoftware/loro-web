@@ -29,12 +29,12 @@ export function ClaimsKanban({
     onAddClaim,
 }: ClaimsKanbanProps) {
     const renderColumn = useCallback(
-        (status: ClaimStatus, title: string, count: number) => {
+        (status: ClaimStatus, title: string, count: number, columnId?: string, exampleCard?: boolean) => {
             const claims = claimsByStatus[status] || [];
             const colors = StatusColors[status];
 
             return (
-                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col">
+                <div className="flex-1 min-w-[280px] max-w-[320px] flex flex-col" id={columnId}>
                     <div className="flex items-center justify-between mb-2">
                         <div
                             className={cn(
@@ -57,6 +57,7 @@ export function ClaimsKanban({
                                 onUpdateStatus={onUpdateStatus}
                                 onDelete={onDelete}
                                 index={index}
+                                id={exampleCard && index === 0 ? 'claim-card-example' : undefined}
                             />
                         ))}
                         {claims?.length === 0 && <EmptyColumn />}
@@ -73,31 +74,38 @@ export function ClaimsKanban({
                 ClaimStatus.PENDING,
                 'Pending',
                 claimsByStatus[ClaimStatus.PENDING]?.length || 0,
+                'pending-claims-column',
+                true
             )}
             {renderColumn(
                 ClaimStatus.CANCELLED,
                 'Cancelled',
                 claimsByStatus[ClaimStatus.CANCELLED]?.length || 0,
+                'cancelled-claims-column'
             )}
             {renderColumn(
                 ClaimStatus.DECLINED,
                 'Declined',
                 claimsByStatus[ClaimStatus.DECLINED]?.length || 0,
+                'declined-claims-column'
             )}
             {renderColumn(
                 ClaimStatus.APPROVED,
                 'Approved',
                 claimsByStatus[ClaimStatus.APPROVED]?.length || 0,
+                'approved-claims-column'
             )}
             {renderColumn(
                 ClaimStatus.PAID,
                 'Paid',
                 claimsByStatus[ClaimStatus.PAID]?.length || 0,
+                'paid-claims-column'
             )}
             {renderColumn(
                 ClaimStatus.REJECTED,
                 'Rejected',
                 claimsByStatus[ClaimStatus.REJECTED]?.length || 0,
+                'rejected-claims-column'
             )}
         </div>
     );

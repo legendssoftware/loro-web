@@ -19,12 +19,14 @@ interface JournalCardProps {
     onDelete: (journalId: number) => void;
     onViewDetails?: (journal: ExtendedJournal) => void;
     index: number;
+    id?: string;
 }
 
 export const JournalCard = memo(function JournalCard({
     journal,
     onViewDetails,
     index,
+    id,
 }: JournalCardProps) {
     const formattedDate = useMemo(() => {
         try {
@@ -78,17 +80,19 @@ export const JournalCard = memo(function JournalCard({
             className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={handleCardClick}
+            id={id}
         >
             <div className="flex items-center justify-between mb-2">
                 {/* Journal Title & Status Badge */}
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
+                    <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body" id="journal-title-field">
                         {journal.title || journal.clientRef}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                         <Badge
                             variant="outline"
                             className={`text-[9px] font-normal uppercase font-body px-4 py-1 border-0 ${getStatusBadgeColor(journal.status)}`}
+                            id="journal-status-badge"
                         >
                             {journal.status.replace('_', ' ')}
                         </Badge>
@@ -145,7 +149,7 @@ export const JournalCard = memo(function JournalCard({
 
             {/* Journal owner */}
             {journal?.owner && (
-                <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20">
+                <div className="flex items-center justify-start gap-1 pt-2 mt-2 border-t border-border/20" id="journal-owner">
                     <div className="flex -space-x-2">
                         <Avatar className="border h-9 w-9 border-primary">
                             <AvatarImage

@@ -44,6 +44,7 @@ interface QuotationCardProps {
     quotation: Quotation;
     onDragStart: (quotationId: number) => void;
     index?: number;
+    id?: string;
 }
 
 // Define action types for the sheets
@@ -53,6 +54,7 @@ function QuotationCardComponent({
     quotation,
     onDragStart,
     index = 0,
+    id,
 }: QuotationCardProps) {
     const { onOpen } = useQuotationDetailsModal();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -132,12 +134,13 @@ function QuotationCardComponent({
                 draggable
                 onDragStart={handleDragStart}
                 onClick={handleClick}
+                id={id}
             >
                 <div className="flex items-center justify-between w-full mb-2">
                     {/* Amount & Title */}
                     <div className="flex-1 w-full min-w-0">
                         <div className="flex items-center justify-between w-full gap-2">
-                            <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body">
+                            <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body" id="quotation-title-field">
                                 #{quotation?.quotationNumber}
                             </h3>
                             <div className="flex items-center gap-2">
@@ -164,6 +167,7 @@ function QuotationCardComponent({
                                     StatusColors[quotation.status].bg,
                                     StatusColors[quotation.status].text,
                                 )}
+                                id="quotation-status-badge"
                             >
                                 {quotation.status.toUpperCase()}
                             </Badge>
@@ -173,14 +177,14 @@ function QuotationCardComponent({
                 {/* Quotation Details */}
                 <div className="mt-2 space-y-4 text-xs text-muted-foreground">
                     {/* Client Info */}
-                    <div className="flex items-center mb-2">
+                    <div className="flex items-center mb-2" id="quotation-client">
                         <User className="w-4 h-4 mr-1 text-blue-600" />
                         <span className="text-[12px] font-normal uppercase font-body text-blue-600">
                             {quotation.client?.name || 'No Client'}
                         </span>
                     </div>
                     {/* Total Amount */}
-                    <div className="flex items-center mb-2">
+                    <div className="flex items-center mb-2" id="quotation-amount">
                         <CreditCard className="w-4 h-4 mr-1" />
                         <span className="text-[12px] font-normal font-body">
                             {formatCurrency(quotation.totalAmount)}

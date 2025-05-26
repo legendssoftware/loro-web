@@ -43,21 +43,15 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         // Set checking state to false after initial auth check
         setIsCheckingAuth(false);
 
-        // Redirect to sign-in if not authenticated, but don't redirect during refresh
+        // Let middleware handle unauthenticated users for protected routes
+        // Only handle role-based redirects here
         if (!isAuthenticated) {
             // Store current path in sessionStorage to restore after authentication
             if (typeof window !== 'undefined') {
                 sessionStorage.setItem('lastRoute', pathname);
             }
-
-            // Short timeout to allow potential token refresh to complete
-            const redirectTimer = setTimeout(() => {
-                if (!useAuthStore.getState().isAuthenticated) {
-                    router.push('/landing-page');
-                }
-            }, 200);
-
-            return () => clearTimeout(redirectTimer);
+            // Don't redirect here - let middleware handle it
+            return;
         }
 
         // For client routes, specifically check quotations access

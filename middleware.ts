@@ -116,7 +116,7 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    // If user is authenticated and tries to access a public-only path like /sign-in
+        // If user is authenticated and tries to access a public-only path like /sign-in
     if (isAuthenticated && publicPaths.some(publicPath => pathname.startsWith(publicPath))) {
         let callbackUrlStr = searchParams.get('callbackUrl');
         let targetUrl = '/'; // Default redirect target
@@ -146,7 +146,12 @@ export function middleware(request: NextRequest) {
         }
 
         console.log(`Middleware: Authenticated user on public path ${pathname}. Redirecting to ${targetUrl}.`);
-        return NextResponse.redirect(new URL(targetUrl, request.url));
+        const redirectResponse = NextResponse.redirect(new URL(targetUrl, request.url));
+
+        // Force a page reload to ensure proper navigation
+        redirectResponse.headers.set('x-middleware-force-refresh', 'true');
+
+        return redirectResponse;
     }
 
     // If path is protected and user is not authenticated

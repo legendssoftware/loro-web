@@ -143,15 +143,19 @@ class AuthService {
    * Sets the auth tokens in cookies
    */
   public setTokensInCookies(accessToken: string, refreshToken: string): void {
-    // Set access token cookie (accessible by JS)
-    document.cookie = `accessToken=${accessToken}; path=/; max-age=3600; SameSite=Strict`;
+    // Set access token cookie (accessible by JS) - expires in 1 hour
+    const maxAge = 60 * 60; // 1 hour in seconds
+    document.cookie = `accessToken=${accessToken}; path=/; max-age=${maxAge}; SameSite=Strict; Secure=${window.location.protocol === 'https:'}`;
 
-    // Set refresh token as HttpOnly cookie (not accessible by JS)
-    // Note: This relies on the backend setting the actual HttpOnly cookie
-    // We're just making a request to trigger this
+    // Set refresh token cookie (accessible by JS for now, but should be HttpOnly in production)
+    // Note: In production, the backend should set this as HttpOnly
+    const refreshMaxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+    document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${refreshMaxAge}; SameSite=Strict; Secure=${window.location.protocol === 'https:'}`;
+
+    // Optional: Make a request to backend to set HttpOnly cookies as well
     this.api.post('/auth/set-refresh-token', { refreshToken })
       .catch(() => {
-        // Silent fail - the backend will handle setting the cookie
+        // Silent fail - the backend will handle setting the cookie if available
       });
   }
 
@@ -168,9 +172,14 @@ class AuthService {
       }
 
       if (data.accessToken && data.refreshToken) {
+        // Set tokens in memory first
         this.setTokens(data.accessToken, data.refreshToken);
-        // Also set cookies for middleware authentication
+
+        // Set cookies synchronously for middleware authentication
         this.setTokensInCookies(data.accessToken, data.refreshToken);
+
+        // Small delay to ensure cookies are set before any navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
       } else {
         throw new AuthenticationError('Invalid response from server');
       }
@@ -316,9 +325,14 @@ class AuthService {
       }
 
       if (data.accessToken && data.refreshToken) {
+        // Set tokens in memory first
         this.setTokens(data.accessToken, data.refreshToken);
-        // Also set cookies for middleware authentication
+
+        // Set cookies synchronously for middleware authentication
         this.setTokensInCookies(data.accessToken, data.refreshToken);
+
+        // Small delay to ensure cookies are set before any navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
       } else {
         throw new AuthenticationError('Invalid response from server');
       }

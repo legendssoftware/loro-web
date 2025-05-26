@@ -132,9 +132,6 @@ const UserSignInForm = () => {
                     toast,
                 );
 
-                // Shorter wait time before redirect
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
                 // Validate and use callbackUrl for redirection
                 let redirectTarget = '/';
                 if (callbackUrl) {
@@ -152,7 +149,10 @@ const UserSignInForm = () => {
                         console.warn('UserSignInForm: Invalid callbackUrl format. Defaulting to /.');
                     }
                 }
-                router.push(redirectTarget);
+
+                // Use window.location.href for a hard navigation instead of router.push
+                // This ensures the middleware can properly handle the authentication
+                window.location.href = redirectTarget;
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);
@@ -369,11 +369,10 @@ const ClientSignInForm = () => {
                     toast,
                 );
 
-                // Shorter wait time before redirect
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
                 // Always redirect client users directly to quotations page
-                router.push('/quotations');
+                // Use window.location.href for a hard navigation instead of router.push
+                // This ensures the middleware can properly handle the authentication
+                window.location.href = '/quotations';
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);

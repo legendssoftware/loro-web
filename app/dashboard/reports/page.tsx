@@ -10,10 +10,10 @@ import {
     BreadcrumbSeparator,
     BreadcrumbPage
 } from '@/components/ui/breadcrumb';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/utils/animations';
-import { ChevronRight, BarChart2, PieChart, LineChart, Activity } from 'lucide-react';
+import { ChevronRight, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ReportsPage() {

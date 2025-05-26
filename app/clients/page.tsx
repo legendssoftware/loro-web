@@ -137,7 +137,6 @@ export default function ClientsPage() {
         error,
         refetch,
         createClient,
-        updateClient,
         deleteClient,
         updateClientStatus,
         pagination,
@@ -158,7 +157,7 @@ export default function ClientsPage() {
     const handleSubmitCreateClient = useCallback(
         async (clientData: ClientFormValues) => {
             try {
-                const result = await createClient(clientData);
+                await createClient(clientData);
 
                 // Toast messages are now handled in the createClient function in the useClientsQuery hook
 
@@ -166,7 +165,7 @@ export default function ClientsPage() {
                 refetch();
 
                 setIsCreateDialogOpen(false);
-            } catch (error) {
+            } catch {
                 // Error toast is already shown in the mutation
             }
         },
@@ -182,7 +181,7 @@ export default function ClientsPage() {
 
                 // Explicitly refetch to ensure UI is updated
                 refetch();
-            } catch (error) {
+            } catch {
                 // Error toast is already shown in the mutation
             }
         },
@@ -198,7 +197,7 @@ export default function ClientsPage() {
 
                 // Explicitly refetch to ensure UI is updated
                 refetch();
-            } catch (error) {
+            } catch {
                 // Error toast is already shown in the mutation
             }
         },

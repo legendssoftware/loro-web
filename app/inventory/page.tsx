@@ -57,11 +57,6 @@ const ProductForm = dynamic(
     { ssr: false },
 );
 
-// Utility function to safely convert products
-const ensureCorrectProductType = (products: any[]): Product[] => {
-    return products || [];
-};
-
 // Tab configuration, similar to users
 const tabs = [{ id: 'grid', label: 'Inventory' }];
 
@@ -85,7 +80,7 @@ function CreateProductModal({
                 // Only close the modal if product creation was successful
                 onClose();
             }
-        } catch (error) {
+        } catch {
             // Error is already shown via toast in the onCreateProduct function
         } finally {
             setIsSubmitting(false);
@@ -133,7 +128,7 @@ export default function InventoryPage() {
     } = useProductsQuery(filters);
 
     // Ensure products are correctly typed
-    const products = ensureCorrectProductType(productsData);
+    const products = productsData || [];
 
     // Handle applying filters
     const handleApplyFilters = (newFilters: ProductFilterParams) => {

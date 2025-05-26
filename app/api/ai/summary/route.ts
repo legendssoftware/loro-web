@@ -34,7 +34,7 @@ The summary should be encouraging and highlight the most significant metric or a
     } catch (error) {
         console.error('Error generating summary:', error);
 
-        const errorMessage = (error as any)?.message || String(error);
+        const errorMessage = (error as Error)?.message || String(error);
         if (errorMessage.includes('API key') || errorMessage.includes('GOOGLE_GENERATIVE_AI_API_KEY')) {
             return NextResponse.json({
                 summary: '🔑 Get your FREE Google API key at: https://aistudio.google.com/app/apikey to unlock AI insights!'

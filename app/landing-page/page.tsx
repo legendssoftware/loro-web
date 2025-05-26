@@ -259,7 +259,7 @@ const LandingPage: React.FunctionComponent = () => {
     const callStartTimeRef = useRef<number | null>(null);
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const warningShownRef = useRef(false);
-    const [billingPeriod, setBillingPeriod] = useState('monthly');
+    const [billingPeriod] = useState('monthly');
 
     // Phrases for the animated H1
     const heroPhrases = [
@@ -295,6 +295,40 @@ const LandingPage: React.FunctionComponent = () => {
 
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }, [timeRemaining]);
+
+    const stopCallTimer = useCallback(() => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        callStartTimeRef.current = null;
+        setTimeRemaining(null);
+        warningShownRef.current = false;
+    }, []);
+
+    // End demo call with improved error handling
+    const endDemoCall = useCallback(() => {
+        if (!demoVapi) {
+            return;
+        }
+
+        if (!isCallActive) {
+            setIsCallInitializing(false);
+            return;
+        }
+
+        try {
+            demoVapi.stop();
+            stopCallTimer();
+        } catch (error) {
+            // Use our error handler but silent the toast since this is less critical
+            handleVapiError(error, toast, { silent: true });
+            // Force UI update in case the event doesn't fire
+            setIsCallActive(false);
+            setIsCallInitializing(false);
+            stopCallTimer();
+        }
+    }, [demoVapi, isCallActive, stopCallTimer]);
 
     const startCallTimer = useCallback(() => {
         if (timerIntervalRef.current) {
@@ -358,17 +392,7 @@ const LandingPage: React.FunctionComponent = () => {
                 endDemoCall();
             }
         }, 1000);
-    }, []);
-
-    const stopCallTimer = useCallback(() => {
-        if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-        }
-        callStartTimeRef.current = null;
-        setTimeRemaining(null);
-        warningShownRef.current = false;
-    }, []);
+    }, [endDemoCall]);
 
     // Initialize Vapi instance for demo calls (without authentication requirement)
     useEffect(() => {
@@ -500,41 +524,19 @@ const LandingPage: React.FunctionComponent = () => {
 
             // Use the retry utility with up to 2 automatic retries for transient issues
             await retryVapiOperation(startOperation, 2, toast, {
-                onRetry: (attempt) => {
+                onRetry: () => {
                     // Update UI during retry attempts
                     setIsCallInitializing(true);
                 },
             });
-        } catch (error) {
+        } catch {
             // If we got here, all retries failed or the error wasn't retryable
             // handleError event will be triggered by Vapi, so we don't need additional handling here
             setIsCallInitializing(false);
         }
     };
 
-    // End demo call with improved error handling
-    const endDemoCall = () => {
-        if (!demoVapi) {
-            return;
-        }
 
-        if (!isCallActive) {
-            setIsCallInitializing(false);
-            return;
-        }
-
-        try {
-            demoVapi.stop();
-            stopCallTimer();
-        } catch (error) {
-            // Use our error handler but silent the toast since this is less critical
-            handleVapiError(error, toast, { silent: true });
-            // Force UI update in case the event doesn't fire
-            setIsCallActive(false);
-            setIsCallInitializing(false);
-            stopCallTimer();
-        }
-    };
 
     // Retry the demo call if it failed
     const retryDemoCall = () => {
@@ -546,14 +548,7 @@ const LandingPage: React.FunctionComponent = () => {
         startDemoCall();
     };
 
-    // Handle account button click - directs to dashboard if logged in, sign-in if not
-    const handleAccountClick = () => {
-        if (isAuthenticated) {
-            router.push('/');
-        } else {
-            router.push('/sign-in');
-        }
-    };
+
 
     // State for dashboard tabs
     const [activeDashboardTab, setActiveDashboardTab] = useState(

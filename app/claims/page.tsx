@@ -2,7 +2,7 @@
 
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ClaimStatus, ClaimFilterParams } from '@/lib/types/claim';
+import { ClaimStatus, ClaimFilterParams, Claim } from '@/lib/types/claim';
 import { useClaimsQuery } from '@/hooks/use-claims-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
@@ -50,7 +50,7 @@ export default function ClaimsPage() {
 
     // State
     const [activeTab, setActiveTab] = useState<string>('claims');
-    const [filterParams, setFilterParams] = useState<ClaimFilterParams>({
+    const [filterParams] = useState<ClaimFilterParams>({
         page: 1,
         limit: 500,
     });
@@ -97,7 +97,7 @@ export default function ClaimsPage() {
     }, []);
 
     const handleSubmitCreateClaim = useCallback(
-        async (claimData: any) => {
+        async (claimData: Partial<Claim>) => {
             await createClaim(claimData);
             setIsCreateDialogOpen(false);
         },

@@ -38,12 +38,12 @@ export default function ClientDetailPage() {
     };
 
     // Handle client status update
-    const handleUpdateStatus = (clientId: number, newStatus: string) => {
+    const handleUpdateStatus = (_: number, newStatus: string) => {
         updateClientStatus(newStatus);
     };
 
     // Handle client deletion
-    const handleDelete = (clientId: number) => {
+    const handleDelete = (_: number) => {
         deleteClient();
         // Navigate back to clients list after deletion
         router.push('/clients');

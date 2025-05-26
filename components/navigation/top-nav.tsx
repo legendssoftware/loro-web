@@ -14,6 +14,8 @@ import {
     PhoneCall,
     HelpCircle,
     PlayCircle,
+    Users,
+    User,
 } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,13 +28,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useState } from 'react';
+
+import { useState, useMemo } from 'react';
 
 export function TopNav() {
     const pathname = usePathname();
     const { signOut, profileData, accessToken, isAuthenticated } =
         useAuthStore();
-    const { isDrawerOpen, setDrawerOpen } = useAppStore();
+    const { isDrawerOpen, setDrawerOpen, reportMode, setReportMode } = useAppStore();
     const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
     const { startTour } = useInteractiveTour();
 
@@ -86,6 +89,54 @@ export function TopNav() {
         setHelpDropdownOpen(false);
     };
 
+    // Get user initials for avatar display
+    const userInitials = useMemo(() => {
+        if (profileData?.name && profileData?.surname) {
+            return `${profileData.name.charAt(0)}${profileData.surname.charAt(0)}`.toUpperCase();
+        }
+        return 'U';
+    }, [profileData]);
+
+    // Get display names for the toggle
+    const getUserDisplayName = () => {
+        if (profileData?.name) {
+            return profileData.name;
+        }
+        return 'User';
+    };
+
+    const getOrganizationDisplayName = () => {
+        if (profileData?.branch?.name) {
+            return profileData.branch.name;
+        }
+        return 'Organization';
+    };
+
+    const handleReportModeToggle = (checked: boolean) => {
+        const newMode = checked ? 'organization' : 'user';
+        setReportMode(newMode);
+
+        // Show notification
+        toast.success(
+            `Switched to ${newMode === 'organization' ? getOrganizationDisplayName() : getUserDisplayName()} Reports`,
+            {
+                style: {
+                    borderRadius: '5px',
+                    background: '#333',
+                    color: '#fff',
+                    fontFamily: 'var(--font-unbounded)',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    fontWeight: '300',
+                    padding: '16px',
+                },
+                duration: 2000,
+                position: 'bottom-center',
+                icon: newMode === 'organization' ? '🏢' : '👤',
+            }
+        );
+    };
+
     // Check if user is a client by examining profileData or JWT token
     const isClient =
         profileData?.accessLevel === 'client' ||
@@ -116,15 +167,6 @@ export function TopNav() {
             }
             return false;
         })();
-
-    // Get user display info based on whether they're a client or regular user
-    const userInitials = isClient
-        ? profileData?.email
-            ? profileData.email.substring(0, 2).toUpperCase()
-            : 'CL'
-        : profileData
-          ? `${profileData.name?.[0]}${profileData.surname?.[0]}`.toUpperCase()
-          : 'UU';
 
     const handleSignOut = async () => {
         try {
@@ -191,17 +233,34 @@ export function TopNav() {
                             />
                         </Button>
                         <div
-                            className="flex items-center gap-2"
-                            id="tour-step-branch-name"
+                            className="flex items-center gap-3"
+                            id="tour-step-report-toggle"
                         >
                             {isClient ? (
                                 <span className="text-xs font-thin uppercase text-primary font-body">
                                     Client Portal
                                 </span>
                             ) : (
-                                <span className="text-xs font-normal uppercase font-body">
-                                    {profileData?.branch?.name}
-                                </span>
+                                <div
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-card/50 hover:bg-card cursor-pointer transition-colors"
+                                    onClick={() => handleReportModeToggle(reportMode !== 'organization')}
+                                >
+                                    {reportMode === 'organization' ? (
+                                        <>
+                                            <Users className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-normal font-body text-foreground">
+                                                {getOrganizationDisplayName()}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <User className="w-4 h-4 text-primary" />
+                                            <span className="text-xs font-normal font-body text-foreground">
+                                                {getUserDisplayName()}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>

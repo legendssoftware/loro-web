@@ -107,39 +107,39 @@ const faqData = [
 const enhancedFeaturesData = [
     {
         icon: Cpu,
-        title: 'AI-Powered Assistance',
+        title: 'Connected Business Intelligence',
         description:
-            'Get personalized recommendations and insights with AI-powered tools helping you create a polished, professional workflow effortlessly.',
+            'Leverage AI-powered insights across your entire business ecosystem. Get predictive analytics and automated recommendations from unified data across CRM, POS, and ERP systems.',
     },
     {
         icon: LayoutTemplate,
-        title: 'Customizable Interface',
+        title: 'Multi-System Integration',
         description:
-            "Choose from a wide range of professionally designed layouts and easily customize fonts, colors, and elements to reflect your brand's identity.",
+            'Seamlessly connect POS terminals, ERP systems, and specialized industry tools. White-label capabilities allow expansion into new markets and franchise opportunities.',
     },
     {
         icon: Settings,
-        title: 'Seamless Integrations',
+        title: 'Network Automation',
         description:
-            'Easily connect with your favorite apps and services for a unified website and operations experience, enhancing overall productivity.',
+            'Automate workflows across your entire business network. From inventory sync between POS and ERP to automated financial reporting and multi-system compliance tracking.',
     },
     {
         icon: Layers,
-        title: 'Responsive Design',
+        title: 'Scalable Architecture',
         description:
-            'Create websites and access dashboards that look stunning and function perfectly on any device, from desktops to smartphones.',
+            'Built to grow from single business to enterprise network. Support multi-company structures, franchise management, and unlimited connected systems with enterprise-grade security.',
     },
     {
         icon: BarChart3,
-        title: 'Realtime Insights',
+        title: 'Ecosystem Analytics',
         description:
-            'Empower your organization with real-time insights for everything important, helping you conquer your unique business goals.',
+            'Real-time insights across your entire business network. Monitor performance from field operations to POS transactions with unified reporting and cross-system KPIs.',
     },
     {
         icon: Users,
-        title: 'Role-Based Access',
+        title: 'Network-Wide Access Control',
         description:
-            'Manage permissions effectively with predefined roles (Admin, Manager, Worker, Client) ensuring data security and appropriate access levels.',
+            'Manage permissions across your entire ecosystem with role-based access spanning CRM, POS, ERP, and all connected systems. Centralized user management for complex business networks.',
     },
 ];
 
@@ -201,48 +201,48 @@ const mobileFeaturesData = [
 const dashboardFeaturesData = [
     {
         value: 'reporting',
-        title: 'Reporting',
+        title: 'Ecosystem Analytics',
         icon: BarChart3,
         description:
-            'Access comprehensive reports across all modules. Filter data, view charts and tables, analyze trends, and export data for deeper insights.',
+            'Unified reporting across your entire business network. Analyze data from CRM, POS, ERP, and all connected systems with real-time insights and predictive analytics for strategic decision-making.',
         img: '/images/covers/reporting.png',
-        alt: 'Dashboard Reporting and Analytics',
+        alt: 'Dashboard Ecosystem Reporting and Analytics',
     },
     {
         value: 'leads',
         title: 'Lead Management',
         icon: Target,
         description:
-            'Centralize potential customers, track progress with statuses & categories, visualize locations, and analyze conversion funnels.',
+            'Capture and convert leads across all touchpoints. Track prospects from initial contact through your entire ecosystem - whether they interact online, in-store, or in the field.',
         img: '/images/covers/webleads.png',
-        alt: 'Dashboard Leads Management',
+        alt: 'Dashboard Ecosystem Leads Management',
     },
     {
         value: 'tasks',
-        title: 'Task Coordination',
+        title: 'Network Coordination',
         icon: CheckSquare,
         description:
-            'Create, assign, and monitor tasks with statuses, priorities, and deadlines. Utilize list, board, or calendar views for flexible workflow management.',
+            'Coordinate tasks across your entire business network. Manage workflows from CRM activities to POS operations, with seamless communication between all connected systems.',
         img: '/images/covers/webtasks.png',
-        alt: 'Dashboard Task Coordination',
+        alt: 'Dashboard Network Task Coordination',
     },
     {
         value: 'sales',
-        title: 'Sales & Quotations',
+        title: 'Unified Sales Hub',
         icon: ShoppingCart,
         description:
-            'Manage products, generate quotations, process orders, and track fulfillment. Includes inventory linking and in-quotation chat features.',
+            'Manage your complete sales ecosystem. From quotations to POS transactions, with inventory synchronized across all channels and real-time data flowing between CRM and ERP systems.',
         img: '/images/covers/salesweb.png',
-        alt: 'Dashboard Sales and Quotations',
+        alt: 'Dashboard Unified Sales and POS Integration',
     },
     {
         value: 'tracking',
-        title: 'Real-time Tracking',
+        title: 'Enterprise Tracking',
         icon: MapPin,
         description:
-            'Monitor field team locations in real-time on an interactive map. View user status, overlay client/task locations, and manage geofences.',
+            'Monitor your entire business network in real-time. Track field teams, manage multi-location operations, and coordinate activities across all connected systems with intelligent routing and geofencing.',
         img: '/images/covers/webtracking.png',
-        alt: 'Dashboard Real-time Tracking',
+        alt: 'Dashboard Enterprise-wide Real-time Tracking',
     },
 ];
 
@@ -263,15 +263,15 @@ const LandingPage: React.FunctionComponent = () => {
 
     // Phrases for the animated H1
     const heroPhrases = [
-        'Streamline Your Field Operations',
-        'Real-Time Visibility, Anywhere',
-        'Smart Expense Management',
-        'Your Mobile Office, Optimized!',
-        'Helping You Make Data-Driven Decisions',
-        'Secure, Scalable, and Simple',
-        'One Platform, Endless Possibilities',
-        'Always Connected, Always Updated',
-        'Built for Growth',
+        'The Complete Enterprise Ecosystem',
+        'Beyond CRM: Your Business Network',
+        'One Platform, Unlimited Growth',
+        'Connect Your Entire Business',
+        'Enterprise Ecosystem, Start-Up Friendly',
+        'Transform into a Connected Enterprise',
+        'Slash Software Costs by 70%',
+        'Your Complete Business Growth Platform',
+        'Built for the South African Reality',
     ];
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 
@@ -805,10 +805,7 @@ const LandingPage: React.FunctionComponent = () => {
                             </AnimatePresence>
                         </div>
                         <p className="max-w-2xl mx-auto mt-6 text-xs uppercase text-muted-foreground font-body">
-                            Unify sales, field operations, and back-office tasks
-                            with Loro's powerful, all-in-one platform. Empower
-                            your team with seamless online & offline access for
-                            unmatched productivity.
+                            LORO isn't just a CRM – it's the centerpiece of a complete business ecosystem that connects seamlessly to POS, ERP, and specialized industry tools. Replace multiple expensive systems with one unified platform built for South African businesses.
                         </p>
                     </motion.div>
                     <motion.div
@@ -885,13 +882,10 @@ const LandingPage: React.FunctionComponent = () => {
                             className="text-center"
                         >
                             <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Your Command Center
+                                Your Business Ecosystem Hub
                             </h2>
                             <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Take Control of Your Operations. Loro's
-                                intuitive dashboard provides a real-time,
-                                360-degree view of your business – from leads to
-                                analytics.
+                                Control your entire business network from one central hub. LORO's dashboard provides real-time insights across CRM, POS, ERP, and all connected systems – unified data, unlimited growth potential.
                             </p>
                         </motion.div>
 
@@ -972,17 +966,17 @@ const LandingPage: React.FunctionComponent = () => {
                                             </h3>
                                             <p className="text-xs uppercase text-muted-foreground font-body">
                                                 {tab.value === 'leads'
-                                                    ? 'Capture, track, and convert more leads. Visualize prospect locations, monitor sales pipeline progress with custom statuses, and analyze your conversion funnel for actionable insights.'
+                                                    ? 'Capture and convert leads across all touchpoints. Track prospects from initial contact through your entire ecosystem - whether they interact online, in-store, or in the field.'
                                                     : tab.value === 'tasks'
-                                                      ? 'Effortlessly create, assign, and track team tasks. Manage workflows your way with list, Kanban board, or calendar views, ensuring deadlines are met and productivity soars.'
+                                                      ? 'Coordinate tasks across your entire business network. Manage workflows from CRM activities to POS operations, with seamless communication between all connected systems.'
                                                       : tab.value === 'sales'
-                                                        ? 'From product catalog to order fulfillment, manage your entire sales process. Create professional quotations, collaborate via in-quotation chat, and seamlessly convert quotes to orders, all linked with real-time inventory.'
+                                                        ? 'Manage your complete sales ecosystem. From quotations to POS transactions, with inventory synchronized across all channels and real-time data flowing between CRM and ERP systems.'
                                                         : tab.value ===
                                                             'tracking'
-                                                          ? 'Gain complete visibility of your field team. Monitor live locations on an interactive map, view user status, overlay client and task data, and leverage geofencing for enhanced efficiency and accountability.'
+                                                          ? 'Monitor your entire business network in real-time. Track field teams, manage multi-location operations, and coordinate activities across all connected systems with intelligent routing and geofencing.'
                                                           : tab.value ===
                                                               'reporting'
-                                                            ? 'Unlock actionable insights with comprehensive reports across all Loro modules. Filter data, visualize trends with dynamic charts and tables, and export information to fuel your strategic decisions.'
+                                                            ? 'Unified reporting across your entire business network. Analyze data from CRM, POS, ERP, and all connected systems with real-time insights and predictive analytics for strategic decision-making.'
                                                             : tab.description}
                                             </p>
                                             {/* Optional Button */}
@@ -1019,12 +1013,10 @@ const LandingPage: React.FunctionComponent = () => {
                             className="text-center"
                         >
                             <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Powerful Features to Simplify Your Workflow
+                                Enterprise Ecosystem Features Built for Growth
                             </h2>
                             <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Loro CRM provides a comprehensive suite of tools
-                                designed for efficiency, flexibility, and
-                                control, both in the office and in the field.
+                                LORO's complete business ecosystem provides enterprise-grade capabilities that connect your CRM, POS, ERP, and specialized systems into one unified platform designed for South African businesses.
                             </p>
                         </motion.div>
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -1072,13 +1064,10 @@ const LandingPage: React.FunctionComponent = () => {
                             className="text-center"
                         >
                             <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Explore Our App
+                                Your Business Network in Your Pocket
                             </h2>
                             <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Empower your field team with powerful tools
-                                accessible anywhere, even offline. Manage leads,
-                                tasks, claims, and more directly from the mobile
-                                app.
+                                Access your entire business ecosystem from anywhere. Connect to POS systems, manage CRM activities, sync with ERP data, and coordinate field operations - all with 100% offline functionality built for the South African reality.
                             </p>
                         </motion.div>
                         {/* Swiper Carousel replacing the grid layout */}
@@ -1209,7 +1198,8 @@ const LandingPage: React.FunctionComponent = () => {
                     </div>
                 </section>
 
-                {/* Pricing Section */}
+                {/* Pricing Section - Hidden for now */}
+                {/*
                 <section className="py-16 bg-background">
                     <div className="container px-4 mx-auto">
                         <motion.div
@@ -1226,7 +1216,6 @@ const LandingPage: React.FunctionComponent = () => {
                                 businesses effortlessly with Loro.
                             </p>
 
-                            {/* Billing toggle */}
                             <div className="flex items-center justify-center mb-12">
                                 <div className="inline-flex items-center p-1 rounded-md bg-muted">
                                     <button
@@ -1257,248 +1246,12 @@ const LandingPage: React.FunctionComponent = () => {
                             </div>
                         </motion.div>
 
-                        {/* Pricing Cards */}
                         <div className="grid grid-cols-1 gap-1 md:grid-cols-3 justify-items-center">
-                            {/* Basic Plan */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.1 }}
-                                className="overflow-hidden border rounded-lg shadow-sm border-border max-w-96"
-                            >
-                                <div className="p-6">
-                                    <h3 className="text-xl font-normal uppercase font-body">
-                                        Basic
-                                    </h3>
-                                    <p className="mt-2 text-xs text-muted-foreground font-body">
-                                        Essential tools for field teams and
-                                        basic customer management.
-                                    </p>
-                                    <div className="flex items-end mt-4">
-                                        <span className="text-4xl font-normal font-body">
-                                            {billingPeriod === 'annual'
-                                                ? 'R1,999'
-                                                : 'R199'}
-                                        </span>
-                                        <span className="ml-1 text-sm text-muted-foreground font-body">
-                                            per{' '}
-                                            {billingPeriod === 'annual'
-                                                ? 'year'
-                                                : 'month'}
-                                        </span>
-                                    </div>
-                                    <ul className="mt-6 space-y-3">
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Lead Management (Basic)
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Task Management (Limited)
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Mobile App Access
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Basic Client Management
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Simple Reporting
-                                        </li>
-                                    </ul>
-                                    <Button
-                                        className="w-full mt-6 text-xs uppercase font-body"
-                                        variant="outline"
-                                    >
-                                        Current Plan
-                                    </Button>
-                                </div>
-                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
-                                    30-day money-back guarantee
-                                </div>
-                            </motion.div>
-
-                            {/* Pro Plan */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.2 }}
-                                className="overflow-hidden border rounded-lg shadow-sm border-primary/30 bg-card max-w-96"
-                            >
-                                <div className="p-2 text-center text-white bg-primary">
-                                    <span className="text-xs uppercase font-body">
-                                        Most Popular
-                                    </span>
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-normal uppercase font-body">
-                                        Pro
-                                    </h3>
-                                    <p className="mt-2 text-xs text-muted-foreground font-body">
-                                        Advanced field team management with
-                                        sales and tracking capabilities.
-                                    </p>
-                                    <div className="flex items-end mt-4">
-                                        <span className="text-4xl font-normal font-body">
-                                            {billingPeriod === 'annual'
-                                                ? 'R4,999'
-                                                : 'R499'}
-                                        </span>
-                                        <span className="ml-2 text-sm line-through text-muted-foreground font-body">
-                                            {billingPeriod === 'annual'
-                                                ? 'R5,988'
-                                                : ''}
-                                        </span>
-                                        <span className="ml-1 text-sm text-muted-foreground font-body">
-                                            per{' '}
-                                            {billingPeriod === 'annual'
-                                                ? 'year'
-                                                : 'month'}
-                                        </span>
-                                    </div>
-                                    <ul className="mt-6 space-y-3">
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Everything in Basic
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Full Lead Management
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Claims Management
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            GPS Tracking & Mapping
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Shop & Quotation System
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Advanced Reporting
-                                        </li>
-                                    </ul>
-                                    <Button className="w-full mt-6 text-xs text-white uppercase bg-primary hover:bg-primary/90 font-body">
-                                        Upgrade to Pro
-                                    </Button>
-                                </div>
-                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
-                                    30-day money-back guarantee
-                                </div>
-                            </motion.div>
-
-                            {/* Enterprise Plan */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.3 }}
-                                className="overflow-hidden border rounded-lg shadow-sm border-border max-w-96"
-                            >
-                                <div className="p-6">
-                                    <h3 className="text-xl font-normal uppercase font-body">
-                                        Enterprise
-                                    </h3>
-                                    <p className="mt-2 text-xs text-muted-foreground font-body">
-                                        Complete business management suite with
-                                        advanced features.
-                                    </p>
-                                    <div className="flex items-end mt-4">
-                                        <span className="text-4xl font-normal font-body">
-                                            {billingPeriod === 'annual'
-                                                ? 'R6,999'
-                                                : 'R699'}
-                                        </span>
-                                        <span className="ml-1 text-sm text-muted-foreground font-body">
-                                            per{' '}
-                                            {billingPeriod === 'annual'
-                                                ? 'year'
-                                                : 'agent'}
-                                        </span>
-                                    </div>
-                                    <ul className="mt-6 space-y-3">
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Everything in Pro
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Inventory Management
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Competitor Analysis Tools
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Client Portal Access
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Custom Branding Options
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            API Access & Integrations
-                                        </li>
-                                        <li className="flex items-start text-xs font-body">
-                                            <span className="mt-0.5 mr-2 text-primary">
-                                                ✓
-                                            </span>
-                                            Priority Support
-                                        </li>
-                                    </ul>
-                                    <Button className="w-full mt-6 text-xs uppercase font-body">
-                                        Upgrade to Enterprise
-                                    </Button>
-                                </div>
-                                <div className="p-3 text-xs text-center font-body text-muted-foreground bg-muted">
-                                    30-day money-back guarantee
-                                </div>
-                            </motion.div>
+                            Pricing cards would go here
                         </div>
                     </div>
                 </section>
+                */}
 
                 {/* Mobile App Download Section */}
                 <section className="py-16 bg-gradient-to-r from-background to-background/90">

@@ -9,8 +9,10 @@ import {
     Phone,
     PhoneCall,
     MessageSquare,
+    Send,
+    Eye,
 } from 'lucide-react';
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { LeadDetailsModal } from './lead-details-modal';
@@ -24,6 +26,15 @@ import {
     SheetClose,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface LeadCardProps {
     lead: Lead;
@@ -36,6 +47,17 @@ interface LeadCardProps {
 // Define action types for the sheets
 type ActionType = 'call' | 'email' | 'message' | null;
 
+// Define tone types for templates
+type ToneType = 'professional' | 'friendly' | 'urgent' | 'casual';
+
+// Define template structure
+interface Template {
+    id: string;
+    title: string;
+    content: string;
+    tone: ToneType;
+}
+
 // Create the LeadCard as a standard component
 function LeadCardComponent({
     lead,
@@ -46,6 +68,11 @@ function LeadCardComponent({
 }: LeadCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeSheet, setActiveSheet] = useState<ActionType>(null);
+    const [selectedTone, setSelectedTone] = useState<ToneType>('professional');
+    const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [customMessage, setCustomMessage] = useState('');
+    const [isGeneratingTemplates, setIsGeneratingTemplates] = useState(false);
 
     // Use CSS variables for animation delay - match tasks component's variable name
     const cardStyle = {
@@ -112,6 +139,10 @@ function LeadCardComponent({
 
     const closeSheet = useCallback(() => {
         setActiveSheet(null);
+        setSelectedTemplate(null);
+        setIsPreviewMode(false);
+        setCustomMessage('');
+        setSelectedTone('professional');
     }, []);
 
     // Get sheet title based on action type
@@ -132,15 +163,204 @@ function LeadCardComponent({
     const getSheetDescription = () => {
         switch (activeSheet) {
             case 'call':
-                return 'Call this lead directly from the app using templates';
+                return 'Generate call scripts and templates with AI based on your selected tone';
             case 'email':
-                return 'Send an email to this lead using predefined templates';
+                return 'Create personalized email templates using AI based on your selected tone';
             case 'message':
-                return 'Send a message to this lead using predefined templates';
+                return 'Generate message templates using AI based on your selected tone';
             default:
                 return '';
         }
     };
+
+        // Generate AI templates based on tone and action type
+    const generateTemplates = useCallback(async (tone: ToneType, actionType: Exclude<ActionType, null>) => {
+        setIsGeneratingTemplates(true);
+
+        // Mock AI template generation - replace with actual AI service
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+
+        const mockTemplates: Record<Exclude<ActionType, null>, Template[]> = {
+            call: [
+                {
+                    id: '1',
+                    title: 'Introduction Call',
+                    content: `Hi ${lead.name}, this is [Your Name] from [Company]. I wanted to reach out regarding your recent inquiry. Is this a good time to chat about how we can help with your needs?`,
+                    tone
+                },
+                {
+                    id: '2',
+                    title: 'Follow-up Call',
+                    content: `Hello ${lead.name}, I'm following up on our previous conversation. I have some updates that might interest you. When would be a convenient time to discuss further?`,
+                    tone
+                },
+                {
+                    id: '3',
+                    title: 'Closing Call',
+                    content: `Hi ${lead.name}, I wanted to check if you're ready to move forward with our proposal. I'm here to answer any final questions you might have.`,
+                    tone
+                }
+            ],
+            email: [
+                {
+                    id: '1',
+                    title: 'Welcome Email',
+                    content: `Subject: Welcome to [Company], ${lead.name}!\n\nDear ${lead.name},\n\nThank you for your interest in our services. We're excited to help you achieve your goals. I'll be your dedicated point of contact moving forward.\n\nBest regards,\n[Your Name]`,
+                    tone
+                },
+                {
+                    id: '2',
+                    title: 'Information Email',
+                    content: `Subject: Information you requested, ${lead.name}\n\nHi ${lead.name},\n\nAs promised, I'm sending you the information about our services. Please find the details attached. Let me know if you have any questions.\n\nBest regards,\n[Your Name]`,
+                    tone
+                },
+                {
+                    id: '3',
+                    title: 'Follow-up Email',
+                    content: `Subject: Following up on our conversation\n\nHi ${lead.name},\n\nI wanted to follow up on our recent conversation. Have you had a chance to review the information I sent? I'm here to help with any questions.\n\nBest regards,\n[Your Name]`,
+                    tone
+                }
+            ],
+            message: [
+                {
+                    id: '1',
+                    title: 'Quick Introduction',
+                    content: `Hi ${lead.name}! This is [Your Name] from [Company]. Thanks for your interest! Can we schedule a quick call to discuss your needs?`,
+                    tone
+                },
+                {
+                    id: '2',
+                    title: 'Follow-up Message',
+                    content: `Hi ${lead.name}, just following up on your inquiry. We have some great solutions that might be perfect for you. When would be a good time to chat?`,
+                    tone
+                },
+                {
+                    id: '3',
+                    title: 'Appointment Reminder',
+                    content: `Hi ${lead.name}, this is a friendly reminder about our appointment tomorrow. Looking forward to speaking with you!`,
+                    tone
+                }
+            ]
+        };
+
+        setIsGeneratingTemplates(false);
+        return mockTemplates[actionType] || [];
+    }, [lead.name]);
+
+    // Handle template selection
+    const handleTemplateSelect = useCallback((template: Template) => {
+        setSelectedTemplate(template);
+        setCustomMessage(template.content);
+        setIsPreviewMode(true);
+    }, []);
+
+    // Handle message editing
+    const handleMessageChange = useCallback((value: string) => {
+        setCustomMessage(value);
+    }, []);
+
+        // Handle send action
+    const handleSendMessage = useCallback(() => {
+        const messageData = {
+            type: activeSheet,
+            recipient: {
+                name: lead.name,
+                email: lead.email,
+                phone: lead.phone,
+                leadId: lead.uid
+            },
+            template: {
+                id: selectedTemplate?.id,
+                title: selectedTemplate?.title,
+                tone: selectedTone
+            },
+            content: customMessage,
+            timestamp: new Date().toISOString(),
+            sender: {
+                // Add sender info here when available
+                name: '[Your Name]',
+                company: '[Company]'
+            }
+        };
+
+                console.log('📧 EMAIL/MESSAGE DATA TO BE SENT:', {
+            ...messageData,
+            preview: customMessage.substring(0, 100) + (customMessage.length > 100 ? '...' : '')
+        });
+
+        // TODO: Replace console.log with actual server API call to send email/message
+        // Example: await sendEmailOrMessage(messageData);
+        // This should integrate with the email/SMS service provider
+        // and handle success/error responses appropriately
+
+        // Here you would integrate with your actual sending service
+        // For now, just close the sheet
+        closeSheet();
+
+        // Show success message (you might want to use a toast here)
+        alert(`${activeSheet?.toUpperCase()} prepared successfully for ${lead.name}!\nCheck console for full details.`);
+    }, [activeSheet, customMessage, lead, selectedTemplate, selectedTone, closeSheet]);
+
+    // Handle call action
+    const handleCallAction = useCallback(() => {
+        console.log('📞 CALL ACTION:', {
+            leadName: lead.name,
+            phoneNumber: lead.phone,
+            leadId: lead.uid,
+            timestamp: new Date().toISOString()
+        });
+
+        // Check if on mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Try to open dialer on mobile
+            window.location.href = `tel:${lead.phone}`;
+        } else {
+            // Show instruction for desktop
+            alert(`📱 Please call ${lead.name} from your mobile phone:\n\n${lead.phone}\n\nClick OK to copy the number to clipboard.`);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(lead.phone).catch(err => {
+                console.error('Failed to copy to clipboard:', err);
+            });
+        }
+
+        closeSheet();
+    }, [lead, closeSheet]);
+
+    // Get available templates for current action type
+    const [availableTemplates, setAvailableTemplates] = useState<Template[]>([]);
+
+    // Load templates when tone or action changes
+    const loadTemplates = useCallback(async () => {
+        if (activeSheet && activeSheet !== null) {
+            const templates = await generateTemplates(selectedTone, activeSheet);
+            setAvailableTemplates(templates);
+        }
+    }, [activeSheet, selectedTone, generateTemplates]);
+
+    // Load templates when sheet opens or tone changes
+    useEffect(() => {
+        if (activeSheet) {
+            loadTemplates();
+        }
+    }, [activeSheet, selectedTone, loadTemplates]);
+
+    // Update selected template content when tone changes
+    useEffect(() => {
+        if (selectedTemplate && activeSheet) {
+            const updateTemplateContent = async () => {
+                const templates = await generateTemplates(selectedTone, activeSheet);
+                const updatedTemplate = templates.find(t => t.id === selectedTemplate.id);
+                if (updatedTemplate) {
+                    setSelectedTemplate(updatedTemplate);
+                    setCustomMessage(updatedTemplate.content);
+                }
+            };
+            updateTemplateContent();
+        }
+    }, [selectedTone, selectedTemplate, activeSheet, generateTemplates]);
 
     return (
         <>
@@ -164,14 +384,6 @@ function LeadCardComponent({
                                 {lead.name}
                             </h3>
                             <div className="flex items-center gap-2">
-                                <PhoneCall
-                                    strokeWidth={1.5}
-                                    size={18}
-                                    className="cursor-pointer text-muted-foreground/50 hover:text-muted-foreground"
-                                    onClick={(e) =>
-                                        handleActionClick(e, 'call')
-                                    }
-                                />
                                 <Mail
                                     strokeWidth={1.5}
                                     size={18}
@@ -295,7 +507,7 @@ function LeadCardComponent({
                 open={activeSheet !== null}
                 onOpenChange={(open) => !open && setActiveSheet(null)}
             >
-                <SheetContent side="right" className="sm:max-w-md">
+                <SheetContent side="right" className="w-full sm:max-w-2xl">
                     <SheetHeader>
                         <SheetTitle className="text-xs font-normal uppercase font-body">
                             {getSheetTitle()}
@@ -306,83 +518,127 @@ function LeadCardComponent({
                     </SheetHeader>
 
                     <div className="py-6">
-                        {activeSheet === 'call' && (
-                            <div className="space-y-4">
-                                <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                        Call Templates
-                                    </h3>
-                                    <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to use predefined call
-                                        scripts and templates to ensure
-                                        consistent communication with leads.
-                                    </p>
-                                </div>
+                        {/* Tone Selection */}
+                        <div className="mb-6">
+                            <label className="block mb-2 text-xs font-normal uppercase font-body">
+                                Select Tone
+                            </label>
+                            <Select value={selectedTone} onValueChange={(value: ToneType) => setSelectedTone(value)}>
+                                <SelectTrigger className="text-xs font-body">
+                                    <SelectValue placeholder="Choose tone" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="professional">Professional</SelectItem>
+                                    <SelectItem value="friendly">Friendly</SelectItem>
+                                    <SelectItem value="urgent">Urgent</SelectItem>
+                                    <SelectItem value="casual">Casual</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                <div className="flex items-center p-3 border rounded-lg border-border">
-                                    <PhoneCall className="w-5 h-5 mr-3 text-primary" />
-                                    <div>
-                                        <p className="text-xs font-medium font-body">
-                                            {lead.phone}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground font-body">
-                                            Click to call directly
-                                        </p>
-                                    </div>
+                        {/* Contact Information */}
+                        <div className="flex items-center p-3 mb-6 border rounded-lg border-border">
+                            <div className="flex items-center w-full">
+                                {activeSheet === 'call' && <PhoneCall className="w-5 h-5 mr-3 text-primary" />}
+                                {activeSheet === 'email' && <Mail className="w-5 h-5 mr-3 text-primary" />}
+                                {activeSheet === 'message' && <MessageSquare className="w-5 h-5 mr-3 text-primary" />}
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium font-body">
+                                        {activeSheet === 'email' ? lead.email : lead.phone}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground font-body">
+                                        {activeSheet === 'call' && 'Call script for conversation guidance'}
+                                        {activeSheet === 'email' && 'Email will be sent to this address'}
+                                        {activeSheet === 'message' && 'SMS will be sent to this number'}
+                                    </p>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {activeSheet === 'email' && (
+                        {!isPreviewMode ? (
+                            /* Template Selection */
                             <div className="space-y-4">
-                                <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                        Email Templates
-                                    </h3>
-                                    <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to select from various
-                                        email templates designed for different
-                                        stages of the lead nurturing process.
-                                    </p>
-                                </div>
+                                                                <h3 className="text-sm font-medium uppercase font-body">
+                                    {isGeneratingTemplates ? 'Generating AI Templates...' : activeSheet === 'call' ? 'Choose Call Script' : 'Choose Template'}
+                                </h3>
 
-                                <div className="flex items-center p-3 border rounded-lg border-border">
-                                    <Mail className="w-5 h-5 mr-3 text-primary" />
-                                    <div>
-                                        <p className="text-xs font-medium font-body">
-                                            {lead.email}
-                                        </p>
+                                {isGeneratingTemplates ? (
+                                    <div className="p-4 text-center border rounded-lg border-border bg-background/50">
+                                        <div className="w-6 h-6 mx-auto mb-2 border-2 rounded-full animate-spin border-primary border-t-transparent"></div>
                                         <p className="text-[10px] text-muted-foreground font-body">
-                                            Send personalized emails
+                                            AI is generating personalized templates based on your selected tone...
                                         </p>
                                     </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {availableTemplates.map((template) => (
+                                            <Card
+                                                key={template.id}
+                                                className="transition-colors cursor-pointer hover:bg-accent"
+                                                onClick={() => handleTemplateSelect(template)}
+                                            >
+                                                <CardHeader className="pb-3">
+                                                    <CardTitle className="text-sm font-medium font-body">
+                                                        {template.title}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="pt-0">
+                                                    <p className="text-sm text-muted-foreground font-body line-clamp-4">
+                                                        {template.content}
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
                                 </div>
+                                )}
                             </div>
-                        )}
-
-                        {activeSheet === 'message' && (
+                        ) : (
+                            /* Preview and Edit Mode */
                             <div className="space-y-4">
-                                <div className="p-4 border rounded-lg border-border bg-background/50">
-                                    <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                        Message Templates
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-medium uppercase font-body">
+                                        Preview & Edit
                                     </h3>
-                                    <p className="text-[10px] text-muted-foreground font-body">
-                                        You will be able to send text messages
-                                        using predefined templates, making
-                                        communication with leads efficient and
-                                        consistent.
-                                    </p>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setIsPreviewMode(false)}
+                                        className="text-sm font-body"
+                                    >
+                                        ← Back to {activeSheet === 'call' ? 'Scripts' : 'Templates'}
+                                    </Button>
                                 </div>
 
-                                <div className="flex items-center p-3 border rounded-lg border-border">
-                                    <MessageSquare className="w-5 h-5 mr-3 text-primary" />
+                                <div className="space-y-3">
+                                    <div className="p-4 border rounded-lg border-border bg-background/50">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Eye className="w-4 h-4 text-primary" />
+                                            <span className="text-sm font-medium font-body">
+                                                {selectedTemplate?.title}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground font-body">
+                                            Tone: <span className="capitalize">{selectedTone}</span>
+                                        </p>
+                                    </div>
+
                                     <div>
-                                        <p className="text-xs font-medium font-body">
-                                            {lead.phone}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground font-body">
-                                            Send personalized messages
-                                        </p>
+                                        <label className="block mb-2 text-xs font-normal uppercase font-body">
+                                            {activeSheet === 'call' ? 'Call Script:' : activeSheet === 'email' ? 'Email Content:' : 'SMS Message:'}
+                                        </label>
+                                        <Textarea
+                                            value={customMessage}
+                                            onChange={(e) => handleMessageChange(e.target.value)}
+                                            rows={activeSheet === 'email' ? 8 : activeSheet === 'call' ? 6 : 4}
+                                            className="text-sm font-body"
+                                            placeholder={
+                                                activeSheet === 'call'
+                                                    ? 'Review and customize your call script...'
+                                                    : activeSheet === 'email'
+                                                    ? 'Edit your email content here...'
+                                                    : 'Edit your SMS message here...'
+                                            }
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -398,13 +654,37 @@ function LeadCardComponent({
                                 Close
                             </Button>
                         </SheetClose>
-                        <Button
-                            type="button"
-                            disabled
-                            className="text-xs font-normal text-white uppercase font-body"
-                        >
-                            Coming Soon
-                        </Button>
+                                                {isPreviewMode ? (
+                            <Button
+                                onClick={activeSheet === 'call' ? handleCallAction : handleSendMessage}
+                                disabled={activeSheet !== 'call' && !customMessage.trim()}
+                                className="text-xs font-normal text-white uppercase font-body"
+                            >
+                                {activeSheet === 'call' ? (
+                                    <>
+                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                        Start Call
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="w-4 h-4 mr-2" />
+                                        Send {activeSheet}
+                                    </>
+                                )}
+                            </Button>
+                        ) : (
+                            <Button
+                                disabled={availableTemplates.length === 0 || isGeneratingTemplates}
+                                className="text-xs font-normal text-white uppercase font-body"
+                                onClick={() => {
+                                    if (availableTemplates.length > 0) {
+                                        handleTemplateSelect(availableTemplates[0]);
+                                    }
+                                }}
+                            >
+                                {isGeneratingTemplates ? 'Generating...' : activeSheet === 'call' ? 'Select Script' : 'Select Template'}
+                            </Button>
+                        )}
                     </SheetFooter>
                 </SheetContent>
             </Sheet>

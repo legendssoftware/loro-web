@@ -56,20 +56,103 @@ export const TargetsTab: React.FC<TabProps> = ({
         return `${currency} ${amount.toLocaleString()}`;
     };
 
+        // Helper function to transform UserTarget to TargetData array
+    const transformUserTargetToTargetData = (userTarget: any) => {
+        const targetData = [];
+
+        // Sales target
+        if (userTarget.targetSalesAmount || userTarget.currentSalesAmount) {
+            targetData.push({
+                currentValue: userTarget.currentSalesAmount || 0,
+                targetValue: userTarget.targetSalesAmount || 0,
+                progress: userTarget.targetSalesAmount ?
+                    Math.min((userTarget.currentSalesAmount || 0) / userTarget.targetSalesAmount * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'Sales'
+            });
+        }
+
+        // Hours worked target
+        if (userTarget.targetHoursWorked || userTarget.currentHoursWorked) {
+            targetData.push({
+                currentValue: userTarget.currentHoursWorked || 0,
+                targetValue: userTarget.targetHoursWorked || 0,
+                progress: userTarget.targetHoursWorked ?
+                    Math.min((userTarget.currentHoursWorked || 0) / userTarget.targetHoursWorked * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'Work Hours'
+            });
+        }
+
+        // Leads target
+        if (userTarget.targetNewLeads || userTarget.currentNewLeads) {
+            targetData.push({
+                currentValue: userTarget.currentNewLeads || 0,
+                targetValue: userTarget.targetNewLeads || 0,
+                progress: userTarget.targetNewLeads ?
+                    Math.min((userTarget.currentNewLeads || 0) / userTarget.targetNewLeads * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'New Leads'
+            });
+        }
+
+        // Clients target
+        if (userTarget.targetNewClients || userTarget.currentNewClients) {
+            targetData.push({
+                currentValue: userTarget.currentNewClients || 0,
+                targetValue: userTarget.targetNewClients || 0,
+                progress: userTarget.targetNewClients ?
+                    Math.min((userTarget.currentNewClients || 0) / userTarget.targetNewClients * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'New Clients'
+            });
+        }
+
+        // Check-ins target
+        if (userTarget.targetCheckIns || userTarget.currentCheckIns) {
+            targetData.push({
+                currentValue: userTarget.currentCheckIns || 0,
+                targetValue: userTarget.targetCheckIns || 0,
+                progress: userTarget.targetCheckIns ?
+                    Math.min((userTarget.currentCheckIns || 0) / userTarget.targetCheckIns * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'Check-ins'
+            });
+        }
+
+        return targetData;
+    };
+
+    // Helper function to transform AttendanceMetrics to AttendanceData
+    const transformAttendanceData = (attendanceMetrics: any) => {
+        if (!attendanceMetrics) return undefined;
+
+        return {
+            hoursWorked: attendanceMetrics.totalHours?.thisMonth || 0,
+            expectedHours: 160, // Default to 160 hours per month (40 hours/week * 4 weeks)
+            attendanceRate: attendanceMetrics.productivityInsights?.shiftCompletionRate || 0,
+            punctualityScore: attendanceMetrics.timingPatterns?.punctualityScore || 0
+        };
+    };
+
     // AI Functions
     const generateInsights = async () => {
         if (!targetsData) return;
 
         setIsGeneratingInsights(true);
         try {
+            // Transform UserTarget to TargetData array
+            const transformedTargetData = transformUserTargetToTargetData(targetsData);
+
             const [insightsResult, summaryResult] = await Promise.all([
                 generateTargetInsights({
-                    targetData: targetsData,
-                    attendanceData,
+                    targetData: transformedTargetData,
+                    attendanceData: transformAttendanceData(attendanceData),
                     profileData,
-                    type: 'performance'
+                    type: 'performance',
+                    timeFrame: 'monthly'
                 }),
-                generateQuickSummary(targetsData)
+                generateQuickSummary(transformedTargetData)
             ]);
 
             setInsights(insightsResult);
@@ -89,13 +172,22 @@ export const TargetsTab: React.FC<TabProps> = ({
 
         setIsGeneratingInsights(true);
         try {
+            // Transform UserTarget to TargetData array
+            const transformedTargetData = transformUserTargetToTargetData(targetsData);
+
             const template = await generateEmailTemplate({
                 recipientName: `${profileData?.name || 'User'} ${profileData?.surname || ''}`.trim(),
+                recipientEmail: profileData?.email || '',
                 insights,
-                targetMetrics: targetsData,
+                targetMetrics: transformedTargetData,
+                templateType: 'follow_up',
                 tone: 'encouraging'
             });
-            setEmailTemplate(template);
+
+            // Handle the template response which has subject and body structure
+            const templateText = typeof template === 'string' ? template :
+                `Subject: ${template.subject}\n\n${template.body}`;
+            setEmailTemplate(templateText);
             setActiveInsightTab('email');
         } catch (error) {
             console.error('Error generating email:', error);
@@ -415,7 +507,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                         </div>
                     </div>
                     {quickSummary && (
-                        <div className="mt-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-500/10 dark:to-blue-500/10 border border-purple-200 dark:border-purple-500/20">
+                        <div className="p-3 mt-3 border border-purple-200 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-500/10 dark:to-blue-500/10 dark:border-purple-500/20">
                             <div className="flex items-start gap-2">
                                 <Star className="w-4 h-4 text-purple-500 mt-0.5" />
                                 <p className="text-sm text-purple-800 dark:text-purple-300 font-body">
@@ -441,7 +533,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                         <TabsContent value="insights" className="mt-6 space-y-4">
                             {isGeneratingInsights ? (
                                 <div className="py-8 text-center">
-                                    <Loader2 className="w-6 h-6 mx-auto mb-3 animate-spin text-purple-500" />
+                                    <Loader2 className="w-6 h-6 mx-auto mb-3 text-purple-500 animate-spin" />
                                     <p className="text-sm text-muted-foreground font-body">
                                         AI is analyzing your performance data...
                                     </p>
@@ -451,7 +543,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                                     {insights.map((insight, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border border-blue-200 dark:border-blue-500/20"
+                                            className="flex items-start gap-3 p-4 border border-blue-200 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"
                                         >
                                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold font-body ${
                                                 index === 0 ? 'bg-green-500' :
@@ -461,7 +553,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                                             }`}>
                                                 {index + 1}
                                             </div>
-                                            <p className="text-sm text-gray-800 dark:text-gray-200 font-body leading-relaxed">
+                                            <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 font-body">
                                                 {insight}
                                             </p>
                                         </div>
@@ -469,11 +561,11 @@ export const TargetsTab: React.FC<TabProps> = ({
                                 </div>
                             ) : (
                                 <div className="py-8 text-center">
-                                    <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
                                         <Brain className="w-8 h-8 text-muted-foreground" />
                                     </div>
-                                    <h3 className="text-lg font-medium text-foreground font-body mb-2">No Insights Yet</h3>
-                                    <p className="text-sm text-muted-foreground font-body mb-4">
+                                    <h3 className="mb-2 text-lg font-medium text-foreground font-body">No Insights Yet</h3>
+                                    <p className="mb-4 text-sm text-muted-foreground font-body">
                                         Click refresh to generate AI-powered insights about your performance.
                                     </p>
                                     <Button
@@ -491,19 +583,19 @@ export const TargetsTab: React.FC<TabProps> = ({
                         <TabsContent value="email" className="mt-6 space-y-4">
                             {emailTemplate ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-500/20">
+                                    <div className="p-4 border border-green-200 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
                                         <div className="flex items-center gap-2 mb-3">
                                             <Mail className="w-4 h-4 text-green-600" />
-                                            <h4 className="text-sm font-medium text-green-800 dark:text-green-300 font-body uppercase">
+                                            <h4 className="text-sm font-medium text-green-800 uppercase dark:text-green-300 font-body">
                                                 Generated Email Template
                                             </h4>
                                         </div>
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
-                                            <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono whitespace-pre-wrap font-body">
+                                        <div className="p-4 bg-white border rounded-lg dark:bg-gray-800">
+                                            <pre className="font-mono text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
                                                 {emailTemplate}
                                             </pre>
                                         </div>
-                                        <div className="mt-3 flex items-center gap-2">
+                                        <div className="flex items-center gap-2 mt-3">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -530,11 +622,11 @@ export const TargetsTab: React.FC<TabProps> = ({
                                 </div>
                             ) : (
                                 <div className="py-8 text-center">
-                                    <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
                                         <Mail className="w-8 h-8 text-muted-foreground" />
                                     </div>
-                                    <h3 className="text-lg font-medium text-foreground font-body mb-2">No Email Template</h3>
-                                    <p className="text-sm text-muted-foreground font-body mb-4">
+                                    <h3 className="mb-2 text-lg font-medium text-foreground font-body">No Email Template</h3>
+                                    <p className="mb-4 text-sm text-muted-foreground font-body">
                                         Generate insights first, then create a personalized email template.
                                     </p>
                                     <Button

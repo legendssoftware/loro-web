@@ -472,6 +472,8 @@ const LandingPage: React.FunctionComponent = () => {
                 }
             }
         };
+    // Include dependencies to satisfy ESLint, but we only want this to run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Start demo call with retry capability - doesn't require authentication

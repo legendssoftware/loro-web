@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'react-hot-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
     organizationSettingsApi,
     getOrganizationRef,
@@ -156,7 +156,42 @@ export default function GeneralSettingsForm() {
         }
     }, [contactForm.formState.isDirty, activeTab]);
 
-    const refetchSettings = async () => {
+    const initializeFormsWithDefaults = useCallback(() => {
+        // Initialize contact form with defaults
+        contactForm.reset({
+            email: '',
+            phone: { code: '', number: '' },
+            website: '',
+            address: {
+                street: '',
+                suburb: '',
+                city: '',
+                state: '',
+                country: '',
+                postalCode: '',
+            },
+        });
+
+        // Initialize regional form with defaults
+        regionalForm.reset({
+            language: '',
+            timezone: '',
+            currency: '',
+            dateFormat: '',
+            timeFormat: '',
+        });
+
+        // Initialize business form with defaults
+        businessForm.reset({
+            name: '',
+            registrationNumber: '',
+            taxId: '',
+            industry: '',
+            size: 'small',
+        });
+    }, [contactForm, regionalForm, businessForm]);
+
+    const refetchSettings = useCallback(async () => {
         setIsInitialLoading(true);
         setFetchError(false);
         try {
@@ -218,42 +253,7 @@ export default function GeneralSettingsForm() {
         } finally {
             setIsInitialLoading(false);
         }
-    };
-
-    const initializeFormsWithDefaults = () => {
-        // Initialize contact form with defaults
-        contactForm.reset({
-            email: '',
-            phone: { code: '', number: '' },
-            website: '',
-            address: {
-                street: '',
-                suburb: '',
-                city: '',
-                state: '',
-                country: '',
-                postalCode: '',
-            },
-        });
-
-        // Initialize regional form with defaults
-        regionalForm.reset({
-            language: '',
-            timezone: '',
-            currency: '',
-            dateFormat: '',
-            timeFormat: '',
-        });
-
-        // Initialize business form with defaults
-        businessForm.reset({
-            name: '',
-            registrationNumber: '',
-            taxId: '',
-            industry: '',
-            size: 'small',
-        });
-    };
+    }, [contactForm, regionalForm, businessForm, initializeFormsWithDefaults]);
 
     // Helper function to get changed fields only
     const getChangedFields = <T extends Record<string, any>>(
@@ -468,7 +468,7 @@ export default function GeneralSettingsForm() {
         };
 
         fetchSettings();
-    }, []);
+    }, [refetchSettings]);
 
     if (isInitialLoading) {
         return (

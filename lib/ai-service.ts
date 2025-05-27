@@ -178,7 +178,7 @@ export class AIService {
                 dataHash,
             };
 
-            const response = await fetch('/api/ai/comprehensive-insights', {
+            const response = await fetch('/api/ai/insights', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -483,7 +483,7 @@ Your Sales Team`,
             const categorizedTargets = this.categorizeTargets(targetData);
             const feasibilityMetrics = this.calculateFeasibilityMetrics(targetData);
 
-            const response = await fetch('/api/ai/comprehensive-summary', {
+            const response = await fetch('/api/ai/summary', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

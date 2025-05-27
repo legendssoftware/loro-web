@@ -50,8 +50,12 @@ interface InsightRequest {
         | 'goals'
         | 'recommendations'
         | 'lead_analysis'
-        | 'sales_strategy';
+        | 'sales_strategy'
+        | 'comprehensive_performance';
     dataHash?: string;
+    targetCategories?: Record<string, TargetData[]>;
+    feasibilityMetrics?: Record<string, any>;
+    currentDate?: string;
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
@@ -204,39 +208,81 @@ function parseComprehensiveResponse(text: string): {
     return sections;
 }
 
+// Determine urgency level based on target progress
+function determineUrgencyLevel(
+    targetData: TargetData[],
+): 'low' | 'medium' | 'high' | 'critical' {
+    const overallProgress =
+        targetData.reduce((sum, target) => sum + target.progress, 0) /
+        targetData.length;
 
+    // Check for critical categories with zero progress
+    const criticalCategories = targetData.filter(
+        (t) => ['sales', 'clients'].includes(t.category) && t.progress === 0,
+    );
+
+    if (criticalCategories.length > 1 || overallProgress < 10) {
+        return 'critical';
+    } else if (overallProgress < 30) {
+        return 'high';
+    } else if (overallProgress < 60) {
+        return 'medium';
+    } else {
+        return 'low';
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
         const body: InsightRequest = await request.json();
+        
+        // Normalize target data to ensure numeric values
+        if (body.targetData) {
+            body.targetData = body.targetData.map(target => ({
+                ...target,
+                currentValue: typeof target.currentValue === 'string' 
+                    ? parseFloat(target.currentValue) || 0 
+                    : target.currentValue,
+                targetValue: typeof target.targetValue === 'string'
+                    ? parseFloat(target.targetValue) || 0
+                    : target.targetValue,
+            }));
+        }
 
         // Handle missing API key with comprehensive fallback
         if (!process.env.GOOGLE_AI_API_KEY) {
             console.warn(
                 'Google AI API key not configured, using fallback insights',
             );
+            const fallbackInsights = [
+                'Focus on your highest-value targets this week to maximize impact.',
+                'Schedule follow-ups with warm leads within the next 2 business days.',
+                'Review your pipeline for conversion opportunities and potential bottlenecks.',
+                'Set aside time daily for prospecting new leads in your target market.',
+                'Analyze successful closed deals to replicate winning strategies.',
+                'Prioritize relationship-building activities to strengthen your network.',
+            ];
+            const fallbackRecommendations = [
+                'Block calendar time for high-priority prospecting activities',
+                'Create a standardized follow-up sequence for new leads',
+                'Set weekly goals that align with monthly targets',
+                'Schedule regular pipeline reviews to identify opportunities',
+            ];
+            const fallbackQuickActions = [
+                'Call your top 3 warm leads today',
+                'Send follow-up emails to recent inquiries',
+                'Update CRM with latest contact information',
+                "Review and prioritize this week's activities",
+            ];
+
             return NextResponse.json({
-                insights: [
-                    'Focus on your highest-value targets this week to maximize impact.',
-                    'Schedule follow-ups with warm leads within the next 2 business days.',
-                    'Review your pipeline for conversion opportunities and potential bottlenecks.',
-                    'Set aside time daily for prospecting new leads in your target market.',
-                    'Analyze successful closed deals to replicate winning strategies.',
-                    'Prioritize relationship-building activities to strengthen your network.',
-                ],
+                insights: fallbackInsights,
+                feasibilityAnalysis: fallbackRecommendations,
+                actionableRecommendations: fallbackQuickActions,
+                urgencyLevel: determineUrgencyLevel(body.targetData),
                 summary: `Based on your current performance, you're making solid progress toward your targets. Focus on consistent daily activities and strategic follow-ups to maintain momentum.`,
-                recommendations: [
-                    'Block calendar time for high-priority prospecting activities',
-                    'Create a standardized follow-up sequence for new leads',
-                    'Set weekly goals that align with monthly targets',
-                    'Schedule regular pipeline reviews to identify opportunities',
-                ],
-                quickActions: [
-                    'Call your top 3 warm leads today',
-                    'Send follow-up emails to recent inquiries',
-                    'Update CRM with latest contact information',
-                    "Review and prioritize this week's activities",
-                ],
+                recommendations: fallbackRecommendations,
+                quickActions: fallbackQuickActions,
                 generatedAt: new Date().toISOString(),
                 dataHash: body.dataHash,
                 type: body.type,
@@ -256,7 +302,13 @@ export async function POST(request: NextRequest) {
         const parsedResponse = parseComprehensiveResponse(text);
 
         return NextResponse.json({
-            ...parsedResponse,
+            insights: parsedResponse.insights,
+            feasibilityAnalysis: parsedResponse.recommendations,
+            actionableRecommendations: parsedResponse.quickActions,
+            urgencyLevel: determineUrgencyLevel(body.targetData),
+            summary: parsedResponse.summary,
+            recommendations: parsedResponse.recommendations,
+            quickActions: parsedResponse.quickActions,
             generatedAt: new Date().toISOString(),
             dataHash: body.dataHash,
             type: body.type,
@@ -265,27 +317,33 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: unknown) {
         console.error('Error generating insights:', error);
+        const errorInsights = [
+            'Unable to generate AI insights at this time. Please try again later.',
+            'Review your current targets and focus on high-priority activities.',
+            'Consider reaching out to recent leads for immediate opportunities.',
+            'Analyze your sales pipeline for conversion opportunities.',
+        ];
+        const errorRecommendations = [
+            'Review your pipeline manually for immediate opportunities',
+            'Follow up with recent leads and prospects',
+            'Set clear daily and weekly activity goals',
+        ];
+        const errorQuickActions = [
+            'Contact warm leads from this week',
+            'Update your CRM with recent activities',
+            "Plan tomorrow's priority activities",
+        ];
+
         return NextResponse.json(
             {
                 error: 'Failed to generate insights',
-                insights: [
-                    'Unable to generate AI insights at this time. Please try again later.',
-                    'Review your current targets and focus on high-priority activities.',
-                    'Consider reaching out to recent leads for immediate opportunities.',
-                    'Analyze your sales pipeline for conversion opportunities.',
-                ],
-                summary:
-                    'Focus on your core activities and maintain consistent effort toward your goals.',
-                recommendations: [
-                    'Review your pipeline manually for immediate opportunities',
-                    'Follow up with recent leads and prospects',
-                    'Set clear daily and weekly activity goals',
-                ],
-                quickActions: [
-                    'Contact warm leads from this week',
-                    'Update your CRM with recent activities',
-                    "Plan tomorrow's priority activities",
-                ],
+                insights: errorInsights,
+                feasibilityAnalysis: errorRecommendations,
+                actionableRecommendations: errorQuickActions,
+                urgencyLevel: 'medium' as const,
+                summary: 'Focus on your core activities and maintain consistent effort toward your goals.',
+                recommendations: errorRecommendations,
+                quickActions: errorQuickActions,
                 generatedAt: new Date().toISOString(),
                 usingFallback: true,
             },

@@ -201,3 +201,62 @@ export const organizationHoursApi = {
     }
   }
 };
+
+/**
+ * Organization Interface
+ */
+export interface Organisation {
+  uid?: number;
+  name: string;
+  email: string;
+  phone: string;
+  contactPerson: string;
+  website: string;
+  logo?: string;
+  ref?: string;
+  platform?: 'hr' | 'sales' | 'crm' | 'all';
+  address: {
+    street: string;
+    suburb?: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
+  isDeleted?: boolean;
+}
+
+/**
+ * Organization API Service
+ */
+export const organizationApi = {
+  /**
+   * Get organization details
+   */
+  async getOrganization(): Promise<Organisation> {
+    try {
+      const ref = getOrganizationRef();
+      const response = await axiosInstance.get(`/org/${ref}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update organization details
+   */
+  async updateOrganization(organization: Partial<Organisation>): Promise<{ message: string }> {
+    try {
+      const ref = getOrganizationRef();
+      const response = await axiosInstance.patch(`/org/${ref}`, organization);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating organization:', error);
+      throw error;
+    }
+  }
+};

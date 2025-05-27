@@ -29,6 +29,8 @@ import {
     organizationSettingsApi,
     getOrganizationRef,
     OrganisationSettings,
+    organizationApi,
+    Organisation,
 } from '@/lib/services/organization-api';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
@@ -94,6 +96,9 @@ const businessSchema = z.object({
     size: z.enum(['small', 'medium', 'large', 'enterprise'], {
         required_error: 'Please select a business size',
     }),
+    platform: z.enum(['hr', 'sales', 'crm', 'all'], {
+        required_error: 'Please select a platform',
+    }),
 });
 
 export default function GeneralSettingsForm() {
@@ -103,6 +108,8 @@ export default function GeneralSettingsForm() {
     const [organisationRef] = useState(getOrganizationRef());
     const [originalSettings, setOriginalSettings] =
         useState<OrganisationSettings>({});
+    const [originalOrganisation, setOriginalOrganisation] =
+        useState<Organisation | null>(null);
     const [fetchError, setFetchError] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [formStatus, setFormStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved'>('clean');
@@ -146,6 +153,7 @@ export default function GeneralSettingsForm() {
             taxId: '',
             industry: '',
             size: 'small',
+            platform: 'all',
         },
     });
 
@@ -188,6 +196,7 @@ export default function GeneralSettingsForm() {
             taxId: '',
             industry: '',
             size: 'small',
+            platform: 'all',
         });
     }, [contactForm, regionalForm, businessForm]);
 
@@ -195,8 +204,14 @@ export default function GeneralSettingsForm() {
         setIsInitialLoading(true);
         setFetchError(false);
         try {
-            const settings = await organizationSettingsApi.getSettings();
+            const [settings, organisation] = await Promise.all([
+                organizationSettingsApi.getSettings(),
+                organizationApi.getOrganization()
+            ]);
+            
             setOriginalSettings(settings);
+            setOriginalOrganisation(organisation);
+            
             // Reset forms with fetched settings
             if (settings?.contact) {
                 const addressData = settings.contact.address || {
@@ -231,14 +246,15 @@ export default function GeneralSettingsForm() {
                 });
             }
 
-            if (settings?.business) {
+            if (settings?.business || organisation) {
                 businessForm.reset({
-                    name: settings.business.name || '',
+                    name: settings.business?.name || organisation?.name || '',
                     registrationNumber:
-                        settings.business.registrationNumber || '',
-                    taxId: settings.business.taxId || '',
-                    industry: settings.business.industry || '',
-                    size: settings.business.size || 'small',
+                        settings.business?.registrationNumber || '',
+                    taxId: settings.business?.taxId || '',
+                    industry: settings.business?.industry || '',
+                    size: settings.business?.size || 'small',
+                    platform: organisation?.platform || 'all',
                 });
             }
         } catch (error) {
@@ -255,7 +271,7 @@ export default function GeneralSettingsForm() {
         }
     }, [contactForm, regionalForm, businessForm, initializeFormsWithDefaults]);
 
-    // Helper function to get changed fields only
+    // Helper function to get only the changed fields
     const getChangedFields = <T extends Record<string, any>>(
         formValues: T,
         originalValues?: T,
@@ -408,33 +424,38 @@ export default function GeneralSettingsForm() {
     async function onBusinessSubmit(values: z.infer<typeof businessSchema>) {
         setIsLoading(true);
         try {
-            // Get only changed fields
-            const changedFields = getChangedFields(
-                values,
+            // Separate platform from business settings
+            const { platform, ...businessValues } = values;
+            
+            // Get only changed business settings fields
+            const changedBusinessFields = getChangedFields(
+                businessValues,
                 originalSettings.business,
             );
 
-            // Ensure empty strings are properly handled for optional fields
+            // Check if platform changed
+            const platformChanged = platform !== originalOrganisation?.platform;
+
+            // Handle empty strings for optional fields
             if (
-                values.registrationNumber === '' &&
+                businessValues.registrationNumber === '' &&
                 originalSettings.business?.registrationNumber
             ) {
-                changedFields.registrationNumber = '';
+                changedBusinessFields.registrationNumber = '';
             }
-            if (values.taxId === '' && originalSettings.business?.taxId) {
-                changedFields.taxId = '';
+            if (businessValues.taxId === '' && originalSettings.business?.taxId) {
+                changedBusinessFields.taxId = '';
             }
 
-            // Only send update if there are changes
-            if (Object.keys(changedFields).length > 0) {
-                // Create a complete business object with all required fields
+            // Update settings if business fields changed
+            if (Object.keys(changedBusinessFields).length > 0) {
                 const businessData = {
-                    name: values.name,
-                    industry: values.industry,
-                    size: values.size,
-                    registrationNumber: changedFields.registrationNumber ?? values.registrationNumber ?? '',
-                    taxId: changedFields.taxId ?? values.taxId ?? '',
-                    ...changedFields
+                    name: businessValues.name,
+                    industry: businessValues.industry,
+                    size: businessValues.size,
+                    registrationNumber: changedBusinessFields.registrationNumber ?? businessValues.registrationNumber ?? '',
+                    taxId: changedBusinessFields.taxId ?? businessValues.taxId ?? '',
+                    ...changedBusinessFields
                 } as Required<typeof originalSettings.business>;
 
                 const settingsData: Partial<OrganisationSettings> = {
@@ -447,6 +468,15 @@ export default function GeneralSettingsForm() {
                     ...prev,
                     business: businessData
                 }));
+            }
+
+            // Update organization platform if changed
+            if (platformChanged) {
+                await organizationApi.updateOrganization({ platform });
+                setOriginalOrganisation((prev) => prev ? { ...prev, platform } : null);
+            }
+
+            if (Object.keys(changedBusinessFields).length > 0 || platformChanged) {
                 showSuccessToast('Business information updated', toast);
             } else {
                 showSuccessToast('No changes to save', toast);
@@ -1600,6 +1630,58 @@ export default function GeneralSettingsForm() {
                                         )}
                                     />
                                 </div>
+
+                                <FormField
+                                    control={businessForm.control}
+                                    name="platform"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-normal uppercase font-body">
+                                                Platform
+                                            </FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger className="h-9">
+                                                        <SelectValue
+                                                            placeholder="Select platform"
+                                                            className="text-[10px] font-thin font-body"
+                                                        />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem
+                                                        value="hr"
+                                                        className="text-[10px] font-thin font-body"
+                                                    >
+                                                        HR
+                                                    </SelectItem>
+                                                    <SelectItem
+                                                        value="sales"
+                                                        className="text-[10px] font-thin font-body"
+                                                    >
+                                                        Sales
+                                                    </SelectItem>
+                                                    <SelectItem
+                                                        value="crm"
+                                                        className="text-[10px] font-thin font-body"
+                                                    >
+                                                        CRM
+                                                    </SelectItem>
+                                                    <SelectItem
+                                                        value="all"
+                                                        className="text-[10px] font-thin font-body"
+                                                    >
+                                                        All
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage className="text-xs" />
+                                        </FormItem>
+                                    )}
+                                />
 
                                 <Button
                                     type="submit"

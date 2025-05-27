@@ -47,8 +47,8 @@ interface LeadCardProps {
 // Define action types for the sheets
 type ActionType = 'call' | 'email' | 'message' | null;
 
-// Define tone types for templates
-type ToneType = 'professional' | 'friendly' | 'urgent' | 'casual';
+// Define tone types for templates - Enhanced v4 with more sophisticated options
+type ToneType = 'professional' | 'friendly' | 'urgent' | 'casual' | 'consultative' | 'empathetic' | 'assertive' | 'collaborative' | 'strategic' | 'warm';
 
 // Define template structure
 interface Template {
@@ -161,91 +161,488 @@ function LeadCardComponent({
 
     // Get sheet description based on action type
     const getSheetDescription = () => {
+        const daysSince = Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+        const baseDescription = `Generate personalized ${activeSheet} using lead status (${lead.status}), time context (${daysSince} days), and contextual insights`;
+
         switch (activeSheet) {
             case 'call':
-                return 'Generate call scripts and templates with AI based on your selected tone';
+                return `${baseDescription} for strategic conversation guidance`;
             case 'email':
-                return 'Create personalized email templates using AI based on your selected tone';
+                return `${baseDescription} with subject lines and personalized content`;
             case 'message':
-                return 'Generate message templates using AI based on your selected tone';
+                return `${baseDescription} optimized for SMS engagement`;
             default:
                 return '';
         }
     };
 
-        // Generate AI templates based on tone and action type
+    // Enhanced AI v4 Template Generation - Context-aware, time-aware, and intelligent
     const generateTemplates = useCallback(async (tone: ToneType, actionType: Exclude<ActionType, null>) => {
         setIsGeneratingTemplates(true);
 
-        // Mock AI template generation - replace with actual AI service
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+        // Enhanced context analysis for better templates
+        const leadContext = {
+            // Lead basic info
+            name: lead.name,
+            email: lead.email,
+            phone: lead.phone,
+            companyName: lead.companyName,
 
-        const mockTemplates: Record<Exclude<ActionType, null>, Template[]> = {
-            call: [
-                {
-                    id: '1',
-                    title: 'Introduction Call',
-                    content: `Hi ${lead.name}, this is [Your Name] from [Company]. I wanted to reach out regarding your recent inquiry. Is this a good time to chat about how we can help with your needs?`,
-                    tone
-                },
-                {
-                    id: '2',
-                    title: 'Follow-up Call',
-                    content: `Hello ${lead.name}, I'm following up on our previous conversation. I have some updates that might interest you. When would be a convenient time to discuss further?`,
-                    tone
-                },
-                {
-                    id: '3',
-                    title: 'Closing Call',
-                    content: `Hi ${lead.name}, I wanted to check if you're ready to move forward with our proposal. I'm here to answer any final questions you might have.`,
-                    tone
-                }
-            ],
-            email: [
-                {
-                    id: '1',
-                    title: 'Welcome Email',
-                    content: `Subject: Welcome to [Company], ${lead.name}!\n\nDear ${lead.name},\n\nThank you for your interest in our services. We're excited to help you achieve your goals. I'll be your dedicated point of contact moving forward.\n\nBest regards,\n[Your Name]`,
-                    tone
-                },
-                {
-                    id: '2',
-                    title: 'Information Email',
-                    content: `Subject: Information you requested, ${lead.name}\n\nHi ${lead.name},\n\nAs promised, I'm sending you the information about our services. Please find the details attached. Let me know if you have any questions.\n\nBest regards,\n[Your Name]`,
-                    tone
-                },
-                {
-                    id: '3',
-                    title: 'Follow-up Email',
-                    content: `Subject: Following up on our conversation\n\nHi ${lead.name},\n\nI wanted to follow up on our recent conversation. Have you had a chance to review the information I sent? I'm here to help with any questions.\n\nBest regards,\n[Your Name]`,
-                    tone
-                }
-            ],
-            message: [
-                {
-                    id: '1',
-                    title: 'Quick Introduction',
-                    content: `Hi ${lead.name}! This is [Your Name] from [Company]. Thanks for your interest! Can we schedule a quick call to discuss your needs?`,
-                    tone
-                },
-                {
-                    id: '2',
-                    title: 'Follow-up Message',
-                    content: `Hi ${lead.name}, just following up on your inquiry. We have some great solutions that might be perfect for you. When would be a good time to chat?`,
-                    tone
-                },
-                {
-                    id: '3',
-                    title: 'Appointment Reminder',
-                    content: `Hi ${lead.name}, this is a friendly reminder about our appointment tomorrow. Looking forward to speaking with you!`,
-                    tone
-                }
-            ]
+            // Lead status and stage analysis
+            status: lead.status,
+            isNewLead: lead.status === 'PENDING',
+            isConverted: lead.status === 'CONVERTED',
+            isDeclined: lead.status === 'DECLINED',
+            needsReview: lead.status === 'REVIEW',
+            isApproved: lead.status === 'APPROVED',
+
+            // Time-aware context
+            daysSinceCreated: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)),
+            isRecentLead: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)) <= 3,
+            isStale: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)) > 14,
+            createdAt: lead.createdAt,
+            currentQuarter: Math.floor(new Date().getMonth() / 3) + 1,
+
+            // Lead activity and engagement
+            hasNotes: !!lead.notes,
+            notes: lead.notes,
+            hasOwner: !!lead.owner,
+            leadOwnerName: lead.owner?.name, // Person who created the lead
+            
+            // Current sender context (TODO: Get from current user session)
+            currentSenderName: '[Current User Name]', // This should come from logged-in user
+            isOwnerSending: false, // TODO: Check if current user is the lead owner
+            
+            // Status change context
+            hasStatusChanges: !!lead.changeHistory?.length,
+            lastStatusChange: lead.changeHistory?.[lead.changeHistory.length - 1],
+            statusChangeReason: lead.statusChangeReason,
+            statusChangeDescription: lead.statusChangeDescription,
+            nextStep: lead.nextStep,
+
+            // Branch context
+            branchName: lead.branch?.name,
+            branchLocation: lead.branch?.address ? `${lead.branch.address.city}, ${lead.branch.address.state}` : null,
+
+            // Tone-specific context
+            tone: tone,
+            urgencyLevel: tone === 'urgent' ? 'high' : tone === 'casual' ? 'low' : 'medium'
         };
 
+        // Mock AI template generation with enhanced context awareness
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+
+                const generateContextualContent = (templateType: string, action: string) => {
+            // Enhanced AI v4 Content Generation - Complete, professional, and contextually aware
+            
+            // Time and context awareness
+            const now = new Date();
+            const timeOfDay = now.getHours();
+            const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+            const currentDate = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Enhanced greetings based on time and tone
+            const getGreeting = () => {
+                const baseGreeting = timeOfDay < 12 ? 'Good morning' : timeOfDay < 17 ? 'Good afternoon' : 'Good evening';
+                
+                if (tone === 'warm' || tone === 'friendly') {
+                    return timeOfDay < 12 ? 'Good morning' : timeOfDay < 17 ? 'Good afternoon' : 'Good evening';
+                } else if (tone === 'casual') {
+                    return timeOfDay < 12 ? 'Morning' : timeOfDay < 17 ? 'Afternoon' : 'Evening';
+                } else if (tone === 'professional') {
+                    return baseGreeting;
+                }
+                return baseGreeting;
+            };
+
+            // Status-specific intelligent context
+            const statusInsights = {
+                'PENDING': {
+                    context: 'new inquiry',
+                    action: 'discuss how we can help',
+                    urgency: 'timely response',
+                    nextStep: 'schedule an initial consultation'
+                },
+                'REVIEW': {
+                    context: 'application under review',
+                    action: 'provide an update on progress',
+                    urgency: 'important update',
+                    nextStep: 'finalize the review process'
+                },
+                'APPROVED': {
+                    context: 'approved application',
+                    action: 'move forward with next steps',
+                    urgency: 'ready to proceed',
+                    nextStep: 'begin implementation'
+                },
+                'DECLINED': {
+                    context: 'previous inquiry',
+                    action: 'explore alternative solutions',
+                    urgency: 'new opportunities',
+                    nextStep: 'discuss revised options'
+                },
+                'CONVERTED': {
+                    context: 'successful partnership',
+                    action: 'ensure continued success',
+                    urgency: 'ongoing support',
+                    nextStep: 'optimize current solutions'
+                },
+                'CANCELLED': {
+                    context: 'previous interest',
+                    action: 'reconnect and explore new possibilities',
+                    urgency: 'changed circumstances',
+                    nextStep: 'reassess current needs'
+                }
+            };
+
+            // Advanced tone-based language and personality
+            const tonePersonality = {
+                'professional': {
+                    style: 'formal and business-focused',
+                    language: 'precise and respectful',
+                    closing: 'I look forward to hearing from you.',
+                    signature: 'Best regards,'
+                },
+                'friendly': {
+                    style: 'warm and approachable',
+                    language: 'conversational yet professional',
+                    closing: 'Hope to hear from you soon!',
+                    signature: 'Warm regards,'
+                },
+                'consultative': {
+                    style: 'advisory and solution-focused',
+                    language: 'insightful and strategic',
+                    closing: 'I believe we can create significant value together.',
+                    signature: 'Best regards,'
+                },
+                'empathetic': {
+                    style: 'understanding and supportive',
+                    language: 'caring and considerate',
+                    closing: 'I understand your needs and am here to help.',
+                    signature: 'With understanding,'
+                },
+                'collaborative': {
+                    style: 'partnership-oriented',
+                    language: 'inclusive and team-focused',
+                    closing: 'Let\'s work together on this.',
+                    signature: 'Looking forward to our collaboration,'
+                },
+                'strategic': {
+                    style: 'analytical and forward-thinking',
+                    language: 'data-driven and insightful',
+                    closing: 'The strategic benefits are significant.',
+                    signature: 'Strategically yours,'
+                },
+                'urgent': {
+                    style: 'direct and time-sensitive',
+                    language: 'clear and immediate',
+                    closing: 'Time is of the essence - let\'s connect soon.',
+                    signature: 'Urgently yours,'
+                },
+                'assertive': {
+                    style: 'confident and decisive',
+                    language: 'strong and purposeful',
+                    closing: 'I\'m confident this is the right move.',
+                    signature: 'Confidently,'
+                },
+                'warm': {
+                    style: 'personal and caring',
+                    language: 'heartfelt and genuine',
+                    closing: 'Looking forward to connecting with you personally.',
+                    signature: 'Warmly,'
+                },
+                'casual': {
+                    style: 'relaxed and informal',
+                    language: 'easy-going yet professional',
+                    closing: 'Let me know what works for you!',
+                    signature: 'Cheers,'
+                }
+            };
+
+            const currentPersonality = tonePersonality[tone] || tonePersonality['professional'];
+            const currentStatusInsight = statusInsights[leadContext.status] || statusInsights['PENDING'];
+
+            // Business card integration  
+            const businessCardSection = lead?.owner?.businesscardURL 
+                ? `\n\n📧 My Business Card: ${lead.owner.businesscardURL}\n`
+                : leadContext.currentSenderName !== '[Current User Name]'
+                ? `\n\n📧 Connect with me: ${leadContext.currentSenderName}\n`
+                : '';
+
+            // Company signature with all available details
+            const getCompanySignature = () => {
+                let signature = `\n\n${currentPersonality.signature}\n`;
+                signature += `${leadContext.currentSenderName}\n`;
+                
+                if (leadContext.branchName) {
+                    signature += `${leadContext.branchName}\n`;
+                }
+                
+                if (leadContext.branchLocation) {
+                    signature += `${leadContext.branchLocation}\n`;
+                }
+                
+                // Add business card if available
+                if (lead?.owner?.businesscardURL) {
+                    signature += `\n📧 View my business card: ${lead.owner.businesscardURL}\n`;
+                }
+                
+                // Removed AI reference as requested
+                
+                return signature;
+            };
+
+            // Generate content based on action type
+            if (action === 'email') {
+                let subject = '';
+                let content = '';
+                
+                switch (templateType) {
+                    case 'status-based':
+                        subject = `Re: ${leadContext.companyName || leadContext.name} - ${currentStatusInsight.context} update`;
+                        content = `Subject: ${subject}\n\n`;
+                        content += `${getGreeting()} ${leadContext.name},\n\n`;
+                        
+                        // Opening based on lead status and time context
+                        if (leadContext.isRecentLead) {
+                            content += `Thank you for reaching out to us recently. I wanted to personally follow up on your ${currentStatusInsight.context}.`;
+                        } else if (leadContext.isStale) {
+                            content += `I hope this email finds you well. It's been ${leadContext.daysSinceCreated} days since we last connected, and I wanted to provide you with an important update regarding your ${currentStatusInsight.context}.`;
+                        } else {
+                            content += `I hope you're having a great ${dayOfWeek}. I wanted to reach out regarding your ${currentStatusInsight.context} and ${currentStatusInsight.action}.`;
+                        }
+                        
+                        content += `\n\n`;
+                        
+                        // Lead-specific context
+                        if (leadContext.notes) {
+                            content += `**Background Context:**\n`;
+                            content += `Based on our previous discussions about "${leadContext.notes}", I've been working on solutions that specifically address your needs.\n\n`;
+                        }
+                        
+                        // Status-specific information
+                        content += `**Current Status Update:**\n`;
+                        content += `Your application is currently "${leadContext.status}" which means we're ready to ${currentStatusInsight.action}. `;
+                        
+                        if (leadContext.nextStep) {
+                            content += `The next step, as we discussed, is: ${leadContext.nextStep}.\n\n`;
+                        } else {
+                            content += `I believe the next logical step is to ${currentStatusInsight.nextStep}.\n\n`;
+                        }
+                        
+                        // Company/branch specific value proposition
+                        if (leadContext.branchName && leadContext.branchLocation) {
+                            content += `**Our Local Advantage:**\n`;
+                            content += `Our ${leadContext.branchName} team in ${leadContext.branchLocation} has been specifically prepared to support your requirements.\n\n`;
+                        }
+                        
+                        // Team collaboration reference (if lead owner is different from sender)
+                        if (leadContext.leadOwnerName && !leadContext.isOwnerSending) {
+                            content += `**Team Collaboration:**\n`;
+                            content += `I've been working closely with ${leadContext.leadOwnerName}, who originally handled your inquiry, to ensure continuity and the best possible service.\n\n`;
+                        }
+                        
+                        // Call to action based on tone
+                        content += `**Next Steps:**\n`;
+                        if (currentPersonality.style.includes('urgent') || tone === 'urgent') {
+                            content += `Given the time-sensitive nature of your ${currentStatusInsight.context}, I'd like to schedule a call within the next 24-48 hours to ${currentStatusInsight.action}.`;
+                        } else {
+                            content += `I'd love to schedule a convenient time this week to ${currentStatusInsight.action} and answer any questions you might have.`;
+                        }
+                        
+                        content += `\n\n${currentPersonality.closing}`;
+                        content += getCompanySignature();
+                        break;
+
+                    case 'time-aware':
+                        subject = `${leadContext.isRecentLead ? '⏰ Quick Follow-up' : '🔄 Reconnecting'} - ${leadContext.name}`;
+                        content = `Subject: ${subject}\n\n`;
+                        content += `${getGreeting()} ${leadContext.name},\n\n`;
+                        
+                        // Time-contextual opening
+                        if (leadContext.isRecentLead) {
+                            content += `I wanted to reach out while your inquiry is still fresh in both our minds. Thank you for taking the time to connect with us ${leadContext.daysSinceCreated === 0 ? 'today' : leadContext.daysSinceCreated === 1 ? 'yesterday' : `${leadContext.daysSinceCreated} days ago`}.`;
+                        } else if (leadContext.isStale) {
+                            content += `I hope this ${dayOfWeek} finds you well! I realized it's been ${leadContext.daysSinceCreated} days since we last spoke, and I didn't want your inquiry to fall through the cracks.`;
+                        } else {
+                            content += `I hope you're having a productive ${dayOfWeek}! I wanted to check in and see how things are progressing since we last connected.`;
+                        }
+                        
+                        content += `\n\n`;
+                        
+                        // Timing-based value proposition
+                        content += `**Perfect Timing:**\n`;
+                        const quarterContext = leadContext.currentQuarter === 1 ? 'Q1 planning season' : 
+                                            leadContext.currentQuarter === 2 ? 'mid-year optimization period' :
+                                            leadContext.currentQuarter === 3 ? 'peak performance quarter' : 
+                                            'year-end strategy period';
+                        
+                        content += `Given that we're in ${quarterContext}, this is actually an ideal time to ${currentStatusInsight.action}. Many of our clients find that ${leadContext.status.toLowerCase()} applications during this period yield the best results.\n\n`;
+                        
+                        // Lead specific context with time relevance
+                        if (leadContext.notes) {
+                            content += `**Relevant to Your Needs:**\n`;
+                            content += `Regarding your specific requirements about "${leadContext.notes.substring(0, 100)}${leadContext.notes.length > 100 ? '...' : ''}", I've been monitoring industry trends and have some insights that could be valuable.\n\n`;
+                        }
+                        
+                        // Time-sensitive call to action
+                        content += `**Let's Reconnect:**\n`;
+                        content += `${currentPersonality.closing} Would you have 15-20 minutes this week for a brief call? I have some updates that I think you'll find quite relevant to your situation.`;
+                        
+                        content += getCompanySignature();
+                        break;
+
+                    case 'personalized':
+                        subject = `Customized solution for ${leadContext.companyName || leadContext.name} | ${currentDate}`;
+                        content = `Subject: ${subject}\n\n`;
+                        content += `${getGreeting()} ${leadContext.name},\n\n`;
+                        
+                        // Highly personalized opening
+                        if (leadContext.companyName) {
+                            content += `I've been doing some research on ${leadContext.companyName} and I'm impressed by what I've discovered. Based on your industry and current market position, I believe we have a solution that's perfectly aligned with your strategic objectives.`;
+                        } else {
+                            content += `I've been thinking about your specific situation and requirements, and I wanted to reach out with a personalized approach that I believe will be highly relevant to your needs.`;
+                        }
+                        
+                        content += `\n\n`;
+                        
+                        // Personalized insights
+                        content += `**Tailored to Your Situation:**\n`;
+                        if (leadContext.statusChangeReason) {
+                            content += `I understand that ${leadContext.statusChangeReason}, which is exactly why I wanted to present a customized approach.\n\n`;
+                        }
+                        
+                        // Adjust language based on who is sending vs who owns the lead
+                        if (leadContext.leadOwnerName && !leadContext.isOwnerSending) {
+                            content += `Given your current ${leadContext.status.toLowerCase()} status and the specific details you've shared with us, I've worked with ${leadContext.leadOwnerName} to develop a proposal that addresses your unique requirements.\n\n`;
+                        } else {
+                            content += `Given your current ${leadContext.status.toLowerCase()} status and the specific details you've shared with us, I've developed a proposal that addresses your unique requirements.\n\n`;
+                        }
+                        
+                        // Specific value proposition
+                        content += `**What Makes This Different:**\n`;
+                        content += `• Custom solution designed specifically for your needs\n`;
+                        content += `• Implementation timeline that works with your schedule\n`;
+                        content += `• Dedicated support from our ${leadContext.branchName || 'local'} team\n`;
+                        content += `• Flexible approach that adapts to your changing requirements\n\n`;
+                        
+                        // Notes integration
+                        if (leadContext.notes) {
+                            content += `**Addressing Your Specific Concerns:**\n`;
+                            content += `You mentioned: "${leadContext.notes}"\n`;
+                            content += `Our customized approach directly addresses these points with proven solutions.\n\n`;
+                        }
+                        
+                        // Strong call to action
+                        content += `**Ready to Move Forward:**\n`;
+                        content += `I'd love to walk you through this personalized proposal. When would be a good time for a 30-minute conversation where I can show you exactly how this solution fits your needs?`;
+                        
+                        content += `\n\n${currentPersonality.closing}`;
+                        content += getCompanySignature();
+                        break;
+                }
+                
+                return content;
+                
+            } else if (action === 'message') {
+                // Enhanced SMS generation with better context
+                let content = '';
+                
+                switch (templateType) {
+                    case 'status-based':
+                        content = `${getGreeting()} ${leadContext.name}! `;
+                        
+                        if (leadContext.isRecentLead) {
+                            content += `Thanks for your recent inquiry. `;
+                        }
+                        
+                        content += `Your ${leadContext.status.toLowerCase()} status means we're ready to ${currentStatusInsight.action}. `;
+                        
+                        if (tone === 'urgent') {
+                            content += `Can we connect today? Time-sensitive opportunities available.`;
+                        } else {
+                            content += `When would be a good time for a quick call this week?`;
+                        }
+                        
+                        if (lead?.owner?.businesscardURL) {
+                            content += ` My card: ${lead.owner.businesscardURL}`;
+                        }
+                        break;
+
+                    case 'time-aware':
+                        content = `${getGreeting()} ${leadContext.name}! `;
+                        
+                        if (leadContext.isStale) {
+                            content += `It's been ${leadContext.daysSinceCreated} days - perfect time to reconnect! `;
+                        } else if (leadContext.isRecentLead) {
+                            content += `Following up on your fresh inquiry while it's still top of mind. `;
+                        }
+                        
+                        if (leadContext.nextStep) {
+                            content += `Ready for: ${leadContext.nextStep}? `;
+                        }
+                        
+                        content += `Quick 15-min call this week?`;
+                        
+                        if (lead?.owner?.businesscardURL) {
+                            content += ` 📧 ${lead.owner.businesscardURL}`;
+                        }
+                        break;
+
+                    case 'personalized':
+                        content = `Hi ${leadContext.name}! `;
+                        
+                        if (leadContext.companyName) {
+                            content += `Have a custom solution for ${leadContext.companyName}. `;
+                        }
+                        
+                        if (leadContext.notes) {
+                            const shortNotes = leadContext.notes.substring(0, 30);
+                            content += `Re: ${shortNotes}${leadContext.notes.length > 30 ? '...' : ''} - `;
+                        }
+                        
+                        content += `personalized approach ready. Available for a quick call?`;
+                        
+                        if (lead?.owner?.businesscardURL) {
+                            content += ` Card: ${lead.owner.businesscardURL}`;
+                        }
+                        break;
+                }
+                
+                return content;
+            }
+
+            return '';
+        };
+
+        const templates: Template[] = [
+            {
+                id: '1',
+                title: `${leadContext.status}-Based ${actionType === 'email' ? 'Email' : 'Message'}`,
+                content: generateContextualContent('status-based', actionType),
+                tone
+            },
+            {
+                id: '2',
+                title: `Time-Aware ${actionType === 'email' ? 'Email' : 'Message'} (${leadContext.daysSinceCreated} days)`,
+                content: generateContextualContent('time-aware', actionType),
+                tone
+            },
+            {
+                id: '3',
+                title: `Personalized ${actionType === 'email' ? 'Email' : 'Message'}`,
+                content: generateContextualContent('personalized', actionType),
+                tone
+            }
+        ];
+
         setIsGeneratingTemplates(false);
-        return mockTemplates[actionType] || [];
-    }, [lead.name]);
+        return templates;
+    }, [lead]);
 
     // Handle template selection
     const handleTemplateSelect = useCallback((template: Template) => {
@@ -518,20 +915,76 @@ function LeadCardComponent({
                     </SheetHeader>
 
                     <div className="py-6">
-                        {/* Tone Selection */}
+                        {/* Enhanced Tone Selection v4 */}
                         <div className="mb-6">
-                            <label className="block mb-2 text-xs font-normal uppercase font-body">
-                                Select Tone
+                            <label className="block mb-2 text-xs font-normal uppercase font-body text-muted-foreground">
+                                Communication Tone
                             </label>
                             <Select value={selectedTone} onValueChange={(value: ToneType) => setSelectedTone(value)}>
-                                <SelectTrigger className="text-xs font-body">
-                                    <SelectValue placeholder="Choose tone" />
+                                <SelectTrigger className="h-10 text-xs font-body border-border/50 bg-background/50 hover:bg-background focus:ring-1 focus:ring-primary/20 focus:border-primary/30">
+                                    <SelectValue placeholder="Choose your communication style" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="professional">Professional</SelectItem>
-                                    <SelectItem value="friendly">Friendly</SelectItem>
-                                    <SelectItem value="urgent">Urgent</SelectItem>
-                                    <SelectItem value="casual">Casual</SelectItem>
+                                <SelectContent className="max-h-64 border-border/50 bg-background/95 backdrop-blur-sm">
+                                    <SelectItem value="professional" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Professional</span>
+                                            <span className="text-[10px] text-muted-foreground">Formal, business-appropriate tone</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="friendly" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Friendly</span>
+                                            <span className="text-[10px] text-muted-foreground">Warm and approachable</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="consultative" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Consultative</span>
+                                            <span className="text-[10px] text-muted-foreground">Advisory and solution-focused</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="empathetic" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Empathetic</span>
+                                            <span className="text-[10px] text-muted-foreground">Understanding and supportive</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="collaborative" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Collaborative</span>
+                                            <span className="text-[10px] text-muted-foreground">Partnership-oriented approach</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="strategic" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Strategic</span>
+                                            <span className="text-[10px] text-muted-foreground">Analytical and long-term focused</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="urgent" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Urgent</span>
+                                            <span className="text-[10px] text-muted-foreground">Direct and time-sensitive</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="assertive" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Assertive</span>
+                                            <span className="text-[10px] text-muted-foreground">Confident and decisive</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="warm" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Warm</span>
+                                            <span className="text-[10px] text-muted-foreground">Personal and caring</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="casual" className="py-3 text-xs cursor-pointer font-body">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="font-medium">Casual</span>
+                                            <span className="text-[10px] text-muted-foreground">Relaxed and informal</span>
+                                        </div>
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -558,15 +1011,26 @@ function LeadCardComponent({
                         {!isPreviewMode ? (
                             /* Template Selection */
                             <div className="space-y-4">
-                                                                <h3 className="text-sm font-medium uppercase font-body">
-                                    {isGeneratingTemplates ? 'Generating AI Templates...' : activeSheet === 'call' ? 'Choose Call Script' : 'Choose Template'}
-                                </h3>
+                                                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-medium uppercase font-body">
+                                        {isGeneratingTemplates ? 'Generating Templates...' : activeSheet === 'call' ? 'Choose Call Script' : 'Choose Template'}
+                                    </h3>
+                                    <Button
+                                        onClick={() => generateTemplates(selectedTone, activeSheet!)}
+                                        variant="ghost"
+                                        size="sm"
+                                        disabled={isGeneratingTemplates}
+                                        className="text-[10px] font-body h-6 px-2"
+                                    >
+                                        🔄 Regenerate
+                                    </Button>
+                                </div>
 
                                 {isGeneratingTemplates ? (
                                     <div className="p-4 text-center border rounded-lg border-border bg-background/50">
                                         <div className="w-6 h-6 mx-auto mb-2 border-2 rounded-full animate-spin border-primary border-t-transparent"></div>
                                         <p className="text-[10px] text-muted-foreground font-body">
-                                            AI is generating personalized templates based on your selected tone...
+                                            Generating personalized templates based on your selected tone...
                                         </p>
                                     </div>
                                 ) : (
@@ -599,14 +1063,25 @@ function LeadCardComponent({
                                     <h3 className="text-sm font-medium uppercase font-body">
                                         Preview & Edit
                                     </h3>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setIsPreviewMode(false)}
-                                        className="text-sm font-body"
-                                    >
-                                        ← Back to {activeSheet === 'call' ? 'Scripts' : 'Templates'}
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            onClick={() => generateTemplates(selectedTone, activeSheet!)}
+                                            variant="ghost"
+                                            size="sm"
+                                            disabled={isGeneratingTemplates}
+                                            className="text-[10px] font-body h-6 px-2"
+                                        >
+                                            🔄 Regenerate
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsPreviewMode(false)}
+                                            className="text-sm font-body"
+                                        >
+                                            ← Back to {activeSheet === 'call' ? 'Scripts' : 'Templates'}
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-3">
@@ -629,13 +1104,13 @@ function LeadCardComponent({
                                         <Textarea
                                             value={customMessage}
                                             onChange={(e) => handleMessageChange(e.target.value)}
-                                            rows={activeSheet === 'email' ? 8 : activeSheet === 'call' ? 6 : 4}
-                                            className="text-sm font-body"
+                                            rows={activeSheet === 'email' ? 16 : activeSheet === 'call' ? 10 : 6}
+                                            className="text-sm font-body min-h-[200px] resize-y"
                                             placeholder={
                                                 activeSheet === 'call'
                                                     ? 'Review and customize your call script...'
                                                     : activeSheet === 'email'
-                                                    ? 'Edit your email content here...'
+                                                    ? 'Edit your complete email content here...'
                                                     : 'Edit your SMS message here...'
                                             }
                                         />

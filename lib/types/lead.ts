@@ -89,6 +89,7 @@ export interface Lead {
         accessLevel?: string;
         userref?: string;
         photoURL?: string;
+        businesscardURL?: string;
     };
     branch?: {
         uid: number;

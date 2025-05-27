@@ -40,6 +40,8 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         },
     ],
 
+
+
     // ====================
     // Home Page Tour (/)
     // ====================
@@ -72,16 +74,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
                 align: 'start',
             },
         },
-        {
-            element: '#tour-step-report-toggle',
-            popover: {
-                title: 'REPORT MODE TOGGLE',
-                description:
-                    "📊 Click to switch between User and Organization reports. When on User mode, you'll see personal metrics and data. Organization mode shows company-wide analytics and team performance. The display shows the actual user or organization name for easy identification.",
-                side: 'bottom',
-                align: 'center',
-            },
-        },
+
         {
             element: '#tour-step-sign-out',
             popover: {

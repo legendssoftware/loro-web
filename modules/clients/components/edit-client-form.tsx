@@ -10,6 +10,8 @@ import {
     ClientRiskLevel,
     PaymentMethod,
     GeofenceType,
+    CommunicationType,
+    CommunicationFrequency,
 } from '@/lib/types/client-enums';
 import { ClientStatus } from '@/hooks/use-clients-query';
 import { useAuthStore } from '@/store/auth-store';
@@ -52,6 +54,8 @@ import {
     X,
     FileText,
     Plus,
+    Clock,
+    ChevronDown,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { clientFormSchema } from './client-form';
@@ -226,6 +230,22 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
             enableGeofence: clientData?.enableGeofence || false,
             latitude: clientData?.latitude || undefined,
             longitude: clientData?.longitude || undefined,
+                        // Communication schedules - extract from client data if available
+            communicationSchedules: clientData?.communicationSchedules && clientData.communicationSchedules.length > 0 
+                ? clientData.communicationSchedules.map(schedule => ({
+                    uid: schedule.uid,
+                    communicationType: schedule.communicationType as CommunicationType,
+                    frequency: schedule.frequency as CommunicationFrequency,
+                    customFrequencyDays: schedule.customFrequencyDays,
+                    preferredTime: schedule.preferredTime,
+                    preferredDays: schedule.preferredDays,
+                    nextScheduledDate: schedule.nextScheduledDate ? new Date(schedule.nextScheduledDate) : undefined,
+                    isActive: schedule.isActive ?? true,
+                    notes: schedule.notes,
+                    assignedToUserId: schedule.assignedTo?.uid,
+                    metadata: schedule.metadata,
+                }))
+                : [{ isActive: true }], // Default with one empty object with required isActive field
         };
     };
 
@@ -1894,6 +1914,195 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     placeholder="8"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Communication Preferences */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Clock className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Communication Preferences
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="primaryCommunicationType"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Primary Communication Type
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.communicationType"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace('_', ' ')
+                                                            : 'SELECT COMMUNICATION TYPE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    <SelectItem value={CommunicationType.PHONE_CALL}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Phone Call</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationType.EMAIL}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Email</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationType.IN_PERSON_VISIT}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">In-Person Visit</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationType.VIDEO_CALL}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Video Call</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationType.WHATSAPP}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">WhatsApp</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationType.SMS}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">SMS</span>
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Preferred method for regular communications
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="communicationFrequency"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Communication Frequency
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.frequency"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value
+                                                            ? field.value.replace('_', ' ')
+                                                            : 'SELECT FREQUENCY'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown
+                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    <SelectItem value={CommunicationFrequency.DAILY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Daily</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.WEEKLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Weekly</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.BIWEEKLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Bi-weekly</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.MONTHLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Monthly</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.QUARTERLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Quarterly</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.SEMIANNUALLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Semi-annually</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.ANNUALLY}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Annually</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.CUSTOM}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">Custom</span>
+                                                    </SelectItem>
+                                                    <SelectItem value={CommunicationFrequency.NONE}>
+                                                        <span className="text-[10px] font-thin font-body uppercase">None</span>
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    How often to contact this client
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="preferredTime"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Preferred Contact Time
+                                </Label>
+                                <Input
+                                    id="preferredTime"
+                                    type="time"
+                                    {...register('communicationSchedules.0.preferredTime')}
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Best time to contact this client
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="communicationNotes"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Communication Notes
+                                </Label>
+                                <Textarea
+                                    id="communicationNotes"
+                                    {...register('communicationSchedules.0.notes')}
+                                    placeholder="Special communication preferences or notes..."
+                                    rows={3}
+                                    className="font-light resize-none bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Any special notes about communicating with this client
+                                </p>
                             </div>
                         </div>
                     </CardContent>

@@ -35,7 +35,8 @@ export function TopNav() {
     const pathname = usePathname();
     const { signOut, profileData, accessToken, isAuthenticated } =
         useAuthStore();
-    const { isDrawerOpen, setDrawerOpen, reportMode, setReportMode } = useAppStore();
+    const { isDrawerOpen, setDrawerOpen, reportMode, setReportMode } =
+        useAppStore();
     const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
     const { startTour } = useInteractiveTour();
 
@@ -133,7 +134,7 @@ export function TopNav() {
                 duration: 2000,
                 position: 'bottom-center',
                 icon: newMode === 'organization' ? '🏢' : '👤',
-            }
+            },
         );
     };
 
@@ -237,30 +238,13 @@ export function TopNav() {
                             id="tour-step-report-toggle"
                         >
                             {isClient ? (
-                                <span className="text-xs font-thin uppercase text-primary font-body">
+                                <span className="px-2 py-1 text-xs font-thin uppercase rounded-md text-primary font-body bg-primary/10">
                                     Client Portal
                                 </span>
                             ) : (
-                                <div
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-card/50 hover:bg-card cursor-pointer transition-colors"
-                                    onClick={() => handleReportModeToggle(reportMode !== 'organization')}
-                                >
-                                    {reportMode === 'organization' ? (
-                                        <>
-                                            <Users className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-normal font-body text-foreground">
-                                                {getOrganizationDisplayName()}
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <User className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-normal font-body text-foreground">
-                                                {getUserDisplayName()}
-                                            </span>
-                                        </>
-                                    )}
-                                </div>
+                                <span className="text-xs font-normal uppercase font-body text-foreground">
+                                    {profileData?.branch?.name}
+                                </span>
                             )}
                         </div>
                     </div>
@@ -356,7 +340,7 @@ export function TopNav() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <div >
+                        <div>
                             <ThemeToggler />
                         </div>
                         <div className="relative">

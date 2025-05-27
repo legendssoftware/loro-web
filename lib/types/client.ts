@@ -7,6 +7,28 @@ export interface ClientAddress {
     postalCode: string;
 }
 
+export interface ClientCommunicationSchedule {
+    uid: number;
+    communicationType: string;
+    frequency: string;
+    customFrequencyDays?: number;
+    preferredTime?: string; // Format: "HH:MM"
+    preferredDays?: number[]; // Array of day numbers (0=Sunday, 1=Monday, etc.)
+    nextScheduledDate?: Date;
+    lastCompletedDate?: Date;
+    isActive: boolean;
+    notes?: string;
+    metadata?: Record<string, any>;
+    createdAt: Date;
+    updatedAt: Date;
+    isDeleted?: boolean;
+    assignedTo?: {
+        uid: number;
+        name?: string;
+        email?: string;
+    };
+}
+
 export interface Client {
     uid: number;
     name: string;
@@ -65,4 +87,5 @@ export interface Client {
     enableGeofence?: boolean;
     latitude?: number;
     longitude?: number;
+    communicationSchedules?: ClientCommunicationSchedule[];
 }

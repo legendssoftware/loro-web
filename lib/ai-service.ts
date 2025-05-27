@@ -6,7 +6,15 @@ export interface TargetData {
     targetValue: number;
     progress: number;
     period: string;
-    category: string;
+    category: 'sales' | 'work_hours' | 'clients' | 'leads' | 'check_ins' | 'calls_made';
+    startDate?: string;
+    endDate?: string;
+    unit?: string; // e.g., 'ZAR', 'hours', 'count'
+    subTargets?: {
+        daily?: number;
+        weekly?: number;
+        monthly?: number;
+    };
 }
 
 export interface AttendanceData {
@@ -44,8 +52,9 @@ export interface InsightRequest {
     profileData?: ProfileData;
     leadsData?: LeadData[];
     timeFrame: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-    type: 'performance' | 'goals' | 'recommendations' | 'lead_analysis' | 'sales_strategy';
+    type: 'comprehensive_performance' | 'sales_strategy' | 'work_efficiency' | 'client_management' | 'lead_analysis';
     dataHash?: string; // For change detection
+    currentDate?: string; // For feasibility analysis
 }
 
 export interface SalesInsightRequest {
@@ -59,12 +68,11 @@ export interface SalesInsightRequest {
 export interface EmailTemplateRequest {
     recipientName: string;
     recipientEmail: string;
-    insights: string[];
-    targetMetrics: TargetData[];
     leadData?: LeadData;
     templateType: 'follow_up' | 'check_in' | 'proposal' | 'nurture' | 'closing';
     tone: 'professional' | 'encouraging' | 'motivational' | 'urgent' | 'friendly';
     customMessage?: string;
+    contextNotes?: string; // For additional context without including LDA content
 }
 
 export interface MessageTemplateRequest {
@@ -132,9 +140,14 @@ export class AIService {
     }
 
     /**
-     * Generate enhanced performance insights with sales focus
+     * Generate comprehensive performance insights covering all target categories
      */
-    async generateTargetInsights(request: InsightRequest): Promise<string[]> {
+    async generateTargetInsights(request: InsightRequest): Promise<{
+        insights: string[];
+        feasibilityAnalysis: string[];
+        actionableRecommendations: string[];
+        urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
+    }> {
         try {
             // Generate cache key and data hash
             const dataHash = this.generateDataHash({
@@ -142,21 +155,35 @@ export class AIService {
                 attendanceData: request.attendanceData,
                 leadsData: request.leadsData,
                 timeFrame: request.timeFrame,
+                currentDate: request.currentDate,
             });
             const cacheKey = `insights_${request.type}_${request.timeFrame}`;
 
             // Check cache first
             const cached = this.getCachedInsights(cacheKey);
             if (cached && this.cache.get(cacheKey)?.dataHash === dataHash) {
-                return cached;
+                return {
+                    insights: cached,
+                    feasibilityAnalysis: [],
+                    actionableRecommendations: [],
+                    urgencyLevel: 'medium'
+                };
             }
 
-            const response = await fetch('/api/ai/insights', {
+            // Enhance request with comprehensive target analysis
+            const enhancedRequest = {
+                ...request,
+                targetCategories: this.categorizeTargets(request.targetData),
+                feasibilityMetrics: this.calculateFeasibilityMetrics(request.targetData, request.currentDate),
+                dataHash,
+            };
+
+            const response = await fetch('/api/ai/comprehensive-insights', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ...request, dataHash }),
+                body: JSON.stringify(enhancedRequest),
             });
 
             if (!response.ok) {
@@ -164,19 +191,101 @@ export class AIService {
             }
 
             const data = await response.json();
-            const insights = data.insights || [];
+            const result = {
+                insights: data.insights || [],
+                feasibilityAnalysis: data.feasibilityAnalysis || [],
+                actionableRecommendations: data.actionableRecommendations || [],
+                urgencyLevel: data.urgencyLevel || 'medium'
+            };
 
-            // Cache the results
-            this.setCachedInsights(cacheKey, dataHash, insights);
+            // Cache the results (store insights only for compatibility)
+            this.setCachedInsights(cacheKey, dataHash, result.insights);
 
-            return insights;
+            return result;
         } catch (error) {
-            console.error('Error generating insights:', error);
-            return [
-                'Unable to generate insights at this time. Please try again later.',
-                'For immediate assistance, contact your manager or sales team.'
-            ];
+            console.error('Error generating comprehensive insights:', error);
+            return {
+                insights: [
+                    'Unable to generate insights at this time. Please try again later.',
+                    'Focus on your highest priority targets for today.',
+                    'For immediate assistance, contact your manager or sales team.'
+                ],
+                feasibilityAnalysis: [
+                    'Unable to assess feasibility at this time.',
+                    'Review your targets manually and adjust timeline if needed.'
+                ],
+                actionableRecommendations: [
+                    'Start with your most achievable targets first.',
+                    'Break down large targets into smaller daily goals.',
+                    'Track your progress regularly throughout the day.'
+                ],
+                urgencyLevel: 'medium'
+            };
         }
+    }
+
+    /**
+     * Categorize targets by type for comprehensive analysis
+     */
+    private categorizeTargets(targetData: TargetData[]): Record<string, TargetData[]> {
+        const categories: Record<string, TargetData[]> = {
+            sales: [],
+            work_hours: [],
+            clients: [],
+            leads: [],
+            check_ins: [],
+            calls_made: []
+        };
+
+        targetData.forEach(target => {
+            if (categories[target.category]) {
+                categories[target.category].push(target);
+            }
+        });
+
+        return categories;
+    }
+
+    /**
+     * Calculate feasibility metrics based on targets and timeline
+     */
+    private calculateFeasibilityMetrics(targetData: TargetData[], currentDate?: string): Record<string, any> {
+        const metrics: Record<string, any> = {};
+        const now = currentDate ? new Date(currentDate) : new Date();
+
+        targetData.forEach(target => {
+            const targetEndDate = target.endDate ? new Date(target.endDate) : null;
+            const timeRemaining = targetEndDate ? (targetEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) : null;
+            const remainingValue = target.targetValue - target.currentValue;
+            const dailyRequiredRate = timeRemaining ? remainingValue / timeRemaining : null;
+
+            metrics[target.category] = {
+                ...metrics[target.category],
+                timeRemaining,
+                remainingValue,
+                dailyRequiredRate,
+                feasibilityScore: this.calculateFeasibilityScore(target, timeRemaining, dailyRequiredRate),
+            };
+        });
+
+        return metrics;
+    }
+
+    /**
+     * Calculate feasibility score (0-100)
+     */
+    private calculateFeasibilityScore(target: TargetData, timeRemaining: number | null, dailyRequiredRate: number | null): number {
+        if (!timeRemaining || !dailyRequiredRate || timeRemaining <= 0) return 0;
+
+        const progressRate = target.currentValue / target.targetValue;
+        const timeProgress = timeRemaining > 0 ? 1 - (timeRemaining / 30) : 0; // Assuming 30-day cycle
+        
+        // High feasibility if on track or ahead
+        if (progressRate >= timeProgress) return Math.min(100, 80 + (progressRate - timeProgress) * 100);
+        
+        // Lower feasibility if behind
+        const gap = timeProgress - progressRate;
+        return Math.max(10, 80 - (gap * 200));
     }
 
     /**
@@ -221,6 +330,7 @@ export class AIService {
 
     /**
      * Generate personalized email templates for lead communication
+     * Uses lead data as context without including previous conversation content
      */
     async generateEmailTemplate(request: EmailTemplateRequest): Promise<{
         subject: string;
@@ -228,12 +338,24 @@ export class AIService {
         followUpReminder?: string;
     }> {
         try {
+            // Prepare request without LDA content - use lead data for context only
+            const cleanRequest = {
+                ...request,
+                // Remove any previous conversation data, use lead info for tone and context
+                leadContext: request.leadData ? {
+                    status: request.leadData.status,
+                    source: request.leadData.source,
+                    value: request.leadData.value,
+                    lastContact: request.leadData.lastContact,
+                } : undefined,
+            };
+
             const response = await fetch('/api/ai/email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request),
+                body: JSON.stringify(cleanRequest),
             });
 
             if (!response.ok) {
@@ -264,18 +386,30 @@ Your Sales Team`,
 
     /**
      * Generate SMS/WhatsApp message templates
+     * Uses lead data for context without including previous conversation content
      */
     async generateMessageTemplate(request: MessageTemplateRequest): Promise<{
         message: string;
         fallbackMessage?: string;
     }> {
         try {
+            // Prepare request without LDA content - use lead data for context only
+            const cleanRequest = {
+                ...request,
+                // Remove any previous conversation data, use lead info for tone and context
+                leadContext: request.leadData ? {
+                    status: request.leadData.status,
+                    source: request.leadData.source,
+                    value: request.leadData.value,
+                } : undefined,
+            };
+
             const response = await fetch('/api/ai/message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request),
+                body: JSON.stringify(cleanRequest),
             });
 
             if (!response.ok) {
@@ -338,16 +472,27 @@ Your Sales Team`,
     }
 
     /**
-     * Generate quick performance summary with sales context
+     * Generate comprehensive performance summary covering all target categories
      */
-    async generateQuickSummary(targetData: TargetData[]): Promise<string> {
+    async generateQuickSummary(targetData: TargetData[]): Promise<{
+        summary: string;
+        categoryBreakdown: Record<string, string>;
+        nextActions: string[];
+    }> {
         try {
-            const response = await fetch('/api/ai/summary', {
+            const categorizedTargets = this.categorizeTargets(targetData);
+            const feasibilityMetrics = this.calculateFeasibilityMetrics(targetData);
+
+            const response = await fetch('/api/ai/comprehensive-summary', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ targetData }),
+                body: JSON.stringify({ 
+                    targetData,
+                    categorizedTargets,
+                    feasibilityMetrics
+                }),
             });
 
             if (!response.ok) {
@@ -355,10 +500,29 @@ Your Sales Team`,
             }
 
             const data = await response.json();
-            return data.summary || 'Keep up the great work on your targets!';
+            return {
+                summary: data.summary || 'Keep up the great work on your targets!',
+                categoryBreakdown: data.categoryBreakdown || {},
+                nextActions: data.nextActions || ['Continue focusing on your priorities', 'Track progress regularly']
+            };
         } catch (error) {
-            console.error('Error generating summary:', error);
-            return 'Keep up the great work on your targets!';
+            console.error('Error generating comprehensive summary:', error);
+            return {
+                summary: 'Keep up the great work on your targets!',
+                categoryBreakdown: {
+                    sales: 'Focus on converting your current leads',
+                    work_hours: 'Maintain a healthy work-life balance',
+                    clients: 'Keep building strong client relationships',
+                    leads: 'Continue prospecting and qualifying leads',
+                    check_ins: 'Stay connected with your contacts',
+                    calls_made: 'Maintain consistent communication'
+                },
+                nextActions: [
+                    'Start with your highest priority targets',
+                    'Break down large goals into smaller tasks',
+                    'Track your progress throughout the day'
+                ]
+            };
         }
     }
 
@@ -384,8 +548,12 @@ Your Sales Team`,
 export const aiService = new AIService();
 
 // Export utility functions with improved TypeScript support
-export const generateTargetInsights = (request: InsightRequest): Promise<string[]> =>
-    aiService.generateTargetInsights(request);
+export const generateTargetInsights = (request: InsightRequest): Promise<{
+    insights: string[];
+    feasibilityAnalysis: string[];
+    actionableRecommendations: string[];
+    urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
+}> => aiService.generateTargetInsights(request);
 
 export const generateSalesInsights = (request: SalesInsightRequest) =>
     aiService.generateSalesInsights(request);
@@ -399,5 +567,8 @@ export const generateMessageTemplate = (request: MessageTemplateRequest) =>
 export const generateSalesActions = (request: SalesActionRequest) =>
     aiService.generateSalesActions(request);
 
-export const generateQuickSummary = (targetData: TargetData[]): Promise<string> =>
-    aiService.generateQuickSummary(targetData);
+export const generateQuickSummary = (targetData: TargetData[]): Promise<{
+    summary: string;
+    categoryBreakdown: Record<string, string>;
+    nextActions: string[];
+}> => aiService.generateQuickSummary(targetData);

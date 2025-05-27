@@ -17,6 +17,7 @@ import {
     Warehouse,
     Settings,
     Building,
+    LibraryBig,
 } from 'lucide-react';
 import {
     Sheet,
@@ -39,10 +40,18 @@ interface SideDrawerProps {
 // Navigation items with role-based access control information
 const navigationItems = [
     {
-        title: 'Dashboard',
+        title: 'Live',
         icon: <ChartSpline size={18} strokeWidth={1.5} />,
         href: '/',
         description: 'Overview dashboard and statistics',
+        // Everyone can access the dashboard home
+        feature: 'dashboard',
+    },
+    {
+        title: 'My Reports',
+        icon: <LibraryBig size={18} strokeWidth={1.5} />,
+        href: '/my-reports',
+        description: 'View your reports',
         // Everyone can access the dashboard home
         feature: 'dashboard',
     },

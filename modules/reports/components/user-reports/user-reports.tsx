@@ -352,7 +352,7 @@ export const UserReports: React.FC<UserReportsProps> = ({
     }
 
     return (
-        <Card className={cn('w-full', className)}>
+        <Card className={cn('w-full p-0 border-0', className)}>
             <CardHeader className="pb-6">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -416,18 +416,18 @@ export const UserReports: React.FC<UserReportsProps> = ({
                         
                         {isGeneratingInsights ? (
                             <div className="space-y-2">
-                                <div className="h-4 bg-muted/50 rounded animate-pulse"></div>
-                                <div className="h-4 bg-muted/50 rounded animate-pulse w-3/4"></div>
-                                <div className="h-4 bg-muted/50 rounded animate-pulse w-1/2"></div>
+                                <div className="h-4 rounded bg-muted/50 animate-pulse"></div>
+                                <div className="w-3/4 h-4 rounded bg-muted/50 animate-pulse"></div>
+                                <div className="w-1/2 h-4 rounded bg-muted/50 animate-pulse"></div>
                             </div>
                         ) : (
                             <div className="space-y-2">
                                 {aiInsights.slice(0, 4).map((insight, index) => (
                                     <div
                                         key={index}
-                                        className="flex items-start gap-2 p-2 rounded-md bg-background/50 border border-border/20"
+                                        className="flex items-start gap-2 p-2 border rounded-md bg-background/50 border-border/20"
                                     >
-                                        <div className="text-xs font-body text-foreground/90 leading-relaxed">
+                                        <div className="text-xs leading-relaxed font-body text-foreground/90">
                                             {insight}
                                         </div>
                                     </div>

@@ -157,7 +157,10 @@ export default function ClientsPage() {
     const handleSubmitCreateClient = useCallback(
         async (clientData: ClientFormValues) => {
             try {
-                await createClient(clientData);
+                // Remove communicationSchedules from client data as they'll be created separately
+                const { communicationSchedules, ...clientDataWithoutSchedules } = clientData;
+                
+                await createClient(clientDataWithoutSchedules);
 
                 // Toast messages are now handled in the createClient function in the useClientsQuery hook
 

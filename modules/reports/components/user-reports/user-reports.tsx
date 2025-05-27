@@ -115,12 +115,13 @@ export const UserReports: React.FC<UserReportsProps> = ({
     const isLoading = profileLoading;
 
     // Error state
-    const hasError = profileError || targetsError || attendanceError || rewardsError;
+    const hasError =
+        profileError || targetsError || attendanceError || rewardsError;
 
     // Enhanced AI v4 Insights Generation - Context-aware user performance analysis
     const generateAiInsights = React.useCallback(async () => {
         if (!profileData) return;
-        
+
         setIsGeneratingInsights(true);
 
         // Enhanced context analysis for user insights
@@ -130,33 +131,43 @@ export const UserReports: React.FC<UserReportsProps> = ({
             surname: profileData.surname,
             role: (profileData as any)?.role || 'User',
             organization: (profileData as any)?.organization?.name,
-            
+
             // Attendance insights
-            attendanceMetrics: attendanceData ? {
-                totalHours: (attendanceData as any)?.totalHours || 0,
-                avgDailyHours: (attendanceData as any)?.avgDailyHours || 0,
-                attendanceRate: (attendanceData as any)?.attendanceRate || 0,
-                lateArrivals: (attendanceData as any)?.lateArrivals || 0,
-                earlyDepartures: (attendanceData as any)?.earlyDepartures || 0,
-                absences: (attendanceData as any)?.absences || 0,
-            } : null,
-            
+            attendanceMetrics: attendanceData
+                ? {
+                      totalHours: (attendanceData as any)?.totalHours || 0,
+                      avgDailyHours:
+                          (attendanceData as any)?.avgDailyHours || 0,
+                      attendanceRate:
+                          (attendanceData as any)?.attendanceRate || 0,
+                      lateArrivals: (attendanceData as any)?.lateArrivals || 0,
+                      earlyDepartures:
+                          (attendanceData as any)?.earlyDepartures || 0,
+                      absences: (attendanceData as any)?.absences || 0,
+                  }
+                : null,
+
             // Target performance
-            targetMetrics: targetsData ? {
-                completionRate: (targetsData as any)?.completionRate || 0,
-                activeTargets: (targetsData as any)?.activeTargets || 0,
-                overdueTasks: (targetsData as any)?.overdueTasks || 0,
-                avgTaskTime: (targetsData as any)?.avgTaskTime || 0,
-            } : null,
-            
+            targetMetrics: targetsData
+                ? {
+                      completionRate: (targetsData as any)?.completionRate || 0,
+                      activeTargets: (targetsData as any)?.activeTargets || 0,
+                      overdueTasks: (targetsData as any)?.overdueTasks || 0,
+                      avgTaskTime: (targetsData as any)?.avgTaskTime || 0,
+                  }
+                : null,
+
             // Rewards and engagement
-            rewardMetrics: rewardsData ? {
-                totalXP: (rewardsData as any)?.totalXP || 0,
-                level: (rewardsData as any)?.level || 1,
-                achievements: (rewardsData as any)?.achievements || 0,
-                recentActivities: (rewardsData as any)?.recentActivities || [],
-            } : null,
-            
+            rewardMetrics: rewardsData
+                ? {
+                      totalXP: (rewardsData as any)?.totalXP || 0,
+                      level: (rewardsData as any)?.level || 1,
+                      achievements: (rewardsData as any)?.achievements || 0,
+                      recentActivities:
+                          (rewardsData as any)?.recentActivities || [],
+                  }
+                : null,
+
             // Time-aware context
             currentDate: new Date(),
             dayOfWeek: new Date().getDay(),
@@ -166,99 +177,144 @@ export const UserReports: React.FC<UserReportsProps> = ({
         };
 
         // Mock AI insights generation with sophisticated analysis
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const generateContextualInsights = () => {
             const insights: string[] = [];
-            
+
             // Performance trend analysis
             if (userContext.attendanceMetrics) {
-                const { attendanceRate, avgDailyHours, lateArrivals } = userContext.attendanceMetrics;
-                
+                const { attendanceRate, avgDailyHours, lateArrivals } =
+                    userContext.attendanceMetrics;
+
                 if (attendanceRate >= 95) {
-                    insights.push(`🎯 Excellent attendance record at ${attendanceRate}% - demonstrates strong commitment and reliability.`);
+                    insights.push(
+                        `🎯 Excellent attendance record at ${attendanceRate}% - demonstrates strong commitment and reliability.`,
+                    );
                 } else if (attendanceRate >= 85) {
-                    insights.push(`📈 Good attendance at ${attendanceRate}%. Consider strategies to reach the 95% excellence threshold.`);
+                    insights.push(
+                        `📈 Good attendance at ${attendanceRate}%. Consider strategies to reach the 95% excellence threshold.`,
+                    );
                 } else {
-                    insights.push(`⚠️ Attendance needs attention at ${attendanceRate}%. This may impact team productivity and personal growth.`);
+                    insights.push(
+                        `⚠️ Attendance needs attention at ${attendanceRate}%. This may impact team productivity and personal growth.`,
+                    );
                 }
-                
+
                 if (avgDailyHours > 8.5) {
-                    insights.push(`🔥 High engagement with ${avgDailyHours.toFixed(1)} avg daily hours. Monitor for burnout and ensure work-life balance.`);
+                    insights.push(
+                        `🔥 High engagement with ${avgDailyHours.toFixed(1)} avg daily hours. Monitor for burnout and ensure work-life balance.`,
+                    );
                 } else if (avgDailyHours < 7.5) {
-                    insights.push(`💡 Opportunity to increase productivity - currently averaging ${avgDailyHours.toFixed(1)} hours daily.`);
+                    insights.push(
+                        `💡 Opportunity to increase productivity - currently averaging ${avgDailyHours.toFixed(1)} hours daily.`,
+                    );
                 }
-                
+
                 if (lateArrivals > 5) {
-                    insights.push(`⏰ ${lateArrivals} late arrivals detected. Consider time management strategies or schedule adjustments.`);
+                    insights.push(
+                        `⏰ ${lateArrivals} late arrivals detected. Consider time management strategies or schedule adjustments.`,
+                    );
                 }
             }
-            
+
             // Target achievement analysis
             if (userContext.targetMetrics) {
-                const { completionRate, overdueTasks, activeTargets } = userContext.targetMetrics;
-                
+                const { completionRate, overdueTasks, activeTargets } =
+                    userContext.targetMetrics;
+
                 if (completionRate >= 90) {
-                    insights.push(`🏆 Outstanding target completion at ${completionRate}% - consistently exceeding expectations.`);
+                    insights.push(
+                        `🏆 Outstanding target completion at ${completionRate}% - consistently exceeding expectations.`,
+                    );
                 } else if (completionRate >= 75) {
-                    insights.push(`📊 Solid performance at ${completionRate}% completion. Focus on the final 25% for excellence.`);
+                    insights.push(
+                        `📊 Solid performance at ${completionRate}% completion. Focus on the final 25% for excellence.`,
+                    );
                 } else {
-                    insights.push(`🎯 Target completion at ${completionRate}% needs improvement. Consider breaking down large tasks.`);
+                    insights.push(
+                        `🎯 Target completion at ${completionRate}% needs improvement. Consider breaking down large tasks.`,
+                    );
                 }
-                
+
                 if (overdueTasks > 0) {
-                    insights.push(`📋 ${overdueTasks} overdue tasks require immediate attention to prevent project delays.`);
+                    insights.push(
+                        `📋 ${overdueTasks} overdue tasks require immediate attention to prevent project delays.`,
+                    );
                 }
-                
+
                 if (activeTargets > 10) {
-                    insights.push(`🔄 Managing ${activeTargets} active targets - consider prioritization strategies to maintain quality.`);
+                    insights.push(
+                        `🔄 Managing ${activeTargets} active targets - consider prioritization strategies to maintain quality.`,
+                    );
                 }
             }
-            
+
             // Engagement and growth analysis
             if (userContext.rewardMetrics) {
-                const { level, totalXP, achievements } = userContext.rewardMetrics;
-                
+                const { level, totalXP, achievements } =
+                    userContext.rewardMetrics;
+
                 if (level >= 10) {
-                    insights.push(`🌟 Advanced level ${level} achiever with ${totalXP} XP - a valuable team contributor and potential mentor.`);
+                    insights.push(
+                        `🌟 Advanced level ${level} achiever with ${totalXP} XP - a valuable team contributor and potential mentor.`,
+                    );
                 } else if (level >= 5) {
-                    insights.push(`⭐ Level ${level} performance shows steady growth. Continue building expertise for leadership opportunities.`);
+                    insights.push(
+                        `⭐ Level ${level} performance shows steady growth. Continue building expertise for leadership opportunities.`,
+                    );
                 } else {
-                    insights.push(`🌱 Early career stage at level ${level}. Focus on skill development and consistent performance.`);
+                    insights.push(
+                        `🌱 Early career stage at level ${level}. Focus on skill development and consistent performance.`,
+                    );
                 }
-                
+
                 if (achievements >= 5) {
-                    insights.push(`🏅 ${achievements} achievements demonstrate diverse skills and commitment to excellence.`);
+                    insights.push(
+                        `🏅 ${achievements} achievements demonstrate diverse skills and commitment to excellence.`,
+                    );
                 }
             }
-            
+
             // Time-based insights
             if (userContext.isWeekend) {
-                insights.push(`📅 Weekend analysis shows dedication to continuous improvement and professional development.`);
+                insights.push(
+                    `📅 Weekend analysis shows dedication to continuous improvement and professional development.`,
+                );
             }
-            
+
             const quarterlyFocus = [
                 'Q1: Focus on goal setting and establishing strong foundations for the year.',
                 'Q2: Mid-year momentum - evaluate progress and adjust strategies for optimal results.',
                 'Q3: Peak performance period - leverage summer energy for maximum productivity.',
-                'Q4: Year-end sprint - consolidate achievements and prepare for next year\'s growth.'
+                "Q4: Year-end sprint - consolidate achievements and prepare for next year's growth.",
             ];
-            insights.push(`🗓️ ${quarterlyFocus[userContext.currentQuarter - 1]}`);
-            
+            insights.push(
+                `🗓️ ${quarterlyFocus[userContext.currentQuarter - 1]}`,
+            );
+
             // Role-specific insights
             if (userContext.role === 'Manager' || userContext.role === 'Lead') {
-                insights.push(`👥 Leadership role requires balancing individual performance with team development and mentoring.`);
+                insights.push(
+                    `👥 Leadership role requires balancing individual performance with team development and mentoring.`,
+                );
             } else if (userContext.role === 'Senior') {
-                insights.push(`🎓 Senior position offers opportunities to guide junior team members and lead complex initiatives.`);
+                insights.push(
+                    `🎓 Senior position offers opportunities to guide junior team members and lead complex initiatives.`,
+                );
             } else {
-                insights.push(`🚀 Current role provides excellent foundation for skill development and career advancement.`);
+                insights.push(
+                    `🚀 Current role provides excellent foundation for skill development and career advancement.`,
+                );
             }
-            
+
             // Organization context
             if (userContext.organization) {
-                insights.push(`🏢 Performance within ${userContext.organization} context shows alignment with organizational values and goals.`);
+                insights.push(
+                    `🏢 Performance within ${userContext.organization} context shows alignment with organizational values and goals.`,
+                );
             }
-            
+
             return insights;
         };
 
@@ -272,21 +328,12 @@ export const UserReports: React.FC<UserReportsProps> = ({
         if (profileData && !isGeneratingInsights && aiInsights.length === 0) {
             generateAiInsights();
         }
-    }, [profileData, generateAiInsights, isGeneratingInsights, aiInsights.length]);
-
-    // Export to PDF functionality
-    const handleExportPdf = async () => {
-        try {
-            // Future implementation will handle PDF generation
-            console.log('Exporting user report to PDF...');
-            // This would generate a PDF report containing all the user's data
-            // For now, we'll show a placeholder message
-            alert('PDF export functionality will be implemented soon');
-        } catch (error) {
-            console.error('Error exporting PDF:', error);
-            alert('Failed to export PDF. Please try again.');
-        }
-    };
+    }, [
+        profileData,
+        generateAiInsights,
+        isGeneratingInsights,
+        aiInsights.length,
+    ]);
 
     if (isLoading) {
         return (
@@ -323,7 +370,12 @@ export const UserReports: React.FC<UserReportsProps> = ({
                             Error loading user data. Please try again.
                         </p>
                         <p className="text-xs text-center text-muted-foreground font-body">
-                            {String(profileError || targetsError || attendanceError || rewardsError)}
+                            {String(
+                                profileError ||
+                                    targetsError ||
+                                    attendanceError ||
+                                    rewardsError,
+                            )}
                         </p>
                     </div>
                 </CardContent>
@@ -359,34 +411,25 @@ export const UserReports: React.FC<UserReportsProps> = ({
                         <CardTitle className="text-xl font-normal uppercase font-body">
                             User Reports
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground font-body">
+                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">
                             {profileData.name} {profileData.surname}
                         </p>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Badge
                             variant="secondary"
-                            className="text-xs font-body"
+                            className="text-[10px] font-body uppercase font-normal"
                         >
                             {(profileData as any)?.role || 'User'}
                         </Badge>
                         {(profileData as any)?.organization?.name && (
                             <Badge
                                 variant="outline"
-                                className="text-xs font-body"
+                                className="text-[10px] font-normal uppercase font-body"
                             >
                                 {(profileData as any)?.organization?.name}
                             </Badge>
                         )}
-                        <Button
-                            onClick={handleExportPdf}
-                            variant="outline"
-                            size="sm"
-                            className="text-xs uppercase font-body"
-                        >
-                            <Download className="w-3 h-3 mr-1" strokeWidth={1.5} />
-                            Export PDF
-                        </Button>
                     </div>
                 </div>
             </CardHeader>
@@ -396,7 +439,10 @@ export const UserReports: React.FC<UserReportsProps> = ({
                 <div className="px-6 pb-6">
                     <div className="p-4 border rounded-lg border-border/50 bg-gradient-to-r from-primary/5 via-background to-primary/5">
                         <div className="flex items-center gap-2 mb-3">
-                            <Brain className="w-4 h-4 text-primary" strokeWidth={1.5} />
+                            <Brain
+                                className="w-4 h-4 text-primary"
+                                strokeWidth={1.5}
+                            />
                             <h3 className="text-sm font-medium uppercase font-body text-foreground">
                                 AI Performance Insights
                             </h3>
@@ -413,7 +459,7 @@ export const UserReports: React.FC<UserReportsProps> = ({
                                 Refresh
                             </Button>
                         </div>
-                        
+
                         {isGeneratingInsights ? (
                             <div className="space-y-2">
                                 <div className="h-4 rounded bg-muted/50 animate-pulse"></div>
@@ -422,16 +468,18 @@ export const UserReports: React.FC<UserReportsProps> = ({
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                {aiInsights.slice(0, 4).map((insight, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-start gap-2 p-2 border rounded-md bg-background/50 border-border/20"
-                                    >
-                                        <div className="text-xs leading-relaxed font-body text-foreground/90">
-                                            {insight}
+                                {aiInsights
+                                    .slice(0, 4)
+                                    .map((insight, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-start gap-2 p-2 border rounded-md bg-background/50 border-border/20"
+                                        >
+                                            <div className="text-xs leading-relaxed font-body text-foreground/90">
+                                                {insight}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
                                 {aiInsights.length > 4 && (
                                     <div className="pt-2">
                                         <Button
@@ -440,10 +488,14 @@ export const UserReports: React.FC<UserReportsProps> = ({
                                             className="text-[10px] font-body h-6 px-2 text-muted-foreground hover:text-foreground"
                                             onClick={() => {
                                                 // Could expand to show all insights in a modal
-                                                console.log('All insights:', aiInsights);
+                                                console.log(
+                                                    'All insights:',
+                                                    aiInsights,
+                                                );
                                             }}
                                         >
-                                            +{aiInsights.length - 4} more insights
+                                            +{aiInsights.length - 4} more
+                                            insights
                                         </Button>
                                     </div>
                                 )}

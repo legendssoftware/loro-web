@@ -21,7 +21,14 @@ import {
     Info
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
-import { generateTargetInsights, generateEmailTemplate, generateQuickSummary } from '@/lib/ai-service';
+import { 
+    generateTargetInsights, 
+    generateEmailTemplate, 
+    generateQuickSummary,
+    type TargetData,
+    type InsightRequest,
+    type EmailTemplateRequest
+} from '@/lib/ai-service';
 
 export const TargetsTab: React.FC<TabProps> = ({
     profileData,
@@ -56,9 +63,9 @@ export const TargetsTab: React.FC<TabProps> = ({
         return `${currency} ${amount.toLocaleString()}`;
     };
 
-        // Helper function to transform UserTarget to TargetData array
-    const transformUserTargetToTargetData = (userTarget: any) => {
-        const targetData = [];
+    // Helper function to transform UserTarget to TargetData array
+    const transformUserTargetToTargetData = (userTarget: any): TargetData[] => {
+        const targetData: TargetData[] = [];
 
         // Sales target
         if (userTarget.targetSalesAmount || userTarget.currentSalesAmount) {
@@ -68,7 +75,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                 progress: userTarget.targetSalesAmount ?
                     Math.min((userTarget.currentSalesAmount || 0) / userTarget.targetSalesAmount * 100, 100) : 0,
                 period: userTarget.targetPeriod || 'Monthly',
-                category: 'Sales'
+                category: 'sales' as const
             });
         }
 
@@ -80,7 +87,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                 progress: userTarget.targetHoursWorked ?
                     Math.min((userTarget.currentHoursWorked || 0) / userTarget.targetHoursWorked * 100, 100) : 0,
                 period: userTarget.targetPeriod || 'Monthly',
-                category: 'Work Hours'
+                category: 'work_hours' as const
             });
         }
 
@@ -92,7 +99,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                 progress: userTarget.targetNewLeads ?
                     Math.min((userTarget.currentNewLeads || 0) / userTarget.targetNewLeads * 100, 100) : 0,
                 period: userTarget.targetPeriod || 'Monthly',
-                category: 'New Leads'
+                category: 'leads' as const
             });
         }
 
@@ -104,7 +111,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                 progress: userTarget.targetNewClients ?
                     Math.min((userTarget.currentNewClients || 0) / userTarget.targetNewClients * 100, 100) : 0,
                 period: userTarget.targetPeriod || 'Monthly',
-                category: 'New Clients'
+                category: 'clients' as const
             });
         }
 
@@ -116,7 +123,19 @@ export const TargetsTab: React.FC<TabProps> = ({
                 progress: userTarget.targetCheckIns ?
                     Math.min((userTarget.currentCheckIns || 0) / userTarget.targetCheckIns * 100, 100) : 0,
                 period: userTarget.targetPeriod || 'Monthly',
-                category: 'Check-ins'
+                category: 'check_ins' as const
+            });
+        }
+
+        // Calls target
+        if (userTarget.targetCalls || userTarget.currentCalls) {
+            targetData.push({
+                currentValue: userTarget.currentCalls || 0,
+                targetValue: userTarget.targetCalls || 0,
+                progress: userTarget.targetCalls ?
+                    Math.min((userTarget.currentCalls || 0) / userTarget.targetCalls * 100, 100) : 0,
+                period: userTarget.targetPeriod || 'Monthly',
+                category: 'calls_made' as const
             });
         }
 
@@ -149,19 +168,48 @@ export const TargetsTab: React.FC<TabProps> = ({
                     targetData: transformedTargetData,
                     attendanceData: transformAttendanceData(attendanceData),
                     profileData,
-                    type: 'performance',
+                    type: 'comprehensive_performance',
                     timeFrame: 'monthly'
+                }).catch((error) => {
+                    console.error('Failed to generate target insights:', error);
+                    // Return fallback insights on API failure
+                    return {
+                        insights: [
+                            'Unable to generate AI insights at this time due to service unavailability.',
+                            'Consider reviewing your current target progress manually.',
+                            'Focus on your highest priority targets for optimal performance.',
+                            'Contact support if this issue persists.'
+                        ],
+                        feasibilityAnalysis: [],
+                        actionableRecommendations: [],
+                        urgencyLevel: 'medium' as const
+                    };
                 }),
-                generateQuickSummary(transformedTargetData)
+                generateQuickSummary(transformedTargetData).catch((error) => {
+                    console.error('Failed to generate quick summary:', error);
+                    return 'Continue working towards your targets! Your progress shows dedication.';
+                })
             ]);
 
-            setInsights(insightsResult);
-            setQuickSummary(summaryResult);
+            // Handle both old and new response formats
+            const insights = Array.isArray(insightsResult) ? insightsResult : (insightsResult.insights || []);
+            
+            setInsights(insights);
+            // Handle summary result which might be string or object
+            const summary = typeof summaryResult === 'string' ? summaryResult : summaryResult.summary;
+            setQuickSummary(summary);
             setInsightsGenerated(true);
         } catch (error) {
             console.error('Error generating insights:', error);
-            setInsights(['Unable to generate insights at this time. Please try again later.']);
+            // Provide helpful fallback insights
+            setInsights([
+                'Unable to generate AI insights at this time.',
+                'Your target progress shows commitment to your goals.',
+                'Continue focusing on your highest priority objectives.',
+                'For immediate assistance, contact your manager or team lead.'
+            ]);
             setQuickSummary('Keep working towards your targets!');
+            setInsightsGenerated(true); // Mark as generated to prevent loops
         } finally {
             setIsGeneratingInsights(false);
         }
@@ -178,10 +226,16 @@ export const TargetsTab: React.FC<TabProps> = ({
             const template = await generateEmailTemplate({
                 recipientName: `${profileData?.name || 'User'} ${profileData?.surname || ''}`.trim(),
                 recipientEmail: profileData?.email || '',
-                insights,
-                targetMetrics: transformedTargetData,
                 templateType: 'follow_up',
-                tone: 'encouraging'
+                tone: 'encouraging',
+                customMessage: insights.join('\n\n') // Include insights as custom message
+            }).catch((error) => {
+                console.error('Failed to generate email template:', error);
+                // Return fallback template
+                return {
+                    subject: 'Performance Update and Encouragement',
+                    body: `Hi ${profileData?.name || 'there'},\n\nI wanted to touch base regarding your recent performance. While our AI insights are temporarily unavailable, I can see you're making progress on your targets.\n\nKeep up the great work and don't hesitate to reach out if you need any support.\n\nBest regards,\nYour Team`
+                };
             });
 
             // Handle the template response which has subject and body structure
@@ -191,7 +245,7 @@ export const TargetsTab: React.FC<TabProps> = ({
             setActiveInsightTab('email');
         } catch (error) {
             console.error('Error generating email:', error);
-            setEmailTemplate('Unable to generate email template at this time.');
+            setEmailTemplate('Unable to generate email template at this time. Please try again later or contact support.');
         } finally {
             setIsGeneratingInsights(false);
         }

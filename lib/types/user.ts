@@ -43,6 +43,28 @@ export interface UserAddress {
     postalCode?: string;
 }
 
+export interface UserTarget {
+    uid: number;
+    targetSalesAmount: string;
+    currentSalesAmount: string;
+    targetCurrency: string;
+    targetHoursWorked: number;
+    currentHoursWorked: number | null;
+    targetNewClients: number;
+    currentNewClients: number;
+    targetNewLeads: number;
+    currentNewLeads: number;
+    targetCheckIns: number;
+    currentCheckIns: number;
+    targetCalls: number;
+    currentCalls: number | null;
+    targetPeriod: string;
+    periodStartDate: string;
+    periodEndDate: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface User {
     uid: number;
     username: string;
@@ -67,6 +89,7 @@ export interface User {
     address?: UserAddress;
     avatarUrl?: string;
     photo?: string;
+    userTarget?: UserTarget;
 }
 
 export interface UsersByStatus {

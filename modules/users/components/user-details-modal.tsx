@@ -37,6 +37,7 @@ import { useUsersQuery } from '@/hooks/use-users-query';
 import UserTargetForm, { UserTargetFormValues } from './user-target-form';
 import { axiosInstance } from '@/lib/services/api-client';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { TargetsTab } from '@/modules/reports/components/user-reports/tabs/targets-tab';
 
 interface UserDetailsModalProps {
     user: User;
@@ -234,6 +235,7 @@ export function UserDetailsModal({
     const tabs = [
         { id: 'details', label: 'Details' },
         { id: 'access', label: 'Access' },
+        { id: 'targets', label: 'Targets' },
         { id: 'activity', label: 'Activity' },
     ];
 
@@ -401,6 +403,43 @@ export function UserDetailsModal({
                                 </div>
                             </div>
                         </div>
+                    </div>
+                );
+            case 'targets':
+                // Convert UserTarget to match the expected type structure
+                const convertedTargetData = user.userTarget ? {
+                    id: user.userTarget.uid,
+                    targetSalesAmount: parseFloat(user.userTarget.targetSalesAmount),
+                    currentSalesAmount: parseFloat(user.userTarget.currentSalesAmount),
+                    targetCurrency: user.userTarget.targetCurrency,
+                    targetHoursWorked: user.userTarget.targetHoursWorked,
+                    currentHoursWorked: user.userTarget.currentHoursWorked || undefined,
+                    targetNewClients: user.userTarget.targetNewClients,
+                    currentNewClients: user.userTarget.currentNewClients,
+                    targetNewLeads: user.userTarget.targetNewLeads,
+                    currentNewLeads: user.userTarget.currentNewLeads,
+                    targetCheckIns: user.userTarget.targetCheckIns,
+                    currentCheckIns: user.userTarget.currentCheckIns,
+                    targetCalls: user.userTarget.targetCalls,
+                    currentCalls: user.userTarget.currentCalls || undefined,
+                    targetPeriod: user.userTarget.targetPeriod,
+                    periodStartDate: user.userTarget.periodStartDate,
+                    periodEndDate: user.userTarget.periodEndDate,
+                    createdAt: user.userTarget.createdAt,
+                    updatedAt: user.userTarget.updatedAt,
+                } : null;
+
+                return (
+                    <div className="space-y-6">
+                        <TargetsTab
+                            profileData={user}
+                            targetsData={convertedTargetData}
+                            attendanceData={null}
+                            rewardsData={null}
+                            isTargetsLoading={false}
+                            isAttendanceLoading={false}
+                            isRewardsLoading={false}
+                        />
                     </div>
                 );
             case 'activity':

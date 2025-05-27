@@ -973,6 +973,52 @@ export function LeadDetailsModal({
         if ((!newMessage.trim() && attachments.length === 0) || isLoading)
             return;
 
+        // Log the message data for email/SMS integration (API handler to be added later)
+        const messageData = {
+            type: 'chat_message',
+            leadId: lead.uid,
+            leadName: lead.name,
+            leadEmail: lead.email,
+            leadPhone: lead.phone,
+            message: newMessage,
+            hasAttachment: attachments.length > 0,
+            attachmentInfo: attachments.length > 0 ? {
+                name: attachments[0].name,
+                size: attachments[0].size,
+                type: attachments[0].type
+            } : null,
+            senderId: profileData?.uid,
+            senderName: `${profileData?.name} ${profileData?.surname}`,
+            timestamp: new Date().toISOString(),
+            // For future email/SMS integration
+            communicationChannels: {
+                email: lead.email,
+                sms: lead.phone,
+                inApp: true
+            }
+        };
+
+        console.log('📧 Message Data for Email/SMS Integration:', messageData);
+        console.log('📱 SMS Data:', {
+            to: lead.phone,
+            message: newMessage,
+            from: `${profileData?.name} ${profileData?.surname}`,
+            leadContext: {
+                name: lead.name,
+                id: lead.uid
+            }
+        });
+        console.log('✉️ Email Data:', {
+            to: lead.email,
+            subject: `Message from ${profileData?.name} ${profileData?.surname}`,
+            message: newMessage,
+            hasAttachment: attachments.length > 0,
+            leadContext: {
+                name: lead.name,
+                id: lead.uid
+            }
+        });
+
         setIsLoading(true);
 
         try {

@@ -11,6 +11,14 @@ import {
     MessageSquare,
     Send,
     Eye,
+    ThermometerSun,
+    Share2,
+    DollarSign,
+    Star,
+    TrendingUp,
+    Zap,
+    Globe,
+    Target,
 } from 'lucide-react';
 import { useState, useCallback, memo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -100,6 +108,77 @@ function LeadCardComponent({
     const formatDate = (date?: Date) => {
         if (!date) return null;
         return format(new Date(date), 'MMM d, yyyy');
+    };
+
+    const formatNameInitialSurname = (name: string) => {
+        const nameParts = name.trim().split(' ');
+        if (nameParts.length === 1) {
+            return nameParts[0]; // Just return the name if no surname
+        }
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
+        return `${firstName.charAt(0)}. ${lastName}`;
+    };
+
+    const getTemperatureColor = (temp?: string) => {
+        switch (temp) {
+            case 'HOT':
+                return 'text-red-500';
+            case 'WARM':
+                return 'text-orange-500';
+            case 'COLD':
+                return 'text-blue-500';
+            case 'FROZEN':
+                return 'text-slate-400';
+            default:
+                return 'text-gray-400';
+        }
+    };
+
+    const getSourceColor = (source?: string) => {
+        switch (source) {
+            case 'WEBSITE':
+                return 'text-blue-500';
+            case 'SOCIAL_MEDIA':
+                return 'text-purple-500';
+            case 'REFERRAL':
+                return 'text-green-500';
+            case 'EMAIL_CAMPAIGN':
+                return 'text-indigo-500';
+            case 'COLD_CALL':
+                return 'text-orange-500';
+            default:
+                return 'text-gray-400';
+        }
+    };
+
+    const getBudgetColor = (budget?: string) => {
+        if (!budget) return 'text-gray-400';
+        
+        // Higher budget ranges get warmer colors
+        if (budget.includes('1M') || budget === 'OVER_1M') {
+            return 'text-emerald-600';
+        } else if (budget.includes('500K') || budget.includes('250K')) {
+            return 'text-green-500';
+        } else if (budget.includes('100K') || budget.includes('50K')) {
+            return 'text-lime-500';
+        } else if (budget.includes('25K') || budget.includes('10K')) {
+            return 'text-yellow-500';
+        } else {
+            return 'text-orange-400';
+        }
+    };
+
+    const getRatingColor = (rating?: number) => {
+        if (!rating) return 'text-gray-400';
+        
+        if (rating >= 4) {
+            return 'text-green-500';
+        } else if (rating >= 3) {
+            return 'text-yellow-500';
+        } else {
+            return 'text-red-500';
+        }
     };
 
     const getStatusBadgeColor = (status: LeadStatus) => {
@@ -778,7 +857,7 @@ function LeadCardComponent({
                                 id="lead-name-field"
                                 className="text-sm font-medium uppercase truncate text-card-foreground font-body"
                             >
-                                {lead.name}
+                                {formatNameInitialSurname(lead.name)}
                             </h3>
                             <div className="flex items-center gap-2">
                                 <Mail
@@ -857,13 +936,72 @@ function LeadCardComponent({
                             id="lead-metadata-section"
                             className="flex items-center col-span-2"
                         >
-                            <Clock className="w-3 h-3 mr-1" />
+                            <Clock className="w-5 h-5 mr-1" />
                             <span className="text-[10px] font-normal uppercase font-body">
                                 Created: {formatDate(lead?.createdAt)}
                             </span>
                         </div>
                     </div>
                 </div>
+
+                   {/* Lead Metrics Row */}
+                   <div className="flex items-center justify-between gap-1 my-3">
+                            <div className="flex items-center gap-3">
+                                {/* Temperature */}
+                                {lead.temperature && (
+                                    <div className="flex items-center gap-1" title={`Temperature: ${lead.temperature}`}>
+                                        <ThermometerSun className={`w-5 h-5 ${getTemperatureColor(lead.temperature)}`} strokeWidth={1.5} />
+                                        <span className={`text-[10px] font-medium uppercase font-body ${getTemperatureColor(lead.temperature)}`}>
+                                            {lead.temperature.charAt(0)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Source */}
+                                {lead.source && (
+                                    <div className="flex items-center gap-1" title={`Source: ${lead.source.replace(/_/g, ' ')}`}>
+                                        {lead.source === 'WEBSITE' && <Globe className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        {lead.source === 'SOCIAL_MEDIA' && <Share2 className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        {lead.source === 'REFERRAL' && <Target className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        {lead.source === 'EMAIL_CAMPAIGN' && <Mail className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        {lead.source === 'COLD_CALL' && <Phone className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        {!['WEBSITE', 'SOCIAL_MEDIA', 'REFERRAL', 'EMAIL_CAMPAIGN', 'COLD_CALL'].includes(lead.source) && 
+                                            <Zap className={`w-5 h-5 ${getSourceColor(lead.source)}`} strokeWidth={1.5} />}
+                                        <span className={`text-[10px] font-medium uppercase font-body ${getSourceColor(lead.source)}`}>
+                                            {lead.source.charAt(0)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Budget Range */}
+                                {lead.budgetRange && (
+                                    <div className="flex items-center gap-1" title={`Budget: ${lead.budgetRange.replace(/_/g, ' ')}`}>
+                                        <DollarSign className={`w-5 h-5 ${getBudgetColor(lead.budgetRange)}`} strokeWidth={1.5} />
+                                        <span className={`text-[10px] font-medium uppercase font-body ${getBudgetColor(lead.budgetRange)}`}>
+                                            {lead.budgetRange.includes('1M') || lead.budgetRange === 'OVER_1M' ? '1M+' :
+                                             lead.budgetRange.includes('500K') ? '500K' :
+                                             lead.budgetRange.includes('250K') ? '250K' :
+                                             lead.budgetRange.includes('100K') ? '100K' :
+                                             lead.budgetRange.includes('50K') ? '50K' :
+                                             lead.budgetRange.includes('25K') ? '25K' :
+                                             lead.budgetRange.includes('10K') ? '10K' :
+                                             lead.budgetRange.includes('5K') ? '5K' :
+                                             lead.budgetRange.includes('1K') ? '1K' : 'U1K'}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Quality Rating */}
+                                {lead.userQualityRating && (
+                                    <div className="flex items-center gap-1" title={`Quality Rating: ${lead.userQualityRating}/5`}>
+                                        <Star className={`w-5 h-5 ${getRatingColor(lead.userQualityRating)}`} strokeWidth={1.5} />
+                                        <span className={`text-[10px] font-medium font-body ${getRatingColor(lead.userQualityRating)}`}>
+                                            {lead.userQualityRating}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                 {/* Owner */}
                 {lead?.owner && (
@@ -875,13 +1013,16 @@ function LeadCardComponent({
                                     alt={lead?.owner?.name}
                                 />
                                 <AvatarFallback className="text-[7px] font-normal uppercase font-body">
-                                    {`${lead?.owner?.name?.charAt(0)} ${lead?.owner?.surname?.charAt(0) || ''}`}
+                                    {lead?.owner?.name && lead?.owner?.surname ? 
+                                        `${lead.owner.name.charAt(0)}${lead.owner.surname.charAt(0)}` :
+                                        lead?.owner?.name ? lead.owner.name.charAt(0) : 'U'
+                                    }
                                 </AvatarFallback>
                             </Avatar>
                         </div>
                         <div className="flex items-center justify-center text-[10px]">
                             <span className="text-[10px] font-normal font-body text-muted-foreground">
-                                {lead?.owner?.name} {lead?.owner?.surname || ''}
+                                {lead?.owner?.name ? formatNameInitialSurname(`${lead.owner.name} ${lead.owner.surname || ''}`.trim()) : 'Unassigned'}
                             </span>
                         </div>
                     </div>
@@ -1028,7 +1169,7 @@ function LeadCardComponent({
 
                                 {isGeneratingTemplates ? (
                                     <div className="p-4 text-center border rounded-lg border-border bg-background/50">
-                                        <div className="w-6 h-6 mx-auto mb-2 border-2 rounded-full animate-spin border-primary border-t-transparent"></div>
+                                        <div className="w-5 h-5 mx-auto mb-2 border-2 rounded-full animate-spin border-primary border-t-transparent"></div>
                                         <p className="text-[10px] text-muted-foreground font-body">
                                             Generating personalized templates based on your selected tone...
                                         </p>

@@ -18,7 +18,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Lead, LeadStatus, LeadStatusHistoryEntry as LeadStatusHistoryEntryType } from '@/lib/types/lead';
+import {
+    Lead,
+    LeadStatus,
+    LeadStatusHistoryEntry as LeadStatusHistoryEntryType,
+} from '@/lib/types/lead';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -37,8 +41,6 @@ import {
     Trash2,
     Check,
     X,
-    Edit,
-    Plus,
     MapPin,
     CheckCircle2,
     XCircle,
@@ -46,9 +48,16 @@ import {
     CalendarCheck,
     Paperclip,
     Send,
-    Image,
     MessageSquare,
     FileIcon,
+    Target,
+    ThermometerSun,
+    Share2,
+    DollarSign,
+    Star,
+    Building2,
+    BriefcaseBusiness,
+    TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -82,7 +91,7 @@ interface LeadDetailsModalProps {
         newStatus: string,
         reason?: string,
         description?: string,
-        nextStep?: string
+        nextStep?: string,
     ) => void;
     onDelete?: (leadId: number) => void;
 }
@@ -95,15 +104,17 @@ export function LeadDetailsModal({
     onDelete,
 }: LeadDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<LeadStatus>(lead.status);
-    const [activeTab, setActiveTab] = useState<string>('details');
+    const [activeTab, setActiveTab] = useState('qualification');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
     const [confirmStatusChangeOpen, setConfirmStatusChangeOpen] =
         useState<boolean>(false);
     const [pendingStatusChange, setPendingStatusChange] =
         useState<LeadStatus | null>(null);
     const [statusChangeReason, setStatusChangeReason] = useState<string>('');
-    const [statusChangeDescription, setStatusChangeDescription] = useState<string>('');
-    const [statusChangeNextStep, setStatusChangeNextStep] = useState<string>('');
+    const [statusChangeDescription, setStatusChangeDescription] =
+        useState<string>('');
+    const [statusChangeNextStep, setStatusChangeNextStep] =
+        useState<string>('');
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isClientFormOpen, setIsClientFormOpen] = useState<boolean>(false);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState<boolean>(false);
@@ -232,9 +243,9 @@ export function LeadDetailsModal({
                 onUpdateStatus(
                     lead.uid,
                     pendingStatusChange,
-                    "Lead converted to client", // Default reason
+                    'Lead converted to client', // Default reason
                     `Converted to client with ID: ${data.ref || 'N/A'}`, // Default description
-                    "Next step: Client conversion completed" // Default next step
+                    'Next step: Client conversion completed', // Default next step
                 );
             }
             setIsClientFormOpen(false);
@@ -246,14 +257,13 @@ export function LeadDetailsModal({
 
     const confirmStatusChange = () => {
         if (onUpdateStatus && pendingStatusChange) {
-
             // Call the parent component's update function with the reason and description
             onUpdateStatus(
                 Number(lead.uid),
                 pendingStatusChange,
                 statusChangeReason,
                 statusChangeDescription,
-                statusChangeNextStep
+                statusChangeNextStep,
             );
 
             // Update local state
@@ -292,6 +302,7 @@ export function LeadDetailsModal({
     };
 
     const tabs = [
+        { id: 'qualification', label: 'Qualification' },
         { id: 'details', label: 'Details' },
         { id: 'media', label: 'Media' },
         { id: 'activity', label: 'Activity' },
@@ -314,6 +325,394 @@ export function LeadDetailsModal({
 
     const renderTabContent = () => {
         switch (activeTab) {
+            case 'qualification':
+                return (
+                    <div className="space-y-6">
+                        {/* Lead Qualification Details */}
+                        <div className="p-4 rounded-lg bg-card/50">
+                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                Qualification Details
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                {lead.intent && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Intent
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Target className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.intent.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.temperature && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Temperature
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <ThermometerSun className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.temperature}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.source && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Source
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Share2 className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.source.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.priority && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Priority
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <AlertCircle className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.priority}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.industry && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Industry
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Building className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.industry.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.businessSize && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Business Size
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Building2 className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {(() => {
+                                                    switch (lead.businessSize) {
+                                                        case 'STARTUP':
+                                                            return '(1-10) Startup';
+                                                        case 'SMALL':
+                                                            return '(11-50) Small';
+                                                        case 'MEDIUM':
+                                                            return '(51-200) Medium';
+                                                        case 'LARGE':
+                                                            return '(201-1000) Large';
+                                                        case 'ENTERPRISE':
+                                                            return '(1000+) Enterprise';
+                                                        case 'UNKNOWN':
+                                                            return 'Unknown';
+                                                        default:
+                                                            return lead.businessSize.replace(
+                                                                /_/g,
+                                                                ' ',
+                                                            );
+                                                    }
+                                                })()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.budgetRange && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Budget Range
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <DollarSign className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.budgetRange.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.purchaseTimeline && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Purchase Timeline
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Clock className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.purchaseTimeline.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.preferredCommunication && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Preferred Communication
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Phone className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.preferredCommunication.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.userQualityRating && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Quality Rating
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <Star className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.userQualityRating}/5
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.estimatedValue && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Estimated Value
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <DollarSign className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                R
+                                                {typeof lead.estimatedValue ===
+                                                'number'
+                                                    ? lead.estimatedValue.toLocaleString()
+                                                    : lead.estimatedValue}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {lead.lifecycleStage && (
+                                    <div>
+                                        <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                            Lifecycle Stage
+                                        </h4>
+                                        <div className="flex items-center">
+                                            <TrendingUp className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                            <span className="text-xs font-thin uppercase font-body">
+                                                {lead.lifecycleStage.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Follow-up Information */}
+                        {(lead.nextFollowUpDate || lead.lastContactDate) && (
+                            <div className="p-4 rounded-lg bg-card/50">
+                                <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                    Follow-up Schedule
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {lead.lastContactDate && (
+                                        <div>
+                                            <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                                Last Contact
+                                            </h4>
+                                            <div className="flex items-center">
+                                                <Calendar className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                                <span className="text-xs font-thin uppercase font-body">
+                                                    {formatDate(
+                                                        lead.lastContactDate,
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {lead.nextFollowUpDate && (
+                                        <div>
+                                            <h4 className="mb-1 text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                                Next Follow-up
+                                            </h4>
+                                            <div className="flex items-center">
+                                                <Calendar className="w-3 h-3 mr-1 text-card-foreground/60" />
+                                                <span className="text-xs font-thin uppercase font-body">
+                                                    {formatDate(
+                                                        lead.nextFollowUpDate,
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Lead Scoring Overview */}
+                        {lead.scoringData && (
+                            <div className="p-4 rounded-lg bg-card/50">
+                                <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                    Lead Scoring
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-3 rounded-lg bg-background">
+                                        <h4 className="mb-2 text-sm font-normal text-primary font-body">
+                                            Total Score:{' '}
+                                            {lead?.scoringData?.totalScore}
+                                        </h4>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-xs">
+                                                <span className="font-body font-normal text[10px]">
+                                                    Fit Score:
+                                                </span>
+                                                <span className="font-normal font-body txt-xs">
+                                                    {lead?.scoringData.fitScore}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="font-body font-normal text[10px]">
+                                                    Behavioral:
+                                                </span>
+                                                <span className="font-normal font-body txt-xs">
+                                                    {
+                                                        lead?.scoringData
+                                                            .behavioralScore
+                                                    }
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="font-body font-normal text[10px]">
+                                                    Engagement:
+                                                </span>
+                                                <span className="font-normal font-body txt-xs">
+                                                    {
+                                                        lead?.scoringData
+                                                            .engagementScore
+                                                    }
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="font-body font-normal text[10px]">
+                                                    Demographic:
+                                                </span>
+                                                <span className="font-normal font-body txt-xs">
+                                                    {
+                                                        lead.scoringData
+                                                            .demographicScore
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {lead.activityData && (
+                                        <div className="p-3 rounded-lg bg-background">
+                                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                                Activity Overview
+                                            </h3>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="font-body font-normal text[10px]">
+                                                        Engagement Level:
+                                                    </span>
+                                                    <span
+                                                        className={`font-medium font-body text-sx ${
+                                                            lead.activityData
+                                                                .engagementLevel ===
+                                                            'HIGH'
+                                                                ? 'text-green-600'
+                                                                : lead
+                                                                        .activityData
+                                                                        .engagementLevel ===
+                                                                    'MEDIUM'
+                                                                  ? 'text-yellow-600'
+                                                                  : 'text-red-600'
+                                                        }`}
+                                                    >
+                                                        {
+                                                            lead?.activityData
+                                                                .engagementLevel
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="font-body font-normal text[10px]">
+                                                        Total Interactions:
+                                                    </span>
+                                                    <span className="font-normal font-body txt-xs">
+                                                        {
+                                                            lead?.activityData
+                                                                .totalInteractions
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="font-body font-normal text[10px]">
+                                                        Email Interactions:
+                                                    </span>
+                                                    <span className="font-normal font-body txt-xs">
+                                                        {
+                                                            lead?.activityData
+                                                                .emailInteractions
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="font-body font-normal text[10px]">
+                                                        Phone Interactions:
+                                                    </span>
+                                                    <span className="font-normal font-body txt-xs">
+                                                        {
+                                                            lead?.activityData
+                                                                .phoneInteractions
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
             case 'details':
                 return (
                     <div className="space-y-6">
@@ -367,6 +766,30 @@ export function LeadDetailsModal({
 
                             <div>
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Company
+                                </h3>
+                                <div className="flex items-center">
+                                    <Building className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                    <span className="text-xs font-thin uppercase font-body">
+                                        {lead.companyName || 'Not specified'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
+                                    Job Title
+                                </h3>
+                                <div className="flex items-center">
+                                    <BriefcaseBusiness className="w-4 h-4 mr-1 text-card-foreground/60" />
+                                    <span className="text-xs font-thin uppercase font-body">
+                                        {lead.jobTitle || 'Not specified'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Created
                                 </h3>
                                 <div className="flex items-center">
@@ -379,9 +802,9 @@ export function LeadDetailsModal({
                         </div>
 
                         {/* Lead Status */}
-                        <div>
-                            <h3 className="mb-2 text-xs font-normal uppercase font-body">
-                                Status
+                        <div className="p-4 rounded-lg bg-card/50">
+                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                Status Information
                             </h3>
                             <div className="flex items-center">
                                 <Badge
@@ -390,7 +813,7 @@ export function LeadDetailsModal({
                                         lead.status,
                                     )}`}
                                 >
-                                    <AlertCircle className="w-5 h-5 mr-1" />
+                                    <AlertCircle className="w-4 h-4 mr-1" />
                                     <span className="text-xs font-normal uppercase font-body">
                                         {lead.status.replace('_', ' ')}
                                     </span>
@@ -447,15 +870,23 @@ export function LeadDetailsModal({
                                 </h3>
                                 <div className="space-y-3">
                                     {lead.assignees.map((assignee: any) => (
-                                        <div key={assignee.uid} className="flex items-center p-3 border rounded-lg border-card">
+                                        <div
+                                            key={assignee.uid}
+                                            className="flex items-center p-3 border rounded-lg border-card"
+                                        >
                                             <Avatar className="w-12 h-12 mr-3 border border-primary">
                                                 <AvatarImage
-                                                    src={assignee.photoURL || ''}
+                                                    src={
+                                                        assignee.photoURL || ''
+                                                    }
                                                     alt={assignee.name || ''}
                                                 />
                                                 <AvatarFallback>
-                                                    {assignee.name?.charAt(0) || ''}
-                                                    {assignee.surname?.charAt(0) || ''}
+                                                    {assignee.name?.charAt(0) ||
+                                                        ''}
+                                                    {assignee.surname?.charAt(
+                                                        0,
+                                                    ) || ''}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div>
@@ -546,80 +977,164 @@ export function LeadDetailsModal({
                             <h3 className="mb-4 text-xs font-normal uppercase font-body">
                                 Status Change History
                             </h3>
-                            {lead?.changeHistory && lead?.changeHistory?.length > 0 ? (
+                            {lead?.changeHistory &&
+                            lead?.changeHistory?.length > 0 ? (
                                 <div className="space-y-4">
-                                    {lead?.changeHistory?.map((history, index) => (
-                                        <div key={`activity-${index}`} className="p-3 border rounded-lg border-border">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={cn(
-                                                            'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
-                                                            getStatusBadgeColor(history.newStatus)
+                                    {lead?.changeHistory?.map(
+                                        (history, index) => (
+                                            <div
+                                                key={`activity-${index}`}
+                                                className="p-3 border rounded-lg border-border"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={cn(
+                                                                'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
+                                                                getStatusBadgeColor(
+                                                                    history.newStatus,
+                                                                ),
+                                                            )}
+                                                        >
+                                                            {history?.newStatus?.replace(
+                                                                '_',
+                                                                ' ',
+                                                            )}
+                                                        </Badge>
+                                                        {history.oldStatus && (
+                                                            <>
+                                                                <span className="mx-2 text-[10px] uppercase text-muted-foreground font-body">
+                                                                    from
+                                                                </span>
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={cn(
+                                                                        'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
+                                                                        getStatusBadgeColor(
+                                                                            history.oldStatus,
+                                                                        ),
+                                                                    )}
+                                                                >
+                                                                    {history.oldStatus.replace(
+                                                                        '_',
+                                                                        ' ',
+                                                                    )}
+                                                                </Badge>
+                                                            </>
                                                         )}
-                                                    >
-                                                        {history?.newStatus?.replace('_', ' ')}
-                                                    </Badge>
-                                                    {history.oldStatus && (
-                                                        <>
-                                                            <span className="mx-2 text-[10px] uppercase text-muted-foreground font-body">from</span>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={cn(
-                                                                    'text-[10px] font-normal uppercase font-body px-4 py-1 border-0',
-                                                                    getStatusBadgeColor(history.oldStatus)
-                                                                )}
-                                                            >
-                                                                {history.oldStatus.replace('_', ' ')}
-                                                            </Badge>
-                                                        </>
-                                                    )}
+                                                    </div>
+                                                    <p className="text-[10px] uppercase text-muted-foreground font-body">
+                                                        {formatDate(
+                                                            history.timestamp,
+                                                        )}
+                                                    </p>
                                                 </div>
-                                                <p className="text-[10px] uppercase text-muted-foreground font-body">
-                                                    {formatDate(history.timestamp)}
-                                                </p>
-                                            </div>
-                                            {history.reason && (
-                                                <div className="mt-2">
-                                                    <span className="text-[10px] font-medium uppercase font-body">Reason:</span>
-                                                    <span className="text-[10px] font-thin uppercase font-body ml-1">{history.reason}</span>
-                                                </div>
-                                            )}
-                                            {history.description && (
-                                                <div className="mt-1">
-                                                    <span className="text-[10px] font-medium uppercase font-body">Description:</span>
-                                                    <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">{history.description}</span>
-                                                </div>
-                                            )}
-                                            {(history as any).nextStep && (
-                                                <div className="mt-1">
-                                                    <span className="text-[10px] font-medium uppercase font-body">Next Step:</span>
-                                                    <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">{(history as any).nextStep}</span>
-                                                </div>
-                                            )}
-                                            {history?.userId && (
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    {history?.user ? (
-                                                        <>
-                                                            <Avatar className="w-6 h-6">
-                                                                <AvatarImage src={history?.user?.photoURL} alt={history?.user?.name} />
-                                                                <AvatarFallback>{history?.user?.name?.[0]}{history?.user?.surname?.[0]}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="flex flex-col">
-                                                                <span className="text-[10px] font-medium font-body">{history?.user?.name} {history?.user?.surname}</span>
-                                                                <span className="text-[9px] text-muted-foreground font-body">{history?.user?.email} • {history?.user?.accessLevel}</span>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-[10px] text-muted-foreground">
-                                                            Changed by User ID: {history.userId}
+                                                {history.reason && (
+                                                    <div className="mt-2">
+                                                        <span className="text-[10px] font-medium uppercase font-body">
+                                                            Reason:
                                                         </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                                        <span className="text-[10px] font-thin uppercase font-body ml-1">
+                                                            {history.reason}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {history.description && (
+                                                    <div className="mt-1">
+                                                        <span className="text-[10px] font-medium uppercase font-body">
+                                                            Description:
+                                                        </span>
+                                                        <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">
+                                                            {
+                                                                history.description
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {(history as any).nextStep && (
+                                                    <div className="mt-1">
+                                                        <span className="text-[10px] font-medium uppercase font-body">
+                                                            Next Step:
+                                                        </span>
+                                                        <span className="text-[10px] font-thin uppercase font-body ml-1 text-muted-foreground">
+                                                            {
+                                                                (history as any)
+                                                                    .nextStep
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {history?.userId && (
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        {history?.user ? (
+                                                            <>
+                                                                <Avatar className="w-6 h-6">
+                                                                    <AvatarImage
+                                                                        src={
+                                                                            history
+                                                                                ?.user
+                                                                                ?.photoURL
+                                                                        }
+                                                                        alt={
+                                                                            history
+                                                                                ?.user
+                                                                                ?.name
+                                                                        }
+                                                                    />
+                                                                    <AvatarFallback>
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.name?.[0]
+                                                                        }
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.surname?.[0]
+                                                                        }
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[10px] font-medium font-body">
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.name
+                                                                        }{' '}
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.surname
+                                                                        }
+                                                                    </span>
+                                                                    <span className="text-[9px] text-muted-foreground font-body">
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.email
+                                                                        }{' '}
+                                                                        •{' '}
+                                                                        {
+                                                                            history
+                                                                                ?.user
+                                                                                ?.accessLevel
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-[10px] text-muted-foreground">
+                                                                Changed by User
+                                                                ID:{' '}
+                                                                {history.userId}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ),
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center p-8 border border-dashed rounded-lg border-muted-foreground/20">
@@ -982,11 +1497,14 @@ export function LeadDetailsModal({
             leadPhone: lead.phone,
             message: newMessage,
             hasAttachment: attachments.length > 0,
-            attachmentInfo: attachments.length > 0 ? {
-                name: attachments[0].name,
-                size: attachments[0].size,
-                type: attachments[0].type
-            } : null,
+            attachmentInfo:
+                attachments.length > 0
+                    ? {
+                          name: attachments[0].name,
+                          size: attachments[0].size,
+                          type: attachments[0].type,
+                      }
+                    : null,
             senderId: profileData?.uid,
             senderName: `${profileData?.name} ${profileData?.surname}`,
             timestamp: new Date().toISOString(),
@@ -994,8 +1512,8 @@ export function LeadDetailsModal({
             communicationChannels: {
                 email: lead.email,
                 sms: lead.phone,
-                inApp: true
-            }
+                inApp: true,
+            },
         };
 
         console.log('📧 Message Data for Email/SMS Integration:', messageData);
@@ -1005,8 +1523,8 @@ export function LeadDetailsModal({
             from: `${profileData?.name} ${profileData?.surname}`,
             leadContext: {
                 name: lead.name,
-                id: lead.uid
-            }
+                id: lead.uid,
+            },
         });
         console.log('✉️ Email Data:', {
             to: lead.email,
@@ -1015,8 +1533,8 @@ export function LeadDetailsModal({
             hasAttachment: attachments.length > 0,
             leadContext: {
                 name: lead.name,
-                id: lead.uid
-            }
+                id: lead.uid,
+            },
         });
 
         setIsLoading(true);
@@ -1082,17 +1600,6 @@ export function LeadDetailsModal({
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            // Replace current attachments with new one (single file upload)
-            setAttachments([e.target.files[0]]);
-        }
-    };
-
-    const removeAttachment = () => {
-        setAttachments([]);
     };
 
     return (
@@ -1375,45 +1882,62 @@ export function LeadDetailsModal({
                     <AlertDialogHeader>
                         <AlertDialogTitle>Change Lead Status</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {pendingStatusChange && `Change status to ${pendingStatusChange.replace('_', ' ')}`}
+                            {pendingStatusChange &&
+                                `Change status to ${pendingStatusChange.replace('_', ' ')}`}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 
                     <div className="my-4 space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="statusChangeReason" className="text-xs font-normal font-body">
-                                Reason for Change <span className="text-red-500">*</span>
+                            <Label
+                                htmlFor="statusChangeReason"
+                                className="text-xs font-normal font-body"
+                            >
+                                Reason for Change{' '}
+                                <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="statusChangeReason"
                                 value={statusChangeReason}
-                                onChange={(e) => setStatusChangeReason(e.target.value)}
+                                onChange={(e) =>
+                                    setStatusChangeReason(e.target.value)
+                                }
                                 placeholder="Brief reason for this status change"
                                 className="w-full text-xs font-thin font-body placeholder:text-muted-foreground"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="statusChangeDescription" className="text-xs font-normal font-body">
+                            <Label
+                                htmlFor="statusChangeDescription"
+                                className="text-xs font-normal font-body"
+                            >
                                 Detailed Description
                             </Label>
                             <Textarea
                                 id="statusChangeDescription"
                                 value={statusChangeDescription}
-                                onChange={(e) => setStatusChangeDescription(e.target.value)}
+                                onChange={(e) =>
+                                    setStatusChangeDescription(e.target.value)
+                                }
                                 placeholder="Additional details (optional)"
                                 className="w-full min-h-[100px] text-xs font-thin font-body placeholder:text-muted-foreground"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="statusChangeNextStep" className="text-xs font-normal font-body">
+                            <Label
+                                htmlFor="statusChangeNextStep"
+                                className="text-xs font-normal font-body"
+                            >
                                 Next Step
                             </Label>
                             <Textarea
                                 id="statusChangeNextStep"
                                 value={statusChangeNextStep}
-                                onChange={(e) => setStatusChangeNextStep(e.target.value)}
+                                onChange={(e) =>
+                                    setStatusChangeNextStep(e.target.value)
+                                }
                                 placeholder="What is the next planned action for this lead? (optional)"
                                 className="w-full min-h-[100px] text-xs font-thin font-body placeholder:text-muted-foreground"
                             />
@@ -1425,7 +1949,11 @@ export function LeadDetailsModal({
                         <AlertDialogAction
                             onClick={confirmStatusChange}
                             disabled={!statusChangeReason.trim()}
-                            className={!statusChangeReason.trim() ? 'opacity-50 cursor-not-allowed' : ''}
+                            className={
+                                !statusChangeReason.trim()
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : ''
+                            }
                         >
                             Save & Change Status
                         </AlertDialogAction>

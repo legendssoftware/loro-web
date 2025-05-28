@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { LeadStatus } from '@/lib/types/lead';
+import { 
+    LeadStatus, 
+    LeadIntent, 
+    LeadTemperature, 
+    LeadSource, 
+    LeadPriority, 
+    BusinessSize, 
+    Industry, 
+    BudgetRange, 
+    Timeline, 
+    CommunicationPreference 
+} from '@/lib/types/lead';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { toast } from 'react-hot-toast';
@@ -36,6 +47,13 @@ import {
     Upload,
     X,
     File as FileIcon,
+    Target,
+    ThermometerSun,
+    Share2,
+    AlertCircle,
+    Building,
+    DollarSign,
+    Star,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -60,7 +78,21 @@ const leadFormSchema = z.object({
                 uid: z.number(),
             }),
         )
-        .optional(), // This maps to the 'assignees' field in the API
+        .optional(),
+    
+    // Enhanced fields - key ones marked as required
+    intent: z.nativeEnum(LeadIntent).optional(),
+    userQualityRating: z.number().min(1).max(5).optional(),
+    temperature: z.nativeEnum(LeadTemperature).optional(),
+    source: z.nativeEnum(LeadSource).optional(),
+    priority: z.nativeEnum(LeadPriority).optional(),
+    jobTitle: z.string().optional(),
+    industry: z.nativeEnum(Industry).optional(),
+    businessSize: z.nativeEnum(BusinessSize).optional(),
+    budgetRange: z.nativeEnum(BudgetRange).optional(),
+    purchaseTimeline: z.nativeEnum(Timeline).optional(),
+    preferredCommunication: z.nativeEnum(CommunicationPreference).optional(),
+    estimatedValue: z.number().min(0).optional(),
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
@@ -98,6 +130,11 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
         status: LeadStatus.PENDING,
         owner: { uid: currentUserId },
         assignTo: [],
+        // Enhanced field defaults
+        temperature: LeadTemperature.COLD,
+        priority: LeadPriority.MEDIUM,
+        userQualityRating: 3,
+        preferredCommunication: CommunicationPreference.EMAIL,
         ...initialData,
     };
 
@@ -201,9 +238,11 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                 data.owner = { uid: currentUserId };
             }
 
-            // Add branch information for the API (from user's profile)
+            // Map assignTo to assignees for the API
             const leadData = {
                 ...data,
+                assignees: data.assignTo, // Map assignTo to assignees
+                assignTo: undefined, // Remove assignTo as it's not expected by the API
                 branch: { uid: currentBranchId }
             };
 
@@ -517,6 +556,457 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                     </div>
                 </div>
                 */}
+
+                {/* Enhanced Lead Qualification Fields */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <Target className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Lead Qualification
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* First Row - Intent & Source */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    Intent
+                                    <Star className="w-3 h-3 text-red-500" />
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="intent"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Target className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT INTENT'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(LeadIntent).map((intent) => (
+                                                        <SelectItem key={intent} value={intent}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {intent.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    Source
+                                    <Star className="w-3 h-3 text-red-500" />
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="source"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT SOURCE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(LeadSource).map((source) => (
+                                                        <SelectItem key={source} value={source}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {source.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Second Row - Temperature & Priority */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Temperature
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="temperature"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <ThermometerSun className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value || 'SELECT TEMPERATURE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(LeadTemperature).map((temp) => (
+                                                        <SelectItem key={temp} value={temp}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {temp}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Priority
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="priority"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <AlertCircle className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value || 'SELECT PRIORITY'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(LeadPriority).map((priority) => (
+                                                        <SelectItem key={priority} value={priority}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {priority}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Third Row - Industry & Business Size */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    Industry
+                                    <Star className="w-3 h-3 text-red-500" />
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="industry"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Building className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT INDUSTRY'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent className="overflow-y-auto max-h-60">
+                                                    {Object.values(Industry).map((industry) => (
+                                                        <SelectItem key={industry} value={industry}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {industry.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Business Size
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="businessSize"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Building2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? (() => {
+                                                            switch (field.value) {
+                                                                case 'STARTUP':
+                                                                    return '(1-10) STARTUP';
+                                                                case 'SMALL':
+                                                                    return '(11-50) SMALL';
+                                                                case 'MEDIUM':
+                                                                    return '(51-200) MEDIUM';
+                                                                case 'LARGE':
+                                                                    return '(201-1000) LARGE';
+                                                                case 'ENTERPRISE':
+                                                                    return '(1000+) ENTERPRISE';
+                                                                case 'UNKNOWN':
+                                                                    return 'UNKNOWN';
+                                                                default:
+                                                                    return field.value.replace(/_/g, ' ');
+                                                            }
+                                                        })() : 'SELECT SIZE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(BusinessSize).map((size) => {
+                                                        let displayText = '';
+                                                        switch (size) {
+                                                            case 'STARTUP':
+                                                                displayText = '(1-10) Startup';
+                                                                break;
+                                                            case 'SMALL':
+                                                                displayText = '(11-50) Small';
+                                                                break;
+                                                            case 'MEDIUM':
+                                                                displayText = '(51-200) Medium';
+                                                                break;
+                                                            case 'LARGE':
+                                                                displayText = '(201-1000) Large';
+                                                                break;
+                                                            case 'ENTERPRISE':
+                                                                displayText = '(1000+) Enterprise';
+                                                                break;
+                                                            case 'UNKNOWN':
+                                                                displayText = 'Unknown';
+                                                                break;
+                                                            default:
+                                                                displayText = size.replace(/_/g, ' ');
+                                                        }
+                                                        return (
+                                                            <SelectItem key={size} value={size}>
+                                                                <span className="text-[10px] font-normal font-body">
+                                                                    {displayText}
+                                                                </span>
+                                                            </SelectItem>
+                                                        );
+                                                    })}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Fourth Row - Budget Range & Quality Rating */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    Budget Range
+                                    <Star className="w-3 h-3 text-red-500" />
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="budgetRange"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <DollarSign className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT BUDGET'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(BudgetRange).map((budget) => (
+                                                        <SelectItem key={budget} value={budget}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {budget.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    Quality Rating (1-5)
+                                    <Star className="w-3 h-3 text-red-500" />
+                                </Label>
+                                <Input
+                                    {...register('userQualityRating', {
+                                        setValueAs: (v) => v === "" ? undefined : parseInt(v, 10),
+                                    })}
+                                    type="number"
+                                    min="1"
+                                    max="5"
+                                    placeholder="Rate lead quality (1-5)"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.userQualityRating && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.userQualityRating.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Fifth Row - Timeline & Communication Preference */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Purchase Timeline
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="purchaseTimeline"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT TIMELINE'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(Timeline).map((timeline) => (
+                                                        <SelectItem key={timeline} value={timeline}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {timeline.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Preferred Communication
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="preferredCommunication"
+                                    render={({ field }) => (
+                                        <div className="relative">
+                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
+                                                <div className="flex items-center gap-2">
+                                                    <Phone className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT METHOD'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                            </div>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectContent>
+                                                    {Object.values(CommunicationPreference).map((pref) => (
+                                                        <SelectItem key={pref} value={pref}>
+                                                            <span className="text-[10px] font-normal font-body">
+                                                                {pref.replace(/_/g, ' ')}
+                                                            </span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Sixth Row - Job Title & Estimated Value */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Job Title
+                                </Label>
+                                <Input
+                                    {...register('jobTitle')}
+                                    placeholder="e.g. Marketing Manager"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.jobTitle && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.jobTitle.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Estimated Value (R)
+                                </Label>
+                                <Input
+                                    {...register('estimatedValue', {
+                                        setValueAs: (v) => v === "" ? undefined : parseFloat(v),
+                                    })}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="e.g. 50000.00"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.estimatedValue && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.estimatedValue.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* Lead Image Upload */}
                 <Card className="border-border/50">

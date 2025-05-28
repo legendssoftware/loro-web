@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 interface LeadsKanbanProps {
     leadsByStatus: Record<LeadStatus, Lead[]>;
     onUpdateLeadStatus: (leadId: number, newStatus: string, reason?: string, description?: string, nextStep?: string) => void;
+    onUpdateLead: (leadId: number, updateData: any) => void;
     onDeleteLead: (leadId: number) => void;
     onAddLead?: () => void;
 }
@@ -27,6 +28,7 @@ const EmptyColumn = memo(() => (
 export function LeadsKanban({
     leadsByStatus,
     onUpdateLeadStatus,
+    onUpdateLead,
     onDeleteLead,
     onAddLead,
 }: LeadsKanbanProps) {
@@ -71,6 +73,7 @@ export function LeadsKanban({
                                 key={lead?.uid}
                                 lead={lead}
                                 onUpdateStatus={onUpdateLeadStatus}
+                                onUpdate={onUpdateLead}
                                 onDelete={onDeleteLead}
                                 index={index}
                                 id={status === LeadStatus.PENDING && index === 0 ? "lead-card-example" : undefined}
@@ -81,7 +84,7 @@ export function LeadsKanban({
                 </div>
             );
         },
-        [leadsByStatus, onUpdateLeadStatus, onDeleteLead, onAddLead],
+        [leadsByStatus, onUpdateLeadStatus, onUpdateLead, onDeleteLead, onAddLead],
     );
 
     return (

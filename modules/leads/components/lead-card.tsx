@@ -47,6 +47,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 interface LeadCardProps {
     lead: Lead;
     onUpdateStatus?: (leadId: number, newStatus: string, reason?: string, description?: string, nextStep?: string) => void;
+    onUpdate?: (leadId: number, updateData: any) => void;
     onDelete?: (leadId: number) => void;
     index?: number;
     id?: string;
@@ -66,10 +67,105 @@ interface Template {
     tone: ToneType;
 }
 
+// Types for AI requests - keeping only what we need
+interface EnhancedLeadData {
+    uid: number;
+    name: string;
+    email: string;
+    phone: string;
+    companyName?: string;
+    jobTitle?: string;
+    status: string;
+    temperature?: string;
+    source?: string;
+    budgetRange?: string;
+    userQualityRating?: number;
+    notes?: string;
+    industry?: string;
+    businessSize?: string;
+    estimatedValue?: number;
+    daysSinceLastResponse?: number;
+    lastContactDate?: string;
+    painPoints?: string[];
+    competitorInfo?: string;
+    referralSource?: string;
+    campaignName?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    assignee?: string;
+    customFields?: Record<string, any>;
+    // Enhanced lead intelligence
+    priority?: string;
+    intent?: string;
+    purchaseTimeline?: string;
+    preferredCommunication?: string;
+    // Activity and engagement data
+    totalInteractions?: number;
+    activityData?: {
+        engagementLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+        lastEngagementType: string;
+        unresponsiveStreak: number;
+    };
+    // Scoring data
+    scoringData?: {
+        totalScore: number;
+        engagementScore: number;
+        demographicScore: number;
+        behavioralScore: number;
+        fitScore: number;
+    };
+}
+
+interface EmailTemplateRequest {
+    recipientName: string;
+    recipientEmail: string;
+    leadData?: EnhancedLeadData;
+    templateType: 'introduction' | 'follow_up' | 'proposal' | 'objection_handling' | 'closing' | 're_engagement' | 'referral' | 'upsell' | 'check_in' | 'nurture' | 'educational' | 'urgent_response' | 'value_demonstration' | 'social_proof';
+    tone: {
+        baseTone: string;
+        intensity: string;
+        regionalAdaptation: string;
+        industrySpecific: boolean;
+    };
+    customMessage?: string;
+    contextNotes?: string;
+    industryInsights?: string[];
+    competitiveContext?: string[];
+    urgencyFactors?: string[];
+    businessContext?: {
+        companyNews?: string[];
+        marketConditions?: string[];
+        seasonalFactors?: string[];
+    };
+}
+
+interface MessageTemplateRequest {
+    recipientName: string;
+    recipientPhone: string;
+    messageType: 'sms' | 'whatsapp';
+    templateType: 'follow_up' | 'appointment' | 'reminder' | 'promotion' | 'thank_you';
+    leadData?: any;
+    tone: string;
+    customMessage?: string;
+}
+
+// Define enhanced template type 
+type EnhancedTemplateType = 'introduction' | 'follow_up' | 'proposal' | 'objection_handling' | 'closing' | 're_engagement' | 'referral' | 'upsell' | 'check_in' | 'nurture' | 'educational' | 'urgent_response' | 'value_demonstration' | 'social_proof';
+
+// Define tone configuration
+interface ToneConfiguration {
+    baseTone: string;
+    intensity: string;
+    regionalAdaptation: string;
+    industrySpecific: boolean;
+}
+
 // Create the LeadCard as a standard component
 function LeadCardComponent({
     lead,
     onUpdateStatus,
+    onUpdate,
     onDelete,
     index = 0,
     id,
@@ -81,6 +177,9 @@ function LeadCardComponent({
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [customMessage, setCustomMessage] = useState('');
     const [isGeneratingTemplates, setIsGeneratingTemplates] = useState(false);
+    const [availableTemplates, setAvailableTemplates] = useState<Template[]>([]);
+    const [templatesCache, setTemplatesCache] = useState<Map<string, Template[]>>(new Map());
+    const [isRegenerating, setIsRegenerating] = useState(false);
 
     // Use CSS variables for animation delay - match tasks component's variable name
     const cardStyle = {
@@ -105,9 +204,23 @@ function LeadCardComponent({
         [onDelete],
     );
 
-    const formatDate = (date?: Date) => {
+    const formatDate = (date?: Date | string | null) => {
         if (!date) return null;
-        return format(new Date(date), 'MMM d, yyyy');
+        
+        try {
+            // Handle both Date objects and date strings
+            const dateObj = date instanceof Date ? date : new Date(date);
+            
+            // Check if the date is valid
+            if (isNaN(dateObj.getTime())) {
+                return null;
+            }
+            
+            return format(dateObj, 'MMM d, yyyy');
+        } catch (error) {
+            console.warn('Date formatting error:', error, 'for date:', date);
+            return null;
+        }
     };
 
     const formatNameInitialSurname = (name: string) => {
@@ -216,12 +329,110 @@ function LeadCardComponent({
         [],
     );
 
+    // Generate cache key for templates
+    const getCacheKey = useCallback((tone: ToneType, actionType: Exclude<ActionType, null>) => {
+        return `${actionType}-${tone}-${lead.uid}`;
+    }, [lead.uid]);
+
+    // Clear all states when sheet closes
     const closeSheet = useCallback(() => {
         setActiveSheet(null);
         setSelectedTemplate(null);
         setIsPreviewMode(false);
         setCustomMessage('');
         setSelectedTone('professional');
+        setAvailableTemplates([]);
+        setIsGeneratingTemplates(false);
+        setIsRegenerating(false);
+    }, []);
+
+    // Handle template regeneration
+    const handleRegenerateTemplates = useCallback(async () => {
+        if (!activeSheet) return;
+        
+        setIsRegenerating(true);
+        setIsGeneratingTemplates(true);
+        setAvailableTemplates([]);
+        
+        try {
+            // Direct template generation without dependencies
+            const templates = await generateTemplates(selectedTone, activeSheet);
+            setAvailableTemplates(templates);
+        } catch (error) {
+            console.error('Error regenerating templates:', error);
+            const fallbackTemplates = generateFallbackTemplates(lead, selectedTone, activeSheet);
+            setAvailableTemplates(fallbackTemplates);
+        } finally {
+            setIsGeneratingTemplates(false);
+            setIsRegenerating(false);
+        }
+    }, [activeSheet, selectedTone, lead]);
+
+    // Handle tone change
+    const handleToneChange = useCallback(async (newTone: ToneType) => {
+        setSelectedTone(newTone);
+        
+        if (activeSheet) {
+            // If in preview mode, exit it first
+            if (isPreviewMode) {
+                setIsPreviewMode(false);
+                setSelectedTemplate(null);
+                setCustomMessage('');
+            }
+            
+            // Generate templates for new tone
+            setIsGeneratingTemplates(true);
+            setAvailableTemplates([]);
+            
+            try {
+                const templates = await generateTemplates(newTone, activeSheet);
+                setAvailableTemplates(templates);
+            } catch (error) {
+                console.error('Error changing tone:', error);
+                const fallbackTemplates = generateFallbackTemplates(lead, newTone, activeSheet);
+                setAvailableTemplates(fallbackTemplates);
+            } finally {
+                setIsGeneratingTemplates(false);
+            }
+        }
+    }, [activeSheet, isPreviewMode, lead]);
+
+    // Handle going back to template selection
+    const handleBackToTemplates = useCallback(() => {
+        setIsPreviewMode(false);
+        setSelectedTemplate(null);
+        setCustomMessage('');
+        // Templates should already be loaded
+    }, []);
+
+    // Load templates when sheet opens
+    useEffect(() => {
+        if (activeSheet && !isGeneratingTemplates) {
+            const loadInitialTemplates = async () => {
+                setIsGeneratingTemplates(true);
+                setAvailableTemplates([]);
+                
+                try {
+                    const templates = await generateTemplates(selectedTone, activeSheet);
+                    setAvailableTemplates(templates);
+                } catch (error) {
+                    console.error('Error loading initial templates:', error);
+                    const fallbackTemplates = generateFallbackTemplates(lead, selectedTone, activeSheet);
+                    setAvailableTemplates(fallbackTemplates);
+                } finally {
+                    setIsGeneratingTemplates(false);
+                }
+            };
+            
+            loadInitialTemplates();
+        }
+    }, [activeSheet]); // Only depend on activeSheet to avoid loops
+
+    // Handle template selection
+    const handleTemplateSelect = useCallback((template: Template) => {
+        setSelectedTemplate(template);
+        setCustomMessage(template.content);
+        setIsPreviewMode(true);
     }, []);
 
     // Get sheet title based on action type
@@ -255,487 +466,422 @@ function LeadCardComponent({
         }
     };
 
-    // Enhanced AI v4 Template Generation - Context-aware, time-aware, and intelligent
+    // Helper function to safely convert dates to ISO strings
+    const safeISOString = (date: Date | string | undefined | null): string | undefined => {
+        if (!date) return undefined;
+        
+        try {
+            // If it's already a Date object, use toISOString()
+            if (date instanceof Date) {
+                return date.toISOString();
+            }
+            
+            // If it's a string, try to convert to Date first
+            if (typeof date === 'string') {
+                const dateObj = new Date(date);
+                // Check if the date is valid
+                if (!isNaN(dateObj.getTime())) {
+                    return dateObj.toISOString();
+                }
+                // If conversion failed, return the original string if it looks like an ISO string
+                if (date.includes('T') || date.includes('-')) {
+                    return date;
+                }
+            }
+            
+            return undefined;
+        } catch (error) {
+            console.warn('Date conversion error:', error, 'for date:', date);
+            return undefined;
+        }
+    };
+
+    // Helper function to safely calculate days since a date
+    const safeDaysSince = (date: Date | string | undefined | null): number => {
+        if (!date) return 0;
+        
+        try {
+            const dateObj = date instanceof Date ? date : new Date(date);
+            if (isNaN(dateObj.getTime())) return 0;
+            
+            return Math.floor((new Date().getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
+        } catch (error) {
+            console.warn('Days calculation error:', error, 'for date:', date);
+            return 0;
+        }
+    };
+
     const generateTemplates = useCallback(async (tone: ToneType, actionType: Exclude<ActionType, null>) => {
-        setIsGeneratingTemplates(true);
+        try {
+            if (actionType === 'email') {
+                // Enhanced AI request for highly personalized email generation
+                const emailRequest: EmailTemplateRequest = {
+                    recipientName: lead.name,
+                    recipientEmail: lead.email,
+                    leadData: {
+                        uid: lead.uid,
+                        name: lead.name,
+                        email: lead.email,
+                        phone: lead.phone,
+                        companyName: lead.companyName,
+                        jobTitle: lead.jobTitle,
+                        status: lead.status,
+                        temperature: lead.temperature,
+                        source: lead.source,
+                        budgetRange: lead.budgetRange,
+                        userQualityRating: lead.userQualityRating,
+                        notes: lead.notes,
+                        industry: lead.industry || lead.branch?.name, // Enhanced industry context
+                        businessSize: lead.businessSize,
+                        estimatedValue: lead.estimatedValue,
+                        daysSinceLastResponse: safeDaysSince(lead.updatedAt),
+                        lastContactDate: safeISOString(lead.updatedAt),
+                        painPoints: lead.notes ? [lead.notes] : undefined,
+                        competitorInfo: lead.competitorInfo,
+                        referralSource: lead.source,
+                        campaignName: lead.campaignName,
+                        utmSource: lead.utmSource,
+                        utmMedium: lead.utmMedium,
+                        utmCampaign: lead.utmCampaign,
+                        assignee: lead.owner?.name,
+                        // Enhanced lead intelligence
+                        priority: lead.priority,
+                        intent: lead.intent,
+                        purchaseTimeline: lead.purchaseTimeline,
+                        preferredCommunication: lead.preferredCommunication,
+                        // Activity and engagement data
+                        totalInteractions: 0, // Would come from CRM history
+                        activityData: {
+                            engagementLevel: lead.temperature === 'HOT' ? 'HIGH' as const : 
+                                           lead.temperature === 'WARM' ? 'MEDIUM' as const : 'LOW' as const,
+                            lastEngagementType: `Lead created via ${lead.source || 'unknown source'}`,
+                            unresponsiveStreak: safeDaysSince(lead.createdAt)
+                        },
+                        // Scoring data based on available lead info
+                        scoringData: {
+                            totalScore: (lead.userQualityRating || 0) * 20, // Convert 1-5 rating to 0-100 score
+                            engagementScore: lead.temperature === 'HOT' ? 90 : 
+                                           lead.temperature === 'WARM' ? 60 : 30,
+                            demographicScore: lead.companyName && lead.jobTitle ? 80 : 40,
+                            behavioralScore: lead.notes ? 70 : 30,
+                            fitScore: lead.budgetRange && lead.industry ? 80 : 50
+                        }
+                    },
+                    templateType: getTemplateTypeFromLeadStatus(lead.status),
+                    tone: mapToneToConfiguration(tone),
+                    // Enhanced contextual information
+                    customMessage: lead.notes ? 
+                        `Lead Context: ${lead.notes}. Quality Rating: ${lead.userQualityRating || 'Not rated'}/5. 
+                         Budget Range: ${lead.budgetRange || 'Not specified'}. 
+                         Lead Temperature: ${lead.temperature || 'COLD'}.` : 
+                        `Quality Rating: ${lead.userQualityRating || 'Not rated'}/5. Lead Temperature: ${lead.temperature || 'COLD'}.`,
+                    contextNotes: `Lead created ${safeDaysSince(lead.createdAt)} days ago via ${lead.source || 'unknown source'}. 
+                                  Current status: ${lead.status}. 
+                                  ${lead.companyName ? `Works at ${lead.companyName}` : 'Company not specified'}. 
+                                  ${lead.jobTitle ? `Role: ${lead.jobTitle}` : 'Job title not specified'}.
+                                  ${lead.estimatedValue ? `Estimated deal value: R${lead.estimatedValue.toLocaleString()}` : ''}`,
+                    // Industry insights for better personalization
+                    industryInsights: lead.industry ? [
+                        `${lead.industry} industry trends and challenges in South Africa`,
+                        `Digital transformation opportunities in ${lead.industry}`,
+                        `Economic factors affecting ${lead.industry} businesses`,
+                        `Growth strategies for ${lead.industry} companies`
+                    ] : [
+                        'General business trends in South Africa',
+                        'Digital transformation opportunities',
+                        'Economic recovery strategies',
+                        'Business efficiency improvements'
+                    ],
+                    // Competitive context
+                    competitiveContext: lead.competitorInfo ? [
+                        `Currently considering: ${lead.competitorInfo}`,
+                        'Alternative solution comparison points',
+                        'Unique value proposition positioning'
+                    ] : [
+                        'Market positioning advantages',
+                        'Competitive differentiation factors',
+                        'Industry-leading solutions'
+                    ],
+                    // Urgency factors based on lead data
+                    urgencyFactors: [
+                        ...(lead.temperature === 'HOT' ? ['High engagement lead - immediate follow-up required'] : []),
+                        ...(lead.purchaseTimeline === 'IMMEDIATE' ? ['Urgent purchase timeline indicated'] : []),
+                        ...(safeDaysSince(lead.createdAt) > 7 ? ['Lead aging - requires prompt attention'] : []),
+                        ...(lead.userQualityRating && lead.userQualityRating >= 4 ? ['High quality lead - priority prospect'] : []),
+                        ...(lead.estimatedValue && lead.estimatedValue > 100000 ? ['High-value opportunity'] : []),
+                        ...(lead.budgetRange && ['OVER_1M', '500K_1M', '250K_500K'].includes(lead.budgetRange) ? ['Significant budget capacity'] : []),
+                        'Year-end planning considerations',
+                        'Budget cycle timing opportunities'
+                    ],
+                    // Business context
+                    businessContext: {
+                        companyNews: lead.companyName ? [
+                            `Recent developments at ${lead.companyName}`,
+                            `${lead.companyName} growth opportunities and challenges`,
+                            `Market position of ${lead.companyName}`,
+                            `Industry reputation of ${lead.companyName}`
+                        ] : [
+                            'General company growth strategies',
+                            'Market expansion opportunities',
+                            'Operational efficiency improvements'
+                        ],
+                        marketConditions: [
+                            'South African business environment and economic factors',
+                            'Load shedding and infrastructure challenges',
+                            'Digital transformation acceleration post-COVID',
+                            lead.industry ? `${lead.industry} sector trends and opportunities` : 'Cross-industry market trends',
+                            'Currency fluctuation impacts on business',
+                            'Skills shortage and talent retention challenges'
+                        ],
+                        seasonalFactors: [
+                            'Year-end planning and budget preparation',
+                            'Q4 decision-making acceleration',
+                            'New year strategic planning cycles',
+                            'Holiday period business continuity',
+                            'Annual review and goal-setting periods'
+                        ]
+                    }
+                };
 
-        // Enhanced context analysis for better templates
-        const leadContext = {
-            // Lead basic info
-            name: lead.name,
-            email: lead.email,
-            phone: lead.phone,
-            companyName: lead.companyName,
-
-            // Lead status and stage analysis
-            status: lead.status,
-            isNewLead: lead.status === 'PENDING',
-            isConverted: lead.status === 'CONVERTED',
-            isDeclined: lead.status === 'DECLINED',
-            needsReview: lead.status === 'REVIEW',
-            isApproved: lead.status === 'APPROVED',
-
-            // Time-aware context
-            daysSinceCreated: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)),
-            isRecentLead: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)) <= 3,
-            isStale: Math.floor((new Date().getTime() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)) > 14,
-            createdAt: lead.createdAt,
-            currentQuarter: Math.floor(new Date().getMonth() / 3) + 1,
-
-            // Lead activity and engagement
-            hasNotes: !!lead.notes,
-            notes: lead.notes,
-            hasOwner: !!lead.owner,
-            leadOwnerName: lead.owner?.name, // Person who created the lead
-            
-            // Current sender context (TODO: Get from current user session)
-            currentSenderName: '[Current User Name]', // This should come from logged-in user
-            isOwnerSending: false, // TODO: Check if current user is the lead owner
-            
-            // Status change context
-            hasStatusChanges: !!lead.changeHistory?.length,
-            lastStatusChange: lead.changeHistory?.[lead.changeHistory.length - 1],
-            statusChangeReason: lead.statusChangeReason,
-            statusChangeDescription: lead.statusChangeDescription,
-            nextStep: lead.nextStep,
-
-            // Branch context
-            branchName: lead.branch?.name,
-            branchLocation: lead.branch?.address ? `${lead.branch.address.city}, ${lead.branch.address.state}` : null,
-
-            // Tone-specific context
-            tone: tone,
-            urgencyLevel: tone === 'urgent' ? 'high' : tone === 'casual' ? 'low' : 'medium'
-        };
-
-        // Mock AI template generation with enhanced context awareness
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-
-                const generateContextualContent = (templateType: string, action: string) => {
-            // Enhanced AI v4 Content Generation - Complete, professional, and contextually aware
-            
-            // Time and context awareness
-            const now = new Date();
-            const timeOfDay = now.getHours();
-            const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
-            const currentDate = now.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            // Enhanced greetings based on time and tone
-            const getGreeting = () => {
-                const baseGreeting = timeOfDay < 12 ? 'Good morning' : timeOfDay < 17 ? 'Good afternoon' : 'Good evening';
+                // Call email API route directly
+                const emailResponse = await fetch('/api/ai/email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(emailRequest),
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                });
                 
-                if (tone === 'warm' || tone === 'friendly') {
-                    return timeOfDay < 12 ? 'Good morning' : timeOfDay < 17 ? 'Good afternoon' : 'Good evening';
-                } else if (tone === 'casual') {
-                    return timeOfDay < 12 ? 'Morning' : timeOfDay < 17 ? 'Afternoon' : 'Evening';
-                } else if (tone === 'professional') {
-                    return baseGreeting;
+                // Create templates from AI response
+                const templates: Template[] = [
+                    {
+                        id: '1',
+                        title: `🤖 AI Email: ${emailResponse.subject}`,
+                        content: `Subject: ${emailResponse.subject}\n\n${emailResponse.body}`,
+                        tone
+                    }
+                ];
+
+                // Add alternative templates if provided
+                if (emailResponse.alternativeSubjectLines && emailResponse.alternativeSubjectLines.length > 0) {
+                    emailResponse.alternativeSubjectLines.forEach((subject: string, index: number) => {
+                        templates.push({
+                            id: `${index + 2}`,
+                            title: `📧 Alternative: ${subject}`,
+                            content: `Subject: ${subject}\n\n${emailResponse.body}`,
+                            tone
+                        });
+                    });
                 }
-                return baseGreeting;
-            };
 
-            // Status-specific intelligent context
-            const statusInsights = {
-                'PENDING': {
-                    context: 'new inquiry',
-                    action: 'discuss how we can help',
-                    urgency: 'timely response',
-                    nextStep: 'schedule an initial consultation'
-                },
-                'REVIEW': {
-                    context: 'application under review',
-                    action: 'provide an update on progress',
-                    urgency: 'important update',
-                    nextStep: 'finalize the review process'
-                },
-                'APPROVED': {
-                    context: 'approved application',
-                    action: 'move forward with next steps',
-                    urgency: 'ready to proceed',
-                    nextStep: 'begin implementation'
-                },
-                'DECLINED': {
-                    context: 'previous inquiry',
-                    action: 'explore alternative solutions',
-                    urgency: 'new opportunities',
-                    nextStep: 'discuss revised options'
-                },
-                'CONVERTED': {
-                    context: 'successful partnership',
-                    action: 'ensure continued success',
-                    urgency: 'ongoing support',
-                    nextStep: 'optimize current solutions'
-                },
-                'CANCELLED': {
-                    context: 'previous interest',
-                    action: 'reconnect and explore new possibilities',
-                    urgency: 'changed circumstances',
-                    nextStep: 'reassess current needs'
+                return templates;
+
+            } else if (actionType === 'message') {
+                // Prepare AI service request for message generation
+                const messageRequest: MessageTemplateRequest = {
+                    recipientName: lead.name,
+                    recipientPhone: lead.phone,
+                    messageType: 'sms',
+                    templateType: getMessageTypeFromLeadStatus(lead.status),
+                    leadData: {
+                        uid: lead.uid,
+                        name: lead.name,
+                        email: lead.email,
+                        phone: lead.phone,
+                        status: lead.status,
+                        source: lead.source,
+                        userQualityRating: lead.userQualityRating,
+                        lastContactDate: safeISOString(lead.updatedAt),
+                        estimatedValue: lead.estimatedValue,
+                        assignee: lead.owner?.name,
+                        notes: lead.notes,
+                        temperature: lead.temperature,
+                        companyName: lead.companyName,
+                    },
+                    tone: tone === 'professional' ? 'professional' :
+                          tone === 'friendly' ? 'friendly' :
+                          tone === 'urgent' ? 'urgent' : 'professional',
+                    customMessage: lead.notes ? `Context: ${lead.notes}` : undefined,
+                };
+
+                // Call message API route directly
+                const messageResponse = await fetch('/api/ai/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(messageRequest),
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                });
+                
+                // Create templates from AI response
+                const templates: Template[] = [
+                    {
+                        id: '1',
+                        title: `📱 AI SMS Message`,
+                        content: messageResponse.message,
+                        tone
+                    }
+                ];
+
+                // Add fallback message if provided
+                if (messageResponse.fallbackMessage) {
+                    templates.push({
+                        id: '2',
+                        title: `📱 Shorter SMS Version`,
+                        content: messageResponse.fallbackMessage,
+                        tone
+                    });
                 }
-            };
 
-            // Advanced tone-based language and personality
-            const tonePersonality = {
-                'professional': {
-                    style: 'formal and business-focused',
-                    language: 'precise and respectful',
-                    closing: 'I look forward to hearing from you.',
-                    signature: 'Best regards,'
-                },
-                'friendly': {
-                    style: 'warm and approachable',
-                    language: 'conversational yet professional',
-                    closing: 'Hope to hear from you soon!',
-                    signature: 'Warm regards,'
-                },
-                'consultative': {
-                    style: 'advisory and solution-focused',
-                    language: 'insightful and strategic',
-                    closing: 'I believe we can create significant value together.',
-                    signature: 'Best regards,'
-                },
-                'empathetic': {
-                    style: 'understanding and supportive',
-                    language: 'caring and considerate',
-                    closing: 'I understand your needs and am here to help.',
-                    signature: 'With understanding,'
-                },
-                'collaborative': {
-                    style: 'partnership-oriented',
-                    language: 'inclusive and team-focused',
-                    closing: 'Let\'s work together on this.',
-                    signature: 'Looking forward to our collaboration,'
-                },
-                'strategic': {
-                    style: 'analytical and forward-thinking',
-                    language: 'data-driven and insightful',
-                    closing: 'The strategic benefits are significant.',
-                    signature: 'Strategically yours,'
-                },
-                'urgent': {
-                    style: 'direct and time-sensitive',
-                    language: 'clear and immediate',
-                    closing: 'Time is of the essence - let\'s connect soon.',
-                    signature: 'Urgently yours,'
-                },
-                'assertive': {
-                    style: 'confident and decisive',
-                    language: 'strong and purposeful',
-                    closing: 'I\'m confident this is the right move.',
-                    signature: 'Confidently,'
-                },
-                'warm': {
-                    style: 'personal and caring',
-                    language: 'heartfelt and genuine',
-                    closing: 'Looking forward to connecting with you personally.',
-                    signature: 'Warmly,'
-                },
-                'casual': {
-                    style: 'relaxed and informal',
-                    language: 'easy-going yet professional',
-                    closing: 'Let me know what works for you!',
-                    signature: 'Cheers,'
-                }
-            };
+                return templates;
 
-            const currentPersonality = tonePersonality[tone] || tonePersonality['professional'];
-            const currentStatusInsight = statusInsights[leadContext.status] || statusInsights['PENDING'];
+            } else if (actionType === 'call') {
+                // For call scripts, we'll still use local generation since there's no specific call AI endpoint
+                const templates: Template[] = [
+                    {
+                        id: '1',
+                        title: `📞 Call Script - ${tone} Approach`,
+                        content: generateCallScript(lead, tone),
+                        tone
+                    }
+                ];
 
-            // Business card integration  
-            const businessCardSection = lead?.owner?.businesscardURL 
-                ? `\n\n📧 My Business Card: ${lead.owner.businesscardURL}\n`
-                : leadContext.currentSenderName !== '[Current User Name]'
-                ? `\n\n📧 Connect with me: ${leadContext.currentSenderName}\n`
-                : '';
-
-            // Company signature with all available details
-            const getCompanySignature = () => {
-                let signature = `\n\n${currentPersonality.signature}\n`;
-                signature += `${leadContext.currentSenderName}\n`;
-                
-                if (leadContext.branchName) {
-                    signature += `${leadContext.branchName}\n`;
-                }
-                
-                if (leadContext.branchLocation) {
-                    signature += `${leadContext.branchLocation}\n`;
-                }
-                
-                // Add business card if available
-                if (lead?.owner?.businesscardURL) {
-                    signature += `\n📧 View my business card: ${lead.owner.businesscardURL}\n`;
-                }
-                
-                // Removed AI reference as requested
-                
-                return signature;
-            };
-
-            // Generate content based on action type
-            if (action === 'email') {
-                let subject = '';
-                let content = '';
-                
-                switch (templateType) {
-                    case 'status-based':
-                        subject = `Re: ${leadContext.companyName || leadContext.name} - ${currentStatusInsight.context} update`;
-                        content = `Subject: ${subject}\n\n`;
-                        content += `${getGreeting()} ${leadContext.name},\n\n`;
-                        
-                        // Opening based on lead status and time context
-                        if (leadContext.isRecentLead) {
-                            content += `Thank you for reaching out to us recently. I wanted to personally follow up on your ${currentStatusInsight.context}.`;
-                        } else if (leadContext.isStale) {
-                            content += `I hope this email finds you well. It's been ${leadContext.daysSinceCreated} days since we last connected, and I wanted to provide you with an important update regarding your ${currentStatusInsight.context}.`;
-                        } else {
-                            content += `I hope you're having a great ${dayOfWeek}. I wanted to reach out regarding your ${currentStatusInsight.context} and ${currentStatusInsight.action}.`;
-                        }
-                        
-                        content += `\n\n`;
-                        
-                        // Lead-specific context
-                        if (leadContext.notes) {
-                            content += `**Background Context:**\n`;
-                            content += `Based on our previous discussions about "${leadContext.notes}", I've been working on solutions that specifically address your needs.\n\n`;
-                        }
-                        
-                        // Status-specific information
-                        content += `**Current Status Update:**\n`;
-                        content += `Your application is currently "${leadContext.status}" which means we're ready to ${currentStatusInsight.action}. `;
-                        
-                        if (leadContext.nextStep) {
-                            content += `The next step, as we discussed, is: ${leadContext.nextStep}.\n\n`;
-                        } else {
-                            content += `I believe the next logical step is to ${currentStatusInsight.nextStep}.\n\n`;
-                        }
-                        
-                        // Company/branch specific value proposition
-                        if (leadContext.branchName && leadContext.branchLocation) {
-                            content += `**Our Local Advantage:**\n`;
-                            content += `Our ${leadContext.branchName} team in ${leadContext.branchLocation} has been specifically prepared to support your requirements.\n\n`;
-                        }
-                        
-                        // Team collaboration reference (if lead owner is different from sender)
-                        if (leadContext.leadOwnerName && !leadContext.isOwnerSending) {
-                            content += `**Team Collaboration:**\n`;
-                            content += `I've been working closely with ${leadContext.leadOwnerName}, who originally handled your inquiry, to ensure continuity and the best possible service.\n\n`;
-                        }
-                        
-                        // Call to action based on tone
-                        content += `**Next Steps:**\n`;
-                        if (currentPersonality.style.includes('urgent') || tone === 'urgent') {
-                            content += `Given the time-sensitive nature of your ${currentStatusInsight.context}, I'd like to schedule a call within the next 24-48 hours to ${currentStatusInsight.action}.`;
-                        } else {
-                            content += `I'd love to schedule a convenient time this week to ${currentStatusInsight.action} and answer any questions you might have.`;
-                        }
-                        
-                        content += `\n\n${currentPersonality.closing}`;
-                        content += getCompanySignature();
-                        break;
-
-                    case 'time-aware':
-                        subject = `${leadContext.isRecentLead ? '⏰ Quick Follow-up' : '🔄 Reconnecting'} - ${leadContext.name}`;
-                        content = `Subject: ${subject}\n\n`;
-                        content += `${getGreeting()} ${leadContext.name},\n\n`;
-                        
-                        // Time-contextual opening
-                        if (leadContext.isRecentLead) {
-                            content += `I wanted to reach out while your inquiry is still fresh in both our minds. Thank you for taking the time to connect with us ${leadContext.daysSinceCreated === 0 ? 'today' : leadContext.daysSinceCreated === 1 ? 'yesterday' : `${leadContext.daysSinceCreated} days ago`}.`;
-                        } else if (leadContext.isStale) {
-                            content += `I hope this ${dayOfWeek} finds you well! I realized it's been ${leadContext.daysSinceCreated} days since we last spoke, and I didn't want your inquiry to fall through the cracks.`;
-                        } else {
-                            content += `I hope you're having a productive ${dayOfWeek}! I wanted to check in and see how things are progressing since we last connected.`;
-                        }
-                        
-                        content += `\n\n`;
-                        
-                        // Timing-based value proposition
-                        content += `**Perfect Timing:**\n`;
-                        const quarterContext = leadContext.currentQuarter === 1 ? 'Q1 planning season' : 
-                                            leadContext.currentQuarter === 2 ? 'mid-year optimization period' :
-                                            leadContext.currentQuarter === 3 ? 'peak performance quarter' : 
-                                            'year-end strategy period';
-                        
-                        content += `Given that we're in ${quarterContext}, this is actually an ideal time to ${currentStatusInsight.action}. Many of our clients find that ${leadContext.status.toLowerCase()} applications during this period yield the best results.\n\n`;
-                        
-                        // Lead specific context with time relevance
-                        if (leadContext.notes) {
-                            content += `**Relevant to Your Needs:**\n`;
-                            content += `Regarding your specific requirements about "${leadContext.notes.substring(0, 100)}${leadContext.notes.length > 100 ? '...' : ''}", I've been monitoring industry trends and have some insights that could be valuable.\n\n`;
-                        }
-                        
-                        // Time-sensitive call to action
-                        content += `**Let's Reconnect:**\n`;
-                        content += `${currentPersonality.closing} Would you have 15-20 minutes this week for a brief call? I have some updates that I think you'll find quite relevant to your situation.`;
-                        
-                        content += getCompanySignature();
-                        break;
-
-                    case 'personalized':
-                        subject = `Customized solution for ${leadContext.companyName || leadContext.name} | ${currentDate}`;
-                        content = `Subject: ${subject}\n\n`;
-                        content += `${getGreeting()} ${leadContext.name},\n\n`;
-                        
-                        // Highly personalized opening
-                        if (leadContext.companyName) {
-                            content += `I've been doing some research on ${leadContext.companyName} and I'm impressed by what I've discovered. Based on your industry and current market position, I believe we have a solution that's perfectly aligned with your strategic objectives.`;
-                        } else {
-                            content += `I've been thinking about your specific situation and requirements, and I wanted to reach out with a personalized approach that I believe will be highly relevant to your needs.`;
-                        }
-                        
-                        content += `\n\n`;
-                        
-                        // Personalized insights
-                        content += `**Tailored to Your Situation:**\n`;
-                        if (leadContext.statusChangeReason) {
-                            content += `I understand that ${leadContext.statusChangeReason}, which is exactly why I wanted to present a customized approach.\n\n`;
-                        }
-                        
-                        // Adjust language based on who is sending vs who owns the lead
-                        if (leadContext.leadOwnerName && !leadContext.isOwnerSending) {
-                            content += `Given your current ${leadContext.status.toLowerCase()} status and the specific details you've shared with us, I've worked with ${leadContext.leadOwnerName} to develop a proposal that addresses your unique requirements.\n\n`;
-                        } else {
-                            content += `Given your current ${leadContext.status.toLowerCase()} status and the specific details you've shared with us, I've developed a proposal that addresses your unique requirements.\n\n`;
-                        }
-                        
-                        // Specific value proposition
-                        content += `**What Makes This Different:**\n`;
-                        content += `• Custom solution designed specifically for your needs\n`;
-                        content += `• Implementation timeline that works with your schedule\n`;
-                        content += `• Dedicated support from our ${leadContext.branchName || 'local'} team\n`;
-                        content += `• Flexible approach that adapts to your changing requirements\n\n`;
-                        
-                        // Notes integration
-                        if (leadContext.notes) {
-                            content += `**Addressing Your Specific Concerns:**\n`;
-                            content += `You mentioned: "${leadContext.notes}"\n`;
-                            content += `Our customized approach directly addresses these points with proven solutions.\n\n`;
-                        }
-                        
-                        // Strong call to action
-                        content += `**Ready to Move Forward:**\n`;
-                        content += `I'd love to walk you through this personalized proposal. When would be a good time for a 30-minute conversation where I can show you exactly how this solution fits your needs?`;
-                        
-                        content += `\n\n${currentPersonality.closing}`;
-                        content += getCompanySignature();
-                        break;
-                }
-                
-                return content;
-                
-            } else if (action === 'message') {
-                // Enhanced SMS generation with better context
-                let content = '';
-                
-                switch (templateType) {
-                    case 'status-based':
-                        content = `${getGreeting()} ${leadContext.name}! `;
-                        
-                        if (leadContext.isRecentLead) {
-                            content += `Thanks for your recent inquiry. `;
-                        }
-                        
-                        content += `Your ${leadContext.status.toLowerCase()} status means we're ready to ${currentStatusInsight.action}. `;
-                        
-                        if (tone === 'urgent') {
-                            content += `Can we connect today? Time-sensitive opportunities available.`;
-                        } else {
-                            content += `When would be a good time for a quick call this week?`;
-                        }
-                        
-                        if (lead?.owner?.businesscardURL) {
-                            content += ` My card: ${lead.owner.businesscardURL}`;
-                        }
-                        break;
-
-                    case 'time-aware':
-                        content = `${getGreeting()} ${leadContext.name}! `;
-                        
-                        if (leadContext.isStale) {
-                            content += `It's been ${leadContext.daysSinceCreated} days - perfect time to reconnect! `;
-                        } else if (leadContext.isRecentLead) {
-                            content += `Following up on your fresh inquiry while it's still top of mind. `;
-                        }
-                        
-                        if (leadContext.nextStep) {
-                            content += `Ready for: ${leadContext.nextStep}? `;
-                        }
-                        
-                        content += `Quick 15-min call this week?`;
-                        
-                        if (lead?.owner?.businesscardURL) {
-                            content += ` 📧 ${lead.owner.businesscardURL}`;
-                        }
-                        break;
-
-                    case 'personalized':
-                        content = `Hi ${leadContext.name}! `;
-                        
-                        if (leadContext.companyName) {
-                            content += `Have a custom solution for ${leadContext.companyName}. `;
-                        }
-                        
-                        if (leadContext.notes) {
-                            const shortNotes = leadContext.notes.substring(0, 30);
-                            content += `Re: ${shortNotes}${leadContext.notes.length > 30 ? '...' : ''} - `;
-                        }
-                        
-                        content += `personalized approach ready. Available for a quick call?`;
-                        
-                        if (lead?.owner?.businesscardURL) {
-                            content += ` Card: ${lead.owner.businesscardURL}`;
-                        }
-                        break;
-                }
-                
-                return content;
+                return templates;
             }
 
-            return '';
-        };
+            // Fallback if no action type matches
+            return [];
 
-        const templates: Template[] = [
-            {
-                id: '1',
-                title: `${leadContext.status}-Based ${actionType === 'email' ? 'Email' : 'Message'}`,
-                content: generateContextualContent('status-based', actionType),
-                tone
-            },
-            {
-                id: '2',
-                title: `Time-Aware ${actionType === 'email' ? 'Email' : 'Message'} (${leadContext.daysSinceCreated} days)`,
-                content: generateContextualContent('time-aware', actionType),
-                tone
-            },
-            {
-                id: '3',
-                title: `Personalized ${actionType === 'email' ? 'Email' : 'Message'}`,
-                content: generateContextualContent('personalized', actionType),
-                tone
-            }
-        ];
-
-        setIsGeneratingTemplates(false);
-        return templates;
+        } catch (error) {
+            console.error('Error generating templates with AI service:', error);
+            
+            // Fallback to basic templates if AI service fails
+            const fallbackTemplates = generateFallbackTemplates(lead, tone, actionType);
+            return fallbackTemplates;
+        }
     }, [lead]);
 
-    // Handle template selection
-    const handleTemplateSelect = useCallback((template: Template) => {
-        setSelectedTemplate(template);
-        setCustomMessage(template.content);
-        setIsPreviewMode(true);
-    }, []);
+    // Helper function to map lead status to email template type
+    const getTemplateTypeFromLeadStatus = (status: string): EnhancedTemplateType => {
+        switch (status) {
+            case 'PENDING':
+                return 'introduction';
+            case 'REVIEW':
+                return 'follow_up';
+            case 'APPROVED':
+                return 'closing';
+            case 'DECLINED':
+                return 're_engagement';
+            case 'CONVERTED':
+                return 'check_in';
+            case 'CANCELLED':
+                return 're_engagement';
+            default:
+                return 'follow_up';
+        }
+    };
+
+    // Helper function to map lead status to message template type
+    const getMessageTypeFromLeadStatus = (status: string): MessageTemplateRequest['templateType'] => {
+        switch (status) {
+            case 'PENDING':
+                return 'follow_up';
+            case 'REVIEW':
+                return 'reminder';
+            case 'APPROVED':
+                return 'thank_you';
+            case 'DECLINED':
+                return 'follow_up';
+            case 'CONVERTED':
+                return 'thank_you';
+            case 'CANCELLED':
+                return 'follow_up';
+            default:
+                return 'follow_up';
+        }
+    };
+
+    // Helper function to map tone to AI service configuration
+    const mapToneToConfiguration = (tone: ToneType): ToneConfiguration => {
+        const baseMapping: Record<ToneType, ToneConfiguration['baseTone']> = {
+            'professional': 'professional',
+            'friendly': 'friendly',
+            'urgent': 'urgent',
+            'consultative': 'consultative',
+            'empathetic': 'empathetic',
+            'collaborative': 'collaborative',
+            'strategic': 'results-driven',
+            'assertive': 'authoritative',
+            'warm': 'encouraging',
+            'casual': 'friendly',
+        };
+
+        return {
+            baseTone: baseMapping[tone] || 'professional',
+            intensity: tone === 'urgent' ? 'strong' : 
+                      tone === 'casual' ? 'subtle' : 'moderate',
+            regionalAdaptation: 'south_african',
+            industrySpecific: true
+        };
+    };
+
+    // Fallback template generation function (used only when AI service fails)
+    const generateFallbackTemplates = (lead: any, tone: ToneType, actionType: Exclude<ActionType, null>): Template[] => {
+        if (actionType === 'email') {
+            return [
+                {
+                    id: '1',
+                    title: `⚠️ Fallback ${tone} Email (AI Unavailable)`,
+                    content: `Subject: Following up on your inquiry - ${lead.name}\n\nDear ${lead.name},\n\nI hope this email finds you well. I wanted to follow up on your recent inquiry and see how we can assist you.\n\n${lead.notes ? `Regarding your specific needs: ${lead.notes}\n\n` : ''}I believe we have solutions that could be valuable for ${lead.companyName || 'your business'}.\n\nWould you have time for a brief call this week to discuss how we can help?\n\nBest regards,\nYour Sales Team\n\n[Note: This is a basic template. AI generation is currently unavailable.]`,
+                    tone
+                }
+            ];
+        } else if (actionType === 'message') {
+            return [
+                {
+                    id: '1',
+                    title: `⚠️ Fallback ${tone} SMS (AI Unavailable)`,
+                    content: `Hi ${lead.name}! Following up on your inquiry. Would you have time for a quick call to discuss how we can help ${lead.companyName || 'your business'}? Let me know what works for you. [Basic template - AI unavailable]`,
+                    tone
+                }
+            ];
+        } else {
+            return [
+                {
+                    id: '1',
+                    title: `📞 Basic ${tone} Call Script`,
+                    content: generateCallScript(lead, tone),
+                    tone
+                }
+            ];
+        }
+    };
+
+    // Call script generation function
+    const generateCallScript = (lead: any, tone: ToneType): string => {
+        const greeting = tone === 'casual' ? `Hi ${lead.name}` : 
+                        tone === 'friendly' ? `Hello ${lead.name}` : 
+                        `Good morning/afternoon ${lead.name}`;
+        
+        return `${greeting}, this is [Your Name] from [Company Name].\n\nI'm calling regarding your recent inquiry ${lead.notes ? `about ${lead.notes}` : 'with us'}.\n\nI wanted to personally reach out to see how we can best assist ${lead.companyName || 'your business'} and answer any questions you might have.\n\nDo you have a few minutes to discuss your needs and how we might be able to help?\n\n[Wait for response and engage based on their availability]\n\nKey Points to Cover:\n- Understand their specific requirements\n- Explain relevant solutions\n- Schedule follow-up if needed\n- Confirm next steps`;
+    };
 
     // Handle message editing
     const handleMessageChange = useCallback((value: string) => {
         setCustomMessage(value);
     }, []);
 
-        // Handle send action
+    // Handle send action
     const handleSendMessage = useCallback(() => {
         const messageData = {
             type: activeSheet,
@@ -759,7 +905,7 @@ function LeadCardComponent({
             }
         };
 
-                console.log('📧 EMAIL/MESSAGE DATA TO BE SENT:', {
+        console.log('📧 EMAIL/MESSAGE DATA TO BE SENT:', {
             ...messageData,
             preview: customMessage.substring(0, 100) + (customMessage.length > 100 ? '...' : '')
         });
@@ -774,7 +920,7 @@ function LeadCardComponent({
         closeSheet();
 
         // Show success message (you might want to use a toast here)
-        alert(`${activeSheet?.toUpperCase()} prepared successfully for ${lead.name}!\nCheck console for full details.`);
+        alert(`✅ ${activeSheet?.toUpperCase()} template generated successfully for ${lead.name}!\n\n📋 Template details have been logged to console for your review.\n\n💡 Next: Integrate with your email/SMS service to send automatically.`);
     }, [activeSheet, customMessage, lead, selectedTemplate, selectedTone, closeSheet]);
 
     // Handle call action
@@ -804,39 +950,6 @@ function LeadCardComponent({
 
         closeSheet();
     }, [lead, closeSheet]);
-
-    // Get available templates for current action type
-    const [availableTemplates, setAvailableTemplates] = useState<Template[]>([]);
-
-    // Load templates when tone or action changes
-    const loadTemplates = useCallback(async () => {
-        if (activeSheet && activeSheet !== null) {
-            const templates = await generateTemplates(selectedTone, activeSheet);
-            setAvailableTemplates(templates);
-        }
-    }, [activeSheet, selectedTone, generateTemplates]);
-
-    // Load templates when sheet opens or tone changes
-    useEffect(() => {
-        if (activeSheet) {
-            loadTemplates();
-        }
-    }, [activeSheet, selectedTone, loadTemplates]);
-
-    // Update selected template content when tone changes
-    useEffect(() => {
-        if (selectedTemplate && activeSheet) {
-            const updateTemplateContent = async () => {
-                const templates = await generateTemplates(selectedTone, activeSheet);
-                const updatedTemplate = templates.find(t => t.id === selectedTemplate.id);
-                if (updatedTemplate) {
-                    setSelectedTemplate(updatedTemplate);
-                    setCustomMessage(updatedTemplate.content);
-                }
-            };
-            updateTemplateContent();
-        }
-    }, [selectedTone, selectedTemplate, activeSheet, generateTemplates]);
 
     return (
         <>
@@ -1036,6 +1149,7 @@ function LeadCardComponent({
                     isOpen={isModalOpen}
                     onClose={closeModal}
                     onUpdateStatus={handleStatusChange}
+                    onUpdate={onUpdate}
                     onDelete={handleDelete}
                 />
             )}
@@ -1061,7 +1175,7 @@ function LeadCardComponent({
                             <label className="block mb-2 text-xs font-normal uppercase font-body text-muted-foreground">
                                 Communication Tone
                             </label>
-                            <Select value={selectedTone} onValueChange={(value: ToneType) => setSelectedTone(value)}>
+                            <Select value={selectedTone} onValueChange={(value: ToneType) => handleToneChange(value)}>
                                 <SelectTrigger className="h-10 text-xs font-body border-border/50 bg-background/50 hover:bg-background focus:ring-1 focus:ring-primary/20 focus:border-primary/30">
                                     <SelectValue placeholder="Choose your communication style" />
                                 </SelectTrigger>
@@ -1152,18 +1266,18 @@ function LeadCardComponent({
                         {!isPreviewMode ? (
                             /* Template Selection */
                             <div className="space-y-4">
-                                                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between">
                                     <h3 className="text-sm font-medium uppercase font-body">
                                         {isGeneratingTemplates ? 'Generating Templates...' : activeSheet === 'call' ? 'Choose Call Script' : 'Choose Template'}
                                     </h3>
                                     <Button
-                                        onClick={() => generateTemplates(selectedTone, activeSheet!)}
+                                        onClick={handleRegenerateTemplates}
                                         variant="ghost"
                                         size="sm"
-                                        disabled={isGeneratingTemplates}
+                                        disabled={isGeneratingTemplates || isRegenerating}
                                         className="text-[10px] font-body h-6 px-2"
                                     >
-                                        🔄 Regenerate
+                                        {isRegenerating ? '🔄 Regenerating...' : '🔄 Regenerate'}
                                     </Button>
                                 </div>
 
@@ -1171,8 +1285,33 @@ function LeadCardComponent({
                                     <div className="p-4 text-center border rounded-lg border-border bg-background/50">
                                         <div className="w-5 h-5 mx-auto mb-2 border-2 rounded-full animate-spin border-primary border-t-transparent"></div>
                                         <p className="text-[10px] text-muted-foreground font-body">
-                                            Generating personalized templates based on your selected tone...
+                                            🤖 AI is generating personalized {activeSheet === 'email' ? 'email templates' : activeSheet === 'message' ? 'SMS messages' : 'call scripts'} based on your selected tone and lead context...
                                         </p>
+                                        <p className="mt-2 text-[9px] text-muted-foreground/70 font-body">
+                                            This may take a few seconds
+                                        </p>
+                                    </div>
+                                ) : availableTemplates.length === 0 ? (
+                                    <div className="p-4 text-center border border-orange-200 rounded-lg bg-orange-50 dark:bg-orange-900/20 dark:border-orange-500/20">
+                                        <div className="w-8 h-8 mx-auto mb-2 text-orange-500">⚠️</div>
+                                        <p className="text-sm text-orange-800 dark:text-orange-200 font-body">
+                                            AI Template Generation Failed
+                                        </p>
+                                        <p className="mt-1 text-[10px] text-orange-600 dark:text-orange-300 font-body">
+                                            The AI service for {activeSheet === 'email' ? 'email' : 'SMS'} generation is currently unavailable. 
+                                            Basic fallback templates will be used instead.
+                                        </p>
+                                        <div className="mt-2 text-[9px] text-orange-500 dark:text-orange-400 font-body">
+                                            💡 AI templates provide personalized content based on lead context, status, and industry insights.
+                                        </div>
+                                        <Button
+                                            onClick={handleRegenerateTemplates}
+                                            variant="outline"
+                                            size="sm"
+                                            className="mt-3 text-xs text-orange-700 border-orange-300 hover:bg-orange-100 font-body"
+                                        >
+                                            🔄 Retry AI Generation
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
@@ -1194,7 +1333,7 @@ function LeadCardComponent({
                                                 </CardContent>
                                             </Card>
                                         ))}
-                                </div>
+                                    </div>
                                 )}
                             </div>
                         ) : (
@@ -1206,19 +1345,11 @@ function LeadCardComponent({
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <Button
-                                            onClick={() => generateTemplates(selectedTone, activeSheet!)}
+                                            onClick={handleBackToTemplates}
                                             variant="ghost"
                                             size="sm"
                                             disabled={isGeneratingTemplates}
                                             className="text-[10px] font-body h-6 px-2"
-                                        >
-                                            🔄 Regenerate
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setIsPreviewMode(false)}
-                                            className="text-sm font-body"
                                         >
                                             ← Back to {activeSheet === 'call' ? 'Scripts' : 'Templates'}
                                         </Button>

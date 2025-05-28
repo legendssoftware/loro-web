@@ -58,6 +58,7 @@ import {
     Building2,
     BriefcaseBusiness,
     TrendingUp,
+    Edit,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -76,6 +77,7 @@ import {
 } from '@/hooks/use-interactions-query';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
 import { Progress } from '@/components/ui/progress';
+import LeadForm from '@/modules/leads/components/leads-form';
 
 // Ensure this interface matches the one in lead.entity.ts or your shared types
 interface LeadStatusHistoryEntry extends LeadStatusHistoryEntryType {
@@ -94,6 +96,7 @@ interface LeadDetailsModalProps {
         nextStep?: string,
     ) => void;
     onDelete?: (leadId: number) => void;
+    onUpdate?: (leadId: number, updateData: any) => void;
 }
 
 export function LeadDetailsModal({
@@ -102,6 +105,7 @@ export function LeadDetailsModal({
     onClose,
     onUpdateStatus,
     onDelete,
+    onUpdate,
 }: LeadDetailsModalProps) {
     const [currentStatus, setCurrentStatus] = useState<LeadStatus>(lead.status);
     const [activeTab, setActiveTab] = useState('qualification');
@@ -121,6 +125,7 @@ export function LeadDetailsModal({
     const [newMessage, setNewMessage] = useState<string>('');
     const [attachments, setAttachments] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const profileData = useAuthStore(selectProfileData);
     const [localInteractions, setLocalInteractions] = useState<any[]>([]);
 
@@ -1484,6 +1489,41 @@ export function LeadDetailsModal({
         }
     };
 
+    const handleEditLead = () => {
+        console.log('🔧 Edit Lead button clicked for:', lead.name, 'ID:', lead.uid);
+        setIsEditModalOpen(true);
+    };
+
+    const handleLeadUpdate = async (updateData: any) => {
+        console.log('📝 Lead Update function called with data:', updateData);
+        console.log('🔄 onUpdate function available:', !!onUpdate);
+        console.log('📊 Original lead data for comparison:', {
+            uid: lead.uid,
+            name: lead.name,
+            owner: lead.owner,
+            ownerUid: lead.owner?.uid,
+            ownerUidType: typeof lead.owner?.uid
+        });
+        
+        if (!onUpdate) {
+            showErrorToast('Update function not available', toast);
+            return;
+        }
+
+        setIsUpdating(true);
+        try {
+            await onUpdate(lead.uid, updateData);
+            showSuccessToast('Lead updated successfully', toast);
+            setIsEditModalOpen(false);
+            onClose(); // Close the details modal to refresh the data
+        } catch (error) {
+            showErrorToast('Failed to update lead', toast);
+            console.error('Error updating lead:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const handleSendMessage = async () => {
         if ((!newMessage.trim() && attachments.length === 0) || isLoading)
             return;
@@ -1703,6 +1743,19 @@ export function LeadDetailsModal({
                                                 className="text-blue-600 w-7 h-7 dark:text-blue-400"
                                             />
                                         </Button>
+                                        {/* EDIT LEAD */}
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="text-indigo-800 border-indigo-200 rounded-full w-14 h-14 hover:bg-indigo-50 hover:border-indigo-300 dark:text-indigo-300 dark:hover:bg-indigo-900/20 dark:border-indigo-900/30"
+                                            onClick={handleEditLead}
+                                            title="Edit Lead"
+                                        >
+                                            <Edit
+                                                strokeWidth={1.2}
+                                                className="text-indigo-600 w-7 h-7 dark:text-indigo-400"
+                                            />
+                                        </Button>
                                         {/* CREATE TASK */}
                                         <Button
                                             variant="outline"
@@ -1819,15 +1872,43 @@ export function LeadDetailsModal({
                 open={isEditModalOpen}
                 onOpenChange={() => setIsEditModalOpen(false)}
             >
-                <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto bg-card">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-thin uppercase font-body"></DialogTitle>
+                        <DialogTitle className="text-lg font-medium uppercase font-body">
+                            Edit Lead: {lead.name}
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="flex items-center justify-center h-64">
-                        <h2 className="text-xs font-thin uppercase font-body">
-                            Activating Soon
-                        </h2>
-                    </div>
+                    <LeadForm
+                        onSubmit={handleLeadUpdate}
+                        initialData={{
+                            name: lead.name,
+                            companyName: lead.companyName,
+                            email: lead.email,
+                            phone: lead.phone,
+                            notes: lead.notes,
+                            status: lead.status,
+                            image: lead.image || undefined,
+                            latitude: lead.latitude || undefined,
+                            longitude: lead.longitude || undefined,
+                            owner: { uid: typeof lead.owner?.uid === 'string' ? parseInt(lead.owner.uid, 10) : (lead.owner?.uid || 0) },
+                            assignTo: lead.assignees || [],
+                            // Enhanced fields
+                            intent: lead.intent,
+                            userQualityRating: lead.userQualityRating,
+                            temperature: lead.temperature,
+                            source: lead.source,
+                            priority: lead.priority,
+                            jobTitle: lead.jobTitle,
+                            industry: lead.industry,
+                            businessSize: lead.businessSize,
+                            budgetRange: lead.budgetRange,
+                            purchaseTimeline: lead.purchaseTimeline,
+                            preferredCommunication: lead.preferredCommunication,
+                            estimatedValue: lead.estimatedValue,
+                        }}
+                        isLoading={isUpdating}
+                        isEdit={true}
+                    />
                 </DialogContent>
             </Dialog>
 

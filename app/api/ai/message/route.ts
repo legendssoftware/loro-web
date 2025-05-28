@@ -93,7 +93,7 @@ Return a JSON object with these exact keys:
   "fallbackMessage": "Shorter version if needed (optional)"
 }
 
-Use ${tone} tone and make it sound natural for ${messageType} communication.`;
+Use ${tone} tone and make it sound natural and very human like for ${messageType} communication.`;
 }
 
 export async function POST(request: NextRequest) {

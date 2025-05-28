@@ -10,6 +10,7 @@ interface LeadsTabContentProps {
     error: Error | null;
     leadsByStatus: Record<LeadStatus, Lead[]>;
     onUpdateLeadStatus: (leadId: number, newStatus: string) => void;
+    onUpdateLead: (leadId: number, updateData: any) => void;
     onDeleteLead: (leadId: number) => void;
     onAddLead: () => void;
 }
@@ -19,6 +20,7 @@ const LeadsContent = memo(
     ({
         leadsByStatus,
         onUpdateLeadStatus,
+        onUpdateLead,
         onDeleteLead,
         onAddLead,
     }: Omit<LeadsTabContentProps, 'activeTab' | 'isLoading' | 'error'>) => {
@@ -28,6 +30,7 @@ const LeadsContent = memo(
                     <LeadsKanban
                         leadsByStatus={leadsByStatus}
                         onUpdateLeadStatus={onUpdateLeadStatus}
+                        onUpdateLead={onUpdateLead}
                         onDeleteLead={onDeleteLead}
                         onAddLead={onAddLead}
                     />
@@ -75,6 +78,7 @@ function LeadsTabContentComponent({
     error,
     leadsByStatus,
     onUpdateLeadStatus,
+    onUpdateLead,
     onDeleteLead,
     onAddLead,
 }: LeadsTabContentProps) {
@@ -108,6 +112,7 @@ function LeadsTabContentComponent({
                 <LeadsContent
                     leadsByStatus={leadsByStatus}
                     onUpdateLeadStatus={onUpdateLeadStatus}
+                    onUpdateLead={onUpdateLead}
                     onDeleteLead={onDeleteLead}
                     onAddLead={onAddLead}
                 />

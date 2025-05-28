@@ -89,6 +89,7 @@ export default function LeadsPage() {
         isLoading,
         error,
         updateLeadStatus,
+        updateLead,
         deleteLead,
         createLead,
         refetch,
@@ -119,6 +120,13 @@ export default function LeadsPage() {
             );
         },
         [updateLeadStatus],
+    );
+
+    const handleUpdateLead = useCallback(
+        async (leadId: number, updateData: any) => {
+            await updateLead(leadId, updateData);
+        },
+        [updateLead],
     );
 
     const handleDeleteLead = useCallback(
@@ -155,6 +163,7 @@ export default function LeadsPage() {
                             error={error}
                             leadsByStatus={leadsByStatus}
                             onUpdateLeadStatus={handleUpdateLeadStatus}
+                            onUpdateLead={handleUpdateLead}
                             onDeleteLead={handleDeleteLead}
                             onAddLead={handleCreateLead}
                         />

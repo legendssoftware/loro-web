@@ -21,14 +21,43 @@ import {
     Info
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
-import { 
-    generateTargetInsights, 
-    generateEmailTemplate, 
-    generateQuickSummary,
-    type TargetData,
-    type InsightRequest,
-    type EmailTemplateRequest
-} from '@/lib/ai-service';
+
+// Types for AI requests - keeping only what we need
+interface TargetData {
+    currentValue: number;
+    targetValue: number;
+    progress: number;
+    period: string;
+    category: 'sales' | 'work_hours' | 'clients' | 'leads' | 'check_ins' | 'calls_made';
+}
+
+interface AttendanceData {
+    hoursWorked: number;
+    expectedHours: number;
+    attendanceRate: number;
+    punctualityScore: number;
+}
+
+interface InsightRequest {
+    targetData: TargetData[];
+    attendanceData?: AttendanceData;
+    profileData?: any;
+    timeFrame: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+    type: 'comprehensive_performance' | 'sales_strategy' | 'work_efficiency' | 'client_management' | 'lead_analysis';
+}
+
+interface EmailTemplateRequest {
+    recipientName: string;
+    recipientEmail: string;
+    templateType: 'introduction' | 'follow_up' | 'proposal' | 'objection_handling' | 'closing' | 're_engagement' | 'referral' | 'upsell' | 'check_in' | 'nurture' | 'educational' | 'urgent_response' | 'value_demonstration' | 'social_proof';
+    tone: {
+        baseTone: string;
+        intensity: string;
+        regionalAdaptation: string;
+        industrySpecific: boolean;
+    };
+    customMessage?: string;
+}
 
 export const TargetsTab: React.FC<TabProps> = ({
     profileData,
@@ -154,7 +183,7 @@ export const TargetsTab: React.FC<TabProps> = ({
         };
     };
 
-    // AI Functions
+    // AI Functions - now using routes directly
     const generateInsights = async () => {
         if (!targetsData) return;
 
@@ -164,13 +193,25 @@ export const TargetsTab: React.FC<TabProps> = ({
             const transformedTargetData = transformUserTargetToTargetData(targetsData);
 
             const [insightsResult, summaryResult] = await Promise.all([
-                generateTargetInsights({
-                    targetData: transformedTargetData,
-                    attendanceData: transformAttendanceData(attendanceData),
-                    profileData,
-                    type: 'comprehensive_performance',
-                    timeFrame: 'monthly'
-                }).catch((error) => {
+                // Call insights API route directly
+                fetch('/api/ai/insights', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        targetData: transformedTargetData,
+                        attendanceData: transformAttendanceData(attendanceData),
+                        profileData,
+                        type: 'comprehensive_performance',
+                        timeFrame: 'monthly'
+                    }),
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                }).catch((error: any) => {
                     console.error('Failed to generate target insights:', error);
                     // Return fallback insights on API failure
                     return {
@@ -185,9 +226,23 @@ export const TargetsTab: React.FC<TabProps> = ({
                         urgencyLevel: 'medium' as const
                     };
                 }),
-                generateQuickSummary(transformedTargetData).catch((error) => {
+                // Call summary API route directly
+                fetch('/api/ai/summary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        targetData: transformedTargetData
+                    }),
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                }).catch((error: any) => {
                     console.error('Failed to generate quick summary:', error);
-                    return 'Continue working towards your targets! Your progress shows dedication.';
+                    return { summary: 'Continue working towards your targets! Your progress shows dedication.' };
                 })
             ]);
 
@@ -199,7 +254,7 @@ export const TargetsTab: React.FC<TabProps> = ({
             const summary = typeof summaryResult === 'string' ? summaryResult : summaryResult.summary;
             setQuickSummary(summary);
             setInsightsGenerated(true);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error generating insights:', error);
             // Provide helpful fallback insights
             setInsights([
@@ -223,13 +278,30 @@ export const TargetsTab: React.FC<TabProps> = ({
             // Transform UserTarget to TargetData array
             const transformedTargetData = transformUserTargetToTargetData(targetsData);
 
-            const template = await generateEmailTemplate({
-                recipientName: `${profileData?.name || 'User'} ${profileData?.surname || ''}`.trim(),
-                recipientEmail: profileData?.email || '',
-                templateType: 'follow_up',
-                tone: 'encouraging',
-                customMessage: insights.join('\n\n') // Include insights as custom message
-            }).catch((error) => {
+            // Call email API route directly
+            const template = await fetch('/api/ai/email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recipientName: `${profileData?.name || 'User'} ${profileData?.surname || ''}`.trim(),
+                    recipientEmail: profileData?.email || '',
+                    templateType: 'follow_up',
+                    tone: {
+                        baseTone: 'encouraging',
+                        intensity: 'moderate',
+                        regionalAdaptation: 'south_african',
+                        industrySpecific: false
+                    },
+                    customMessage: insights.join('\n\n') // Include insights as custom message
+                }),
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            }).catch((error: any) => {
                 console.error('Failed to generate email template:', error);
                 // Return fallback template
                 return {
@@ -243,7 +315,7 @@ export const TargetsTab: React.FC<TabProps> = ({
                 `Subject: ${template.subject}\n\n${template.body}`;
             setEmailTemplate(templateText);
             setActiveInsightTab('email');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error generating email:', error);
             setEmailTemplate('Unable to generate email template at this time. Please try again later or contact support.');
         } finally {

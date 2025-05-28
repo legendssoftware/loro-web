@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { PageTransition } from '@/components/animations/page-transition';
-import { ArrowRight, Sparkles, Check, ChevronRight, PhoneCall } from 'lucide-react';
+import {  Check, PhoneCall } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +49,7 @@ export default function Home() {
         'Built for South African Businesses',
         'CRM + Field Service + Analytics',
         'Transform Your Business Operations',
-        'Real-Time Insights, Offline Ready',
+        'Real-Time Insights & Offline Ready',
         'Enterprise Features, SME Pricing',
     ];
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
@@ -707,7 +707,7 @@ export default function Home() {
                                                 <path
                                                     d={`M${
                                                         12 + i
-                                                    } 12c0-3.315-2.685-6-6-6S${i} 8.685 ${i} 12s2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z`}
+                                                    } 12c0-3.315-2.685-6-6-6S${i} 8.685 ${i} 12s2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z`}
                                                 />
                                             </svg>
                                         </div>
@@ -797,7 +797,7 @@ export default function Home() {
                             >
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -805,47 +805,37 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-green-600 bg-green-100 rounded-full">
-                                            <span className="text-xl font-normal font-body">
-                                                📱
-                                            </span>
-                                        </div>
-                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
-                                            Mobile-First Design
-                                        </h3>
-                                        <p className="text-xs uppercase text-muted-foreground font-body">
-                                            Your field teams stay connected with native mobile app featuring offline functionality and real-time GPS tracking
-                                        </p>
-                                    </motion.div>
-                                </StaggerItem>
-
-                                <StaggerItem direction="up">
-                                    <motion.div
-                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-blue-600 bg-blue-100 rounded-full">
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-blue-600 transition-transform duration-300 bg-blue-100 rounded-full group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 🎯
                                             </span>
                                         </div>
-                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
                                             Smart Lead Management
                                         </h3>
-                                        <p className="text-xs uppercase text-muted-foreground font-body">
-                                            Transform prospects into profitable customers with automated lead assignment and complete interaction history
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Capture, qualify, and convert leads with AI-powered lead scoring and automated follow-up sequences.
                                         </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                Automated lead assignment
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                Lead scoring & qualification
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                Follow-up reminders
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 </StaggerItem>
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -853,23 +843,37 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-purple-600 bg-purple-100 rounded-full">
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-green-600 transition-transform duration-300 bg-green-100 rounded-full group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
-                                                📊
+                                                💰
                                             </span>
                                         </div>
-                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
-                                            Advanced Analytics
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Sales Pipeline Control
                                         </h3>
-                                        <p className="text-xs uppercase text-muted-foreground font-body">
-                                            Real-time dashboards with KPI tracking, territory performance analysis, and automated report delivery
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Visual sales pipeline with drag-and-drop stages, deal probability tracking, and revenue forecasting.
                                         </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                Visual pipeline management
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                Revenue forecasting
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                Deal probability tracking
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 </StaggerItem>
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -877,17 +881,221 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-orange-600 bg-orange-100 rounded-full">
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-purple-600 transition-transform duration-300 bg-purple-100 rounded-full group-hover:scale-110">
+                                            <span className="text-xl font-normal font-body">
+                                                ✅
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Task & Project Management
+                                        </h3>
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Organize work with smart task assignment, priority management, and real-time progress tracking.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                Smart task assignment
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                Priority & deadline tracking
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                Team collaboration tools
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-orange-600 transition-transform duration-300 bg-orange-100 rounded-full group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 ⚡
                                             </span>
                                         </div>
-                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
-                                            Field Service Excellence
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Workflow Automation
                                         </h3>
-                                        <p className="text-xs uppercase text-muted-foreground font-body">
-                                            Smart task assignment, route optimization reducing travel time by 40%, and digital forms eliminating paperwork
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Automate repetitive tasks with intelligent workflows that trigger actions based on customer behavior.
                                         </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                Custom workflow builder
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                Trigger-based automation
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                Email & SMS automation
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-indigo-600 transition-transform duration-300 bg-indigo-100 rounded-full group-hover:scale-110">
+                                            <span className="text-xl font-normal font-body">
+                                                📊
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Real-Time Analytics
+                                        </h3>
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Make data-driven decisions with customizable dashboards and automated reporting for all key metrics.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                Custom dashboards
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                Automated reporting
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                Performance insights
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-teal-600 transition-transform duration-300 bg-teal-100 rounded-full group-hover:scale-110">
+                                            <span className="text-xl font-normal font-body">
+                                                📱
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Mobile-First Design
+                                        </h3>
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Work from anywhere with native mobile apps featuring offline capabilities and GPS tracking.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                Offline functionality
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                Real-time GPS tracking
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                Native mobile apps
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 transition-transform duration-300 rounded-full text-rose-600 bg-rose-100 group-hover:scale-110">
+                                            <span className="text-xl font-normal font-body">
+                                                📄
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Smart Quotations
+                                        </h3>
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Generate professional quotes in seconds with automated pricing, templates, and e-signature integration.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                Automated pricing
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                Custom templates
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                E-signature integration
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 transition-transform duration-300 rounded-full text-amber-600 bg-amber-100 group-hover:scale-110">
+                                            <span className="text-xl font-normal font-body">
+                                                📦
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-3 text-lg font-normal uppercase font-body">
+                                            Inventory Integration
+                                        </h3>
+                                        <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                            Track stock levels, manage suppliers, and automate reordering with integrated inventory management.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                Real-time stock tracking
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                Automated reordering
+                                            </div>
+                                            <div className="flex items-center text-[10px] font-normal uppercase font-body">
+                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                Supplier management
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 </StaggerItem>
                             </StaggerContainer>
@@ -1070,7 +1278,7 @@ export default function Home() {
 
                     {/* Featured Card */}
                     <MotionSection
-                        className="py-12 md:py-16 bg-primary text-primary-foreground"
+                        className="bg-primary text-primary-foreground"
                         direction="none"
                         id="benefits" 
                     >
@@ -1086,7 +1294,7 @@ export default function Home() {
                                         </h2>
                                     </StaggerItem>
                                     <StaggerItem>
-                                        <p className="text-xs uppercase text-primary-foreground/80 font-body">
+                                        <p className="text-xs uppercase md:w-3/4 text-primary-foreground/80 font-body">
                                             In a dynamic economy like ours, Loro equips your business not just to compete, but to dominate. Built on world-class tech, it's fine-tuned for how South African businesses actually operate - from navigating tricky logistics to meeting unique market compliance.
                                         </p>
                                     </StaggerItem>
@@ -1113,19 +1321,59 @@ export default function Home() {
                                     transition={{ duration: 0.8, delay: 0.3 }}
                                     viewport={{ once: true }}
                                 >
-                                    <motion.div
-                                        className="flex items-center justify-center overflow-hidden rounded-lg aspect-video"
-                                        whileHover={{ scale: 1.02 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <Image
-                                            src="/images/covers/web.png"
-                                            alt="Loro CRM Dashboard"
-                                            width={400}
-                                            height={300}
-                                            className="rounded-lg"
-                                        />
-                                    </motion.div>
+                                    {/* Stacked Images Container */}
+                                    <div className="relative h-[600px] flex items-center justify-center">
+                                        {/* PC Image - Largest, in the back */}
+                                        <motion.div
+                                            className="absolute z-10"
+                                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                                            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                                            transition={{ duration: 0.8, delay: 0.5 }}
+                                            viewport={{ once: true }}
+                                        >
+                                            <Image
+                                                src="/images/covers/pc.png"
+                                                alt="Loro CRM Desktop Dashboard"
+                                                width={900}
+                                                height={900}
+                                                className="rounded-lg"
+                                            />
+                                        </motion.div>
+
+                                        {/* Web Image - Medium, to the right */}
+                                        <motion.div
+                                            className="absolute z-20 translate-x-[600px] translate-y-[50px]"
+                                            initial={{ opacity: 0, scale: 0.8, x: 300, y: 120 }}
+                                            whileInView={{ opacity: 1, scale: 0.8, x: 240, y: 80 }}
+                                            transition={{ duration: 0.8, delay: 0.7 }}
+                                            viewport={{ once: true }}
+                                        >
+                                            <Image
+                                                src="/images/covers/web.png"
+                                                alt="Loro CRM Web Interface"
+                                                width={400}
+                                                height={400}
+                                                className="rounded-lg"
+                                            />
+                                        </motion.div>
+
+                                        {/* Mobile Image - Smallest, staggered on top and to the right */}
+                                        <motion.div
+                                            className="absolute z-30 translate-x-[-150px] translate-y-[-100px]"
+                                            initial={{ opacity: 0, scale: 0.8, x: -350, y: -160 }}
+                                            whileInView={{ opacity: 1, scale: 0.7, x: -300, y: -100 }}
+                                            transition={{ duration: 0.8, delay: 0.9 }}
+                                            viewport={{ once: true }}
+                                        >
+                                            <Image
+                                                src="/images/covers/mobile.png"
+                                                alt="Loro CRM Mobile App"
+                                                width={200}
+                                                height={200}
+                                                className="mt-10 mr-10 rounded-lg"
+                                            />
+                                        </motion.div>
+                                    </div>
                                 </motion.div>
                             </div>
                         </div>

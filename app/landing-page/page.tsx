@@ -1,58 +1,31 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Menu,
-    Download,
-    Smartphone,
-    PhoneCall,
-    ArrowRight,
-} from 'lucide-react';
-import { ThemeToggler } from '@/modules/navigation/theme.toggler';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useAuthStore } from '@/store/auth-store';
+import Image from 'next/image';
 import { PageTransition } from '@/components/animations/page-transition';
+import { ArrowRight, Sparkles, Check, ChevronRight, PhoneCall } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MotionSection } from '@/components/animations/motion-section';
+import { StaggerContainer } from '@/components/animations/stagger-container';
+import { StaggerItem } from '@/components/animations/stagger-item';
+import { FadeIn } from '@/components/animations/fade-in';
+import { ScrollToTop } from '@/components/animations/scroll-to-top';
+import { SmoothScroll } from '@/components/smooth-scroll';
+import { UserCarousel } from '@/components/animations/user-carousel';
+import { StatsDisplay } from '@/components/animations/stats-display';
+import { AnalyticsWidget } from '@/modules/landing-page/analytics-widget';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { mockDataStore } from '@/lib/mock-data';
+import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { toast } from 'react-hot-toast';
 import Vapi from '@vapi-ai/web';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
-import { useInteractiveTour } from '@/hooks/use-interactive-tour';
 import {
     handleVapiError,
     retryVapiOperation,
 } from '@/lib/utils/vapi-error-handler';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    Target,
-    CheckSquare,
-    ShoppingCart,
-    MapPin,
-    BarChart3,
-    Cpu,
-    LayoutTemplate,
-    Settings,
-    Layers,
-    Users,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-// Import Swiper React components
-import { Swiper, SwiperSlide } from 'swiper/react';
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/pagination';
-// Import required Swiper modules
-import { Pagination, Autoplay } from 'swiper/modules';
 
 // Update the constants for call time management to use environment variables with fallbacks
 const CALL_MAX_DURATION_MS =
@@ -62,218 +35,44 @@ const CALL_MAX_DURATION_MS =
 const WARNING_TIME_REMAINING_MS =
     parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
 
-// Define the new FAQ data array
-const faqData = [
-    {
-        value: 'faq-offline-tracking',
-        question:
-            "Can Loro track my field team's location even without internet?",
-        answer: 'Yes! Loro\'s mobile app offers offline GPS tracking. Location data is stored on the device when offline and syncs automatically once a connection is re-established. Ensure mobile users grant "Always Allow" location permissions for best results.',
-    },
-    {
-        value: 'faq-roles',
-        question:
-            'How does Loro handle different user roles like managers and field workers?',
-        answer: 'Loro uses Role-Based Access Control (RBAC). Predefined roles (Admin, Manager, Worker, Client) determine what features and data each user can access, ensuring appropriate permissions for tasks like claim approvals or mobile app usage.',
-    },
-    {
-        value: 'faq-client-login',
-        question: 'Can clients log in to Loro? What can they do?',
-        answer: 'Yes, Loro supports separate logins for external clients. Depending on configuration, they might use the mobile app or dashboard to view product catalogs, manage quotations (including in-app chat), track orders, and access shared information.',
-    },
-    {
-        value: 'faq-reporting',
-        question: 'What kind of reporting is available in Loro?',
-        answer: 'Loro offers comprehensive reporting via the dashboard, covering Leads, Sales, Tasks, User Activity, Inventory, and Claims. Reports feature charts, data tables, and filtering options. Simplified personal metrics are available on the mobile app.',
-    },
-    {
-        value: 'faq-shop-quotation',
-        question: 'How does the Shop/Quotation system work?',
-        answer: 'Users can browse products, add items to a cart (mobile/dashboard), and submit it as a quotation request. Dashboard users review, modify, and approve quotations, which can then be converted into orders. The system includes features like in-quotation chat.',
-    },
-    {
-        value: 'faq-integrations',
-        question: 'Does Loro support integrations like WhatsApp or SMS?',
-        answer: 'Currently, Loro offers integrated email for reports/notifications and an in-app chat for Quotations. Direct WhatsApp/SMS integration is not confirmed as an active feature at this time, though it may be considered for future updates.',
-    },
-    {
-        value: 'faq-inventory',
-        question: 'Can I manage inventory with Loro?',
-        answer: 'Yes, the dashboard includes an Inventory Management module linked to the Shop/Products. You can track stock levels, make adjustments, view valuation reports, and potentially set low-stock alerts. Mobile users typically see stock availability on product pages.',
-    },
-];
+export default function Home() {
+    const diverseUsers = mockDataStore.getDiverseUserProfiles();
+    const [liveStats, setLiveStats] = useState(
+        mockDataStore.getLiveHeroStats(),
+    );
 
-// Define data for the enhanced features grid
-const enhancedFeaturesData = [
-    {
-        icon: Cpu,
-        title: 'Connected Business Intelligence',
-        description:
-            'Leverage AI-powered insights across your entire business ecosystem. Get predictive analytics and automated recommendations from unified data across CRM, POS, and ERP systems.',
-    },
-    {
-        icon: LayoutTemplate,
-        title: 'Multi-System Integration',
-        description:
-            'Seamlessly connect POS terminals, ERP systems, and specialized industry tools. White-label capabilities allow expansion into new markets and franchise opportunities.',
-    },
-    {
-        icon: Settings,
-        title: 'Network Automation',
-        description:
-            'Automate workflows across your entire business network. From inventory sync between POS and ERP to automated financial reporting and multi-system compliance tracking.',
-    },
-    {
-        icon: Layers,
-        title: 'Scalable Architecture',
-        description:
-            'Built to grow from single business to enterprise network. Support multi-company structures, franchise management, and unlimited connected systems with enterprise-grade security.',
-    },
-    {
-        icon: BarChart3,
-        title: 'Ecosystem Analytics',
-        description:
-            'Real-time insights across your entire business network. Monitor performance from field operations to POS transactions with unified reporting and cross-system KPIs.',
-    },
-    {
-        icon: Users,
-        title: 'Network-Wide Access Control',
-        description:
-            'Manage permissions across your entire ecosystem with role-based access spanning CRM, POS, ERP, and all connected systems. Centralized user management for complex business networks.',
-    },
-];
+    // Phrases for the animated H1
+    const heroPhrases = [
+        'LORO: Complete Business Control',
+        'Stop Juggling Multiple Systems',
+        'One Platform, Everything Connected',
+        'Built for South African Businesses',
+        'CRM + Field Service + Analytics',
+        'Transform Your Business Operations',
+        'Real-Time Insights, Offline Ready',
+        'Enterprise Features, SME Pricing',
+    ];
+    const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 
-// Define data for the mobile app showcase
-const mobileFeaturesData = [
-    {
-        title: 'Leads On-the-Go',
-        img: '/images/covers/mobileleads.png',
-        alt: 'Mobile Leads Screen',
-    },
-    {
-        title: 'Task Management',
-        img: '/images/covers/taskdetail.png',
-        alt: 'Mobile Tasks Screen',
-    },
-    {
-        title: 'Claim Submission',
-        img: '/images/covers/claims.png',
-        alt: 'Mobile Claims Screen',
-    },
-    {
-        title: 'Product Catalog',
-        img: '/images/covers/product.png',
-        alt: 'Mobile Shop Screen',
-    },
-    {
-        title: 'Attendance',
-        img: '/images/covers/home2.png',
-        alt: 'Mobile Attendance Screen',
-    },
-    {
-        title: 'Leads On-the-Go',
-        img: '/images/covers/mobileleads.png',
-        alt: 'Mobile Leads Screen',
-    },
-    {
-        title: 'Task Management',
-        img: '/images/covers/taskdetail.png',
-        alt: 'Mobile Tasks Screen',
-    },
-    {
-        title: 'Claim Submission',
-        img: '/images/covers/claims.png',
-        alt: 'Mobile Claims Screen',
-    },
-    {
-        title: 'Product Catalog',
-        img: '/images/covers/product.png',
-        alt: 'Mobile Shop Screen',
-    },
-    {
-        title: 'Attendance',
-        img: '/images/covers/home2.png',
-        alt: 'Mobile Attendance Screen',
-    },
-];
-
-// Define data for the dashboard features tabs
-const dashboardFeaturesData = [
-    {
-        value: 'reporting',
-        title: 'Ecosystem Analytics',
-        icon: BarChart3,
-        description:
-            'Unified reporting across your entire business network. Analyze data from CRM, POS, ERP, and all connected systems with real-time insights and predictive analytics for strategic decision-making.',
-        img: '/images/covers/reporting.png',
-        alt: 'Dashboard Ecosystem Reporting and Analytics',
-    },
-    {
-        value: 'leads',
-        title: 'Lead Management',
-        icon: Target,
-        description:
-            'Capture and convert leads across all touchpoints. Track prospects from initial contact through your entire ecosystem - whether they interact online, in-store, or in the field.',
-        img: '/images/covers/webleads.png',
-        alt: 'Dashboard Ecosystem Leads Management',
-    },
-    {
-        value: 'tasks',
-        title: 'Network Coordination',
-        icon: CheckSquare,
-        description:
-            'Coordinate tasks across your entire business network. Manage workflows from CRM activities to POS operations, with seamless communication between all connected systems.',
-        img: '/images/covers/webtasks.png',
-        alt: 'Dashboard Network Task Coordination',
-    },
-    {
-        value: 'sales',
-        title: 'Unified Sales Hub',
-        icon: ShoppingCart,
-        description:
-            'Manage your complete sales ecosystem. From quotations to POS transactions, with inventory synchronized across all channels and real-time data flowing between CRM and ERP systems.',
-        img: '/images/covers/salesweb.png',
-        alt: 'Dashboard Unified Sales and POS Integration',
-    },
-    {
-        value: 'tracking',
-        title: 'Enterprise Tracking',
-        icon: MapPin,
-        description:
-            'Monitor your entire business network in real-time. Track field teams, manage multi-location operations, and coordinate activities across all connected systems with intelligent routing and geofencing.',
-        img: '/images/covers/webtracking.png',
-        alt: 'Dashboard Enterprise-wide Real-time Tracking',
-    },
-];
-
-const LandingPage: React.FunctionComponent = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // Vapi call state management
     const [isCallActive, setIsCallActive] = useState(false);
     const [isCallInitializing, setIsCallInitializing] = useState(false);
     const [demoVapi, setDemoVapi] = useState<Vapi | null>(null);
     const [connectionError, setConnectionError] = useState<Error | null>(null);
     const initAttemptedRef = useRef(false);
-    const { isAuthenticated } = useAuthStore();
-    const router = useRouter();
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
     const callStartTimeRef = useRef<number | null>(null);
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const warningShownRef = useRef(false);
-    const [billingPeriod] = useState('monthly');
 
-    // Phrases for the animated H1
-    const heroPhrases = [
-        'The Complete Enterprise Ecosystem',
-        'Beyond CRM: Your Business Network',
-        'One Platform, Unlimited Growth',
-        'Connect Your Entire Business',
-        'Enterprise Ecosystem, Start-Up Friendly',
-        'Transform into a Connected Enterprise',
-        'Slash Software Costs by 70%',
-        'Your Complete Business Growth Platform',
-        'Built for the South African Reality',
-    ];
-    const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+    // Refresh stats every 30 seconds to show live data
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLiveStats(mockDataStore.getLiveHeroStats());
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Effect to cycle through phrases
     useEffect(() => {
@@ -538,8 +337,6 @@ const LandingPage: React.FunctionComponent = () => {
         }
     };
 
-
-
     // Retry the demo call if it failed
     const retryDemoCall = () => {
         if (isCallActive || isCallInitializing) {
@@ -550,909 +347,2314 @@ const LandingPage: React.FunctionComponent = () => {
         startDemoCall();
     };
 
-
-
-    // State for dashboard tabs
-    const [activeDashboardTab, setActiveDashboardTab] = useState(
-        dashboardFeaturesData[0].value,
-    );
-
-    // Initialize the tour
-    const { startTour } = useInteractiveTour();
-
-    // Start the tour when the component mounts, only if not played before
-    useEffect(() => {
-        const tourPlayedKey = 'loroCrmLandingTourPlayed_v1';
-        let tourTimerId: NodeJS.Timeout | null = null;
-
-        try {
-            const hasPlayedTour = localStorage.getItem(tourPlayedKey);
-
-            if (!hasPlayedTour) {
-                // Small delay to ensure DOM elements are fully rendered
-                tourTimerId = setTimeout(() => {
-                    startTour();
-                    // Mark as played.
-                    // Ideally, this would be in an onEnd callback of the tour itself.
-                    // For now, setting it when the tour is initiated.
-                    try {
-                        localStorage.setItem(tourPlayedKey, 'true');
-                    } catch (e) {
-                        console.error(
-                            'Failed to set tour played flag in localStorage:',
-                            e,
-                        );
-                    }
-                }, 1000);
-            }
-        } catch (error) {
-            console.error('Error accessing localStorage for tour:', error);
-            // Fallback: If localStorage is inaccessible (e.g., private browsing, security settings),
-            // the tour might run on every visit. This ensures the user sees it at least once
-            // even if storage fails, but it would repeat without storage.
-            tourTimerId = setTimeout(() => {
-                // Ensure tourTimerId is assigned here too
-                startTour();
-            }, 1000);
-        }
-
-        return () => {
-            if (tourTimerId) {
-                // Check tourTimerId
-                clearTimeout(tourTimerId);
-            }
-        };
-    }, [startTour]); // startTour is a dependency
-
     return (
-        <PageTransition type="fade">
-            <div className="relative flex flex-col min-h-screen bg-background">
-                {/* Navigation */}
-                <nav className="relative flex items-center justify-between p-6">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <Link
-                            href="/"
-                            className="text-xl tracking-tight uppercase font-body"
-                        >
-                            <span>LORO CRM</span>
-                        </Link>
-                    </div>
-
-                    {/* Desktop Navigation - Hidden on mobile */}
-                    <div className="items-center hidden space-x-6 md:flex">
-                        {isCallActive ? (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={endDemoCall}
-                                className="text-xs font-normal text-red-500 uppercase transition-colors cursor-pointer font-body hover:bg-red-100 dark:hover:bg-red-900/20"
+        <PageTransition>
+            <div className="flex flex-col min-h-screen">
+                <SmoothScroll />
+                <FadeIn duration={0.8}>
+                    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
+                        <div className="container flex items-center justify-between h-16 px-4 mx-auto">
+                            <div className="flex items-center gap-2">
+                                <motion.span
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.2 }}
+                                    className="text-xl font-normal tracking-tight uppercase font-body"
+                                >
+                                    LORO CRM
+                                </motion.span>
+                            </div>
+                            <nav className="items-center hidden gap-6 md:flex">
+                                <motion.div
+                                    className="flex items-center gap-6"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.3 }}
+                                >
+                                    <Link
+                                        href="#features"
+                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                    >
+                                        Features
+                                    </Link>
+                                    <Link
+                                        href="#benefits"
+                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                    >
+                                        Benefits
+                                    </Link>
+                                    <Link
+                                        href="#pricing"
+                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                    >
+                                        Pricing
+                                    </Link>
+                                    <Link
+                                        href="#testimonials"
+                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                    >
+                                        Testimonials
+                                    </Link>
+                                    <Link
+                                        href="#faq"
+                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                    >
+                                        FAQ
+                                    </Link>
+                                    {isCallActive ? (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={endDemoCall}
+                                            className="text-xs font-normal text-red-500 uppercase transition-colors cursor-pointer font-body hover:bg-red-100 dark:hover:bg-red-900/20"
+                                        >
+                                            <span>
+                                                END CALL{' '}
+                                                {formattedTimeRemaining &&
+                                                    `(${formattedTimeRemaining})`}
+                                            </span>
+                                        </Button>
+                                    ) : connectionError ? (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={retryDemoCall}
+                                            className="text-xs font-normal uppercase transition-colors cursor-pointer text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                        >
+                                            <PhoneCall
+                                                className="w-5 h-5 mr-2"
+                                                size={22}
+                                                strokeWidth={1.2}
+                                            />
+                                            <span>RETRY CALL</span>
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={startDemoCall}
+                                            disabled={isCallInitializing}
+                                            className={`hidden text-xs font-normal uppercase transition-colors cursor-pointer font-body md:inline-flex ${
+                                                isCallActive
+                                                    ? 'text-green-500 hover:bg-green-100 dark:hover:bg-green-900/20'
+                                                    : connectionError
+                                                    ? 'text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/20'
+                                                    : 'hover:text-primary'
+                                            }`}
+                                        >
+                                            {isCallInitializing ? (
+                                                <>
+                                                    <span>CONNECTING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>INSTANT DEMO</span>
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+                                </motion.div>
+                            </nav>
+                            <motion.div
+                                className="flex items-center gap-4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.5, delay: 0.4 }}
                             >
-                                <PhoneCall
-                                    className="w-5 h-5 mr-2 animate-pulse"
-                                    size={22}
-                                    strokeWidth={1.2}
-                                />
-                                <span>
-                                    END CALL{' '}
-                                    {formattedTimeRemaining &&
-                                        `(${formattedTimeRemaining})`}
-                                </span>
-                            </Button>
-                        ) : connectionError ? (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={retryDemoCall}
-                                className="text-xs font-normal uppercase transition-colors cursor-pointer text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
-                            >
-                                <PhoneCall
-                                    className="w-5 h-5 mr-2"
-                                    size={22}
-                                    strokeWidth={1.2}
-                                />
-                                <span>RETRY CALL</span>
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={startDemoCall}
-                                disabled={isCallInitializing}
-                                className="hidden text-xs font-normal text-green-500 uppercase transition-colors cursor-pointer font-body hover:bg-green-100 dark:hover:bg-green-900/20 md:inline-flex"
-                            >
-                                {isCallInitializing ? (
-                                    <>
-                                        <PhoneCall
-                                            className="w-5 h-5 mr-2 animate-pulse"
-                                            size={22}
-                                            strokeWidth={1.2}
-                                        />
-                                        <span>CONNECTING...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <PhoneCall
-                                            className="w-5 h-5 mr-2"
-                                            size={22}
-                                            strokeWidth={1.2}
-                                        />
-                                        <span>LEARN ABOUT LORO</span>
-                                    </>
-                                )}
-                            </Button>
-                        )}
-                        <ThemeToggler />
-                        <Link
-                            href="/sign-in"
-                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
-                        >
-                            <span>Sign In</span>
-                        </Link>
-                        <Link
-                            href="/sign-up"
-                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
-                        >
-                            <span>Sign Up</span>
-                        </Link>
-                    </div>
+                                <ThemeToggler />
+                                <Link
+                                    href="/sign-in"
+                                    className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
+                                >
+                                    Sign In
+                                </Link>
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button asChild className="text-xs font-normal uppercase font-body">
+                                        <Link href="/sign-up">Get Started</Link>
+                                    </Button>
+                                </motion.div>
+                            </motion.div>
+                        </div>
+                    </header>
+                </FadeIn>
 
-                    {/* Mobile Navigation */}
-                    <div className="flex items-center md:hidden">
-                        <ThemeToggler />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Open Menu"
-                            className="p-0 ml-2"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        >
-                            <Menu className="w-5 h-5" />
-                        </Button>
-
-                        {/* Mobile Menu */}
-                        {isMenuOpen && (
-                            <div className="absolute top-0 left-0 z-50 w-full p-4 mt-16 bg-background">
-                                <div className="p-4 space-y-4 border rounded-md shadow-lg border-border">
-                                    <div className="flex flex-col space-y-3">
-                                        {isCallActive ? (
+                <main className="flex-1">
+                    {/* Hero Section */}
+                    <MotionSection className="py-16 md:py-24" duration={0.8}>
+                        <div className="container px-4 mx-auto md:px-6">
+                            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
+                                <StaggerContainer
+                                    className="flex flex-col justify-center space-y-4"
+                                    staggerChildren={0.2}
+                                >
+                                    <StaggerItem className="space-y-2">
+                                        <div className="relative h-48 p-1 overflow-hidden">
+                                            <AnimatePresence mode="wait">
+                                                <motion.h1
+                                                    key={currentPhraseIndex}
+                                                    initial={{ y: 50, opacity: 0 }}
+                                                    animate={{ y: 0, opacity: 1 }}
+                                                    exit={{ y: -50, opacity: 0 }}
+                                                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                                                    className="absolute inset-0 flex items-center text-3xl font-normal tracking-tighter uppercase sm:text-5xl xl:text-6xl/none font-body"
+                                                >
+                                                    {heroPhrases[currentPhraseIndex]}
+                                                </motion.h1>
+                                            </AnimatePresence>
+                                        </div>
+                                        <p className="max-w-[600px] text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                            Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform.
+                                        </p>
+                                    </StaggerItem>
+                                    <StaggerItem className="flex flex-col gap-2 min-[400px]:flex-row">
+                                        <motion.div
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
                                             <Button
-                                                className="justify-start w-full text-xs font-normal text-red-500 uppercase transition-colors bg-transparent font-body hover:bg-red-100 dark:hover:bg-red-900/20"
-                                                onClick={endDemoCall}
-                                            >
-                                                <PhoneCall className="w-5 h-5 mr-2 animate-pulse" />
-                                                <span>
-                                                    END CALL{' '}
-                                                    {formattedTimeRemaining &&
-                                                        `(${formattedTimeRemaining})`}
-                                                </span>
-                                            </Button>
-                                        ) : connectionError ? (
-                                            <Button
-                                                className="justify-start w-full text-xs font-normal uppercase transition-colors bg-transparent text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
-                                                onClick={retryDemoCall}
-                                            >
-                                                <PhoneCall className="w-5 h-5 mr-2" />
-                                                <span>RETRY CALL</span>
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                className="justify-start w-full text-xs font-normal uppercase transition-colors bg-transparent font-body"
+                                                size="lg"
+                                                className="text-xs font-normal uppercase animate-pulse font-body"
                                                 onClick={startDemoCall}
                                                 disabled={isCallInitializing}
                                             >
                                                 {isCallInitializing ? (
                                                     <>
-                                                        <PhoneCall className="w-5 h-5 mr-2 animate-pulse" />
-                                                        <span>
-                                                            CONNECTING...
-                                                        </span>
+                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                                        <span>CONNECTING...</span>
+                                                    </>
+                                                ) : isCallActive ? (
+                                                    <>
+                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                                        <span>CALL ACTIVE {formattedTimeRemaining && `(${formattedTimeRemaining})`}</span>
+                                                    </>
+                                                ) : connectionError ? (
+                                                    <>
+                                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                                        <span>Retry Demo Call</span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <PhoneCall className="w-5 h-5 mr-2 text-green-500" />
-                                                        <span className="text-card-foreground">
-                                                            LEARN ABOUT LORO
-                                                        </span>
+                                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                                        <span>Instant Demo - Do you need LORO?</span>
                                                     </>
                                                 )}
                                             </Button>
-                                        )}
-                                        <Link
-                                            href="/sign-in"
-                                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary text-card-foreground"
+                                        </motion.div>
+                                        <motion.div
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
                                         >
-                                            <span>Sign In</span>
-                                        </Link>
-                                        <Link
-                                            href="/sign-in"
-                                            className="text-xs font-normal uppercase transition-colors font-body hover:text-primary text-card-foreground"
-                                        >
-                                            <span>Sign Up</span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </nav>
-
-                {/* Hero Section */}
-                <section className="flex flex-col items-center justify-center px-4 py-20 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="w-full"
-                    >
-                        <div className="relative h-32 mb-5">
-                            {' '}
-                            {/* Container to manage height */}
-                            <AnimatePresence mode="wait">
-                                <motion.h1
-                                    key={currentPhraseIndex}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.8 }}
-                                    className="absolute inset-0 flex items-center justify-center max-w-3xl mx-auto text-4xl font-normal text-center uppercase ease-in-out md:text-5xl lg:text-6xl font-body"
-                                >
-                                    {heroPhrases[currentPhraseIndex]}
-                                </motion.h1>
-                            </AnimatePresence>
-                        </div>
-                        <p className="max-w-2xl mx-auto mt-6 text-xs uppercase text-muted-foreground font-body">
-                            LORO isn't just a CRM – it's the centerpiece of a complete business ecosystem that connects seamlessly to POS, ERP, and specialized industry tools. Replace multiple expensive systems with one unified platform built for South African businesses.
-                        </p>
-                    </motion.div>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="relative flex items-center justify-center w-full mt-16 max-w-7xl"
-                    >
-                        <div className="relative w-full aspect-[16/9] flex items-center justify-center">
-                            <div className="absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-background to-transparent" />
-
-                            {/* Dashboard/Web View */}
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8, delay: 0.3 }}
-                                className="relative w-full h-full"
-                            >
-                                <Image
-                                    src="/images/covers/web.png"
-                                    alt="LORO CRM Dashboard Interface"
-                                    fill
-                                    className="object-contain"
-                                    priority
-                                />
-                            </motion.div>
-
-                            {/* Mobile View - Hidden on mobile, visible on larger screens */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.5 }}
-                                className="absolute hidden xl:block -right-4 -bottom-10 w-[200px] h-[400px] lg:w-[300px] lg:h-[600px] xl:w-[320px] xl:h-[650px] lg:-right-10 lg:-bottom-16 z-20"
-                            >
-                                <div className="relative w-full h-full drop-shadow-2xl">
-                                    <Image
-                                        src="/images/covers/onboadingpage.png"
-                                        alt="LORO CRM Mobile App Interface"
-                                        fill
-                                        className="object-contain"
-                                        priority
-                                    />
-                                </div>
-                            </motion.div>
-
-                            {/* Decorative Elements */}
-                            <div className="absolute w-32 h-32 rounded-full top-1/4 left-1/4 bg-primary/10 blur-3xl" />
-                            <div className="absolute w-32 h-32 rounded-full bottom-1/4 right-1/4 bg-primary/10 blur-3xl" />
-                        </div>
-                    </motion.div>
-
-                    {/* Responsive adjustments for dashboard image */}
-                    <style jsx global>{`
-                        @media (max-width: 768px) {
-                            .aspect-[16/9] {
-                                aspect-ratio: 4/3;
-                            }
-                        }
-                        @media (min-width: 769px) and (max-width: 1024px) {
-                            .aspect-[16/9] {
-                                aspect-ratio: 16/10;
-                            }
-                        }
-                    `}</style>
-                </section>
-
-                {/* Dashboard Features Tabs Section */}
-                <section className="py-16 bg-background">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="text-center"
-                        >
-                            <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Your Business Ecosystem Hub
-                            </h2>
-                            <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Control your entire business network from one central hub. LORO's dashboard provides real-time insights across CRM, POS, ERP, and all connected systems – unified data, unlimited growth potential.
-                            </p>
-                        </motion.div>
-
-                        <Tabs
-                            defaultValue={dashboardFeaturesData[0].value}
-                            className="w-full max-w-6xl mx-auto"
-                            onValueChange={setActiveDashboardTab}
-                        >
-                            {/* Use flex-nowrap and overflow-x-auto for TabsList to ensure items stay on one line */}
-                            <TabsList className="flex justify-start h-auto gap-2 p-1 overflow-x-auto bg-transparent flex-nowrap">
-                                {dashboardFeaturesData.map((tab) => (
-                                    <TabsTrigger
-                                        key={tab.value}
-                                        value={tab.value}
-                                        // Apply styles similar to lead-details-modal
-                                        className={cn(
-                                            'px-4 py-2 cursor-pointer transition-all duration-200 flex-shrink-0',
-                                            'text-xs font-thin uppercase rounded-none font-body',
-                                            // Ensure consistent height and alignment with borders
-                                            'border-b-2',
-                                            activeDashboardTab === tab.value
-                                                ? 'border-primary text-primary' // Active: Colored border, primary text
-                                                : 'border-transparent text-muted-foreground hover:text-foreground', // Inactive: Transparent border, muted text
-                                            // Explicitly remove default shadcn/ui TabsTrigger active styles
-                                            'data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none',
-                                            'data-[state=inactive]:bg-transparent',
-                                        )}
-                                    >
-                                        <tab.icon
-                                            className="w-5 h-5 mr-2"
-                                            strokeWidth={1.5}
-                                        />
-                                        <span>
-                                            {tab.value === 'reporting'
-                                                ? 'Drive Decisions with Data'
-                                                : tab.value === 'leads'
-                                                  ? 'Master Your Leads'
-                                                  : tab.value === 'tasks'
-                                                    ? 'Streamline Team Tasks'
-                                                    : tab.value === 'sales'
-                                                      ? 'Accelerate Your Sales Cycle'
-                                                      : tab.value ===
-                                                          'tracking'
-                                                        ? 'Optimize Field Operations'
-                                                        : tab.title}
-                                        </span>
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-
-                            {dashboardFeaturesData.map((tab) => (
-                                <TabsContent
-                                    key={tab.value}
-                                    value={tab.value}
-                                    className="mt-8"
-                                >
-                                    <motion.div
-                                        key={activeDashboardTab} // Force re-animation on tab change
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="flex flex-col items-center gap-8 p-6 rounded-lg bg-card md:flex-row"
-                                    >
-                                        <div className="flex-1 text-center md:text-left">
-                                            <h3 className="mb-3 text-xl font-normal uppercase font-body">
-                                                {tab.value === 'reporting'
-                                                    ? 'Drive Decisions with Data'
-                                                    : tab.value === 'leads'
-                                                      ? 'Master Your Leads'
-                                                      : tab.value === 'tasks'
-                                                        ? 'Streamline Team Tasks'
-                                                        : tab.value === 'sales'
-                                                          ? 'Accelerate Your Sales Cycle'
-                                                          : tab.value ===
-                                                              'tracking'
-                                                            ? 'Optimize Field Operations'
-                                                            : tab.title}
-                                            </h3>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                {tab.value === 'leads'
-                                                    ? 'Capture and convert leads across all touchpoints. Track prospects from initial contact through your entire ecosystem - whether they interact online, in-store, or in the field.'
-                                                    : tab.value === 'tasks'
-                                                      ? 'Coordinate tasks across your entire business network. Manage workflows from CRM activities to POS operations, with seamless communication between all connected systems.'
-                                                      : tab.value === 'sales'
-                                                        ? 'Manage your complete sales ecosystem. From quotations to POS transactions, with inventory synchronized across all channels and real-time data flowing between CRM and ERP systems.'
-                                                        : tab.value ===
-                                                            'tracking'
-                                                          ? 'Monitor your entire business network in real-time. Track field teams, manage multi-location operations, and coordinate activities across all connected systems with intelligent routing and geofencing.'
-                                                          : tab.value ===
-                                                              'reporting'
-                                                            ? 'Unified reporting across your entire business network. Analyze data from CRM, POS, ERP, and all connected systems with real-time insights and predictive analytics for strategic decision-making.'
-                                                            : tab.description}
-                                            </p>
-                                            {/* Optional Button */}
                                             <Button
-                                                variant="link"
-                                                className="mt-4 text-xs uppercase font-body"
+                                                asChild
+                                                variant="outline"
+                                                size="lg"
+                                                className="text-xs font-normal uppercase font-body"
                                             >
-                                                Learn More{' '}
-                                                <ArrowRight className="w-4 h-4 ml-1" />
+                                                <Link href="#features">
+                                                    See Features
+                                                </Link>
                                             </Button>
-                                        </div>
-                                        <div className="relative flex-shrink-0 w-[200px] lg:w-[600px] h-[200px] lg:h-[600px] mt-4 overflow-hidden rounded-md aspect-video md:w-1/2 md:mt-0">
-                                            <Image
-                                                src={tab.img}
-                                                alt={tab.alt}
-                                                fill
-                                                className="object-contain"
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </TabsContent>
-                            ))}
-                        </Tabs>
-                    </div>
-                </section>
+                                        </motion.div>
+                                    </StaggerItem>
+                                </StaggerContainer>
 
-                {/* Enhanced Features Section (Replaces the old simple one) */}
-                <section className="py-16 bg-background">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="text-center"
-                        >
-                            <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Enterprise Ecosystem Features Built for Growth
-                            </h2>
-                            <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                LORO's complete business ecosystem provides enterprise-grade capabilities that connect your CRM, POS, ERP, and specialized systems into one unified platform designed for South African businesses.
-                            </p>
-                        </motion.div>
-                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {enhancedFeaturesData.map((feature, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{
-                                        duration: 0.6,
-                                        delay: index * 0.1,
-                                    }}
+                                <StaggerContainer
+                                    className="grid grid-cols-2 gap-4"
+                                    delay={0.3}
+                                    staggerChildren={0.15}
                                 >
-                                    <Card className="flex flex-col h-full text-left transition-shadow duration-300 bg-card hover:shadow-lg">
-                                        <CardHeader className="flex flex-row items-center space-x-4">
-                                            <div className="p-3 rounded-full bg-primary/10">
-                                                <feature.icon
-                                                    className="w-6 h-6 text-primary"
-                                                    strokeWidth={1.5}
+                                    <StaggerItem
+                                        className="space-y-4"
+                                        direction="left"
+                                    >
+                                        <div className="flex items-center gap-2 p-4 rounded-lg bg-muted">
+                                            <div className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                                Live Activity
+                                            </div>
+                                            <div className="px-2 py-1 ml-auto text-xs font-normal text-green-700 uppercase bg-green-100 rounded-full animate-pulse font-body">
+                                                LIVE
+                                            </div>
+                                        </div>
+
+                                        {/* Animated User Carousel */}
+                                        <UserCarousel
+                                            users={diverseUsers}
+                                            interval={3500}
+                                        />
+                                    </StaggerItem>
+
+                                    <StaggerItem
+                                        className="space-y-4"
+                                        direction="right"
+                                    >
+                                        {/* Live Analytics Dashboard Widget */}
+                                        <StatsDisplay
+                                            data={liveStats}
+                                            className="mb-4"
+                                        />
+
+                                        <div className="relative aspect-square">
+                                            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
+                                                <motion.div
+                                                    className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg"
+                                                    animate={{
+                                                        scale: [1, 1.05, 1],
+                                                        rotate: [
+                                                            0, 5, 0, -5, 0,
+                                                        ],
+                                                    }}
+                                                    transition={{
+                                                        duration: 5,
+                                                        repeat: Number.POSITIVE_INFINITY,
+                                                        repeatType: 'reverse',
+                                                    }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        className="text-primary"
+                                                    >
+                                                        <rect
+                                                            x="3"
+                                                            y="3"
+                                                            width="18"
+                                                            height="18"
+                                                            rx="2"
+                                                            ry="2"
+                                                        ></rect>
+                                                        <rect
+                                                            x="7"
+                                                            y="7"
+                                                            width="3"
+                                                            height="3"
+                                                        ></rect>
+                                                        <rect
+                                                            x="14"
+                                                            y="7"
+                                                            width="3"
+                                                            height="3"
+                                                        ></rect>
+                                                        <rect
+                                                            x="7"
+                                                            y="14"
+                                                            width="3"
+                                                            height="3"
+                                                        ></rect>
+                                                        <rect
+                                                            x="14"
+                                                            y="14"
+                                                            width="3"
+                                                            height="3"
+                                                        ></rect>
+                                                    </svg>
+                                                </motion.div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 border rounded-lg shadow-sm bg-card">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="text-[10px] font-normal uppercase font-body">
+                                                    Scan Stats
+                                                </div>
+                                                <div className="text-xs font-normal uppercase text-primary font-body">
+                                                    +12%
+                                                </div>
+                                            </div>
+                                            <div className="h-10 overflow-hidden rounded-md bg-muted">
+                                                <motion.div
+                                                    className="h-full rounded-md bg-gradient-to-r from-primary to-primary/70"
+                                                    initial={{ width: '0%' }}
+                                                    animate={{ width: '75%' }}
+                                                    transition={{
+                                                        duration: 1.5,
+                                                        delay: 0.5,
+                                                        ease: 'easeOut',
+                                                    }}
                                                 />
                                             </div>
-                                            <CardTitle className="text-lg font-normal uppercase font-body">
-                                                {feature.title}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                {feature.description}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* Mobile App Showcase Section */}
-                <section className="py-16 bg-gradient-to-r from-background to-background/90">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="text-center"
-                        >
-                            <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Your Business Network in Your Pocket
-                            </h2>
-                            <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Access your entire business ecosystem from anywhere. Connect to POS systems, manage CRM activities, sync with ERP data, and coordinate field operations - all with 100% offline functionality built for the South African reality.
-                            </p>
-                        </motion.div>
-                        {/* Swiper Carousel replacing the grid layout */}
-                        <div className="flex items-center justify-center px-4 py-2">
-                            <Swiper
-                                effect="fade"
-                                fadeEffect={{
-                                    crossFade: true,
-                                }}
-                                slidesPerView={1}
-                                spaceBetween={20}
-                                centeredSlides={true}
-                                loop={true}
-                                autoplay={{
-                                    delay: 3500,
-                                    disableOnInteraction: false,
-                                }}
-                                pagination={{
-                                    clickable: true,
-                                }}
-                                breakpoints={{
-                                    768: {
-                                        slidesPerView: 3,
-                                        spaceBetween: 3,
-                                    },
-                                    1024: {
-                                        slidesPerView: 5,
-                                        spaceBetween: 4,
-                                    },
-                                }}
-                                modules={[Pagination, Autoplay]}
-                                className="flex items-center justify-center w-full px-4 py-8 mySwiper mobile-showcase-swiper"
-                            >
-                                {mobileFeaturesData.map((item, index) => (
-                                    <SwiperSlide
-                                        key={index}
-                                        className="transition-all duration-300"
-                                    >
-                                        <div className="relative overflow-hidden rounded-lg shadow-lg aspect-[9/16] p-2 mx-auto max-w-[250px] cursor-pointer transition-all duration-300">
-                                            <Image
-                                                src={item.img}
-                                                alt={item.alt}
-                                                fill
-                                                className="object-contain"
-                                            />
                                         </div>
-                                    </SwiperSlide>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                            </div>
+                        </div>
+                    </MotionSection>
+
+                    {/* Trusted By Section */}
+                    <MotionSection className="py-8 border-y" direction="none">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-70"
+                                staggerChildren={0.1}
+                            >
+                                {[1, 2, 3, 4, 5].map((i) => (
+                                    <StaggerItem key={i} direction="up">
+                                        <div className="flex items-center justify-center w-24 h-8">
+                                            <svg
+                                                viewBox="0 0 75 24"
+                                                fill="currentColor"
+                                                className="w-full h-6"
+                                            >
+                                                <path
+                                                    d={`M${
+                                                        12 + i
+                                                    } 12c0-3.315-2.685-6-6-6S${i} 8.685 ${i} 12s2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm12.5-4c0-3.315-2.685-6-6-6s-6 2.685-6 6 2.685 6 6 6 6-2.685 6-6zm-6 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z`}
+                                                />
+                                            </svg>
+                                        </div>
+                                    </StaggerItem>
                                 ))}
-                            </Swiper>
+                            </StaggerContainer>
+                        </div>
+                    </MotionSection>
+
+                    {/* Value Proposition */}
+                    <MotionSection className="py-12 md:py-16" direction="up">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <div className="max-w-3xl mx-auto text-center">
+                                <motion.p
+                                    className="mb-4 text-xs uppercase text-muted-foreground font-body md:text-xs"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <span className="font-normal text-foreground">
+                                        Stop juggling multiple systems.
+                                    </span>{' '}
+                                    Loro combines{' '}
+                                    <span className="font-normal text-foreground">
+                                        CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics
+                                    </span>{' '}
+                                    in one powerful platform.
+                                    <span className="font-normal text-foreground">
+                                        {' '}
+                                        Built for South African businesses
+                                    </span>{' '}
+                                    with{' '}
+                                    <span className="font-normal text-foreground">
+                                        offline capabilities
+                                    </span>{' '}
+                                    and{' '}
+                                    <span className="font-normal text-foreground">
+                                        99.9% uptime guarantee
+                                    </span>
+                                    .
+                                </motion.p>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.3 }}
+                                    viewport={{ once: true }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button variant="outline" className="mt-2 text-xs font-normal uppercase font-body">
+                                        <Link href="#features">
+                                            See All Features
+                                        </Link>
+                                    </Button>
+                                </motion.div>
+                            </div>
+                        </div>
+                    </MotionSection>
+
+                    {/* Problem Education Section */}
+                    <MotionSection
+                        className="py-16 md:py-24 bg-muted/50"
+                        direction="up"
+                        id="features"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        Why South African Businesses Choose Loro
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="max-w-3xl mx-auto mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Loro isn't just another CRM. It's your complete business command center that connects every aspect of your operations - from Johannesburg's bustling business district to Cape Town's growing tech sector.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <StaggerContainer
+                                className="grid gap-8 mb-12 md:grid-cols-2 lg:grid-cols-4"
+                                staggerChildren={0.15}
+                            >
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-green-600 bg-green-100 rounded-full">
+                                            <span className="text-xl font-normal font-body">
+                                                📱
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                            Mobile-First Design
+                                        </h3>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Your field teams stay connected with native mobile app featuring offline functionality and real-time GPS tracking
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-blue-600 bg-blue-100 rounded-full">
+                                            <span className="text-xl font-normal font-body">
+                                                🎯
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                            Smart Lead Management
+                                        </h3>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Transform prospects into profitable customers with automated lead assignment and complete interaction history
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-purple-600 bg-purple-100 rounded-full">
+                                            <span className="text-xl font-normal font-body">
+                                                📊
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                            Advanced Analytics
+                                        </h3>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Real-time dashboards with KPI tracking, territory performance analysis, and automated report delivery
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 text-center border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-orange-600 bg-orange-100 rounded-full">
+                                            <span className="text-xl font-normal font-body">
+                                                ⚡
+                                            </span>
+                                        </div>
+                                        <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                            Field Service Excellence
+                                        </h3>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Smart task assignment, route optimization reducing travel time by 40%, and digital forms eliminating paperwork
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <StaggerContainer
+                                className="grid items-center gap-8 md:grid-cols-2"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem direction="left">
+                                    <div className="space-y-6">
+                                        <div className="space-y-4">
+                                            <h3 className="text-2xl font-normal uppercase font-body">
+                                                Don't Just Take Our Word For It - Hear From Real Mzansi Businesses
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="pl-4 border-l-4 border-green-500">
+                                                    <p className="text-xs italic uppercase text-muted-foreground font-body">
+                                                        "Loro isn't just software; it's a business partner. Our field service efficiency shot up by 45%, and customer love is through the roof! The route optimization? It's saving us a cool R25,000 a month on fuel alone. No jokes!"
+                                                    </p>
+                                                    <p className="mt-2 text-[10px] font-normal uppercase font-body">
+                                                        — Sarah Mitchell, Operations Director, Cape Town Technical Services
+                                                    </p>
+                                                </div>
+                                                <div className="pl-4 border-l-4 border-blue-500">
+                                                    <p className="text-xs italic uppercase text-muted-foreground font-body">
+                                                        "That mobile quoting system? Absolute game-changer! Our sales reps are closing deals on the spot, and same-day conversions are up by 60%. Loro is our secret weapon."
+                                                    </p>
+                                                    <p className="mt-2 text-[10px] font-normal uppercase font-body">
+                                                        — Thabo Mthembu, Sales Manager, Joburg Industrial Solutions
+                                                    </p>
+                                                </div>
+                                                <div className="pl-4 border-l-4 border-purple-500">
+                                                    <p className="text-xs italic uppercase text-muted-foreground font-body">
+                                                        "Managing our teams across three provinces felt like juggling angry porcupines. Loro brought sanity and visibility from Durban to Polokwane. Productivity is up 40% – the results speak for themselves."
+                                                    </p>
+                                                    <p className="mt-2 text-[10px] font-normal uppercase font-body">
+                                                        — Amanda Botha, Managing Director, National Service Group
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="right">
+                                    <motion.div
+                                        className="p-8 text-center border bg-gradient-to-br from-green-500/10 via-blue-500/10 to-purple-500/10 rounded-xl border-green-500/20"
+                                        whileHover={{ scale: 1.02 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="space-y-5">
+                                            <motion.div 
+                                                className="relative"
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.8, delay: 0.1 }}
+                                                viewport={{ once: true }}
+                                            >
+                                                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-green-400/20 to-green-600/20 blur-sm"></div>
+                                                <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
+                                                    <motion.div 
+                                                        className="mb-1 text-4xl font-normal text-green-600 font-body"
+                                                        initial={{ scale: 0 }}
+                                                        whileInView={{ scale: 1 }}
+                                                        transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.4 }}
+                                                        viewport={{ once: true }}
+                                                    >
+                                                        60%
+                                                    </motion.div>
+                                                    <p className="text-[11px] uppercase text-muted-foreground font-body font-medium">
+                                                        Lead Conversion Boost
+                                                    </p>
+                                                    <p className="text-[9px] uppercase text-green-600 font-body font-normal mt-1">
+                                                        Automated reminders & follow-ups
+                                                    </p>
+                                                </div>
+                                            </motion.div>
+                                            
+                                            <motion.div 
+                                                className="relative"
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.8, delay: 0.2 }}
+                                                viewport={{ once: true }}
+                                            >
+                                                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/20 to-blue-600/20 blur-sm"></div>
+                                                <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
+                                                    <motion.div 
+                                                        className="mb-1 text-4xl font-normal text-blue-600 font-body"
+                                                        initial={{ scale: 0 }}
+                                                        whileInView={{ scale: 1 }}
+                                                        transition={{ duration: 0.6, delay: 0.4, type: "spring", bounce: 0.4 }}
+                                                        viewport={{ once: true }}
+                                                    >
+                                                        85%
+                                                    </motion.div>
+                                                    <p className="text-[11px] uppercase text-muted-foreground font-body font-medium">
+                                                        Time Saved on Admin
+                                                    </p>
+                                                    <p className="text-[9px] uppercase text-blue-600 font-body font-normal mt-1">
+                                                        Smart workflows & automation
+                                                    </p>
+                                                </div>
+                                            </motion.div>
+
+                                            <motion.div 
+                                                className="relative"
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.8, delay: 0.3 }}
+                                                viewport={{ once: true }}
+                                            >
+                                                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400/20 to-purple-600/20 blur-sm"></div>
+                                                <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
+                                                    <motion.div 
+                                                        className="mb-1 text-4xl font-normal text-purple-600 font-body"
+                                                        initial={{ scale: 0 }}
+                                                        whileInView={{ scale: 1 }}
+                                                        transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.4 }}
+                                                        viewport={{ once: true }}
+                                                    >
+                                                        3.2x
+                                                    </motion.div>
+                                                    <p className="text-[11px] uppercase text-muted-foreground font-body font-medium">
+                                                        Faster Quote Generation
+                                                    </p>
+                                                    <p className="text-[9px] uppercase text-purple-600 font-body font-normal mt-1">
+                                                        Mobile quotes & instant pricing
+                                                    </p>
+                                                </div>
+                                            </motion.div>
+
+                                            <motion.div 
+                                                className="pt-4 border-t border-gradient-to-r from-green-500/30 to-purple-500/30"
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.8, delay: 0.4 }}
+                                                viewport={{ once: true }}
+                                            >
+                                                <motion.div 
+                                                    className="mb-2 text-3xl font-normal text-transparent bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text font-body"
+                                                    initial={{ scale: 0 }}
+                                                    whileInView={{ scale: 1 }}
+                                                    transition={{ duration: 0.8, delay: 0.6, type: "spring", bounce: 0.3 }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    = 2.5x ROI
+                                                </motion.div>
+                                                <p className="text-[11px] uppercase text-muted-foreground font-body font-medium">
+                                                    Average return on investment
+                                                </p>
+                                                <p className="text-[9px] uppercase bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent font-body font-normal mt-1">
+                                                    Within first 6 months
+                                                </p>
+                                            </motion.div>
+                                            
+                                            <motion.div
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.8, delay: 0.5 }}
+                                                viewport={{ once: true }}
+                                            >
+                                                <Button
+                                                    className="w-full mt-4 text-xs font-normal uppercase border-0 font-body bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                                                    asChild
+                                                >
+                                                    <Link href="/signup">
+                                                        🚀 Start Winning Today - Free Trial
+                                                    </Link>
+                                                </Button>
+                                            </motion.div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
+                        </div>
+                    </MotionSection>
+
+                    {/* Featured Card */}
+                    <MotionSection
+                        className="py-12 md:py-16 bg-primary text-primary-foreground"
+                        direction="none"
+                        id="benefits" 
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <div className="grid items-center gap-6 md:grid-cols-5">
+                                <StaggerContainer
+                                    className="space-y-4 md:col-span-3"
+                                    staggerChildren={0.2}
+                                >
+                                    <StaggerItem>
+                                        <h2 className="text-3xl font-normal tracking-tighter uppercase font-body">
+                                            Your Unfair Advantage
+                                        </h2>
+                                    </StaggerItem>
+                                    <StaggerItem>
+                                        <p className="text-xs uppercase text-primary-foreground/80 font-body">
+                                            In a dynamic economy like ours, Loro equips your business not just to compete, but to dominate. Built on world-class tech, it's fine-tuned for how South African businesses actually operate - from navigating tricky logistics to meeting unique market compliance.
+                                        </p>
+                                    </StaggerItem>
+                                    <StaggerItem>
+                                        <motion.div
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <Button
+                                                variant="secondary"
+                                                className="mt-2 text-xs font-normal uppercase font-body"
+                                            >
+                                                <Link href="/signup">
+                                                    Start Your Free Trial
+                                                </Link>
+                                            </Button>
+                                        </motion.div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                                <motion.div
+                                    className="md:col-span-2"
+                                    initial={{ opacity: 0, x: 50 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8, delay: 0.3 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <motion.div
+                                        className="flex items-center justify-center overflow-hidden rounded-lg aspect-video"
+                                        whileHover={{ scale: 1.02 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Image
+                                            src="/images/covers/web.png"
+                                            alt="Loro CRM Dashboard"
+                                            width={400}
+                                            height={300}
+                                            className="rounded-lg"
+                                        />
+                                    </motion.div>
+                                </motion.div>
+                            </div>
+                        </div>
+                    </MotionSection>
+
+                    {/* Why Choose Us */}
+                    <MotionSection className="py-16 md:py-24" direction="up">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        Real Impact, Real Results You Can Count On
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Forget vague promises. Here's what Loro delivers to your bottom line:
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <StaggerContainer
+                                className="grid gap-8 md:grid-cols-4"
+                                staggerChildren={0.15}
+                            >
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <h3 className="mb-2 text-xl font-normal uppercase font-body">
+                                            Slash Operational Costs
+                                        </h3>
+                                        <div className="mb-4 space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground font-body uppercase text-[10px]">Admin overhead</span>
+                                                <span className="font-medium text-green-600 font-body uppercase text-[9px]">35% ↓</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground font-body uppercase text-[10px]">Fuel expenses</span>
+                                                <span className="font-medium text-green-600 font-body uppercase text-[9px]">25% ↓</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground font-body uppercase text-[10px]">Manual reporting</span>
+                                                <span className="font-medium text-green-600 font-body uppercase text-[9px]">15 hrs/week saved</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Cut administrative overhead with digital processes, reduce fuel expenses through smart route optimization, and eliminate data entry errors that cost time and money.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                                <StaggerItem direction="up" className="mt-4 md:mt-8">
+                                            <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <h3 className="mb-2 text-xl font-normal uppercase font-body">
+                                            Boost Sales Performance
+                                        </h3>
+                                        <div className="mb-4 space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Lead conversion</span>
+                                                <span className="font-medium text-blue-600 font-body uppercase text-[9px]">45% ↑</span>
+                                                </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Quote speed</span>
+                                                <span className="font-medium text-blue-600 font-body uppercase text-[9px]">3x faster</span>
+                                        </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Repeat business</span>
+                                                <span className="font-medium text-blue-600 font-body uppercase text-[9px]">30% ↑</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Increase lead conversion rates with automated nurturing, close deals faster with mobile quoting capabilities, and grow repeat business through better client relationship management.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                                <StaggerItem direction="up" className="mt-8 md:mt-16">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <h3 className="mb-2 text-xl font-normal uppercase font-body">
+                                            Supercharge Team Productivity
+                                        </h3>
+                                        <div className="mb-4 space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Travel time</span>
+                                                <span className="font-medium text-purple-600 font-body uppercase text-[9px]">40% ↓</span>
+                                        </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Quote generation</span>
+                                              <span className="font-medium text-purple-600 font-body uppercase text-[9px]">60% faster</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">First-call resolution</span>
+                                              <span className="font-medium text-purple-600 font-body uppercase text-[9px]">35% ↑</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Reduce travel time with AI-powered route planning, speed up quote generation with automated pricing, and improve first-call resolution rates.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                                <StaggerItem direction="up" className="mt-12 md:mt-24">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <h3 className="mb-2 text-xl font-normal uppercase font-body">
+                                            Elevate Customer Satisfaction
+                                        </h3>
+                                        <div className="mb-4 space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">On-time delivery</span>
+                                                <span className="font-medium text-orange-600 font-body uppercase text-[9px]">95%+</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Response time</span>
+                                                <span className="font-medium text-orange-600 font-body uppercase text-[9px]">&lt;2 hours</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs">
+                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Customer retention</span>
+                                                <span className="font-medium text-orange-600 font-body uppercase text-[9px]">40% ↑</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Achieve exceptional on-time service delivery with smart scheduling, reduce customer complaint response times, and boost Net Promoter Scores with professional service delivery.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
+                        </div>
+                    </MotionSection>
+
+                    {/* Take Control Section */}
+                    <MotionSection className="py-20" direction="up">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        Take Control of Your Business Operations
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Stop chasing information across multiple systems and spreadsheets. Loro puts you in the driver's seat with intelligent automation that handles the routine work while you focus on growing your business.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            
+                            {/* Automate What Matters Section */}
+                            <div className="mb-16">
+                            <div className="grid items-center gap-8 md:grid-cols-2">
+                                <motion.div
+                                    className="overflow-hidden rounded-xl"
+                                    initial={{ opacity: 0, x: -50 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <motion.div
+                                        whileHover={{ scale: 1.03 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Image
+                                                src="/images/covers/automation.webp"
+                                                alt="Business automation and CRM"
+                                            width={400}
+                                            height={400}
+                                            className="w-full h-auto rounded-xl"
+                                        />
+                                    </motion.div>
+                                </motion.div>
+                                <StaggerContainer
+                                    className="space-y-6"
+                                    staggerChildren={0.15}
+                                    delay={0.3}
+                                >
+                                        <StaggerItem>
+                                            <h3 className="mb-4 text-2xl font-normal uppercase font-body">
+                                                Automate What Matters, Control What Counts
+                                            </h3>
+                                        </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Smart Lead Distribution
+                                                    </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Automatically assign new leads to the right sales rep based on location, expertise, and workload. No more manual sorting or missed opportunities.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Intelligent Follow-Up Sequences
+                                                    </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Set up automated touchpoints that nurture prospects without lifting a finger. Convert more leads while your team focuses on closing deals.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Dynamic Route Planning
+                                                    </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Let our AI optimize your team's daily routes automatically. Save fuel, time, and frustration with zero manual planning.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                            </div>
                         </div>
 
-                        {/* Add custom styles for the Swiper carousel to make center item larger */}
-                        <style jsx global>{`
-                            /* Center slide effect */
-                            .mobile-showcase-swiper .swiper-slide {
-                                transition: transform 0.3s;
-                                opacity: 0.6;
-                                transform: scale(0.6);
-                            }
+                            {/* CRM Management Section */}
+                            <div className="mb-16">
+                                <div className="grid items-center gap-8 md:grid-cols-2">
+                            <StaggerContainer
+                                        className="space-y-6 md:order-2"
+                                staggerChildren={0.15}
+                                        delay={0.3}
+                                    >
+                                        <StaggerItem>
+                                            <h3 className="mb-4 text-2xl font-normal uppercase font-body">
+                                                Effortless Client Relationship Management
+                                        </h3>
+                                </StaggerItem>
+                                        <StaggerItem direction="right">
+                                            <div className="flex items-start gap-4">
+                                    <motion.div
+                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                        whileHover={{
+                                                scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                            }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                                    <Check className="w-5 h-5 text-primary" />
+                                        </motion.div>
+                                                <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Unified Client Timeline
+                                                    </h4>
+                                                    <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Every call, email, meeting, and transaction in one chronological view. Understand your clients completely, every time you interact.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                </StaggerItem>
+                                        <StaggerItem direction="right">
+                                            <div className="flex items-start gap-4">
+                                    <motion.div
+                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                        whileHover={{
+                                                scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                            }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                                    <Check className="w-5 h-5 text-primary" />
+                                        </motion.div>
+                                                <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Predictive Insights
+                                                    </h4>
+                                                    <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Get alerts when clients show signs of churn or upselling opportunities. Stay ahead of problems and capitalize on growth chances.
+                                                    </p>
+                        </div>
+                                            </div>
+                                </StaggerItem>
+                                        <StaggerItem direction="right">
+                                            <div className="flex items-start gap-4">
+                                        <motion.div
+                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                            whileHover={{
+                                                    scale: 1.1,
+                                                        backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                    <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                                <div>
+                                                    <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                        Seamless Communication
+                                                    </h4>
+                                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                                        Send personalized messages, quotes, and updates directly from client profiles. Professional communication that builds trust and drives results.
+                                            </p>
+                        </div>
+                                            </div>
+                                </StaggerItem>
+                            </StaggerContainer>
+                                        <motion.div
+                                        className="overflow-hidden rounded-xl md:order-1"
+                                        initial={{ opacity: 0, x: 50 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.8 }}
+                                            viewport={{ once: true }}
+                                        >
+                                                <motion.div
+                                            whileHover={{ scale: 1.03 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <Image
+                                                src="/images/covers/client.webp"
+                                                alt="Client relationship management dashboard"
+                                                width={600}
+                                                height={400}
+                                                className="w-full h-auto rounded-xl"
+                                            />
+                                            </motion.div>
+                                        </motion.div>
+                                    </div>
+                            </div>
 
-                            .mobile-showcase-swiper .swiper-slide-active {
-                                opacity: 1;
-                                transform: scale(1);
-                                z-index: 10;
-                            }
+                            {/* Data-Driven Decisions CTA */}
+                            <div className="text-center">
+                                <StaggerContainer staggerChildren={0.2}>
+                                <StaggerItem>
+                                        <h3 className="mb-4 text-2xl font-normal uppercase font-body">
+                                            Data-Driven Decision Making Made Simple
+                                        </h3>
+                                </StaggerItem>
+                                <StaggerItem>
+                                        <p className="mb-6 text-xs uppercase text-muted-foreground font-body">
+                                            Transform your business intelligence from guesswork to precision with real-time analytics that actually help you grow.
+                                    </p>
+                                </StaggerItem>
+                                    <StaggerItem>
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                            className="inline-block"
+                                        >
+                                            <Button asChild className="text-xs font-normal uppercase font-body">
+                                                <Link href="/signup">
+                                                    Start Your Free Trial
+                                        </Link>
+                                    </Button>
+                                </motion.div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                            </div>
+                        </div>
+                    </MotionSection>
 
-                            .mobile-showcase-swiper .swiper-slide-prev,
-                            .mobile-showcase-swiper .swiper-slide-next {
-                                opacity: 0.8;
-                                transform: scale(0.8);
-                                z-index: 5;
-                            }
+                    {/* Testimonials Section */}
+                    <MotionSection
+                        id="testimonials"
+                        className="py-20 bg-muted"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase font-body sm:text-4xl md:text-5xl">
+                                        What Our Users Say
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xl">
+                                        Hear from professionals who have
+                                        transformed their networking with Kaad
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <StaggerContainer
+                                className="grid gap-8 md:grid-cols-3"
+                                staggerChildren={0.15}
+                            >
+                                {[
+                                    {
+                                        initials: 'SM',
+                                        name: 'Sarah M.',
+                                        role: 'Graphic Designer',
+                                        quote: 'Kaad made it so easy to create a professional card for my freelance business! The QR code feature has been a game-changer at networking events.',
+                                        stars: 5,
+                                    },
+                                    {
+                                        initials: 'JT',
+                                        name: 'James T.',
+                                        role: 'Startup Founder',
+                                        quote: "I love the NFC feature—it's perfect for networking events! Our team uses Kaad for all our business cards, and the analytics help us track our networking ROI.",
+                                        stars: 5,
+                                    },
+                                    {
+                                        initials: 'PR',
+                                        name: 'Priya R.',
+                                        role: 'Small Business Owner',
+                                        quote: "Affordable and intuitive, exactly what I needed. I've received so many compliments on my digital business card, and I love that I can update it anytime without reprinting.",
+                                        stars: 4,
+                                    },
+                                ].map((testimonial, index) => (
+                                    <StaggerItem key={index} direction="up">
+                                        <motion.div
+                                            className="h-full p-6 shadow-sm bg-card rounded-xl"
+                                            whileHover={{
+                                                y: -10,
+                                                boxShadow:
+                                                    '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                            }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <motion.div
+                                                    className="flex items-center justify-center w-12 h-12 text-xl font-normal uppercase rounded-full font-body bg-primary/10 text-primary"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                    }}
+                                                >
+                                                    {testimonial.initials}
+                                                </motion.div>
+                                                <div>
+                                                    <h3 className="font-normal uppercase font-body">
+                                                        {testimonial.name}
+                                                    </h3>
+                                                    <p className="text-[10px] font-normal uppercase text-muted-foreground font-body">
+                                                        {testimonial.role}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs italic uppercase text-muted-foreground font-body">
+                                                "{testimonial.quote}"
+                                            </p>
+                                            <div className="flex mt-4">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <motion.svg
+                                                        key={star}
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                        className={
+                                                            star <=
+                                                            testimonial.stars
+                                                                ? 'text-yellow-500'
+                                                                : 'text-yellow-500/50'
+                                                        }
+                                                        initial={{
+                                                            opacity: 0,
+                                                            scale: 0.5,
+                                                        }}
+                                                        whileInView={{
+                                                            opacity: 1,
+                                                            scale: 1,
+                                                        }}
+                                                        transition={{
+                                                            duration: 0.3,
+                                                            delay:
+                                                                0.5 +
+                                                                star * 0.1,
+                                                        }}
+                                                        viewport={{
+                                                            once: true,
+                                                        }}
+                                                    >
+                                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                                    </motion.svg>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    </StaggerItem>
+                                ))}
+                            </StaggerContainer>
+                        </div>
+                    </MotionSection>
 
-                            /* Pagination styling */
-                            .mobile-showcase-swiper .swiper-pagination-bullet {
-                                background: var(--foreground);
-                                opacity: 0.5;
-                            }
+                    <MotionSection
+                        id="customization"
+                        className="py-20 bg-accent"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase font-body sm:text-4xl md:text-5xl">
+                                        Complete Business Customization
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Transform Loro to match your brand identity and business processes with comprehensive customization options
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <StaggerContainer
+                                className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+                                staggerChildren={0.15}
+                            >
+                                {[
+                                    {
+                                        name: 'Brand Appearance',
+                                        icon: '🎨',
+                                        description:
+                                            'Customize colors, logos, fonts, and themes to match your corporate identity perfectly.',
+                                        features: ['Custom color schemes', 'Logo integration', 'Font selection', 'Theme templates', 'White-label options'],
+                                        bgClass:
+                                            'bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30',
+                                    },
+                                    {
+                                        name: 'Business Settings',
+                                        icon: '⚙️',
+                                        description:
+                                            'Configure workflows, permissions, and business rules to align with your operational needs.',
+                                        features: ['Custom workflows', 'User permissions', 'Business rules', 'Approval processes', 'Integration settings'],
+                                        bgClass:
+                                            'bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30',
+                                    },
+                                    {
+                                        name: 'Operating Hours',
+                                        icon: '🕒',
+                                        description:
+                                            'Set up flexible schedules, time zones, and working hours for different branches and teams.',
+                                        features: ['Multi-timezone support', 'Branch-specific hours', 'Holiday calendars', 'Shift management', 'Automated scheduling'],
+                                        bgClass:
+                                            'bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30',
+                                    },
+                                ].map((customization, index) => (
+                                    <StaggerItem key={index} direction="up">
+                                        <motion.div
+                                            className="h-full overflow-hidden shadow-sm bg-background rounded-xl"
+                                            whileHover={{
+                                                y: -10,
+                                                boxShadow:
+                                                    '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                            }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <motion.div
+                                                className={`aspect-[4/3] ${customization.bgClass} p-6 flex items-center justify-center relative`}
+                                                whileHover={{ scale: 1.02 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                {/* Icon */}
+                                                <motion.div
+                                                    className="absolute flex items-center justify-center w-16 h-16 top-4 left-4 rounded-xl bg-white/20 backdrop-blur-sm"
+                                                    whileHover={{
+                                                        scale: 1.1,
+                                                        rotate: 5,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                    }}
+                                                >
+                                                    <span className="text-3xl">
+                                                        {customization.icon}
+                                                    </span>
+                                                </motion.div>
 
-                            .mobile-showcase-swiper
-                                .swiper-pagination-bullet-active {
-                                background: var(--primary);
-                                opacity: 1;
-                            }
+                                                {/* Demo interface */}
+                                                <div className="w-full max-w-[280px] bg-white dark:bg-black rounded-lg p-4 shadow-lg border border-black/10 dark:border-white/10">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <div className="w-8 h-8 rounded-full bg-primary/20"></div>
+                                                        <div className="flex-1">
+                                                            <div className="w-full h-3 mb-1 rounded bg-primary/10"></div>
+                                                            <div className="w-2/3 h-2 rounded bg-primary/5"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="mb-4 space-y-2">
+                                                        <div className="w-full h-2 rounded bg-primary/10"></div>
+                                                        <div className="w-4/5 h-2 rounded bg-primary/10"></div>
+                                                        <div className="w-3/4 h-2 rounded bg-primary/10"></div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex gap-1">
+                                                            <div className="w-4 h-4 rounded bg-primary/20"></div>
+                                                            <div className="w-4 h-4 rounded bg-primary/20"></div>
+                                                            <div className="w-4 h-4 rounded bg-primary/20"></div>
+                                                        </div>
+                                                        <div className="w-12 h-8 rounded bg-primary/20"></div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                            <div className="p-6">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <motion.div
+                                                        className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10"
+                                                        whileHover={{
+                                                            scale: 1.1,
+                                                            rotate: 5,
+                                                        }}
+                                                        transition={{
+                                                            duration: 0.3,
+                                                        }}
+                                                    >
+                                                        <span className="text-xl">
+                                                            {customization.icon}
+                                                        </span>
+                                                    </motion.div>
+                                                    <h3 className="text-xl font-normal uppercase font-body">
+                                                        {customization.name}
+                                                    </h3>
+                                                </div>
+                                                <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                                    {customization.description}
+                                                </p>
+                                                <ul className="mb-4 space-y-1">
+                                                    {customization.features.map((feature, i) => (
+                                                        <li key={i} className="flex items-center text-[10px] uppercase text-muted-foreground font-body">
+                                                            <div className="w-1 h-1 mr-2 rounded-full bg-primary"></div>
+                                                            {feature}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <motion.div
+                                                    whileHover={{ scale: 1.03 }}
+                                                    whileTap={{ scale: 0.97 }}
+                                                >
+                                                    <Button
+                                                        variant="outline"
+                                                        className="w-full text-xs font-normal uppercase font-body"
+                                                    >
+                                                        <Link href="/signup">
+                                                            Customize Now
+                                                        </Link>
+                                                    </Button>
+                                                </motion.div>
+                                            </div>
+                                        </motion.div>
+                                    </StaggerItem>
+                                ))}
+                            </StaggerContainer>
+                            <motion.div
+                                className="mt-12 text-center"
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.6 }}
+                                viewport={{ once: true }}
+                            >
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button asChild className="text-xs font-normal uppercase font-body">
+                                        <Link href="/signup">
+                                            Start Customizing Your Business
+                                        </Link>
+                                    </Button>
+                                </motion.div>
+                            </motion.div>
+                        </div>
+                    </MotionSection>
 
-                            /* Adjust spacing for better visual balance */
-                            @media (min-width: 1024px) {
-                                .mobile-showcase-swiper {
-                                    padding: 2rem 3rem;
-                                }
-                            }
-                        `}</style>
-                    </div>
-                </section>
+                    <MotionSection
+                        id="pricing"
+                        className="py-20"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        Transparent Pricing for Every Business
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Choose the plan that fits your team size and needs. All prices in South African Rands, per user per month.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <StaggerContainer
+                                className="grid gap-8 md:grid-cols-3"
+                                staggerChildren={0.15}
+                            >
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="mb-6">
+                                            <motion.div
+                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    rotate: 5,
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-2xl">
+                                                    🚀
+                                                </span>
+                                            </motion.div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Basic Plan
+                                            </h3>
+                                            <p className="mt-2 text-3xl font-normal font-body">
+                                                R99
+                                            </p>
+                                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                                per user/month
+                                            </p>
+                                        </div>
+                                        <ul className="mb-6 space-y-2">
+                                            {[
+                                                'Lead creation & tracking (up to 500)',
+                                                'Basic expense claims workflow',
+                                                'Activity logging & notes',
+                                                'Real-time tracking (up to 5 users)',
+                                                'Client profile management',
+                                                'Basic task management',
+                                                'Standard reports (CSV/Excel)',
+                                                'Stock level visibility',
+                                                'Basic product catalog',
+                                            ].map((feature, i) => (
+                                                <motion.li
+                                                    key={i}
+                                                    className="flex items-start"
+                                                    initial={{
+                                                        opacity: 0,
+                                                        x: -20,
+                                                    }}
+                                                    whileInView={{
+                                                        opacity: 1,
+                                                        x: 0,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        delay: 0.3 + i * 0.05,
+                                                    }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
+                                                    >
+                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                    </svg>
+                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
+                                                </motion.li>
+                                            ))}
+                                        </ul>
+                                        <motion.div
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                className="w-full text-xs font-normal uppercase font-body"
+                                            >
+                                                <Link href="/signup?plan=basic">
+                                                    Start Basic Plan
+                                                </Link>
+                                            </Button>
+                                        </motion.div>
+                                    </motion.div>
+                                </StaggerItem>
+                                <StaggerItem
+                                    direction="up"
+                                    className="mt-4 md:mt-0"
+                                >
+                                    <motion.div
+                                        className="relative h-full p-6 border-2 shadow-lg bg-card rounded-xl border-primary"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <motion.div
+                                            className="absolute px-4 py-1 text-xs font-normal uppercase transform -translate-x-1/2 rounded-full -top-4 left-1/2 bg-primary text-primary-foreground font-body"
+                                            initial={{ y: -10, opacity: 0 }}
+                                            whileInView={{ y: 0, opacity: 1 }}
+                                            transition={{
+                                                duration: 0.5,
+                                                delay: 0.2,
+                                            }}
+                                            viewport={{ once: true }}
+                                        >
+                                            Most Popular
+                                        </motion.div>
+                                        <div className="mb-6">
+                                            <motion.div
+                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    rotate: 5,
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-2xl">
+                                                    ⭐
+                                                </span>
+                                            </motion.div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Premium Plan
+                                            </h3>
+                                            <p className="mt-2 text-3xl font-normal font-body">
+                                                R199
+                                            </p>
+                                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                                per user/month
+                                            </p>
+                                        </div>
+                                        <ul className="mb-6 space-y-2">
+                                            {[
+                                                'Everything in Basic Plan',
+                                                'Unlimited lead storage',
+                                                'Advanced approval workflows',
+                                                'Unlimited user tracking',
+                                                'Geofencing & route alerts',
+                                                'Client portal access',
+                                                'Quotation PDF generation',
+                                                'Custom report builder',
+                                                'Priority 24/7 support',
+                                                'Subtasks & priority tagging',
+                                            ].map((feature, i) => (
+                                                <motion.li
+                                                    key={i}
+                                                    className="flex items-start"
+                                                    initial={{
+                                                        opacity: 0,
+                                                        x: -20,
+                                                    }}
+                                                    whileInView={{
+                                                        opacity: 1,
+                                                        x: 0,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        delay: 0.3 + i * 0.05,
+                                                    }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
+                                                    >
+                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                    </svg>
+                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
+                                                </motion.li>
+                                            ))}
+                                        </ul>
+                                        <motion.div
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                        >
+                                            <Button className="w-full text-xs font-normal uppercase font-body">
+                                                <Link href="/signup?plan=premium">
+                                                    Get Premium
+                                                </Link>
+                                            </Button>
+                                        </motion.div>
+                                    </motion.div>
+                                </StaggerItem>
+                                <StaggerItem
+                                    direction="up"
+                                    className="mt-8 md:mt-0"
+                                >
+                                    <motion.div
+                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="mb-6">
+                                            <motion.div
+                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    rotate: 5,
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-2xl">
+                                                    🏢
+                                                </span>
+                                            </motion.div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Enterprise Plan
+                                            </h3>
+                                            <p className="mt-2 text-3xl font-normal font-body">
+                                                R399
+                                            </p>
+                                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                                per user/month
+                                            </p>
+                                        </div>
+                                        <ul className="mb-6 space-y-2">
+                                            {[
+                                                'Everything in Premium Plan',
+                                                'Audit logs & SSO integration',
+                                                'Custom user permissions',
+                                                'Workflow automation',
+                                                'API access for integrations',
+                                                'Bulk actions & mass updates',
+                                                'Custom branding on PDFs',
+                                                'Unlimited attachments/data',
+                                                'Dedicated account manager',
+                                                'SLA-guaranteed support',
+                                            ].map((feature, i) => (
+                                                <motion.li
+                                                    key={i}
+                                                    className="flex items-start"
+                                                    initial={{
+                                                        opacity: 0,
+                                                        x: -20,
+                                                    }}
+                                                    whileInView={{
+                                                        opacity: 1,
+                                                        x: 0,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        delay: 0.3 + i * 0.05,
+                                                    }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
+                                                    >
+                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                    </svg>
+                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
+                                                </motion.li>
+                                            ))}
+                                        </ul>
+                                        <motion.div
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                className="w-full text-xs font-normal uppercase font-body"
+                                            >
+                                                <Link href="/contact">
+                                                    Contact Sales
+                                                </Link>
+                                            </Button>
+                                        </motion.div>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <motion.div
+                                className="mt-12 text-center"
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.6 }}
+                                viewport={{ once: true }}
+                            >
+                                <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
+                                    All plans include free trial • Annual billing saves up to 20% • No setup fees
+                                </p>
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button asChild variant="outline" className="text-xs font-normal uppercase font-body">
+                                        <Link href="/pricing-comparison">
+                                            Compare All Features
+                                        </Link>
+                                    </Button>
+                                </motion.div>
+                            </motion.div>
+                        </div>
+                    </MotionSection>
+                </main>
 
                 {/* FAQ Section */}
-                <section className="py-16 bg-background">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="max-w-3xl mx-auto"
+                <MotionSection id="faq" className="py-20" direction="up">
+                    <div className="container px-4 mx-auto md:px-6">
+                        <StaggerContainer
+                            className="mb-12 text-center"
+                            staggerChildren={0.2}
                         >
-                            <h2 className="mb-8 text-2xl font-normal text-center uppercase md:text-3xl font-body">
-                                Frequently Asked Questions
-                            </h2>
-                            <Accordion
-                                type="single"
-                                collapsible
-                                className="w-full max-w-4xl"
+                            <StaggerItem>
+                                <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                    Frequently Asked Questions
+                                </h2>
+                            </StaggerItem>
+                            <StaggerItem>
+                                <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                    Find answers to common questions about Loro CRM
+                                </p>
+                            </StaggerItem>
+                        </StaggerContainer>
+                        
+                        {/* FAQ Categories */}
+                        <div className="max-w-4xl mx-auto space-y-12">
+                            {/* General FAQs */}
+                            <div>
+                                <h3 className="mb-6 text-2xl font-normal text-center uppercase font-body">General</h3>
+                        <StaggerContainer
+                                    className="grid gap-4 md:gap-6"
+                            staggerChildren={0.1}
+                        >
+                            {[
+                                {
+                                            icon: '💰',
+                                            question: 'Can I switch plans later?',
+                                            answer: 'Yes! Upgrades and downgrades are prorated automatically. You can change plans anytime through your account dashboard or by contacting our support team.',
+                                        },
+                                        {
+                                            icon: '🆓',
+                                            question: 'Is there a free trial?',
+                                            answer: 'Yes—Basic plan trials are available for all new users. For Premium and Enterprise trial options, please contact our sales team who can set up a customized trial period.',
+                                        },
+                                        {
+                                            icon: '❌',
+                                            question: 'How do I cancel my subscription?',
+                                            answer: 'You can cancel anytime by going to Account > Subscription in your dashboard or by contacting our support team. We have no long-term contracts, so you\'re free to cancel whenever needed.',
+                                        },
+                                        {
+                                            icon: '📊',
+                                            question: 'What happens to my data if I cancel?',
+                                            answer: 'Your data remains accessible for 30 days after cancellation, giving you time to export everything you need. After 30 days, data is permanently deleted from our servers.',
+                                        },
+                                    ].map((faq, index) => (
+                                        <StaggerItem key={index} direction="up">
+                                            <motion.div
+                                                className="p-6 rounded-lg shadow-sm bg-card"
+                                                whileHover={{
+                                                    y: -5,
+                                                    boxShadow:
+                                                        '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <motion.div
+                                                        className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                        whileHover={{
+                                                            scale: 1.1,
+                                                            rotate: 5,
+                                                        }}
+                                                        transition={{ duration: 0.3 }}
+                                                    >
+                                                        <span className="text-2xl">
+                                                            {faq.icon}
+                                                        </span>
+                                                    </motion.div>
+                                                    <div className="flex-1">
+                                                        <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                            {faq.question}
+                                                        </h4>
+                                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                                            {faq.answer}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </StaggerItem>
+                                    ))}
+                                </StaggerContainer>
+                            </div>
+
+                            {/* Technical FAQs */}
+                            <div>
+                                <h3 className="mb-6 text-2xl font-normal text-center uppercase font-body">Technical</h3>
+                                <StaggerContainer
+                                    className="grid gap-4 md:gap-6"
+                                    staggerChildren={0.1}
+                                >
+                                    {[
+                                        {
+                                            icon: '🔒',
+                                            question: 'Is my data secure?',
+                                            answer: 'Absolutely! All data is encrypted both in transit and at rest using bank-grade security protocols. Enterprise plans include additional audit logs and compliance features.',
+                                        },
+                                        {
+                                            icon: '📱',
+                                            question: 'Can I use Loro offline?',
+                                            answer: 'Yes! Our mobile app supports limited offline functionality including drafting journals, creating leads, and viewing client information. Data automatically syncs when you\'re back online.',
+                                        },
+                                        {
+                                            icon: '📍',
+                                            question: 'How often is location tracking updated?',
+                                            answer: 'Location tracking typically updates every 2-5 minutes for optimal battery life and accuracy. Enterprise customers can adjust this frequency based on their specific needs.',
+                                },
+                                {
+                                    icon: '🔗',
+                                            question: 'Do you offer API access for integrations?',
+                                            answer: 'Yes! Enterprise plans include full API access for custom integrations with your existing business systems. Our development team can assist with integration planning.',
+                                        },
+                                    ].map((faq, index) => (
+                                        <StaggerItem key={index} direction="up">
+                                            <motion.div
+                                                className="p-6 rounded-lg shadow-sm bg-card"
+                                                whileHover={{
+                                                    y: -5,
+                                                    boxShadow:
+                                                        '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <motion.div
+                                                        className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                        whileHover={{
+                                                            scale: 1.1,
+                                                            rotate: 5,
+                                                        }}
+                                                        transition={{ duration: 0.3 }}
+                                                    >
+                                                        <span className="text-2xl">
+                                                            {faq.icon}
+                                                        </span>
+                                                    </motion.div>
+                                                    <div className="flex-1">
+                                                        <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                            {faq.question}
+                                                        </h4>
+                                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                                            {faq.answer}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </StaggerItem>
+                                    ))}
+                                </StaggerContainer>
+                            </div>
+
+                            {/* Billing FAQs */}
+                            <div>
+                                <h3 className="mb-6 text-2xl font-normal text-center uppercase font-body">Billing</h3>
+                                <StaggerContainer
+                                    className="grid gap-4 md:gap-6"
+                                    staggerChildren={0.1}
+                                >
+                                    {[
+                                        {
+                                            icon: '💳',
+                                            question: 'What payment methods do you accept?',
+                                            answer: 'We accept all major credit and debit cards including Visa, Mastercard, and American Express. Enterprise customers can also arrange invoicing and bank transfer options.',
+                                        },
+                                        {
+                                            icon: '📅',
+                                            question: 'Are there discounts for annual billing?',
+                                            answer: 'Yes! Annual plans save up to 20% compared to monthly billing. The exact discount varies by tier, and you can switch to annual billing anytime from your account dashboard.',
+                                        },
+                                        {
+                                            icon: '↩️',
+                                            question: 'Can I get a refund?',
+                                            answer: 'Refund requests are evaluated on a case-by-case basis. Please contact our billing team if you have concerns about your subscription or need assistance.',
+                                        },
+                                        {
+                                            icon: '🏪',
+                                            question: 'Do you offer custom pricing for large teams?',
+                                            answer: 'Yes! For teams over 50 users or organizations with specific requirements, we offer custom pricing and packages. Contact our sales team for a personalized quote.',
+                                },
+                            ].map((faq, index) => (
+                                <StaggerItem key={index} direction="up">
+                                    <motion.div
+                                        className="p-6 rounded-lg shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -5,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    rotate: 5,
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-2xl">
+                                                    {faq.icon}
+                                                </span>
+                                            </motion.div>
+                                            <div className="flex-1">
+                                                        <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    {faq.question}
+                                                        </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    {faq.answer}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+                            ))}
+                        </StaggerContainer>
+                            </div>
+                        </div>
+
+                        {/* Contact CTA */}
+                        <motion.div
+                            className="mt-16 text-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.6 }}
+                            viewport={{ once: true }}
+                        >
+                            <p className="mb-4 text-sm uppercase text-muted-foreground font-body">
+                                Still have questions? We're here to help!
+                            </p>
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                {faqData.map((faq) => (
-                                    <AccordionItem
-                                        key={faq.value}
-                                        value={faq.value}
-                                    >
-                                        <AccordionTrigger className="font-normal text-left uppercase font-body">
-                                            {faq.question}
-                                        </AccordionTrigger>
-                                        <AccordionContent className="text-xs font-normal text-left font-body">
-                                            {faq.answer}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </motion.div>
-                    </div>
-                </section>
-
-                {/* Pricing Section - Hidden for now */}
-                {/*
-                <section className="py-16 bg-background">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="text-center"
-                        >
-                            <h2 className="mb-4 text-3xl font-normal uppercase md:text-4xl font-body">
-                                Clear and Fair Pricing for Everyone.
-                            </h2>
-                            <p className="max-w-2xl mx-auto mb-12 text-xs uppercase text-muted-foreground font-body">
-                                Over 100,000 entrepreneurs have launched their
-                                businesses effortlessly with Loro.
-                            </p>
-
-                            <div className="flex items-center justify-center mb-12">
-                                <div className="inline-flex items-center p-1 rounded-md bg-muted">
-                                    <button
-                                        onClick={() =>
-                                            setBillingPeriod('monthly')
-                                        }
-                                        className={`px-4 py-2 text-xs uppercase transition-colors rounded-md ${
-                                            billingPeriod === 'monthly'
-                                                ? 'bg-primary text-white'
-                                                : 'bg-transparent'
-                                        } font-body`}
-                                    >
-                                        Monthly
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setBillingPeriod('annual')
-                                        }
-                                        className={`px-4 py-2 text-xs uppercase transition-colors rounded-md ${
-                                            billingPeriod === 'annual'
-                                                ? 'bg-primary text-white'
-                                                : 'bg-transparent'
-                                        } font-body`}
-                                    >
-                                        Annual
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        <div className="grid grid-cols-1 gap-1 md:grid-cols-3 justify-items-center">
-                            Pricing cards would go here
-                        </div>
-                    </div>
-                </section>
-                */}
-
-                {/* Mobile App Download Section */}
-                <section className="py-16 bg-gradient-to-r from-background to-background/90">
-                    <div className="container px-4 mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="flex flex-col items-center justify-center space-y-8 text-center"
-                        >
-                            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
-                                <Smartphone className="w-8 h-8 text-primary" />
-                            </div>
-                            <h2 className="max-w-2xl text-2xl font-normal uppercase md:text-3xl font-body">
-                                TRY LORO NOW
-                            </h2>
-                            <p className="max-w-xl mx-auto text-xs uppercase text-muted-foreground font-body">
-                                Experience the full power of LORO CRM on the go
-                                with our mobile application. Currently available
-                                for Android devices, with iOS support coming
-                                soon.
-                            </p>
-                            <div className="flex flex-col gap-4 sm:flex-row">
-                                <a
-                                    href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-block"
-                                >
-                                    <Button className="px-8 py-6 text-xs font-normal text-white uppercase transition-colors bg-primary hover:bg-primary/90 font-body">
-                                        <Download className="w-5 h-5 mr-2" />
-                                        <span>Download Android APK</span>
-                                    </Button>
-                                </a>
-                                <Button
-                                    disabled
-                                    className="px-8 py-6 text-xs font-normal uppercase transition-colors cursor-not-allowed bg-muted/50 hover:bg-muted/50 text-muted-foreground font-body"
-                                >
-                                    <span>iOS Version Coming Soon</span>
+                                <Button asChild className="text-xs font-normal uppercase font-body">
+                                    <Link href="/contact">
+                                        Contact Support
+                                    </Link>
                                 </Button>
-                            </div>
-                            <p className="text-[10px] uppercase text-muted-foreground/70 font-body">
-                                For Android devices running Android 5.0 or
-                                newer. Enable installation from unknown sources
-                                in your device settings to install.
+                            </motion.div>
+                        </motion.div>
+                    </div>
+                </MotionSection>
+
+                {/* Membership Section */}
+                <MotionSection
+                    className="py-16 bg-primary text-primary-foreground"
+                    direction="none"
+                >
+                    <div className="container px-4 mx-auto md:px-6">
+                        <StaggerContainer
+                            className="mb-8 text-center"
+                            staggerChildren={0.2}
+                        >
+                            <StaggerItem>
+                                <h2 className="text-3xl font-normal tracking-tighter uppercase font-body">
+                                    Join Membership And
+                                    <br />
+                                    Connect To Every Member
+                                </h2>
+                            </StaggerItem>
+                            <StaggerItem>
+                                <p className="max-w-2xl mx-auto mt-4 text-xs text-white uppercase font-body">
+                                    Level up your networking with our premium
+                                    membership. Get access to exclusive
+                                    templates, advanced analytics, and
+                                    networking events.
+                                </p>
+                            </StaggerItem>
+                        </StaggerContainer>
+                        <motion.div
+                            className="max-w-md mx-auto"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                            viewport={{ once: true }}
+                        >
+                            <motion.div
+                                className="flex"
+                                whileHover={{ scale: 1.02 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <Input
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    className="rounded-r-none bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50"
+                                />
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Button
+                                        variant="secondary"
+                                        className="text-xs font-normal uppercase rounded-l-none font-body"
+                                    >
+                                        Subscribe
+                                    </Button>
+                                </motion.div>
+                            </motion.div>
+                        </motion.div>
+                    </div>
+                </MotionSection>
+
+                <MotionSection
+                    className="py-12 border-t bg-muted/30"
+                    direction="none"
+                >
+                    <div className="container px-4 mx-auto md:px-6">
+                        <div className="flex flex-col justify-between mb-8 md:flex-row">
+                            <StaggerContainer
+                                className="mb-8 md:mb-0"
+                                staggerChildren={0.1}
+                            >
+                                <StaggerItem>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="text-xl font-normal uppercase font-body">
+                                            LORO CRM
+                                        </span>
+                                    </div>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <div className="flex space-x-4">
+                                        {[
+                                            'twitter',
+                                            'instagram',
+                                            'linkedin',
+                                        ].map((social, index) => (
+                                            <motion.div
+                                                key={social}
+                                                whileHover={{
+                                                    scale: 1.2,
+                                                    rotate: 5,
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Link
+                                                    href="#"
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                        className="w-5 h-5"
+                                                    >
+                                                        {social === 'twitter' && (
+                                                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                                                        )}
+                                                        {social === 'instagram' && (
+                                                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                                                        )}
+                                                        {social === 'linkedin' && (
+                                                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                                                        )}
+                                                    </svg>
+                                                </Link>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </StaggerItem>
+                            </StaggerContainer>
+                            <StaggerContainer
+                                className="grid grid-cols-2 gap-8 md:grid-cols-4"
+                                staggerChildren={0.1}
+                            >
+                                {['Account', 'Help', 'Company', 'Legal'].map(
+                                    (category, categoryIndex) => (
+                                        <StaggerItem
+                                            key={category}
+                                            direction="up"
+                                        >
+                                            <h3 className="mb-4 text-xs font-normal uppercase font-body">
+                                                {category}
+                                            </h3>
+                                            <ul className="space-y-2">
+                                                {[
+                                                    category === 'Account'
+                                                        ? [
+                                                              'Dashboard',
+                                                              'Settings',
+                                                              'Billing',
+                                                          ]
+                                                        : category === 'Help'
+                                                          ? [
+                                                                'Support',
+                                                                'FAQ',
+                                                                'Resources',
+                                                            ]
+                                                          : category ===
+                                                              'Company'
+                                                            ? [
+                                                                  'About',
+                                                                  'Careers',
+                                                                  'Contact',
+                                                              ]
+                                                            : [
+                                                                  'Privacy',
+                                                                  'Terms',
+                                                                  'Cookies',
+                                                              ],
+                                                ][0].map((item, itemIndex) => (
+                                                    <motion.li
+                                                        key={item}
+                                                        initial={{
+                                                            opacity: 0,
+                                                            x: -10,
+                                                        }}
+                                                        whileInView={{
+                                                            opacity: 1,
+                                                            x: 0,
+                                                        }}
+                                                        transition={{
+                                                            duration: 0.3,
+                                                            delay:
+                                                                0.2 +
+                                                                itemIndex * 0.1,
+                                                        }}
+                                                        viewport={{
+                                                            once: true,
+                                                        }}
+                                                    >
+                                                        <Link
+                                                            href="#"
+                                                            className="text-xs text-muted-foreground hover:text-foreground font-body"
+                                                        >
+                                                            {item}
+                                                        </Link>
+                                                    </motion.li>
+                                                ))}
+                                            </ul>
+                                        </StaggerItem>
+                                    ),
+                                )}
+                            </StaggerContainer>
+                        </div>
+                        <motion.div
+                            className="pt-8 text-center border-t"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.8 }}
+                            viewport={{ once: true }}
+                        >
+                            <p className="text-xs font-normal uppercase text-muted-foreground font-body">
+                                © {new Date().getFullYear()} LORO CRM. All rights
+                                reserved.
                             </p>
                         </motion.div>
                     </div>
-                </section>
+                </MotionSection>
 
-                {/* Footer */}
-                <footer className="py-12">
-                    <div className="container px-4 mx-auto">
-                        <div className="grid gap-8 text-center md:text-left md:grid-cols-4">
-                            <div className="md:col-span-1">
-                                <span className="text-xl tracking-tight uppercase font-body">
-                                    LORO CRM
-                                </span>
-                                <div className="mt-4 text-xs uppercase text-muted-foreground font-body">
-                                    <span className="text-[10px] uppercase font-body">
-                                        Comprehensive ERP & CRM system for
-                                        modern businesses with seamless online
-                                        and offline operations
-                                    </span>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="mb-4 text-xs font-normal uppercase font-body">
-                                    Platform
-                                </h4>
-                                <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
-                                    <li>
-                                        <Link
-                                            href="#features"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Web Dashboard
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="#solutions"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Mobile App
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/pricing"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                API & Integration
-                                            </span>
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="mb-4 text-xs font-normal uppercase font-body">
-                                    Resources
-                                </h4>
-                                <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
-                                    <li>
-                                        <Link
-                                            href="/docs"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Documentation
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/api"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                API Reference
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/contact"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Support Center
-                                            </span>
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="mb-4 text-xs font-normal uppercase font-body">
-                                    Company
-                                </h4>
-                                <ul className="space-y-2 text-xs uppercase text-muted-foreground font-body">
-                                    <li>
-                                        <Link
-                                            href="/about"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                About
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/blog"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Blog
-                                            </span>
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/contact"
-                                            className="transition-colors hover:text-primary"
-                                        >
-                                            <span className="text-[10px] uppercase font-body">
-                                                Contact Us
-                                            </span>
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-center justify-between pt-8 mt-8 text-center border-t md:flex-row md:text-left">
-                            <div className="text-xs text-muted-foreground font-body">
-                                <span className="text-[10px] uppercase font-body">
-                                    © 2024 LORO CRM. All rights reserved.
-                                </span>
-                            </div>
-                            <div className="flex gap-4 mt-4 md:mt-0">
-                                <Link
-                                    href="#"
-                                    className="text-[10px] uppercase transition-colors text-muted-foreground hover:text-primary font-body"
-                                >
-                                    <span>Privacy Policy</span>
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="text-[10px] uppercase transition-colors text-muted-foreground hover:text-primary font-body"
-                                >
-                                    <span>Terms of Service</span>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+                <ScrollToTop />
             </div>
         </PageTransition>
     );
-};
+}
 
-export default LandingPage;

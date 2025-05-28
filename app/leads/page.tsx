@@ -171,7 +171,6 @@ export default function LeadsPage() {
                 </div>
             </div>
 
-            {/* Render the CreateLeadModal */}
             <CreateLeadModal
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}

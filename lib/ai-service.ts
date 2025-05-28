@@ -29,12 +29,64 @@ export interface LeadData {
     name: string;
     email: string;
     phone: string;
+    companyName?: string;
+    jobTitle?: string;
+    
+    // Lead qualification and scoring
     status: string;
-    score?: number;
-    lastContact?: string;
-    source: string;
-    value?: number;
+    intent?: string;
+    temperature?: string;
+    priority?: string;
+    leadScore?: number;
+    userQualityRating?: number;
+    lifecycleStage?: string;
+    
+    // Business context
+    industry?: string;
+    businessSize?: string;
+    decisionMakerRole?: string;
+    budgetRange?: string;
+    purchaseTimeline?: string;
+    estimatedValue?: number;
+    
+    // Communication and behavior
+    source?: string;
+    preferredCommunication?: string;
+    timezone?: string;
+    bestContactTime?: string;
+    averageResponseTime?: number;
+    totalInteractions?: number;
+    daysSinceLastResponse?: number;
+    lastContactDate?: string;
+    nextFollowUpDate?: string;
+    
+    // Business intelligence
+    painPoints?: string[];
+    competitorInfo?: string;
+    referralSource?: string;
+    campaignName?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    
+    // Activity and engagement
+    scoringData?: {
+        totalScore: number;
+        engagementScore: number;
+        demographicScore: number;
+        behavioralScore: number;
+        fitScore: number;
+    };
+    activityData?: {
+        engagementLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+        lastEngagementType: string;
+        unresponsiveStreak: number;
+    };
+    
+    // Additional context
+    notes?: string;
     assignee?: string;
+    customFields?: Record<string, any>;
 }
 
 export interface ProfileData {
@@ -65,14 +117,49 @@ export interface SalesInsightRequest {
     previousInsights?: string[]; // For context
 }
 
+// Multi-dimensional tone matrix
+export interface ToneConfiguration {
+    baseTone: 'consultative' | 'authoritative' | 'collaborative' | 'empathetic' | 'innovative' | 
+              'results-driven' | 'professional' | 'encouraging' | 'motivational' | 'urgent' | 
+              'friendly' | 'educational';
+    intensity: 'subtle' | 'moderate' | 'strong';
+    regionalAdaptation: 'south_african' | 'international' | 'local';
+    industrySpecific: boolean;
+}
+
+// Enhanced template types
+export type EnhancedTemplateType = 
+    'introduction' | 'follow_up' | 'proposal' | 'objection_handling' | 'closing' | 
+    're_engagement' | 'referral' | 'upsell' | 'check_in' | 'nurture' | 'educational' |
+    'urgent_response' | 'value_demonstration' | 'social_proof';
+
 export interface EmailTemplateRequest {
     recipientName: string;
     recipientEmail: string;
     leadData?: LeadData;
-    templateType: 'follow_up' | 'check_in' | 'proposal' | 'nurture' | 'closing';
-    tone: 'professional' | 'encouraging' | 'motivational' | 'urgent' | 'friendly';
+    templateType: EnhancedTemplateType;
+    tone: ToneConfiguration;
     customMessage?: string;
-    contextNotes?: string; // For additional context without including LDA content
+    contextNotes?: string;
+    industryInsights?: string[];
+    competitiveContext?: string[];
+    urgencyFactors?: string[];
+    businessContext?: {
+        companyNews?: string[];
+        marketConditions?: string[];
+        seasonalFactors?: string[];
+    };
+}
+
+// Enhanced email response interface
+export interface EnhancedEmailResponse {
+    subject: string;
+    body: string;
+    followUpReminder?: string;
+    personalizationScore?: number;
+    keyPersonalizationElements?: string[];
+    alternativeSubjectLines?: string[];
+    responseStrategy?: string;
 }
 
 export interface MessageTemplateRequest {
@@ -330,32 +417,19 @@ export class AIService {
 
     /**
      * Generate personalized email templates for lead communication
-     * Uses lead data as context without including previous conversation content
+     * Uses comprehensive lead data and advanced personalization
      */
-    async generateEmailTemplate(request: EmailTemplateRequest): Promise<{
-        subject: string;
-        body: string;
-        followUpReminder?: string;
-    }> {
+    async generateEmailTemplate(request: EmailTemplateRequest): Promise<EnhancedEmailResponse> {
         try {
-            // Prepare request without LDA content - use lead data for context only
-            const cleanRequest = {
-                ...request,
-                // Remove any previous conversation data, use lead info for tone and context
-                leadContext: request.leadData ? {
-                    status: request.leadData.status,
-                    source: request.leadData.source,
-                    value: request.leadData.value,
-                    lastContact: request.leadData.lastContact,
-                } : undefined,
-            };
+            // Enhance request with intelligent defaults and context analysis
+            const enhancedRequest = this.enhanceEmailRequest(request);
 
             const response = await fetch('/api/ai/email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(cleanRequest),
+                body: JSON.stringify(enhancedRequest),
             });
 
             if (!response.ok) {
@@ -364,24 +438,273 @@ export class AIService {
 
             const data = await response.json();
             return {
-                subject: data.subject || `Follow-up: ${request.recipientName}`,
-                body: data.body || 'Unable to generate email template at this time.',
-                followUpReminder: data.followUpReminder,
+                subject: data.subject || this.generateFallbackSubject(request),
+                body: data.body || this.generateFallbackBody(request),
+                followUpReminder: data.followUpReminder || this.generateSmartFollowUpReminder(request.leadData),
+                personalizationScore: data.personalizationScore || 50,
+                keyPersonalizationElements: data.keyPersonalizationElements || ['Basic personalization'],
+                alternativeSubjectLines: data.alternativeSubjectLines || [],
+                responseStrategy: data.responseStrategy || 'Follow standard sales methodology',
             };
         } catch (error) {
-            console.error('Error generating email template:', error);
-            return {
-                subject: `Follow-up: ${request.recipientName}`,
-                body: `Dear ${request.recipientName},
+            console.error('Error generating enhanced email template:', error);
+            return this.getEnhancedFallbackResponse(request);
+        }
+    }
 
-I hope this email finds you well. I wanted to follow up on our previous conversation and see how I can assist you further.
+    /**
+     * Enhance email request with intelligent context and industry insights
+     */
+    private enhanceEmailRequest(request: EmailTemplateRequest): EmailTemplateRequest {
+        const enhanced = { ...request };
 
-Please let me know if you have any questions or if there's anything specific I can help you with.
+        // Add intelligent tone defaults if not specified
+        if (!enhanced.tone.baseTone) {
+            enhanced.tone.baseTone = this.selectOptimalTone(request.leadData);
+        }
+
+        // Add industry insights based on lead data
+        if (request.leadData?.industry && !enhanced.industryInsights?.length) {
+            enhanced.industryInsights = this.generateIndustryInsights(request.leadData.industry);
+        }
+
+        // Add competitive context if available
+        if (request.leadData?.competitorInfo && !enhanced.competitiveContext?.length) {
+            enhanced.competitiveContext = [`Currently considering: ${request.leadData.competitorInfo}`];
+        }
+
+        // Add urgency factors based on lead temperature and timeline
+        if (request.leadData && !enhanced.urgencyFactors?.length) {
+            enhanced.urgencyFactors = this.generateUrgencyFactors(request.leadData);
+        }
+
+        // Add business context based on lead intelligence
+        if (request.leadData && !enhanced.businessContext) {
+            enhanced.businessContext = this.generateBusinessContext(request.leadData);
+        }
+
+        return enhanced;
+    }
+
+    /**
+     * Select optimal tone based on lead data intelligence
+     */
+    private selectOptimalTone(leadData?: LeadData): ToneConfiguration['baseTone'] {
+        if (!leadData) return 'professional';
+
+        // High-score or hot leads get more confident approach
+        if (leadData.temperature === 'HOT' || (leadData.leadScore && leadData.leadScore > 80)) {
+            return leadData.decisionMakerRole === 'CEO' || leadData.decisionMakerRole === 'OWNER' 
+                ? 'authoritative' : 'results-driven';
+        }
+
+        // Technical decision makers prefer consultative approach
+        if (leadData.decisionMakerRole === 'CTO' || leadData.industry === 'TECHNOLOGY') {
+            return 'consultative';
+        }
+
+        // Financial decision makers prefer data-driven approach
+        if (leadData.decisionMakerRole === 'CFO' || leadData.industry === 'FINANCE') {
+            return 'results-driven';
+        }
+
+        // Educational approach for early-stage leads
+        if (leadData.temperature === 'COLD' || leadData.lifecycleStage === 'LEAD') {
+            return 'educational';
+        }
+
+        return 'collaborative';
+    }
+
+    /**
+     * Generate industry-specific insights
+     */
+    private generateIndustryInsights(industry: string): string[] {
+        const insights: Record<string, string[]> = {
+            'TECHNOLOGY': [
+                'Digital transformation acceleration in SA market',
+                'Cloud adoption and cybersecurity priorities',
+                'Skills shortage and talent retention challenges'
+            ],
+            'HEALTHCARE': [
+                'Healthcare digitization and telemedicine growth',
+                'Regulatory compliance and patient data security',
+                'Cost pressures and efficiency optimization'
+            ],
+            'FINANCE': [
+                'Fintech disruption and digital banking trends',
+                'Regulatory compliance (POPIA, Basel III)',
+                'Customer experience and digital channels'
+            ],
+            'RETAIL': [
+                'Omnichannel retail and e-commerce growth',
+                'Supply chain optimization post-COVID',
+                'Customer data analytics and personalization'
+            ],
+            'MANUFACTURING': [
+                'Industry 4.0 and smart manufacturing',
+                'Supply chain resilience and automation',
+                'Sustainability and carbon footprint reduction'
+            ],
+            'MINING': [
+                'Safety technology and regulatory compliance',
+                'Operational efficiency and cost reduction',
+                'Environmental impact and sustainability'
+            ]
+        };
+
+        return insights[industry] || [
+            'Digital transformation opportunities',
+            'Operational efficiency improvements',
+            'Market competitiveness enhancement'
+        ];
+    }
+
+    /**
+     * Generate urgency factors based on lead data
+     */
+    private generateUrgencyFactors(leadData: LeadData): string[] {
+        const factors: string[] = [];
+
+        if (leadData.temperature === 'HOT') {
+            factors.push('High-interest lead requiring immediate attention');
+        }
+
+        if (leadData.purchaseTimeline === 'IMMEDIATE') {
+            factors.push('Immediate purchase timeline');
+        } else if (leadData.purchaseTimeline === 'SHORT_TERM') {
+            factors.push('Short-term purchase timeline (1-4 weeks)');
+        }
+
+        if (leadData.daysSinceLastResponse && leadData.daysSinceLastResponse > 7) {
+            factors.push('Extended period since last contact');
+        }
+
+        if (leadData.competitorInfo) {
+            factors.push('Actively considering competitive solutions');
+        }
+
+        if (leadData.budgetRange && ['OVER_1M', 'R500K_1M'].includes(leadData.budgetRange)) {
+            factors.push('High-value opportunity');
+        }
+
+        return factors;
+    }
+
+    /**
+     * Generate business context based on lead intelligence
+     */
+    private generateBusinessContext(leadData: LeadData): EmailTemplateRequest['businessContext'] {
+        const context: EmailTemplateRequest['businessContext'] = {
+            marketConditions: [],
+            seasonalFactors: [],
+            companyNews: []
+        };
+
+        // Add market conditions based on industry
+        if (leadData.industry) {
+            switch (leadData.industry) {
+                case 'RETAIL':
+                    context.marketConditions?.push('Consumer spending pressure', 'Supply chain challenges');
+                    break;
+                case 'MANUFACTURING':
+                    context.marketConditions?.push('Raw material cost inflation', 'Skills shortage');
+                    break;
+                case 'TECHNOLOGY':
+                    context.marketConditions?.push('Digital acceleration', 'Cybersecurity concerns');
+                    break;
+            }
+        }
+
+        // Add seasonal factors
+        const currentMonth = new Date().getMonth();
+        if (currentMonth >= 10 || currentMonth <= 1) {
+            context.seasonalFactors?.push('Year-end budget considerations', 'Holiday season planning');
+        } else if (currentMonth >= 2 && currentMonth <= 4) {
+            context.seasonalFactors?.push('New year implementation planning', 'Q1 priority setting');
+        }
+
+        return context;
+    }
+
+    /**
+     * Generate fallback subject line
+     */
+    private generateFallbackSubject(request: EmailTemplateRequest): string {
+        const name = request.leadData?.name || request.recipientName;
+        const company = request.leadData?.companyName;
+        
+        switch (request.templateType) {
+            case 'introduction':
+                return company ? `${company} - Quick introduction` : `Introduction - ${name}`;
+            case 'follow_up':
+                return company ? `${company} - Following up` : `Following up - ${name}`;
+            case 'proposal':
+                return company ? `${company} - Proposal for review` : `Proposal for ${name}`;
+            default:
+                return `${name} - Next steps`;
+        }
+    }
+
+    /**
+     * Generate fallback email body
+     */
+    private generateFallbackBody(request: EmailTemplateRequest): string {
+        const name = request.leadData?.name || request.recipientName;
+        const company = request.leadData?.companyName || 'your organization';
+        
+        return `Dear ${name},
+
+I hope you're doing well. I've been researching ${company} and believe there are valuable opportunities we could explore together.
+
+${request.customMessage || 'Based on current market trends and the challenges facing businesses in your sector, I thought you might be interested in discussing how we can help drive growth and efficiency.'}
+
+I'd love to schedule a brief conversation to understand your current priorities and share some relevant insights.
+
+Would you be available for a call this week? I can work around your schedule.
 
 Best regards,
-Your Sales Team`,
-            };
+Your Business Development Team`;
+    }
+
+    /**
+     * Generate smart follow-up reminder
+     */
+    private generateSmartFollowUpReminder(leadData?: LeadData): string {
+        if (!leadData) return 'Follow up in 3-5 business days if no response';
+        
+        if (leadData.temperature === 'HOT') {
+            return 'Follow up within 24-48 hours - high priority lead';
+        } else if (leadData.temperature === 'WARM') {
+            return 'Follow up in 2-3 business days';
+        } else if (leadData.averageResponseTime && leadData.averageResponseTime > 72) {
+            return 'Follow up in 1 week - prospect typically takes time to respond';
         }
+        
+        return 'Follow up in 3-5 business days if no response';
+    }
+
+    /**
+     * Enhanced fallback response with intelligent personalization
+     */
+    private getEnhancedFallbackResponse(request: EmailTemplateRequest): EnhancedEmailResponse {
+        return {
+            subject: this.generateFallbackSubject(request),
+            body: this.generateFallbackBody(request),
+            followUpReminder: this.generateSmartFollowUpReminder(request.leadData),
+            personalizationScore: 40,
+            keyPersonalizationElements: [
+                'Name personalization',
+                'Company reference',
+                request.leadData?.industry ? 'Industry context' : 'Generic industry'
+            ].filter(Boolean),
+            alternativeSubjectLines: [
+                'Quick question',
+                'Brief conversation?',
+                'Exploring opportunities'
+            ],
+            responseStrategy: 'Keep follow-up gentle and value-focused'
+        };
     }
 
     /**
@@ -400,7 +723,6 @@ Your Sales Team`,
                 leadContext: request.leadData ? {
                     status: request.leadData.status,
                     source: request.leadData.source,
-                    value: request.leadData.value,
                 } : undefined,
             };
 

@@ -116,12 +116,13 @@ export const useLeadApi = () => {
                 const branchUid = (leadData.branch as any).uid || (leadData.branch as any).id;
 
                 // Create a new object with just the required branch data
-                const submissionData = {
+                const submissionData: any = {
                     ...leadData,
                     branch: { uid: branchUid }
                 };
 
                 // Handle assignTo field conversion to assignees expected by the API
+                // The API expects { uid: number }[] for assignees, even though the Lead type defines it as full user objects
                 if (leadData.assignTo) {
                     submissionData.assignees = leadData.assignTo;
                     delete submissionData.assignTo;

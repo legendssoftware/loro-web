@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { PageTransition } from '@/components/animations/page-transition';
-import {  Check, PhoneCall } from 'lucide-react';
+import {  Check, PhoneCall, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,6 @@ import { ScrollToTop } from '@/components/animations/scroll-to-top';
 import { SmoothScroll } from '@/components/smooth-scroll';
 import { UserCarousel } from '@/components/animations/user-carousel';
 import { StatsDisplay } from '@/components/animations/stats-display';
-import { AnalyticsWidget } from '@/modules/landing-page/analytics-widget';
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { mockDataStore } from '@/lib/mock-data';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
@@ -65,6 +64,9 @@ export default function Home() {
     const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const warningShownRef = useRef(false);
 
+    // Mobile menu state
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     // Refresh stats every 30 seconds to show live data
     useEffect(() => {
         const interval = setInterval(() => {
@@ -84,6 +86,28 @@ export default function Home() {
 
         return () => clearInterval(intervalId);
     }, [heroPhrases.length]);
+
+    // Close mobile menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setIsMobileMenuOpen(false);
+        };
+
+        if (isMobileMenuOpen) {
+            document.addEventListener('click', handleClickOutside);
+            // Lock scroll when mobile menu is open
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Restore scroll when mobile menu is closed
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            // Ensure scroll is restored on cleanup
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMobileMenuOpen]);
 
     const formattedTimeRemaining = useMemo(() => {
         if (timeRemaining === null) return null;
@@ -361,9 +385,12 @@ export default function Home() {
                                     transition={{ duration: 0.5, delay: 0.2 }}
                                     className="text-xl font-normal tracking-tight uppercase font-body"
                                 >
-                                    LORO CRM
+                                    <span className="md:hidden">LORO</span>
+                                    <span className="hidden md:inline">LORO CRM</span>
                                 </motion.span>
                             </div>
+
+                            {/* Desktop Navigation */}
                             <nav className="items-center hidden gap-6 md:flex">
                                 <motion.div
                                     className="flex items-center gap-6"
@@ -455,8 +482,10 @@ export default function Home() {
                                     )}
                                 </motion.div>
                             </nav>
+
+                            {/* Desktop Right Side */}
                             <motion.div
-                                className="flex items-center gap-4"
+                                className="items-center hidden gap-4 md:flex"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -477,13 +506,179 @@ export default function Home() {
                                     </Button>
                                 </motion.div>
                             </motion.div>
+
+                            {/* Mobile Right Side */}
+                            <div className="flex items-center gap-2 md:hidden">
+                                <ThemeToggler />
+                                <motion.button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsMobileMenuOpen(!isMobileMenuOpen);
+                                    }}
+                                    className="p-2 rounded-lg hover:bg-muted"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Menu className="w-6 h-6" />
+                                </motion.button>
+                            </div>
+
+                            {/* Mobile Menu Overlay */}
+                            <AnimatePresence>
+                                {isMobileMenuOpen && (
+                                    <>
+                                        {/* Background Overlay */}
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        />
+                                        {/* Mobile Menu Panel */}
+                                        <motion.div
+                                            initial={{ opacity: 0, x: '100%' }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: '100%' }}
+                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                            className="fixed inset-y-0 right-0 z-[80] w-80 h-screen bg-background/95 backdrop-blur-md border-l shadow-xl flex-1"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="flex flex-col h-full">
+                                                {/* Mobile Menu Header */}
+                                                <div className="flex items-center justify-between p-4 border-b bg-background/80">
+                                                    <span className="text-lg font-normal uppercase font-body">
+                                                        LORO CRM
+                                                    </span>
+                                                    <motion.button
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-2 rounded-lg hover:bg-muted"
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                    >
+                                                        <X className="w-6 h-6" />
+                                                    </motion.button>
+                                                </div>
+
+                                                {/* Mobile Menu Content */}
+                                                <div className="flex flex-col flex-1 p-4 space-y-4 bg-background/90">
+                                                    <Link
+                                                        href="#features"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                    >
+                                                        Features
+                                                    </Link>
+                                                    <Link
+                                                        href="#benefits"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                    >
+                                                        Benefits
+                                                    </Link>
+                                                    <Link
+                                                        href="#pricing"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                    >
+                                                        Pricing
+                                                    </Link>
+                                                    <Link
+                                                        href="#testimonials"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                    >
+                                                        Testimonials
+                                                    </Link>
+                                                    <Link
+                                                        href="#faq"
+                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                    >
+                                                        FAQ
+                                                    </Link>
+
+                                                    <div className="pt-4 space-y-2 border-t">
+                                                        <Link
+                                                            href="/sign-in"
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                            className="block p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        >
+                                                            Sign In
+                                                        </Link>
+                                                    </div>
+
+                                                    {/* Call Button in Mobile Menu */}
+                                                    <div className="pt-4 border-t">
+                                                        {isCallActive ? (
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={endDemoCall}
+                                                                className="w-full text-xs font-normal text-red-500 uppercase font-body hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                            >
+                                                                <span>
+                                                                    END CALL{' '}
+                                                                    {formattedTimeRemaining &&
+                                                                        `(${formattedTimeRemaining})`}
+                                                                </span>
+                                                            </Button>
+                                                        ) : connectionError ? (
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={retryDemoCall}
+                                                                className="w-full text-xs font-normal uppercase text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                                            >
+                                                                <PhoneCall className="w-4 h-4 mr-2" />
+                                                                <span>RETRY CALL</span>
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                onClick={startDemoCall}
+                                                                disabled={isCallInitializing}
+                                                                className="w-full text-xs font-normal uppercase font-body"
+                                                            >
+                                                                {isCallInitializing ? (
+                                                                    <>
+                                                                        <span>CONNECTING...</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                                                        <span>INSTANT DEMO</span>
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Auth Links */}
+                                                    <div className="pt-4 space-y-2 border-t">
+                                                        <Button
+                                                            asChild
+                                                            className="w-full text-xs font-normal uppercase font-body"
+                                                        >
+                                                            <Link
+                                                                href="/sign-up"
+                                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                            >
+                                                                Get Started
+                                                            </Link>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </header>
                 </FadeIn>
 
                 <main className="flex-1">
                     {/* Hero Section */}
-                    <MotionSection className="py-16 md:py-24" duration={0.8}>
+                    <MotionSection className="py-8 md:py-16 lg:py-24" duration={0.8}>
                         <div className="container px-4 mx-auto md:px-6">
                             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                                 <StaggerContainer
@@ -491,7 +686,7 @@ export default function Home() {
                                     staggerChildren={0.2}
                                 >
                                     <StaggerItem className="space-y-2">
-                                        <div className="relative h-48 p-1 overflow-hidden">
+                                        <div className="relative h-32 p-1 overflow-hidden sm:h-40 md:h-48">
                                             <AnimatePresence mode="wait">
                                                 <motion.h1
                                                     key={currentPhraseIndex}
@@ -499,7 +694,7 @@ export default function Home() {
                                                     animate={{ y: 0, opacity: 1 }}
                                                     exit={{ y: -50, opacity: 0 }}
                                                     transition={{ duration: 0.5, ease: "easeInOut" }}
-                                                    className="absolute inset-0 flex items-center text-3xl font-normal tracking-tighter uppercase sm:text-5xl xl:text-6xl/none font-body"
+                                                    className="absolute inset-0 flex items-center text-2xl font-normal tracking-tighter uppercase sm:text-3xl md:text-5xl xl:text-6xl/none font-body"
                                                 >
                                                     {heroPhrases[currentPhraseIndex]}
                                                 </motion.h1>
@@ -537,8 +732,8 @@ export default function Home() {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <PhoneCall className="w-4 h-4 mr-2" />
-                                                        <span>Instant Demo - Do you need LORO?</span>
+                                                        <PhoneCall className="w-4 h-4 mr-2" color='white' />
+                                                        <span className='text-white'>Instant Demo - Do you need LORO?</span>
                                                     </>
                                                 )}
                                             </Button>
@@ -562,15 +757,15 @@ export default function Home() {
                                 </StaggerContainer>
 
                                 <StaggerContainer
-                                    className="grid grid-cols-2 gap-4"
+                                    className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-4 max-h-[600px] lg:max-h-none overflow-hidden"
                                     delay={0.3}
                                     staggerChildren={0.15}
                                 >
                                     <StaggerItem
-                                        className="space-y-4"
+                                        className="space-y-3"
                                         direction="left"
                                     >
-                                        <div className="flex items-center gap-2 p-4 rounded-lg bg-muted">
+                                        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
                                             <div className="text-xs font-normal uppercase text-muted-foreground font-body">
                                                 Live Activity
                                             </div>
@@ -580,26 +775,30 @@ export default function Home() {
                                         </div>
 
                                         {/* Animated User Carousel */}
-                                        <UserCarousel
-                                            users={diverseUsers}
-                                            interval={3500}
-                                        />
+                                        <div className="overflow-hidden max-h-32">
+                                            <UserCarousel
+                                                users={diverseUsers}
+                                                interval={3500}
+                                            />
+                                        </div>
                                     </StaggerItem>
 
                                     <StaggerItem
-                                        className="space-y-4"
+                                        className="space-y-3"
                                         direction="right"
                                     >
                                         {/* Live Analytics Dashboard Widget */}
-                                        <StatsDisplay
-                                            data={liveStats}
-                                            className="mb-4"
-                                        />
+                                        <div className="overflow-hidden max-h-24">
+                                            <StatsDisplay
+                                                data={liveStats}
+                                                className="mb-3"
+                                            />
+                                        </div>
 
-                                        <div className="relative aspect-square">
+                                        <div className="relative aspect-square max-h-32 lg:max-h-48">
                                             <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
                                                 <motion.div
-                                                    className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg"
+                                                    className="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg"
                                                     animate={{
                                                         scale: [1, 1.05, 1],
                                                         rotate: [
@@ -614,8 +813,8 @@ export default function Home() {
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
+                                                        width="20"
+                                                        height="20"
                                                         viewBox="0 0 24 24"
                                                         fill="none"
                                                         stroke="currentColor"
@@ -661,7 +860,7 @@ export default function Home() {
                                             </div>
                                         </div>
 
-                                        <div className="p-4 border rounded-lg shadow-sm bg-card">
+                                        <div className="p-3 border rounded-lg shadow-sm bg-card">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="text-[10px] font-normal uppercase font-body">
                                                     Scan Stats
@@ -670,7 +869,7 @@ export default function Home() {
                                                     +12%
                                                 </div>
                                             </div>
-                                            <div className="h-10 overflow-hidden rounded-md bg-muted">
+                                            <div className="h-6 overflow-hidden rounded-md bg-muted">
                                                 <motion.div
                                                     className="h-full rounded-md bg-gradient-to-r from-primary to-primary/70"
                                                     initial={{ width: '0%' }}
@@ -1147,7 +1346,7 @@ export default function Home() {
                                         transition={{ duration: 0.3 }}
                                     >
                                         <div className="space-y-5">
-                                            <motion.div 
+                                            <motion.div
                                                 className="relative"
                                                 initial={{ opacity: 0, y: 20 }}
                                                 whileInView={{ opacity: 1, y: 0 }}
@@ -1156,7 +1355,7 @@ export default function Home() {
                                             >
                                                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-green-400/20 to-green-600/20 blur-sm"></div>
                                                 <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="mb-1 text-4xl font-normal text-green-600 font-body"
                                                         initial={{ scale: 0 }}
                                                         whileInView={{ scale: 1 }}
@@ -1173,8 +1372,8 @@ export default function Home() {
                                                     </p>
                                                 </div>
                                             </motion.div>
-                                            
-                                            <motion.div 
+
+                                            <motion.div
                                                 className="relative"
                                                 initial={{ opacity: 0, y: 20 }}
                                                 whileInView={{ opacity: 1, y: 0 }}
@@ -1183,7 +1382,7 @@ export default function Home() {
                                             >
                                                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/20 to-blue-600/20 blur-sm"></div>
                                                 <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="mb-1 text-4xl font-normal text-blue-600 font-body"
                                                         initial={{ scale: 0 }}
                                                         whileInView={{ scale: 1 }}
@@ -1201,7 +1400,7 @@ export default function Home() {
                                                 </div>
                                             </motion.div>
 
-                                            <motion.div 
+                                            <motion.div
                                                 className="relative"
                                                 initial={{ opacity: 0, y: 20 }}
                                                 whileInView={{ opacity: 1, y: 0 }}
@@ -1210,7 +1409,7 @@ export default function Home() {
                                             >
                                                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400/20 to-purple-600/20 blur-sm"></div>
                                                 <div className="relative p-3 text-center rounded-lg bg-white/80 dark:bg-black/40 backdrop-blur-sm">
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="mb-1 text-4xl font-normal text-purple-600 font-body"
                                                         initial={{ scale: 0 }}
                                                         whileInView={{ scale: 1 }}
@@ -1228,14 +1427,14 @@ export default function Home() {
                                                 </div>
                                             </motion.div>
 
-                                            <motion.div 
+                                            <motion.div
                                                 className="pt-4 border-t border-gradient-to-r from-green-500/30 to-purple-500/30"
                                                 initial={{ opacity: 0, y: 20 }}
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.8, delay: 0.4 }}
                                                 viewport={{ once: true }}
                                             >
-                                                <motion.div 
+                                                <motion.div
                                                     className="mb-2 text-3xl font-normal text-transparent bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text font-body"
                                                     initial={{ scale: 0 }}
                                                     whileInView={{ scale: 1 }}
@@ -1251,7 +1450,7 @@ export default function Home() {
                                                     Within first 6 months
                                                 </p>
                                             </motion.div>
-                                            
+
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
@@ -1280,7 +1479,7 @@ export default function Home() {
                     <MotionSection
                         className="bg-primary text-primary-foreground"
                         direction="none"
-                        id="benefits" 
+                        id="benefits"
                     >
                         <div className="container px-4 mx-auto md:px-6">
                             <div className="grid items-center gap-6 md:grid-cols-5">
@@ -1336,23 +1535,6 @@ export default function Home() {
                                                 alt="Loro CRM Desktop Dashboard"
                                                 width={900}
                                                 height={900}
-                                                className="rounded-lg"
-                                            />
-                                        </motion.div>
-
-                                        {/* Web Image - Medium, to the right */}
-                                        <motion.div
-                                            className="absolute z-20 translate-x-[600px] translate-y-[50px]"
-                                            initial={{ opacity: 0, scale: 0.8, x: 300, y: 120 }}
-                                            whileInView={{ opacity: 1, scale: 0.8, x: 240, y: 80 }}
-                                            transition={{ duration: 0.8, delay: 0.7 }}
-                                            viewport={{ once: true }}
-                                        >
-                                            <Image
-                                                src="/images/covers/web.png"
-                                                alt="Loro CRM Web Interface"
-                                                width={400}
-                                                height={400}
                                                 className="rounded-lg"
                                             />
                                         </motion.div>
@@ -1551,7 +1733,7 @@ export default function Home() {
                                     </p>
                                 </StaggerItem>
                             </StaggerContainer>
-                            
+
                             {/* Automate What Matters Section */}
                             <div className="mb-16">
                             <div className="grid items-center gap-8 md:grid-cols-2">
@@ -2465,7 +2647,7 @@ export default function Home() {
                                 </p>
                             </StaggerItem>
                         </StaggerContainer>
-                        
+
                         {/* FAQ Categories */}
                         <div className="max-w-4xl mx-auto space-y-12">
                             {/* General FAQs */}

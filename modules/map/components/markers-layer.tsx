@@ -271,12 +271,22 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             }`}></span>
                             Status: {worker.status?.toUpperCase() || 'Unknown'}
                         </p>
+                        {'industry' in worker && worker.industry && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Industry: {worker.industry}
+                            </p>
+                        )}
+                        {'description' in worker && worker.description && (
+                            <p className="text-[9px] text-muted-foreground mt-1 line-clamp-2">
+                                {worker.description}
+                            </p>
+                        )}
                     </div>
 
                     {'contactName' in worker && (
                         <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                             <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
-                                <Building size={15} strokeWidth={1.5} />
+                                <UserPlus size={15} strokeWidth={1.5} />
                                 Contact Information
                             </p>
                             {worker.contactName && (
@@ -291,6 +301,12 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                     {worker.phone}
                                 </p>
                             )}
+                            {'alternativePhone' in worker && worker.alternativePhone && (
+                                <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                    <PhoneCall size={12} strokeWidth={1.5} className="text-green-500" />
+                                    Alt: {worker.alternativePhone}
+                                </p>
+                            )}
                             {'email' in worker && worker.email && (
                                 <p className="text-[9px] text-muted-foreground flex items-center gap-1">
                                     <Mail size={12} strokeWidth={1.5} className="text-indigo-500" />
@@ -303,6 +319,87 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                     {worker.website}
                                 </p>
                             )}
+                        </div>
+                    )}
+
+                    {'creditLimit' in worker && (worker.creditLimit || worker.outstandingBalance || worker.lifetimeValue) && (
+                        <div className="p-2 text-[10px] bg-green-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <FolderIcon size={15} strokeWidth={1.5} />
+                                Financial Information
+                            </p>
+                            {worker.creditLimit && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Credit Limit: {formatCurrency(worker.creditLimit)}
+                                </p>
+                            )}
+                            {worker.outstandingBalance && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Outstanding: {formatCurrency(worker.outstandingBalance)}
+                                </p>
+                            )}
+                            {worker.lifetimeValue && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Lifetime Value: {formatCurrency(worker.lifetimeValue)}
+                                </p>
+                            )}
+                            {'priceTier' in worker && worker.priceTier && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Price Tier: {worker.priceTier.toUpperCase()}
+                                </p>
+                            )}
+                            {'riskLevel' in worker && worker.riskLevel && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    Risk Level: {worker.riskLevel.toUpperCase()}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {'companySize' in worker && (worker.companySize || worker.annualRevenue) && (
+                        <div className="p-2 text-[10px] bg-blue-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <Building size={15} strokeWidth={1.5} />
+                                Company Details
+                            </p>
+                            {worker.companySize && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Employees: {worker.companySize}
+                                </p>
+                            )}
+                            {worker.annualRevenue && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Annual Revenue: {formatCurrency(worker.annualRevenue)}
+                                </p>
+                            )}
+                            {'satisfactionScore' in worker && worker.satisfactionScore && (
+                                <p className="text-[9px] text-muted-foreground mb-1">
+                                    Satisfaction: {worker.satisfactionScore}/10
+                                </p>
+                            )}
+                            {'npsScore' in worker && worker.npsScore && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    NPS Score: {worker.npsScore}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {'tags' in worker && worker.tags && worker.tags.length > 0 && (
+                        <div className="p-2 text-[10px] bg-purple-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground">
+                                Tags
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                                {worker.tags.slice(0, 4).map((tag: string, index: number) => (
+                                    <span key={index} className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[8px]">
+                                        {tag}
+                                    </span>
+                                ))}
+                                {worker.tags.length > 4 && (
+                                    <span className="text-[8px] text-muted-foreground">+{worker.tags.length - 4} more</span>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -357,20 +454,55 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             }`}></span>
                             Status: {worker.status?.toUpperCase() || 'Unknown'}
                         </p>
+                        {'industry' in worker && worker.industry && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Industry: {worker.industry}
+                            </p>
+                        )}
+                        {'description' in worker && worker.description && (
+                            <p className="text-[9px] text-muted-foreground mt-1 line-clamp-2">
+                                {worker.description}
+                            </p>
+                        )}
                     </div>
+
+                    {'contactEmail' in worker && (worker.contactEmail || worker.contactPhone || worker.website) && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <UserPlus size={15} strokeWidth={1.5} />
+                                Contact Information
+                            </p>
+                            {worker.contactEmail && (
+                                <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
+                                    <Mail size={12} strokeWidth={1.5} className="text-red-500" />
+                                    {worker.contactEmail}
+                                </p>
+                            )}
+                            {worker.contactPhone && (
+                                <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                    <PhoneCall size={12} strokeWidth={1.5} className="text-red-500" />
+                                    {worker.contactPhone}
+                                </p>
+                            )}
+                            {worker.website && (
+                                <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                    <Globe size={12} strokeWidth={1.5} className="text-red-500" />
+                                    {worker.website}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     {'isDirect' in worker && (
                         <div className="p-2 text-[10px] bg-red-500/10 rounded-md">
                             <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
                                 <AlertTriangle size={15} strokeWidth={1.5} />
-                                Competitor Analysis
+                                Competitive Analysis
                             </p>
-                            {'industry' in worker && worker.industry && (
-                                <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
-                                    <Building size={12} strokeWidth={1.5} className="text-red-500" />
-                                    Industry: {worker.industry}
-                                </p>
-                            )}
+                            <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
+                                <Building size={12} strokeWidth={1.5} className="text-red-500" />
+                                Direct Competitor: {worker.isDirect ? 'Yes' : 'No'}
+                            </p>
                             {'threatLevel' in worker && worker.threatLevel !== undefined && (
                                 <div className="mt-1 mb-2">
                                     <p className="text-[9px] text-muted-foreground flex items-center gap-1">
@@ -385,24 +517,120 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                     </div>
                                 </div>
                             )}
-                            <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
-                                <Building size={12} strokeWidth={1.5} className="text-red-500" />
-                                Direct Competitor: {worker.isDirect ? 'Yes' : 'No'}
-                            </p>
-                            {'website' in worker && worker.website && (
-                                <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
-                                    <Globe size={12} strokeWidth={1.5} className="text-red-500" />
-                                    {worker.website}
-                                </p>
-                            )}
-                            {'geofencing' in worker && worker.geofencing && worker.geofencing.enabled && (
-                                <div className="p-1 mt-2 rounded bg-red-500/5">
-                                    <p className="text-[9px] font-medium">Geofencing Active</p>
-                                    <p className="text-[8px] text-muted-foreground">
-                                        Type: {worker.geofencing.type}, Radius: {worker.geofencing.radius}m
+                            {'competitiveAdvantage' in worker && worker.competitiveAdvantage !== undefined && (
+                                <div className="mt-1 mb-2">
+                                    <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                        <CheckCircle2 size={12} strokeWidth={1.5} className="text-green-500" />
+                                        Competitive Advantage: {worker.competitiveAdvantage}/10
                                     </p>
+                                    <div className="mt-1 w-full bg-accent/20 rounded-full h-1.5">
+                                        <div
+                                            className="bg-green-500 h-1.5 rounded-full"
+                                            style={{ width: `${(worker.competitiveAdvantage / 10) * 100}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
                             )}
+                            {'estimatedEmployeeCount' in worker && worker.estimatedEmployeeCount && (
+                                <p className="text-[9px] text-muted-foreground mt-1">
+                                    Est. Employees: {worker.estimatedEmployeeCount}
+                                </p>
+                            )}
+                            {'estimatedAnnualRevenue' in worker && worker.estimatedAnnualRevenue && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    Est. Revenue: {formatCurrency(worker.estimatedAnnualRevenue)}
+                                </p>
+                            )}
+                            {'marketSharePercentage' in worker && worker.marketSharePercentage && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    Market Share: {worker.marketSharePercentage}%
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {'keyProducts' in worker && worker.keyProducts && worker.keyProducts.length > 0 && (
+                        <div className="p-2 text-[10px] bg-blue-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground">
+                                Key Products
+                            </p>
+                            <div className="space-y-0.5">
+                                {worker.keyProducts.slice(0, 3).map((product: string, index: number) => (
+                                    <p key={index} className="text-[9px] text-muted-foreground">• {product}</p>
+                                ))}
+                                {worker.keyProducts.length > 3 && (
+                                    <p className="text-[8px] text-muted-foreground">+{worker.keyProducts.length - 3} more</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {'keyStrengths' in worker && worker.keyStrengths && worker.keyStrengths.length > 0 && (
+                        <div className="p-2 text-[10px] bg-green-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground">
+                                Key Strengths
+                            </p>
+                            <div className="space-y-0.5">
+                                {worker.keyStrengths.slice(0, 2).map((strength: string, index: number) => (
+                                    <p key={index} className="text-[9px] text-muted-foreground">• {strength}</p>
+                                ))}
+                                {worker.keyStrengths.length > 2 && (
+                                    <p className="text-[8px] text-muted-foreground">+{worker.keyStrengths.length - 2} more</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {'keyWeaknesses' in worker && worker.keyWeaknesses && worker.keyWeaknesses.length > 0 && (
+                        <div className="p-2 text-[10px] bg-orange-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground">
+                                Key Weaknesses
+                            </p>
+                            <div className="space-y-0.5">
+                                {worker.keyWeaknesses.slice(0, 2).map((weakness: string, index: number) => (
+                                    <p key={index} className="text-[9px] text-muted-foreground">• {weakness}</p>
+                                ))}
+                                {worker.keyWeaknesses.length > 2 && (
+                                    <p className="text-[8px] text-muted-foreground">+{worker.keyWeaknesses.length - 2} more</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {'pricingData' in worker && worker.pricingData && (
+                        <div className="p-2 text-[10px] bg-yellow-500/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground">
+                                Pricing Intelligence
+                            </p>
+                            {worker.pricingData.lowEndPricing && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    Low: {formatCurrency(worker.pricingData.lowEndPricing)}
+                                </p>
+                            )}
+                            {worker.pricingData.midRangePricing && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    Mid: {formatCurrency(worker.pricingData.midRangePricing)}
+                                </p>
+                            )}
+                            {worker.pricingData.highEndPricing && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    High: {formatCurrency(worker.pricingData.highEndPricing)}
+                                </p>
+                            )}
+                            {worker.pricingData.pricingModel && (
+                                <p className="text-[9px] text-muted-foreground mt-1">
+                                    Model: {worker.pricingData.pricingModel}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {'geofencing' in worker && worker.geofencing && worker.geofencing.enabled && (
+                        <div className="p-1 mt-2 rounded bg-red-500/5">
+                            <p className="text-[9px] font-medium">Geofencing Active</p>
+                            <p className="text-[8px] text-muted-foreground">
+                                Type: {worker.geofencing.type}, Radius: {worker.geofencing.radius}m
+                            </p>
                         </div>
                     )}
 

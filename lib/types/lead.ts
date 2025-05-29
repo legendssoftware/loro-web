@@ -82,7 +82,7 @@ export interface Lead {
     latitude?: number;
     longitude?: number;
     category?: string;
-    
+
     // Enhanced fields
     intent?: LeadIntent;
     userQualityRating?: number;
@@ -111,7 +111,7 @@ export interface Lead {
     utmTerm?: string;
     utmContent?: string;
     customFields?: Record<string, any>;
-    
+
     // Scoring and activity fields
     leadScore?: number;
     lastContactDate?: Date;
@@ -119,7 +119,7 @@ export interface Lead {
     totalInteractions?: number;
     averageResponseTime?: string;
     daysSinceLastResponse?: number;
-    
+
     // Complex objects
     scoringData?: {
         fitScore: number;
@@ -134,7 +134,7 @@ export interface Lead {
         engagementScore: number;
         demographicScore: number;
     };
-    
+
     activityData?: {
         engagementLevel: string;
         lastContactDate?: Date;
@@ -148,16 +148,16 @@ export interface Lead {
         averageResponseTime: number;
         meetingInteractions: number;
     };
-    
+
     bantQualification?: any;
     sourceTracking?: any;
     competitorData?: any;
-    
+
     // Ownership fields
     ownerUid?: number;
     organisationUid?: number;
     branchUid?: number;
-    
+
     owner?: {
         uid: number;
         username?: string;
@@ -185,7 +185,7 @@ export interface Lead {
         platform?: string;
         pushTokenUpdatedAt?: Date;
     };
-    
+
     branch?: {
         uid: number;
         name: string;
@@ -207,7 +207,7 @@ export interface Lead {
         createdAt: Date;
         updatedAt: Date;
     };
-    
+
     organisation?: {
         uid: number;
         name: string;
@@ -229,14 +229,14 @@ export interface Lead {
         createdAt: Date;
         updatedAt: Date;
     };
-    
+
     client?: {
         uid: number;
         name: string;
         email: string;
         phone: string;
     };
-    
+
     // Updated assignees to full user objects
     assignees?: Array<{
         uid: number;
@@ -249,7 +249,7 @@ export interface Lead {
         status: string;
         accessLevel: string;
     }>;
-    
+
     assignTo?: { uid: number }[];
     statusChangeReason?: string;
     statusChangeDescription?: string;
@@ -299,15 +299,35 @@ export interface LeadsByStatus {
 // Enhanced Lead Management Enums
 export enum LeadIntent {
     PURCHASE = "PURCHASE",
-    ENQUIRY = "ENQUIRY", 
+    ENQUIRY = "ENQUIRY",
     SERVICES = "SERVICES",
     LOST = "LOST",
     CONVERSION = "CONVERSION",
+    CONSULTATION = "CONSULTATION",
+    QUOTE_REQUEST = "QUOTE_REQUEST",
+    DEMO_REQUEST = "DEMO_REQUEST",
+    INFORMATION_GATHERING = "INFORMATION_GATHERING",
+    COMPARISON_SHOPPING = "COMPARISON_SHOPPING",
+    PRICE_CHECK = "PRICE_CHECK",
+    SUPPORT = "SUPPORT",
+    PARTNERSHIP = "PARTNERSHIP",
+    INVESTMENT = "INVESTMENT",
+    BULK_ORDER = "BULK_ORDER",
+    CUSTOM_SOLUTION = "CUSTOM_SOLUTION",
+    TRIAL = "TRIAL",
+    RENEWAL = "RENEWAL",
+    UPGRADE = "UPGRADE",
+    DOWNGRADE = "DOWNGRADE",
+    COMPLAINT = "COMPLAINT",
+    FEEDBACK = "FEEDBACK",
+    REFERRAL = "REFERRAL",
+    RESEARCH = "RESEARCH",
+    UNKNOWN = "UNKNOWN",
 }
 
 export enum LeadTemperature {
     HOT = "HOT",
-    WARM = "WARM", 
+    WARM = "WARM",
     COLD = "COLD",
     FROZEN = "FROZEN",
 }

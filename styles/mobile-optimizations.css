@@ -1,0 +1,165 @@
+/* Mobile Animation Optimizations */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Faster animations on mobile */
+  .motion-reduce-mobile * {
+    animation-duration: 0.3s !important;
+    transition-duration: 0.3s !important;
+  }
+
+  /* Better text readability on small screens */
+  .hero-text-mobile {
+    line-height: 1.1 !important;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  /* Optimized button spacing for mobile */
+  .mobile-button-spacing {
+    gap: 0.5rem !important;
+    margin: 0.25rem 0 !important;
+  }
+
+  /* Reduce visual complexity on mobile */
+  .complex-animations {
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* Better tap targets */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Small mobile devices (< 480px) */
+@media (max-width: 480px) {
+  /* Even more conservative animations */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+
+  /* Improved text sizing */
+  .responsive-text-xs {
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+  }
+
+  .responsive-text-sm {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+
+  .responsive-text-lg {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+  }
+
+  .responsive-text-xl {
+    font-size: 20px !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Compact spacing */
+  .mobile-compact {
+    padding: 0.5rem !important;
+    margin: 0.25rem 0 !important;
+  }
+
+  /* Simplified shadows for performance */
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Reduce backdrop blur on very small screens */
+  .backdrop-blur-sm {
+    backdrop-filter: blur(2px) !important;
+  }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .landscape-compact {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* Smaller hero height in landscape */
+  .hero-landscape {
+    height: 60px !important;
+  }
+}
+
+/* High DPI mobile screens */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  /* Sharper text rendering */
+  .crisp-text {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .hover-effects:hover {
+    transform: none !important;
+    scale: none !important;
+  }
+
+  /* Better button feedback for touch */
+  .touch-feedback:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+  /* GPU acceleration for smoother animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+  }
+
+  /* Simplified gradients for better performance */
+  .mobile-gradient {
+    background: linear-gradient(to right, var(--primary), var(--primary-foreground)) !important;
+  }
+
+  /* Reduce complexity of patterns */
+  .pattern-complex {
+    background-image: none !important;
+  }
+}
+
+/* Accessibility improvements for mobile */
+@media (max-width: 768px) {
+  /* Larger focus indicators */
+  .focus-visible {
+    outline: 3px solid var(--primary) !important;
+    outline-offset: 2px !important;
+  }
+
+  /* Better contrast ratios */
+  .text-muted-foreground {
+    color: rgb(82 82 91) !important; /* Darker for better mobile readability */
+  }
+}

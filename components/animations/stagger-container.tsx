@@ -4,6 +4,7 @@ import type React from 'react';
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { getMobileOptimizedMotionProps, getOptimizedDuration, isMobileDevice } from '@/lib/utils/animations';
 
 interface StaggerContainerProps {
     children: React.ReactNode;
@@ -18,20 +19,32 @@ export function StaggerContainer({
     children,
     className,
     delay = 0,
-    staggerChildren = 0.1,
+    staggerChildren,
     once = true,
-    threshold = 0.2,
+    threshold,
 }: StaggerContainerProps) {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once, amount: threshold });
+
+    // Use mobile-optimized props
+    const mobileProps = getMobileOptimizedMotionProps();
+    const finalThreshold = threshold ?? mobileProps.threshold;
+    const isInView = useInView(ref, {
+        once,
+        amount: finalThreshold,
+        margin: mobileProps.rootMargin as any
+    });
+
+    // Optimize stagger timing for mobile
+    const optimizedStagger = staggerChildren ?? (isMobileDevice() ? 0.05 : 0.1);
+    const optimizedDelay = getOptimizedDuration(delay);
 
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
             transition: {
-                delayChildren: delay,
-                staggerChildren,
+                delayChildren: optimizedDelay,
+                staggerChildren: optimizedStagger,
             },
         },
     };

@@ -1,7 +1,22 @@
 'use client';
 
+/**
+ * MarkersLayer Component
+ *
+ * This component renders markers and their associated influence radius circles on the map.
+ *
+ * Features:
+ * - Renders markers for workers, clients, competitors, and quotations
+ * - Displays faint influence radius circles for clients and competitors with geofencing enabled
+ * - Circle colors match their corresponding marker colors:
+ *   - Client: #06b6d4 (cyan)
+ *   - Competitor: #ef4444 (red)
+ * - Circles use low opacity (0.1 fill, 0.3 stroke) and dashed lines for subtle appearance
+ * - Radius is determined by the geofencing.radius property in meters
+ */
+
 import React from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Popup, Circle } from 'react-leaflet';
 import { WorkerType, ClientType, CompetitorType, QuotationType } from '@/lib/data';
 import { createCustomIcon } from './marker-icon';
 import Image from 'next/image';
@@ -835,6 +850,33 @@ const getMarkerPosition = (marker: any): [number, number] | null => {
     return null;
 };
 
+// Helper function to get geofencing data from marker
+const getGeofencingData = (marker: any): { enabled: boolean; radius: number } | null => {
+    if ('geofencing' in marker &&
+        marker.geofencing &&
+        marker.geofencing.enabled &&
+        typeof marker.geofencing.radius === 'number' &&
+        marker.geofencing.radius > 0) {
+        return {
+            enabled: true,
+            radius: marker.geofencing.radius
+        };
+    }
+    return null;
+};
+
+// Helper function to get circle color based on marker type
+const getCircleColor = (markerType: string): string => {
+    switch (markerType) {
+        case 'client':
+            return '#06b6d4'; // cyan - matching marker color
+        case 'competitor':
+            return '#ef4444'; // red - matching marker color
+        default:
+            return '#6b7280'; // gray fallback
+    }
+};
+
 export default function MarkersLayer({
     filteredWorkers,
     selectedMarker,
@@ -868,24 +910,47 @@ export default function MarkersLayer({
                 // Generate a unique key using id and type
                 const uniqueKey = `${worker.id}-${worker.markerType}-${Math.random().toString(36).substr(2, 9)}`;
 
+                // Check if this entity has geofencing enabled (only for clients and competitors)
+                const geofencingData = (worker.markerType === 'client' || worker.markerType === 'competitor')
+                    ? getGeofencingData(worker)
+                    : null;
+
                 return (
-                    <Marker
-                        key={uniqueKey}
-                        position={position}
-                        icon={createCustomIcon(worker.markerType || 'check-in')}
-                        eventHandlers={{
-                            click: () => handleMarkerClick(worker),
-                        }}
-                        // Add data attribute to identify markers for programmatic access
-                        // @ts-ignore - Adding custom property to Marker component
-                        data-marker-id={worker.id?.toString()}
-                    >
-                        {selectedMarker?.id === worker.id && (
-                            <Popup>
-                                <MarkerPopup worker={worker} />
-                            </Popup>
+                    <React.Fragment key={uniqueKey}>
+                        {/* Render influence radius circle if geofencing is enabled */}
+                        {geofencingData && (
+                            <Circle
+                                center={position}
+                                radius={geofencingData.radius}
+                                pathOptions={{
+                                    color: getCircleColor(worker.markerType || ''),
+                                    weight: 1,
+                                    opacity: 0.3,
+                                    fillColor: getCircleColor(worker.markerType || ''),
+                                    fillOpacity: 0.1,
+                                    dashArray: '5, 5', // Dashed line for subtle appearance
+                                }}
+                            />
                         )}
-                    </Marker>
+
+                        {/* Render the marker */}
+                        <Marker
+                            position={position}
+                            icon={createCustomIcon(worker.markerType || 'check-in')}
+                            eventHandlers={{
+                                click: () => handleMarkerClick(worker),
+                            }}
+                            // Add data attribute to identify markers for programmatic access
+                            // @ts-ignore - Adding custom property to Marker component
+                            data-marker-id={worker.id?.toString()}
+                        >
+                            {selectedMarker?.id === worker.id && (
+                                <Popup>
+                                    <MarkerPopup worker={worker} />
+                                </Popup>
+                            )}
+                        </Marker>
+                    </React.Fragment>
                 );
             })}
         </>

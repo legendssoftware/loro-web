@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { getMobileOptimizedMotionProps, getViewportThreshold, getOptimizedDuration } from "@/lib/utils/animations";
 
 interface MotionSectionProps {
   children: React.ReactNode;
@@ -24,31 +25,47 @@ export function MotionSection({
   duration = 0.5,
   id,
   once = true,
-  threshold = 0.2,
+  threshold,
 }: MotionSectionProps) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once, amount: threshold });
+
+  // Use mobile-optimized props if no specific threshold is provided
+  const mobileProps = getMobileOptimizedMotionProps();
+  const finalThreshold = threshold ?? mobileProps.threshold;
+  const isInView = useInView(ref, {
+    once,
+    amount: finalThreshold,
+    margin: mobileProps.rootMargin as any // Type assertion since framer-motion types are restrictive
+  });
+
+  // Get mobile-optimized duration
+  const optimizedDuration = getOptimizedDuration(duration);
+  const optimizedDelay = getOptimizedDuration(delay);
 
   const getDirectionVariants = () => {
+    // Reduce movement amounts on mobile for better performance
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const moveAmount = isMobile ? 25 : 50;
+
     switch (direction) {
       case "up":
         return {
-          hidden: { opacity: 0, y: 50 },
+          hidden: { opacity: 0, y: moveAmount },
           visible: { opacity: 1, y: 0 },
         };
       case "down":
         return {
-          hidden: { opacity: 0, y: -50 },
+          hidden: { opacity: 0, y: -moveAmount },
           visible: { opacity: 1, y: 0 },
         };
       case "left":
         return {
-          hidden: { opacity: 0, x: 50 },
+          hidden: { opacity: 0, x: moveAmount },
           visible: { opacity: 1, x: 0 },
         };
       case "right":
         return {
-          hidden: { opacity: 0, x: -50 },
+          hidden: { opacity: 0, x: -moveAmount },
           visible: { opacity: 1, x: 0 },
         };
       case "none":
@@ -67,7 +84,11 @@ export function MotionSection({
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
       variants={variants}
-      transition={{ duration, delay, ease: "easeOut" }}
+      transition={{
+        duration: optimizedDuration,
+        delay: optimizedDelay,
+        ease: "easeOut"
+      }}
       className={className}
       id={id}
     >

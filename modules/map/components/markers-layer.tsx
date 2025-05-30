@@ -7,12 +7,19 @@
  *
  * Features:
  * - Renders markers for workers, clients, competitors, and quotations
- * - Displays faint influence radius circles for clients and competitors with geofencing enabled
- * - Circle colors match their corresponding marker colors:
- *   - Client: #06b6d4 (cyan)
- *   - Competitor: #ef4444 (red)
- * - Circles use low opacity (0.1 fill, 0.3 stroke) and dashed lines for subtle appearance
- * - Radius is determined by the geofencing.radius property in meters
+ * - **Client Spheres of Influence**: ALL client markers now display influence radius circles
+ *   - Uses geofencing radius if explicitly set
+ *   - Falls back to geofenceRadius property if available
+ *   - Uses intelligent defaults: 1000m for active clients, 500m for others
+ * - **Dynamic Client Colors**: Client markers and circles use colors based on:
+ *   - Status: active (cyan), inactive (slate), potential (light cyan)
+ *   - Price tier: premium (blue), standard (cyan), basic (dark cyan)
+ * - Competitor circles only shown when geofencing is explicitly enabled
+ * - Circle styling varies by type:
+ *   - Clients: More visible (weight: 2, opacity: 0.4, fill: 0.15, dash: 3,7)
+ *   - Competitors: Subtle (weight: 1, opacity: 0.3, fill: 0.1, dash: 5,5)
+ * - Circle colors match their corresponding marker colors for consistency
+ * - Radius is determined by geofencing configuration or intelligent defaults
  */
 
 import React from 'react';
@@ -865,11 +872,60 @@ const getGeofencingData = (marker: any): { enabled: boolean; radius: number } | 
     return null;
 };
 
-// Helper function to get circle color based on marker type
-const getCircleColor = (markerType: string): string => {
+// Helper function to get client influence radius - ALL clients should have a sphere of influence
+const getClientInfluenceData = (marker: any): { enabled: boolean; radius: number } | null => {
+    // Only apply to client markers
+    if (marker.markerType !== 'client') return null;
+
+    // Check if geofencing is explicitly enabled and has radius
+    if ('geofencing' in marker &&
+        marker.geofencing &&
+        marker.geofencing.enabled &&
+        typeof marker.geofencing.radius === 'number' &&
+        marker.geofencing.radius > 0) {
+        return {
+            enabled: true,
+            radius: marker.geofencing.radius
+        };
+    }
+
+    // Check for direct geofenceRadius property
+    if ('geofenceRadius' in marker &&
+        typeof marker.geofenceRadius === 'number' &&
+        marker.geofenceRadius > 0) {
+        return {
+            enabled: true,
+            radius: marker.geofenceRadius
+        };
+    }
+
+    // Default radius for all clients if no specific radius is set
+    // Use a reasonable default based on client type or status
+    const defaultRadius = marker.status === 'active' ? 1000 : 500; // Active clients get larger radius
+
+    return {
+        enabled: true,
+        radius: defaultRadius
+    };
+};
+
+// Helper function to get circle color based on marker type and client properties
+const getCircleColor = (markerType: string, marker?: any): string => {
     switch (markerType) {
         case 'client':
-            return '#06b6d4'; // cyan - matching marker color
+            // For clients, vary color based on status, tier, or other properties
+            if (marker) {
+                // Color based on client status
+                if (marker.status === 'active') return '#06b6d4'; // cyan for active
+                if (marker.status === 'inactive') return '#94a3b8'; // slate for inactive
+                if (marker.status === 'potential') return '#22d3ee'; // cyan lighter for potential
+
+                // Alternative: Color based on price tier
+                if (marker.priceTier === 'premium') return '#3b82f6'; // blue for premium
+                if (marker.priceTier === 'standard') return '#06b6d4'; // cyan for standard
+                if (marker.priceTier === 'basic') return '#0891b2'; // darker cyan for basic
+            }
+            return '#06b6d4'; // default cyan - matching marker color
         case 'competitor':
             return '#ef4444'; // red - matching marker color
         default:
@@ -889,7 +945,7 @@ export default function MarkersLayer({
     }
 
     // Log the number of markers to be rendered
-    console.log(`Rendering ${filteredWorkers.length} markers on t he m ap`);
+    console.log(`Rendering ${filteredWorkers.length} markers on the map`);
 
     // Log any markers with invalid positions
     const invalidMarkers = filteredWorkers.filter(worker => !getMarkerPosition(worker));
@@ -910,25 +966,29 @@ export default function MarkersLayer({
                 // Generate a unique key using id and type
                 const uniqueKey = `${worker.id}-${worker.markerType}-${Math.random().toString(36).substr(2, 9)}`;
 
-                // Check if this entity has geofencing enabled (only for clients and competitors)
-                const geofencingData = (worker.markerType === 'client' || worker.markerType === 'competitor')
-                    ? getGeofencingData(worker)
-                    : null;
+                // For clients, always show influence radius
+                let influenceData = null;
+                if (worker.markerType === 'client') {
+                    influenceData = getClientInfluenceData(worker);
+                } else if (worker.markerType === 'competitor') {
+                    // For competitors, only show if geofencing is explicitly enabled
+                    influenceData = getGeofencingData(worker);
+                }
 
                 return (
                     <React.Fragment key={uniqueKey}>
-                        {/* Render influence radius circle if geofencing is enabled */}
-                        {geofencingData && (
+                        {/* Render influence radius circle for clients (always) and competitors (when enabled) */}
+                        {influenceData && (
                             <Circle
                                 center={position}
-                                radius={geofencingData.radius}
+                                radius={influenceData.radius}
                                 pathOptions={{
-                                    color: getCircleColor(worker.markerType || ''),
-                                    weight: 1,
-                                    opacity: 0.3,
-                                    fillColor: getCircleColor(worker.markerType || ''),
-                                    fillOpacity: 0.1,
-                                    dashArray: '5, 5', // Dashed line for subtle appearance
+                                    color: getCircleColor(worker.markerType || '', worker),
+                                    weight: worker.markerType === 'client' ? 2 : 1, // Slightly thicker for clients
+                                    opacity: worker.markerType === 'client' ? 0.4 : 0.3, // More visible for clients
+                                    fillColor: getCircleColor(worker.markerType || '', worker),
+                                    fillOpacity: worker.markerType === 'client' ? 0.15 : 0.1, // More visible fill for clients
+                                    dashArray: worker.markerType === 'client' ? '3, 7' : '5, 5', // Different dash pattern for clients
                                 }}
                             />
                         )}
@@ -936,7 +996,7 @@ export default function MarkersLayer({
                         {/* Render the marker */}
                         <Marker
                             position={position}
-                            icon={createCustomIcon(worker.markerType || 'check-in')}
+                            icon={createCustomIcon(worker.markerType || 'check-in', isHighlighted, worker)}
                             eventHandlers={{
                                 click: () => handleMarkerClick(worker),
                             }}

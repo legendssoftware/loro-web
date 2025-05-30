@@ -1,8 +1,25 @@
 import L from 'leaflet';
 import { MarkerType } from '@/lib/data';
 
+// Helper function to get client marker color based on client properties
+const getClientMarkerColor = (clientData?: any): string => {
+    if (!clientData) return '#06b6d4'; // default cyan
+
+    // Color based on client status
+    if (clientData.status === 'active') return '#06b6d4'; // cyan for active
+    if (clientData.status === 'inactive') return '#94a3b8'; // slate for inactive
+    if (clientData.status === 'potential') return '#22d3ee'; // cyan lighter for potential
+
+    // Alternative: Color based on price tier
+    if (clientData.priceTier === 'premium') return '#3b82f6'; // blue for premium
+    if (clientData.priceTier === 'standard') return '#06b6d4'; // cyan for standard
+    if (clientData.priceTier === 'basic') return '#0891b2'; // darker cyan for basic
+
+    return '#06b6d4'; // default cyan
+};
+
 // Create custom marker icons with relevant icons for each type
-export const createCustomIcon = (type: MarkerType, isHighlighted = false) => {
+export const createCustomIcon = (type: MarkerType, isHighlighted = false, markerData?: any) => {
     let color: string, iconSvg: string;
 
     switch (type) {
@@ -58,7 +75,7 @@ export const createCustomIcon = (type: MarkerType, isHighlighted = false) => {
       </svg>`;
             break;
         case 'client':
-            color = '#06b6d4'; // cyan
+            color = getClientMarkerColor(markerData); // Dynamic color based on client properties
             iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 21h18"></path>
         <path d="M5 21V7l8-4v18"></path>

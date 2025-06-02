@@ -459,25 +459,16 @@ export default function Home() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={startDemoCall}
-                                            disabled={isCallInitializing}
-                                            className={`hidden text-xs font-normal uppercase transition-colors cursor-pointer font-body md:inline-flex ${
-                                                isCallActive
-                                                    ? 'text-green-500 hover:bg-green-100 dark:hover:bg-green-900/20'
-                                                    : connectionError
-                                                    ? 'text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/20'
-                                                    : 'hover:text-primary'
-                                            }`}
+                                            asChild
+                                            className="hidden text-xs font-normal uppercase transition-colors cursor-pointer font-body md:inline-flex hover:text-primary"
                                         >
-                                            {isCallInitializing ? (
-                                                <>
-                                                    <span>CONNECTING...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>INSTANT DEMO</span>
-                                                </>
-                                            )}
+                                            <a
+                                                href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <span>TRY ANDROID APP</span>
+                                            </a>
                                         </Button>
                                     )}
                                 </motion.div>
@@ -634,20 +625,16 @@ export default function Home() {
                                                             </Button>
                                                         ) : (
                                                             <Button
-                                                                onClick={startDemoCall}
-                                                                disabled={isCallInitializing}
+                                                                asChild
                                                                 className="w-full text-xs font-normal uppercase font-body"
                                                             >
-                                                                {isCallInitializing ? (
-                                                                    <>
-                                                                        <span>CONNECTING...</span>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <PhoneCall className="w-4 h-4 mr-2" />
-                                                                        <span>INSTANT DEMO</span>
-                                                                    </>
-                                                                )}
+                                                                <a
+                                                                    href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    <span>TRY ANDROID APP</span>
+                                                                </a>
                                                             </Button>
                                                         )}
                                                     </div>
@@ -711,31 +698,16 @@ export default function Home() {
                                         >
                                             <Button
                                                 size="lg"
-                                                className="text-xs font-normal uppercase animate-pulse font-body"
-                                                onClick={startDemoCall}
-                                                disabled={isCallInitializing}
+                                                className="text-xs font-normal uppercase font-body"
+                                                asChild
                                             >
-                                                {isCallInitializing ? (
-                                                    <>
-                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
-                                                        <span>CONNECTING...</span>
-                                                    </>
-                                                ) : isCallActive ? (
-                                                    <>
-                                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
-                                                        <span>CALL ACTIVE {formattedTimeRemaining && `(${formattedTimeRemaining})`}</span>
-                                                    </>
-                                                ) : connectionError ? (
-                                                    <>
-                                                        <PhoneCall className="w-4 h-4 mr-2" />
-                                                        <span>Retry Demo Call</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <PhoneCall className="w-4 h-4 mr-2" color='white' />
-                                                        <span className='text-white'>Instant Demo - Do you need LORO?</span>
-                                                    </>
-                                                )}
+                                                <a
+                                                    href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <span className='text-white'>Try Android App</span>
+                                                </a>
                                             </Button>
                                         </motion.div>
                                         <motion.div
@@ -2273,6 +2245,264 @@ export default function Home() {
                                     </Button>
                                 </motion.div>
                             </motion.div>
+                        </div>
+                    </MotionSection>
+
+                    {/* APK Download Section */}
+                    <MotionSection
+                        id="mobile-app"
+                        className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        Take LORO Mobile With You
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        Download the LORO Android app and manage your business operations on the go. 100% offline capability with real-time sync when connected.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <div className="grid items-center gap-8 md:grid-cols-2">
+                                <StaggerContainer
+                                    className="space-y-6"
+                                    staggerChildren={0.15}
+                                >
+                                    <StaggerItem>
+                                        <h3 className="text-2xl font-normal uppercase font-body">
+                                            Everything You Need in Your Pocket
+                                        </h3>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-lg">📱</span>
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Native Android Experience
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Optimized for Android devices with intuitive navigation and smooth performance.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-lg">🔄</span>
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Offline-First Design
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Work seamlessly without internet connection. Data syncs automatically when you're back online.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex items-start gap-4">
+                                            <motion.div
+                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-lg">📍</span>
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    GPS & Location Tracking
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Real-time GPS tracking for field teams with route optimization and check-in capabilities.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+
+                                    <StaggerItem>
+                                        <motion.div
+                                            className="flex gap-4 pt-6"
+                                            whileHover={{ scale: 1.02 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <motion.div
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className="flex-1"
+                                            >
+                                                <Button
+                                                    asChild
+                                                    size="lg"
+                                                    className="w-full text-xs font-normal uppercase font-body bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                                                >
+                                                    <a
+                                                        href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center justify-center gap-2"
+                                                    >
+                                                        <span>📱</span>
+                                                        <span>Download Android APK</span>
+                                                    </a>
+                                                </Button>
+                                            </motion.div>
+                                        </motion.div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+
+                                <StaggerItem direction="right">
+                                    <motion.div
+                                        className="relative flex items-center justify-center"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.8 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        {/* Phone mockup */}
+                                        <div className="relative">
+                                            <motion.div
+                                                className="relative z-10"
+                                                whileHover={{ scale: 1.02, rotate: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Image
+                                                    src="/images/covers/mobile.png"
+                                                    alt="LORO Mobile App on Android"
+                                                    width={300}
+                                                    height={600}
+                                                    className="shadow-2xl rounded-3xl"
+                                                />
+                                            </motion.div>
+
+                                            {/* Floating app icons */}
+                                            <motion.div
+                                                className="absolute flex items-center justify-center w-16 h-16 bg-green-500 shadow-lg -top-4 -left-4 rounded-xl"
+                                                animate={{
+                                                    y: [0, -10, 0],
+                                                    rotate: [0, 5, 0],
+                                                }}
+                                                transition={{
+                                                    duration: 3,
+                                                    repeat: Number.POSITIVE_INFINITY,
+                                                    repeatType: 'reverse',
+                                                }}
+                                            >
+                                                <span className="text-2xl text-white">📊</span>
+                                            </motion.div>
+
+                                            <motion.div
+                                                className="absolute flex items-center justify-center w-16 h-16 bg-blue-500 shadow-lg -bottom-6 -right-6 rounded-xl"
+                                                animate={{
+                                                    y: [0, 10, 0],
+                                                    rotate: [0, -5, 0],
+                                                }}
+                                                transition={{
+                                                    duration: 4,
+                                                    repeat: Number.POSITIVE_INFINITY,
+                                                    repeatType: 'reverse',
+                                                    delay: 1,
+                                                }}
+                                            >
+                                                <span className="text-2xl text-white">🎯</span>
+                                            </motion.div>
+
+                                            <motion.div
+                                                className="absolute flex items-center justify-center bg-purple-500 rounded-full shadow-lg top-1/3 -right-8 w-14 h-14"
+                                                animate={{
+                                                    x: [0, 10, 0],
+                                                    scale: [1, 1.1, 1],
+                                                }}
+                                                transition={{
+                                                    duration: 2.5,
+                                                    repeat: Number.POSITIVE_INFINITY,
+                                                    repeatType: 'reverse',
+                                                    delay: 0.5,
+                                                }}
+                                            >
+                                                <span className="text-xl text-white">📱</span>
+                                            </motion.div>
+                                        </div>
+                                    </motion.div>
+                                </StaggerItem>
+                            </div>
+
+                            {/* App features grid */}
+                            <StaggerContainer
+                                className="grid gap-6 mt-16 md:grid-cols-3"
+                                staggerChildren={0.1}
+                            >
+                                {[
+                                    {
+                                        icon: '⚡',
+                                        title: 'Lightning Fast',
+                                        description: 'Optimized performance with instant app loading and smooth transitions.'
+                                    },
+                                    {
+                                        icon: '🔒',
+                                        title: 'Secure & Private',
+                                        description: 'End-to-end encryption with biometric authentication support.'
+                                    },
+                                    {
+                                        icon: '🌐',
+                                        title: 'Works Everywhere',
+                                        description: 'Full functionality even in areas with poor or no internet connectivity.'
+                                    }
+                                ].map((feature, index) => (
+                                    <StaggerItem key={index} direction="up">
+                                        <motion.div
+                                            className="p-6 text-center border shadow-sm bg-card/50 backdrop-blur-sm rounded-xl border-border"
+                                            whileHover={{
+                                                y: -5,
+                                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                            }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <motion.div
+                                                className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10"
+                                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <span className="text-3xl">{feature.icon}</span>
+                                            </motion.div>
+                                            <h3 className="mb-2 text-lg font-normal uppercase font-body">
+                                                {feature.title}
+                                            </h3>
+                                            <p className="text-xs uppercase text-muted-foreground font-body">
+                                                {feature.description}
+                                            </p>
+                                        </motion.div>
+                                    </StaggerItem>
+                                ))}
+                            </StaggerContainer>
                         </div>
                     </MotionSection>
 

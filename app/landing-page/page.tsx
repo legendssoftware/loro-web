@@ -448,27 +448,19 @@ export default function Home() {
                                             onClick={retryDemoCall}
                                             className="text-xs font-normal uppercase transition-colors cursor-pointer text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
                                         >
-                                            <PhoneCall
-                                                className="w-5 h-5 mr-2"
-                                                size={22}
-                                                strokeWidth={1.2}
-                                            />
                                             <span>RETRY CALL</span>
                                         </Button>
                                     ) : (
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            asChild
-                                            className="hidden text-xs font-normal uppercase transition-colors cursor-pointer font-body md:inline-flex hover:text-primary"
+                                            onClick={startDemoCall}
+                                            disabled={isCallInitializing}
+                                            className="text-xs font-normal uppercase transition-colors cursor-pointer font-body hover:text-primary"
                                         >
-                                            <a
-                                                href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <span>TRY ANDROID APP</span>
-                                            </a>
+                                            <span>
+                                                {isCallInitializing ? 'CONNECTING...' : 'DEMO CALL'}
+                                            </span>
                                         </Button>
                                     )}
                                 </motion.div>
@@ -625,16 +617,14 @@ export default function Home() {
                                                             </Button>
                                                         ) : (
                                                             <Button
-                                                                asChild
+                                                                onClick={startDemoCall}
+                                                                disabled={isCallInitializing}
                                                                 className="w-full text-xs font-normal uppercase font-body"
                                                             >
-                                                                <a
-                                                                    href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <span>TRY ANDROID APP</span>
-                                                                </a>
+                                                                <PhoneCall className="w-4 h-4 mr-2" />
+                                                                <span>
+                                                                    {isCallInitializing ? 'CONNECTING...' : 'DEMO CALL'}
+                                                                </span>
                                                             </Button>
                                                         )}
                                                     </div>

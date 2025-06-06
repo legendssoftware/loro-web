@@ -73,7 +73,7 @@ export function MobileHero({
         >
           <Button
             size={isSmallMobile ? "default" : "lg"}
-            className={`font-normal uppercase animate-pulse font-body ${
+            className={`font-normal uppercase animate-LORO font-body ${
               isSmallMobile
                 ? 'text-[10px] px-3 py-2 h-8'
                 : 'text-xs'
@@ -83,14 +83,14 @@ export function MobileHero({
           >
             {isCallInitializing ? (
               <>
-                <PhoneCall className={`mr-2 animate-pulse ${
+                <PhoneCall className={`mr-2 animate-LORO ${
                   isSmallMobile ? 'w-3 h-3' : 'w-4 h-4'
                 }`} />
                 <span>CONNECTING...</span>
               </>
             ) : isCallActive ? (
               <>
-                <PhoneCall className={`mr-2 animate-pulse ${
+                <PhoneCall className={`mr-2 animate-LORO ${
                   isSmallMobile ? 'w-3 h-3' : 'w-4 h-4'
                 }`} />
                 <span className={isSmallMobile ? 'text-[9px]' : ''}>

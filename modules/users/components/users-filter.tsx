@@ -28,10 +28,14 @@ import {
     AlertCircle,
     UserMinus,
     UserCog,
+    Mail,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import React from 'react';
 import { useBranchQuery } from '@/hooks/use-branch-query';
+import { axiosInstance } from '@/lib/services/api-client';
+import toast from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 interface UsersFilterProps {
     onApplyFilters: (filters: UserFilterParams) => void;
@@ -51,6 +55,7 @@ export function UsersFilter({
     );
     const [branchId, setBranchId] = useState<number | undefined>(undefined);
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
+    const [isReInviting, setIsReInviting] = useState(false);
 
     // Use the global branch query hook instead of generating branches from users
     const { branches, isLoading: isLoadingBranches } = useBranchQuery();
@@ -142,6 +147,29 @@ export function UsersFilter({
         setActiveFilters([]);
         onClearFilters();
     }, [onClearFilters]);
+
+    // Handle re-invite all users
+    const handleReInviteAllUsers = useCallback(async () => {
+        try {
+            setIsReInviting(true);
+
+            const response = await axiosInstance.post('/user/admin/re-invite-all');
+
+            if (response.data.success) {
+                showSuccessToast(
+                    `Re-invitation emails sent to ${response.data.data.invitedCount} users successfully!`,
+                    toast
+                );
+            } else {
+                showErrorToast('Failed to send re-invitation emails', toast);
+            }
+        } catch (error) {
+            console.error('Error re-inviting users:', error);
+            showErrorToast('Failed to send re-invitation emails', toast);
+        } finally {
+            setIsReInviting(false);
+        }
+    }, []);
 
     const statusLabels = {
         [UserStatus.ACTIVE]: 'ACTIVE',
@@ -473,6 +501,18 @@ export function UsersFilter({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+
+            {/* Re-invite All Users Button */}
+            <Button
+                variant="outline"
+                size="sm"
+                className="text-[10px] hover:text-blue-500 font-normal uppercase border border-blue-500 rounded h-9 font-body text-blue-400"
+                onClick={handleReInviteAllUsers}
+                disabled={isReInviting}
+            >
+                <Mail className="w-4 h-4 mr-1" strokeWidth={1.5} />
+                {isReInviting ? 'Sending...' : 'Re-invite All'}
+            </Button>
 
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (

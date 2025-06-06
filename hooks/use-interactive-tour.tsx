@@ -216,7 +216,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Snapshot',
                 description:
-                    'Check your team\'s pulse! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
+                    'Check your team\'s LORO! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
                 side: 'bottom',
                 align: 'center',
             },
@@ -1626,7 +1626,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '👥 Workforce Snapshot',
                 description:
-                    'Check your team\'s pulse! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
+                    'Check your team\'s LORO! See the "Total Employees" (14) and how many are "Active Now" (0 in this example). This gives you a quick understanding of your current operational capacity. 💪',
                 side: 'bottom',
                 align: 'center',
             },

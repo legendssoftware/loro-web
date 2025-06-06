@@ -26,6 +26,7 @@ import {
     Shield,
     AtSign,
     Gauge,
+    Send,
 } from 'lucide-react';
 import { User, UserStatus, AccessLevel } from '@/lib/types/user';
 import { useState } from 'react';
@@ -63,6 +64,7 @@ export function UserDetailsModal({
     const [activeTab, setActiveTab] = useState<string>('details');
     const [showEditModal, setShowEditModal] = useState<boolean>(false);
     const [showTargetsModal, setShowTargetsModal] = useState<boolean>(false);
+    const [isReInviting, setIsReInviting] = useState<boolean>(false);
 
     // Get the updateUser function from our hook
     const { updateUser } = useUsersQuery({});
@@ -106,6 +108,29 @@ export function UserDetailsModal({
             setShowDeleteConfirmation(false);
             showSuccessToast('User deleted successfully', toast);
             onClose();
+        }
+    };
+
+    // Handle individual user re-invite
+    const handleReInviteUser = async () => {
+        try {
+            setIsReInviting(true);
+
+            const response = await axiosInstance.post(`/user/admin/${user.uid}/re-invite`);
+
+            if (response.data.success) {
+                showSuccessToast(
+                    `Re-invitation email sent to ${user.email} successfully!`,
+                    toast
+                );
+            } else {
+                showErrorToast('Failed to send re-invitation email', toast);
+            }
+        } catch (error) {
+            console.error('Error re-inviting user:', error);
+            showErrorToast('Failed to send re-invitation email', toast);
+        } finally {
+            setIsReInviting(false);
         }
     };
 
@@ -464,20 +489,34 @@ export function UserDetailsModal({
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
                     <DialogHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <DialogTitle className="text-xl font-semibold uppercase font-body">
-                                {`${user.name} ${user.surname}`}
-                            </DialogTitle>
-                            <div className="flex items-center gap-2 mt-2">
-                                <Badge
-                                    variant="outline"
-                                    className={`text-[10px] px-4 py-1 font-body border-0 ${getStatusBadgeColor(
-                                        user.status,
-                                    )}`}
-                                >
-                                    {user.status.toUpperCase()}
-                                </Badge>
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <DialogTitle className="text-xl font-semibold uppercase font-body">
+                                    {`${user.name} ${user.surname}`}
+                                </DialogTitle>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <Badge
+                                        variant="outline"
+                                        className={`text-[10px] px-4 py-1 font-body border-0 ${getStatusBadgeColor(
+                                            user.status,
+                                        )}`}
+                                    >
+                                        {user.status.toUpperCase()}
+                                    </Badge>
+                                </div>
                             </div>
+                            {/* Re-invite User Button */}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-[10px] hover:text-green-500 font-normal uppercase border border-green-500 rounded h-8 font-body text-green-400"
+                                onClick={handleReInviteUser}
+                                disabled={isReInviting}
+                                title="Re-invite user to platform"
+                            >
+                                <Send className="w-3 h-3 mr-1" strokeWidth={1.5} />
+                                {isReInviting ? 'Sending...' : 'Re-invite'}
+                            </Button>
                         </div>
                         <div className="flex items-center gap-2">
                             <Button

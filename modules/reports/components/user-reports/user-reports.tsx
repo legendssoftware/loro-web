@@ -462,9 +462,9 @@ export const UserReports: React.FC<UserReportsProps> = ({
 
                         {isGeneratingInsights ? (
                             <div className="space-y-2">
-                                <div className="h-4 rounded bg-muted/50 animate-pulse"></div>
-                                <div className="w-3/4 h-4 rounded bg-muted/50 animate-pulse"></div>
-                                <div className="w-1/2 h-4 rounded bg-muted/50 animate-pulse"></div>
+                                <div className="h-4 rounded bg-muted/50 animate-LORO"></div>
+                                <div className="w-3/4 h-4 rounded bg-muted/50 animate-LORO"></div>
+                                <div className="w-1/2 h-4 rounded bg-muted/50 animate-LORO"></div>
                             </div>
                         ) : (
                             <div className="space-y-2">

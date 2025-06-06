@@ -731,7 +731,7 @@ export default function Home() {
                                             <div className="text-xs font-normal uppercase text-muted-foreground font-body">
                                                 Live Activity
                                             </div>
-                                            <div className="px-2 py-1 ml-auto text-xs font-normal text-green-700 uppercase bg-green-100 rounded-full animate-pulse font-body">
+                                            <div className="px-2 py-1 ml-auto text-xs font-normal text-green-700 uppercase bg-green-100 rounded-full animate-LORO font-body">
                                                 LIVE
                                             </div>
                                         </div>

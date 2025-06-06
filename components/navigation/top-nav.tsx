@@ -279,7 +279,7 @@ export function TopNav() {
                                         id="tour-step-help-trigger"
                                     />
                                     {isCallActive && (
-                                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-LORO" />
                                     )}
                                     <span className="sr-only">
                                         Help & Support
@@ -299,7 +299,7 @@ export function TopNav() {
                                         onClick={endCall}
                                         className="p-3 cursor-pointer"
                                     >
-                                        <PhoneCall className="w-4 h-4 mr-2 animate-pulse" />
+                                        <PhoneCall className="w-4 h-4 mr-2 animate-LORO" />
                                         <span>
                                             End Call{' '}
                                             {formattedTimeRemaining &&
@@ -324,7 +324,7 @@ export function TopNav() {
                                         <PhoneCall className="w-4 h-4 mr-2" />
                                         <span>Call for Assistance</span>
                                         {isCallInitializing && (
-                                            <span className="w-2 h-2 ml-2 rounded-full bg-amber-500 animate-pulse" />
+                                            <span className="w-2 h-2 ml-2 rounded-full bg-amber-500 animate-LORO" />
                                         )}
                                     </DropdownMenuItem>
                                 )}

@@ -111,7 +111,7 @@ export const useTaskApi = () => {
 
     // Update a task
     const updateTask = useCallback(
-        async (taskId: number, updates: Partial<Task>): Promise<void> => {
+        async (taskId: number, updates: Partial<Task>): Promise<any> => {
             try {
                 // The controller endpoint is /tasks/:ref for PATCH
                 const response = await axiosInstance.patch(
@@ -128,6 +128,7 @@ export const useTaskApi = () => {
                 }
 
                 console.log('Task updated successfully:', response.data);
+                return response.data;
             } catch (error) {
                 console.error(`Error updating task ${taskId}:`, error);
                 throw error;
@@ -137,7 +138,7 @@ export const useTaskApi = () => {
     );
 
     // Delete a task
-    const deleteTask = useCallback(async (taskId: number): Promise<void> => {
+    const deleteTask = useCallback(async (taskId: number): Promise<any> => {
         try {
             // The controller endpoint is /tasks/:ref for DELETE
             const response = await axiosInstance.delete(`/tasks/${taskId}`);
@@ -148,6 +149,7 @@ export const useTaskApi = () => {
             }
 
             console.log('Task deleted successfully:', response.data);
+            return response.data;
         } catch (error) {
             console.error(`Error deleting task ${taskId}:`, error);
             throw error;
@@ -156,7 +158,7 @@ export const useTaskApi = () => {
 
     // Add a task
     const createTask = useCallback(
-        async (taskData: Partial<Task>): Promise<void> => {
+        async (taskData: Partial<Task>): Promise<any> => {
             try {
                 // The controller endpoint is /tasks for POST
                 const response = await axiosInstance.post('/tasks', taskData);
@@ -170,6 +172,7 @@ export const useTaskApi = () => {
                 }
 
                 console.log('Task created successfully:', response.data);
+                return response.data;
             } catch (error) {
                 console.error('Error creating task:', error);
                 throw error;
@@ -200,7 +203,7 @@ export const useTaskApi = () => {
 
     // Update a subtask
     const updateSubtask = useCallback(
-        async (subtaskId: number, updates: any): Promise<void> => {
+        async (subtaskId: number, updates: any): Promise<any> => {
             try {
                 // The controller endpoint is /tasks/sub-task/:ref for PATCH
                 const response = await axiosInstance.patch(
@@ -217,6 +220,7 @@ export const useTaskApi = () => {
                 }
 
                 console.log('Subtask updated successfully:', response.data);
+                return response.data;
             } catch (error) {
                 console.error(`Error updating subtask ${subtaskId}:`, error);
                 throw error;
@@ -227,7 +231,7 @@ export const useTaskApi = () => {
 
     // Complete a subtask
     const completeSubtask = useCallback(
-        async (subtaskId: number): Promise<void> => {
+        async (subtaskId: number): Promise<any> => {
             try {
                 // The controller endpoint is /tasks/sub-task/complete/:ref for PATCH
                 const response = await axiosInstance.patch(
@@ -243,6 +247,7 @@ export const useTaskApi = () => {
                 }
 
                 console.log('Subtask completed successfully:', response.data);
+                return response.data;
             } catch (error) {
                 console.error(`Error completing subtask ${subtaskId}:`, error);
                 throw error;
@@ -253,7 +258,7 @@ export const useTaskApi = () => {
 
     // Delete a subtask
     const deleteSubtask = useCallback(
-        async (subtaskId: number): Promise<void> => {
+        async (subtaskId: number): Promise<any> => {
             try {
                 // The controller endpoint is /tasks/sub-task/:ref for DELETE
                 const response = await axiosInstance.delete(
@@ -269,6 +274,7 @@ export const useTaskApi = () => {
                 }
 
                 console.log('Subtask deleted successfully:', response.data);
+                return response.data;
             } catch (error) {
                 console.error(`Error deleting subtask ${subtaskId}:`, error);
                 throw error;

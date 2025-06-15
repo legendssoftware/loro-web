@@ -18,7 +18,7 @@ export interface TabProps {
     isRewardsLoading: boolean;
 }
 
-export const RewardsTab: React.FC<TabProps> = ({
+export const RewardsTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,

@@ -24,7 +24,7 @@ export interface MetricCardProps {
     formatValue?: (value: string | number) => string;
 }
 
-export const MetricCard: React.FC<MetricCardProps> = ({
+export const MetricCard: React.FunctionComponent<MetricCardProps> = ({
     title,
     value,
     icon: Icon,

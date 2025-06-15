@@ -55,7 +55,7 @@ const feedbackFormSchema = z.object({
 // Infer TypeScript type from the schema
 export type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 
-export const FeedbackForm: React.FC = () => {
+export const FeedbackForm: React.FunctionComponent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');

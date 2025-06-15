@@ -737,8 +737,7 @@ export function TaskDetailsModal({
                                                 <div className="flex items-center">
                                                     <div
                                                         className={`w-5 h-5 rounded-full mr-2 flex items-center justify-center border cursor-pointer ${
-                                                            subtask.status ===
-                                                            'COMPLETED'
+                                                            subtask.status?.toLowerCase() === 'completed'
                                                                 ? 'bg-green-500 border-green-500'
                                                                 : 'border-yellow-500 bg-transparent'
                                                         }`}
@@ -749,15 +748,13 @@ export function TaskDetailsModal({
                                                             )
                                                         }
                                                     >
-                                                        {subtask.status ===
-                                                            'COMPLETED' && (
+                                                        {subtask.status?.toLowerCase() === 'completed' && (
                                                             <CheckCheck className="w-3 h-3 text-white" />
                                                         )}
                                                     </div>
                                                     <span
                                                         className={`text-xs font-thin font-body ${
-                                                            subtask.status ===
-                                                            'COMPLETED'
+                                                            subtask.status?.toLowerCase() === 'completed'
                                                                 ? 'line-through text-muted-foreground'
                                                                 : ''
                                                         }`}
@@ -768,8 +765,7 @@ export function TaskDetailsModal({
                                                 <Badge
                                                     variant="outline"
                                                     className={`text-[10px] px-3 py-1 border-0 font-body font-thin ${
-                                                        subtask.status ===
-                                                        'COMPLETED'
+                                                        subtask.status?.toLowerCase() === 'completed'
                                                             ? 'bg-green-100 text-green-800'
                                                             : 'bg-yellow-100 text-yellow-800'
                                                     }`}
@@ -1882,7 +1878,7 @@ export function TaskDetailsModal({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="text-amber-800 border-amber-200 rounded-full w-14 h-14 hover:bg-amber-50 hover:border-amber-300 dark:text-amber-300 dark:hover:bg-amber-900/20 dark:border-amber-900/30"
+                                    className="rounded-full text-amber-800 border-amber-200 w-14 h-14 hover:bg-amber-50 hover:border-amber-300 dark:text-amber-300 dark:hover:bg-amber-900/20 dark:border-amber-900/30"
                                     onClick={() => {
                                         setModalMode('flag');
                                         setIsFlagModalOpen(true);

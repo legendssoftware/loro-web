@@ -39,4 +39,32 @@ export interface Product {
     weight?: number;
     promotionStartDate?: Date;
     promotionEndDate?: Date;
+    // Enhanced product fields
+    itemsPerPack?: number;
+    packsPerPallet?: number;
+    packPrice?: number;
+    palletPrice?: number;
+    packWeight?: number;
+    palletWeight?: number;
+    dimensions?: string;
+    packDimensions?: string;
+    palletDimensions?: string;
+    manufacturer?: string;
+    model?: string;
+    color?: string;
+    material?: string;
+    warrantyPeriod?: number;
+    warrantyUnit?: string;
+    specifications?: string;
+    features?: string;
+    rating?: number;
+    reviewCount?: number;
+    origin?: string;
+    isFragile?: boolean;
+    requiresSpecialHandling?: boolean;
+    storageConditions?: string;
+    minimumOrderQuantity?: number;
+    bulkDiscountPercentage?: number;
+    bulkDiscountMinQty?: number;
+    brand?: string;
 }

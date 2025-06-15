@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { AppLoader } from '@/components/loaders/page-loader';
+import { AppLoader } from '@/components/ui/app-loader';
 import { TasksKanban } from './tasks-kanban';
 import { Task, TaskStatus } from '@/lib/types/task';
 import { FolderMinus } from 'lucide-react';

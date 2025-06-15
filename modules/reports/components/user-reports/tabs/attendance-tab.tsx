@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
 
-export const AttendanceTab: React.FC<TabProps> = ({
+export const AttendanceTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,

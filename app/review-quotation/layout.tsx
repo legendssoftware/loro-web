@@ -1,19 +1,13 @@
 import '../../styles/globals.css';
 import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
-import { Unbounded, Poppins } from 'next/font/google';
+import { Urbanist } from 'next/font/google';
 import { ThemeProvider } from '@/providers/theme-provider';
 
-const unbounded = Unbounded({
-    variable: '--font-unbounded',
+const urbanist = Urbanist({
+    variable: '--font-urbanist',
     subsets: ['latin'],
-    weight: ['300', '400', '500', '600', '700', '800', '900'],
-});
-
-const poppins = Poppins({
     weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-    subsets: ['latin'],
-    variable: '--font-poppins',
 });
 
 export const metadata: Metadata = {
@@ -29,7 +23,7 @@ export default function ReviewQuotationLayout({
 }>) {
     return (
         <div
-            className={`${unbounded.variable} ${poppins.variable} font-unbounded antialiased bg-black min-h-screen`}
+            className={`${urbanist.variable} font-urbanist antialiased bg-black min-h-screen`}
         >
             <ThemeProvider
                 attribute="class"

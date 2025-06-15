@@ -59,7 +59,7 @@ interface EmailTemplateRequest {
     customMessage?: string;
 }
 
-export const TargetsTab: React.FC<TabProps> = ({
+export const TargetsTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,

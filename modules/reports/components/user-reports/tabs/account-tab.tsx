@@ -49,7 +49,7 @@ import {
     Verified
 } from 'lucide-react';
 
-export const AccountTab: React.FC<TabProps> = ({
+export const AccountTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,

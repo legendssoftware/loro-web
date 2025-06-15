@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
 
-export const LicenseTab: React.FC<TabProps> = ({
+export const LicenseTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,

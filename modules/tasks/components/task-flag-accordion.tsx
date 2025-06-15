@@ -37,7 +37,7 @@ interface TaskFlagAccordionProps {
     ) => void;
 }
 
-export const TaskFlagAccordion: React.FC<TaskFlagAccordionProps> = ({
+export const TaskFlagAccordion: React.FunctionComponent<TaskFlagAccordionProps> = ({
     flags,
     onAddFlag,
     onUpdateFlag,

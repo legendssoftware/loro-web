@@ -19,7 +19,7 @@ export interface ProgressCardProps {
     formatTarget?: (target: number) => string;
 }
 
-export const ProgressCard: React.FC<ProgressCardProps> = ({
+export const ProgressCard: React.FunctionComponent<ProgressCardProps> = ({
     title,
     icon: Icon,
     value,

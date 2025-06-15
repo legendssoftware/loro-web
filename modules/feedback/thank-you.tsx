@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ThumbsUp, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const ThankYouPage: React.FC = () => {
+const ThankYouPage: React.FunctionComponent = () => {
     const router = useRouter();
 
     return (

@@ -68,20 +68,28 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
         mutationFn: async (taskData: Partial<Task>) => {
             try {
                 const result = await taskApi.createTask(taskData);
-                showSuccessToast('Task created successfully.', toast);
                 return result;
-            } catch (error) {
-                showErrorToast(
-                    'Failed to create task. Please try again.',
-                    toast,
-                );
+            } catch (error: any) {
                 console.error('Create task error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Task created successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message || 'Failed to create task. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 
@@ -95,21 +103,35 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
             updates: Partial<Task>;
         }) => {
             try {
-                await taskApi.updateTask(taskId, updates);
-                showSuccessToast('Task updated successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to update task. Please try again.',
-                    toast,
-                );
+                // Ensure taskId is a number
+                const numericTaskId = Number(taskId);
+                if (isNaN(numericTaskId)) {
+                    throw new Error('Invalid task reference for update');
+                }
+
+                const result = await taskApi.updateTask(numericTaskId, updates);
+                return result;
+            } catch (error: any) {
                 console.error('Update task error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Task updated successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message || 'Failed to update task. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 
@@ -117,21 +139,35 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     const deleteTaskMutation = useMutation({
         mutationFn: async (taskId: number) => {
             try {
-                await taskApi.deleteTask(taskId);
-                showSuccessToast('Task deleted successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to delete task. Please try again.',
-                    toast,
-                );
+                // Ensure taskId is a number
+                const numericTaskId = Number(taskId);
+                if (isNaN(numericTaskId)) {
+                    throw new Error('Invalid task reference for deletion');
+                }
+
+                const result = await taskApi.deleteTask(numericTaskId);
+                return result;
+            } catch (error: any) {
                 console.error('Delete task error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Task deleted successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message || 'Failed to delete task. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 
@@ -169,21 +205,38 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
             updates: any;
         }) => {
             try {
-                await taskApi.updateSubtask(subtaskId, updates);
-                showSuccessToast('Subtask updated successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to update subtask. Please try again.',
-                    toast,
+                // Ensure subtaskId is a number
+                const numericSubtaskId = Number(subtaskId);
+                if (isNaN(numericSubtaskId)) {
+                    throw new Error('Invalid subtask reference for update');
+                }
+
+                const result = await taskApi.updateSubtask(
+                    numericSubtaskId,
+                    updates,
                 );
+                return result;
+            } catch (error: any) {
                 console.error('Update subtask error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Subtask updated successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message || 'Failed to update subtask. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 
@@ -191,21 +244,36 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     const completeSubtaskMutation = useMutation({
         mutationFn: async (subtaskId: number) => {
             try {
-                await taskApi.completeSubtask(subtaskId);
-                showSuccessToast('Subtask completed successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to complete subtask. Please try again.',
-                    toast,
-                );
+                // Ensure subtaskId is a number
+                const numericSubtaskId = Number(subtaskId);
+                if (isNaN(numericSubtaskId)) {
+                    throw new Error('Invalid subtask reference for completion');
+                }
+
+                const result = await taskApi.completeSubtask(numericSubtaskId);
+                return result;
+            } catch (error: any) {
                 console.error('Complete subtask error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Subtask completed successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message ||
+                'Failed to complete subtask. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 
@@ -213,21 +281,35 @@ export function useTasksQuery(filters: TaskFilterParams = {}) {
     const deleteSubtaskMutation = useMutation({
         mutationFn: async (subtaskId: number) => {
             try {
-                await taskApi.deleteSubtask(subtaskId);
-                showSuccessToast('Subtask deleted successfully.', toast);
-                return { success: true };
-            } catch (error) {
-                showErrorToast(
-                    'Failed to delete subtask. Please try again.',
-                    toast,
-                );
+                // Ensure subtaskId is a number
+                const numericSubtaskId = Number(subtaskId);
+                if (isNaN(numericSubtaskId)) {
+                    throw new Error('Invalid subtask reference for deletion');
+                }
+
+                const result = await taskApi.deleteSubtask(numericSubtaskId);
+                return result;
+            } catch (error: any) {
                 console.error('Delete subtask error:', error);
                 throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: (result) => {
+            // Only show success toast if server returned success message
+            if (
+                result?.message &&
+                result.message.toLowerCase().includes('success')
+            ) {
+                showSuccessToast('Subtask deleted successfully', toast);
+            }
             // Invalidate all task-related queries to ensure fresh data
             queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+        },
+        onError: (error: any) => {
+            // Use server error message if available, otherwise use generic message
+            const errorMessage =
+                error?.message || 'Failed to delete subtask. Please try again.';
+            showErrorToast(errorMessage, toast);
         },
     });
 

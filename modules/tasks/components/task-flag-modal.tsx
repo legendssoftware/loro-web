@@ -20,7 +20,7 @@ interface TaskFlagModalProps {
     onFlagCreated?: (taskId: number) => void;
 }
 
-export const TaskFlagModal: React.FC<TaskFlagModalProps> = ({
+export const TaskFlagModal: React.FunctionComponent<TaskFlagModalProps> = ({
     task,
     isOpen,
     onClose,

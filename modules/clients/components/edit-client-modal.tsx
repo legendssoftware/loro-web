@@ -20,7 +20,7 @@ interface EditClientModalProps {
     onClientUpdated?: (updatedClient: Client) => void;
 }
 
-export const EditClientModal: React.FC<EditClientModalProps> = ({
+export const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({
     client,
     isOpen,
     onClose,

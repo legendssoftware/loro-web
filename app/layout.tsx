@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from 'next';
-import { Unbounded } from 'next/font/google';
+import { Urbanist } from 'next/font/google';
 import '../styles/globals.css';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { LayoutProvider } from '@/providers/layout.provider';
 import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
 import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
+import { AlertBanner } from '@/components/ui/alert-banner';
 
-const unbounded = Unbounded({
-    variable: '--font-unbounded',
+const urbanist = Urbanist({
+    variable: '--font-urbanist',
     subsets: ['latin'],
-    weight: ['300', '400', '500', '600', '700', '800', '900'],
+    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
@@ -183,14 +184,13 @@ export default function RootLayout({
                 />
             </head>
             <body
-                className={`${unbounded.variable} font-unbounded antialiased bg-background relative`}
+                className={`${urbanist.variable} font-urbanist antialiased bg-background relative`}
             >
                 <ThemeProvider attribute="class" disableTransitionOnChange>
                     <LayoutProvider>
-                        <div className="z-[2000] relative">
-                            <TopNav />
-                        </div>
+                        <TopNav />
                         <main>{children}</main>
+                        <AlertBanner />
                         <SessionTimeoutHandler />
                     </LayoutProvider>
                     <Toaster

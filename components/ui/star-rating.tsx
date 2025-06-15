@@ -7,7 +7,7 @@ interface StarRatingProps {
     size?: number;
 }
 
-export const StarRating: React.FC<StarRatingProps> = ({
+export const StarRating: React.FunctionComponent<StarRatingProps> = ({
     rating,
     onChange,
     size = 20

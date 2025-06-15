@@ -78,7 +78,7 @@ export interface UserReportsProps {
     className?: string;
 }
 
-export const UserReports: React.FC<UserReportsProps> = ({
+export const UserReports: React.FunctionComponent<UserReportsProps> = ({
     userId,
     className,
 }) => {

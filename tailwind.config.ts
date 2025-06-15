@@ -13,9 +13,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                heading: ['var(--font-unbounded)', 'sans-serif'],
-                body: ['var(--font-unbounded)', 'sans-serif'],
-                placeholder: ['var(--font-unbounded)', 'sans-serif'],
+                heading: ['var(--font-urbanist)', 'sans-serif'],
+                body: ['var(--font-urbanist)', 'sans-serif'],
+                placeholder: ['var(--font-urbanist)', 'sans-serif'],
             },
             fontWeight: {
                 thin: '200',

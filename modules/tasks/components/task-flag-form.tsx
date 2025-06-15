@@ -68,7 +68,7 @@ interface TaskFlagFormProps {
     onCancel?: () => void;
 }
 
-export const TaskFlagForm: React.FC<TaskFlagFormProps> = ({
+export const TaskFlagForm: React.FunctionComponent<TaskFlagFormProps> = ({
     taskId,
     taskTitle,
     onSubmit,

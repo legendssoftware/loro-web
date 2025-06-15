@@ -485,7 +485,11 @@ export default function Home() {
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     <Button asChild className="text-xs font-normal uppercase font-body">
-                                        <Link href="/sign-up">Get Started</Link>
+                                        <Link href="/sign-up">
+                                        <span className='text-white'>
+                                        Get Started
+                                            </span>
+                                        </Link>
                                     </Button>
                                 </motion.div>
                             </motion.div>
@@ -696,7 +700,7 @@ export default function Home() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                 >
-                                                    <span className='text-white'>Try Android App</span>
+                                                    <span className='text-white'>Try our Android App</span>
                                                 </a>
                                             </Button>
                                         </motion.div>

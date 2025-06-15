@@ -16,7 +16,7 @@ const activityEvents: (keyof WindowEventMap)[] = [
     'touchstart',
 ];
 
-export const SessionTimeoutHandler: React.FC = () => {
+export const SessionTimeoutHandler: React.FunctionComponent = () => {
     const signOut = useAuthStore((state) => state.signOut);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const timeoutId = useRef<NodeJS.Timeout | null>(null);

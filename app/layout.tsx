@@ -6,7 +6,6 @@ import { LayoutProvider } from '@/providers/layout.provider';
 import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
 import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
-import { AlertBanner } from '@/components/ui/alert-banner';
 
 const urbanist = Urbanist({
     variable: '--font-urbanist',
@@ -190,7 +189,6 @@ export default function RootLayout({
                     <LayoutProvider>
                         <TopNav />
                         <main>{children}</main>
-                        <AlertBanner />
                         <SessionTimeoutHandler />
                     </LayoutProvider>
                     <Toaster

@@ -19,7 +19,7 @@ const TasksTabContent = dynamic(
         })),
     {
         loading: () => (
-            <div className="flex items-center justify-center w-full h-full">
+            <div className="flex justify-center items-center w-full h-full">
                 <AppLoader />
             </div>
         ),
@@ -135,7 +135,7 @@ export default function TasksPage() {
     // Use the React Query hook only if authenticated
     const {
         tasksByStatus,
-        isLoading,
+        loading,
         error,
         updateTask,
         deleteTask,
@@ -320,13 +320,13 @@ export default function TasksPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen gap-2 overflow-hidden">
+            <div className="flex overflow-hidden flex-col gap-2 h-screen">
                 <TasksTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
-                <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex overflow-hidden flex-col flex-1">
                     {activeTab === 'tasks' && (
                         <TasksHeader
                             onApplyFilters={handleApplyFilters}
@@ -334,10 +334,10 @@ export default function TasksPage() {
                             onAddTask={handleCreateTask}
                         />
                     )}
-                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
+                    <div className="flex overflow-hidden flex-1 justify-center items-center px-3 py-3 xl:px-8 xl:px-4">
                         <TasksTabContent
                             activeTab={activeTab}
-                            isLoading={isLoading}
+                            isLoading={loading}
                             error={error}
                             tasksByStatus={tasksByStatus}
                             onUpdateTaskStatus={handleUpdateTaskStatus}

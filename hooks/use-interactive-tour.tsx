@@ -557,9 +557,27 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#clients-page-title',
             popover: {
-                title: '👋 CLIENT MANAGEMENT',
+                title: '🤝 CLIENT RELATIONSHIP MANAGEMENT',
                 description:
-                    'Manage all your active clients, view their details, and track interactions.',
+                    'Welcome to your Client Management hub! This is where you maintain strong relationships with your customers, track their journey, and ensure excellent service delivery. Let\'s explore how to master client management!',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            popover: {
+                title: '🏢 CUSTOMER RELATIONSHIP OVERVIEW',
+                description:
+                    'This comprehensive client management system helps you track customer lifecycles, manage relationships, monitor satisfaction, and identify growth opportunities within your client base.',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-search-input',
+            popover: {
+                title: '🔍 CLIENT FINDER',
+                description:
+                    'Quickly locate specific clients by company name, contact person, email, or phone number. Essential for immediate client service and relationship management.',
                 side: 'bottom',
                 align: 'start',
             },
@@ -567,44 +585,79 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#client-status-filter-trigger',
             popover: {
-                title: 'FILTER BY STATUS',
+                title: '🚦 STATUS CLASSIFICATION',
                 description:
-                    '🚦 Filter the client list by their status (Active, Inactive, Pending, etc.).',
+                    'Filter clients by their relationship status: Active (current customers), Inactive (dormant accounts), Pending (prospects), Onboarding (new clients), or Terminated (former customers). This helps prioritize your attention.',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
             element: '#client-category-filter-trigger',
             popover: {
-                title: 'FILTER BY CATEGORY',
+                title: '🏷️ CLIENT CATEGORIZATION',
                 description:
-                    '🏷️ Filter the list by client category, if applicable.',
+                    'Organize clients by category: Enterprise (large corporations), SMB (small-medium business), Individual (personal clients), Government, or Non-Profit. Different categories may require different service approaches.',
                 side: 'bottom',
+                align: 'center',
             },
         },
         {
             element: '#client-industry-filter-trigger',
             popover: {
-                title: 'FILTER BY INDUSTRY',
-                description: "🏭 Filter the list by the client's industry.",
+                title: '🏭 INDUSTRY SEGMENTATION',
+                description:
+                    'Filter by industry sectors: Technology, Healthcare, Manufacturing, Retail, Finance, Construction, etc. Understanding industry-specific needs helps tailor your services.',
                 side: 'bottom',
+                align: 'center',
             },
         },
         {
             element: '#client-risk-level-filter-trigger',
             popover: {
-                title: 'FILTER BY RISK LEVEL',
+                title: '⚠️ RISK ASSESSMENT',
                 description:
-                    '⚠️ Filter clients based on their assigned risk level (Low, Medium, High, Critical).',
+                    'Monitor client risk levels: Low (stable relationships), Medium (require attention), High (potential issues), Critical (immediate action needed). Proactive risk management prevents client loss.',
                 side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-value-filter-trigger',
+            popover: {
+                title: '💎 CLIENT VALUE TIERS',
+                description:
+                    'Segment by client value: VIP (high-value accounts), Premium (significant revenue), Standard (regular clients), Basic (entry-level). Prioritize attention based on business impact.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#clear-client-filters-button',
+            popover: {
+                title: '❌ RESET FILTERS',
+                description:
+                    'Clear all active filters and search terms to return to the complete client overview. This appears when filters are applied.',
+                side: 'left',
+                align: 'end',
             },
         },
         {
             element: '#add-client-button',
             popover: {
-                title: 'ADD NEW CLIENT',
+                title: '➕ ONBOARD NEW CLIENTS',
                 description:
-                    '➕ Use this button to register a new client in the system.',
+                    'Ready to grow your client base? Add new clients with complete contact information, service preferences, and initial relationship details. Start building strong relationships from day one!',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#bulk-client-actions',
+            popover: {
+                title: '📊 BULK OPERATIONS',
+                description:
+                    'Select multiple clients to perform batch operations: status updates, bulk messaging, export lists, or category changes. Efficient for managing large client bases.',
                 side: 'bottom',
                 align: 'start',
             },
@@ -612,27 +665,224 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#clients-table',
             popover: {
-                title: 'CLIENT LIST',
+                title: '📋 COMPREHENSIVE CLIENT DIRECTORY',
                 description:
-                    '📋 Browse, search, and manage your existing clients here based on active filters. Click a row to view details.',
+                    'Your complete client database! This table displays all client relationships with key information: company details, contact persons, status, value, risk level, and recent activity.',
                 side: 'top',
                 align: 'center',
             },
         },
         {
+            element: '#clients-table-header-company',
+            popover: {
+                title: '🏢 COMPANY IDENTIFICATION',
+                description:
+                    'Client company names and primary identification. Click to sort alphabetically and quickly locate specific organizations.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#clients-table-header-contact',
+            popover: {
+                title: '👤 PRIMARY CONTACTS',
+                description:
+                    'Key contact persons within each client organization. These are your main relationship points for business communication.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#clients-table-header-status',
+            popover: {
+                title: '📊 RELATIONSHIP STATUS',
+                description:
+                    'Current client relationship status with color coding: Active (green), Pending (yellow), Inactive (gray), At Risk (red).',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clients-table-header-value',
+            popover: {
+                title: '💰 CLIENT VALUE',
+                description:
+                    'Client value classification and revenue contribution. Helps prioritize attention and resource allocation for maximum business impact.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clients-table-header-industry',
+            popover: {
+                title: '🏭 INDUSTRY SECTOR',
+                description:
+                    'Client industry classification helps understand their business context and tailor your services to industry-specific needs.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clients-table-header-risk',
+            popover: {
+                title: '⚠️ RISK INDICATORS',
+                description:
+                    'Risk assessment levels help identify clients that need attention to prevent relationship deterioration or contract loss.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clients-table-header-activity',
+            popover: {
+                title: '📅 RECENT ACTIVITY',
+                description:
+                    'Last interaction dates and activity summaries. Helps identify clients who haven\'t been contacted recently and may need attention.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
             element: '.client-row',
             popover: {
-                title: 'CLIENT DETAILS',
+                title: '🖱️ DETAILED CLIENT PROFILE',
                 description:
-                    '🖱️ Clicking a client opens their detailed profile, showing contact info, address, history, associated tasks, status, risk level, and more.',
+                    'Click any client row to open their comprehensive profile with full contact information, service history, interaction timeline, and available relationship management actions.',
                 side: 'right',
                 align: 'start',
             },
         },
         {
+            element: '#client-row-example .client-logo',
             popover: {
+                title: '🏢 CLIENT BRANDING',
                 description:
-                    "That covers the Clients section! You\'re ready to manage your customer base.",
+                    'Client company logo for visual identification. Helps personalize the relationship and quick recognition during communications.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        {
+            element: '#client-row-example .client-company-name',
+            popover: {
+                title: '🏢 COMPANY DETAILS',
+                description:
+                    'Complete company name and business information. This is your primary client identification and business context.',
+                side: 'right',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-row-example .client-contact-person',
+            popover: {
+                title: '👤 KEY CONTACT',
+                description:
+                    'Primary contact person within the client organization. This is usually your main relationship point for business communications.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#client-row-example .client-status-badge',
+            popover: {
+                title: '📊 STATUS INDICATOR',
+                description:
+                    'Current relationship status with color coding for quick visual assessment of client health and priority level.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#client-row-example .client-value-badge',
+            popover: {
+                title: '💎 VALUE CLASSIFICATION',
+                description:
+                    'Client value tier indicating their business importance and revenue contribution to help prioritize relationship management efforts.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-row-example .client-industry-tag',
+            popover: {
+                title: '🏭 INDUSTRY CONTEXT',
+                description:
+                    'Industry sector classification helps understand the client\'s business environment and tailor services accordingly.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-row-example .client-risk-indicator',
+            popover: {
+                title: '⚠️ RISK LEVEL',
+                description:
+                    'Risk assessment indicator showing the current health of the client relationship and any potential concerns that need addressing.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#client-row-example .client-contact-info',
+            popover: {
+                title: '📞 CONTACT METHODS',
+                description:
+                    'Quick access to contact information including email, phone, and address for immediate communication needs.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#client-row-example .client-quick-actions',
+            popover: {
+                title: '⚡ RELATIONSHIP ACTIONS',
+                description:
+                    'Quick action buttons for common client management tasks: send email, schedule meeting, create task, update status, or view full profile.',
+                side: 'left',
+                align: 'end',
+            },
+        },
+        {
+            element: '#client-analytics-summary',
+            popover: {
+                title: '📊 CLIENT ANALYTICS',
+                description:
+                    'Summary statistics showing total clients, active relationships, at-risk accounts, and revenue distribution across your client portfolio.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clients-table-pagination',
+            popover: {
+                title: '📄 NAVIGATE CLIENT LIST',
+                description:
+                    'For large client databases, use pagination controls to browse through different pages of your client directory efficiently.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🤝 CLIENT RELATIONSHIP INSIGHTS',
+                description:
+                    'Monitor the health of your client relationships through status distribution, risk levels, and value classifications. A healthy client base typically has mostly active, low-risk, high-value relationships.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🎯 RELATIONSHIP BEST PRACTICES',
+                description:
+                    'Regularly review client risk levels, maintain contact frequency, track satisfaction metrics, and proactively address concerns. Use filters to identify clients needing attention.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🚀 CLIENT MANAGEMENT MASTERY!',
+                description:
+                    'You\'re now equipped to effectively manage your entire client portfolio! Use search and filters to find specific clients, monitor relationship health, and take proactive actions to maintain strong business relationships.',
                 align: 'center',
             },
         },
@@ -645,45 +895,77 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#staff-page-title',
             popover: {
-                title: '👥 STAFF MANAGEMENT',
+                title: '👥 STAFF MANAGEMENT CENTRAL',
                 description:
-                    'Manage your team members, roles, and permissions here.',
+                    'Welcome to Staff Management! This is your comprehensive hub for managing team members, roles, permissions, and organizational structure. Let\'s explore how to effectively manage your workforce.',
                 side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            popover: {
+                title: '🏢 WORKFORCE OVERVIEW',
+                description:
+                    'This section provides a complete view of your organizational structure. You can manage employee details, assign roles, track status, and ensure proper access controls across your entire team.',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-search-input',
+            popover: {
+                title: '🔍 QUICK STAFF SEARCH',
+                description:
+                    'Need to find a specific team member quickly? Use this search bar to locate staff by name, email, or employee ID. Perfect for large teams!',
+                side: 'bottom',
+                align: 'start',
             },
         },
         {
             element: '#user-status-filter-trigger',
             popover: {
-                title: 'FILTER BY STATUS',
+                title: '🚦 STATUS FILTERING',
                 description:
-                    '🚦 Filter the staff list by their current status (Active, Pending, Suspended, etc.).',
+                    'Filter your team by employment status: Active (currently working), Pending (awaiting onboarding), Suspended (temporarily inactive), or Terminated (no longer with company). This helps you focus on specific groups.',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
             element: '#user-access-level-filter-trigger',
             popover: {
-                title: 'FILTER BY ACCESS LEVEL',
+                title: '🛡️ ROLE-BASED FILTERING',
                 description:
-                    '🛡️ Filter the list by user role (Admin, Manager, Worker, etc.).',
+                    'Filter by access levels and roles: Admin (full system access), Manager (departmental oversight), Executive (strategic access), Developer (technical access), User (standard employee), or Client (external access). Essential for security audits!',
                 side: 'bottom',
+                align: 'center',
             },
         },
         {
             element: '#user-branch-filter-trigger',
             popover: {
-                title: 'FILTER BY BRANCH',
+                title: '🏢 BRANCH ORGANIZATION',
                 description:
-                    '🏢 Filter the staff list to show members of a specific branch.',
+                    'Filter staff by their assigned branch or location. Perfect for multi-location businesses to manage regional teams separately and ensure proper organizational structure.',
                 side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#clear-staff-filters-button',
+            popover: {
+                title: '❌ RESET VIEW',
+                description:
+                    'Clear all active filters and search terms to return to the complete staff overview. This button appears when filters are applied.',
+                side: 'left',
+                align: 'end',
             },
         },
         {
             element: '#add-staff-button',
             popover: {
-                title: 'ADD STAFF MEMBER',
+                title: '➕ ONBOARD NEW TALENT',
                 description:
-                    '➕ Onboard new employees and assign their roles and branch.',
+                    'Ready to grow your team? Click here to add new staff members. You\'ll be able to set their personal details, assign roles, choose their branch, and configure their access permissions all in one place.',
                 side: 'bottom',
                 align: 'start',
             },
@@ -691,26 +973,174 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#staff-table',
             popover: {
-                title: 'STAFF LIST',
+                title: '📋 COMPREHENSIVE STAFF DIRECTORY',
                 description:
-                    '📋 View all staff members based on filters. See their role, status, and branch.',
+                    'Your complete team roster! This table shows all staff members with their key information: name, role, status, branch, contact details, and more. Each row represents one team member.',
                 side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-table-header-name',
+            popover: {
+                title: '👤 EMPLOYEE IDENTIFICATION',
+                description:
+                    'Staff member names and basic identification. Click the column header to sort alphabetically by name for easy browsing.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#staff-table-header-role',
+            popover: {
+                title: '🎯 ROLE & RESPONSIBILITIES',
+                description:
+                    'Each person\'s role and access level within your organization. This determines what features and data they can access in the system.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-table-header-status',
+            popover: {
+                title: '📊 EMPLOYMENT STATUS',
+                description:
+                    'Current employment status indicator. Green typically means active, yellow for pending, red for suspended, and gray for terminated staff.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-table-header-branch',
+            popover: {
+                title: '🏢 ORGANIZATIONAL STRUCTURE',
+                description:
+                    'Which branch or location each staff member is assigned to. Important for multi-location businesses and reporting structure.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-table-header-contact',
+            popover: {
+                title: '📞 CONTACT INFORMATION',
+                description:
+                    'Quick access to staff contact details including email and phone numbers for easy communication.',
+                side: 'bottom',
+                align: 'end',
             },
         },
         {
             element: '.staff-row',
             popover: {
-                title: 'VIEW/EDIT STAFF',
+                title: '🖱️ DETAILED STAFF PROFILE',
                 description:
-                    '🖱️ Clicking a staff member opens their details modal. From there, you can view full information and potentially perform actions like editing details, changing status/role, or resetting credentials (permissions permitting).',
+                    'Click any staff member row to open their complete profile. You\'ll see full personal details, employment history, permissions, and available actions based on your role.',
                 side: 'right',
                 align: 'start',
             },
         },
         {
+            element: '#staff-row-example .staff-avatar',
             popover: {
+                title: '📸 STAFF PHOTO',
                 description:
-                    "That's the Staff section! You\'re all set to manage your team.",
+                    'Visual identification helps put faces to names. Staff can upload their own photos or admins can add them during onboarding.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-name',
+            popover: {
+                title: '👨‍💼 FULL NAME & TITLE',
+                description:
+                    'Complete staff member name and their job title. This helps identify who does what in your organization.',
+                side: 'right',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-role-badge',
+            popover: {
+                title: '🏷️ ROLE INDICATOR',
+                description:
+                    'Visual badge showing the staff member\'s role and access level. Color-coded for quick identification of permission levels.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-status-badge',
+            popover: {
+                title: '🚦 STATUS INDICATOR',
+                description:
+                    'Current employment status with color coding: Active (green), Pending (yellow), Suspended (red), Terminated (gray).',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-branch-info',
+            popover: {
+                title: '🏢 BRANCH ASSIGNMENT',
+                description:
+                    'Shows which branch or location this staff member belongs to. Important for organizational structure and reporting.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-contact-info',
+            popover: {
+                title: '📧 QUICK CONTACT',
+                description:
+                    'Email and phone information for immediate communication. Click to open your email client or dial the number directly.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#staff-row-example .staff-actions',
+            popover: {
+                title: '⚡ QUICK ACTIONS',
+                description:
+                    'Depending on your permissions, you might see action buttons for editing details, changing status, resetting passwords, or other management functions.',
+                side: 'left',
+                align: 'end',
+            },
+        },
+        {
+            element: '#staff-table-pagination',
+            popover: {
+                title: '📄 NAVIGATE LARGE TEAMS',
+                description:
+                    'For organizations with many staff members, use pagination controls to browse through different pages of your team directory.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '📊 STAFF MANAGEMENT INSIGHTS',
+                description:
+                    'Pay attention to the distribution of roles and statuses in your team. A healthy organization typically has clear role hierarchies and mostly active staff members. Use filters to analyze different aspects of your workforce.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🎯 BEST PRACTICES',
+                description:
+                    'Regularly review staff statuses, ensure appropriate role assignments, and keep contact information updated. Use the search and filter features to quickly find team members when needed.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🚀 STAFF MANAGEMENT COMPLETE!',
+                description:
+                    'You\'re now equipped to effectively manage your entire workforce! Use the search and filters to find specific team members, click on rows for detailed profiles, and add new staff as your organization grows.',
                 align: 'center',
             },
         },
@@ -1466,63 +1896,332 @@ const tourSteps: { [key: string]: DriveStep[] } = {
         {
             element: '#inventory-page-title',
             popover: {
-                title: '📦 INVENTORY & STOCK',
+                title: '📦 INVENTORY & STOCK MANAGEMENT',
                 description:
-                    'Track product stock levels across locations, manage inventory value, and perform stock adjustments.',
+                    'Welcome to your Inventory Control Center! This is where you track stock levels, manage products, monitor inventory value, and ensure optimal stock availability. Let\'s explore comprehensive inventory management!',
                 side: 'bottom',
                 align: 'start',
             },
         },
         {
+            popover: {
+                title: '🏪 STOCK MANAGEMENT OVERVIEW',
+                description:
+                    'This comprehensive inventory system helps you maintain optimal stock levels, track product performance, manage costs, and prevent stockouts or overstock situations across your entire product catalog.',
+                align: 'center',
+            },
+        },
+        {
             element: '#product-search-input',
             popover: {
-                title: 'SEARCH PRODUCTS',
+                title: '🔍 PRODUCT FINDER',
                 description:
-                    '🔍 Quickly find specific products by name or SKU using the search bar.',
+                    'Quickly locate specific products by name, SKU, barcode, or description. Essential for immediate stock checks and product management tasks.',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
             element: '#product-status-filter-trigger',
             popover: {
-                title: 'FILTER BY STATUS',
+                title: '🚦 STOCK STATUS FILTERING',
                 description:
-                    '🚦 Filter the product list by status (Active, Inactive, Out of Stock, New, etc.).',
+                    'Filter products by availability status: Active (in stock), Inactive (discontinued), Out of Stock (need reorder), Low Stock (approaching minimum), Overstocked (excess inventory), or New (recently added).',
                 side: 'bottom',
+                align: 'start',
             },
         },
         {
             element: '#product-category-filter-trigger',
             popover: {
-                title: 'FILTER BY CATEGORY',
-                description: '🏷️ Filter the list by product category.',
+                title: '🏷️ CATEGORY ORGANIZATION',
+                description:
+                    'Filter by product categories: Electronics, Clothing, Food & Beverage, Office Supplies, Hardware, etc. Organize inventory by logical groupings for better management.',
                 side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#product-supplier-filter-trigger',
+            popover: {
+                title: '🚚 SUPPLIER FILTERING',
+                description:
+                    'Filter products by supplier to analyze vendor performance, manage supplier relationships, and streamline procurement processes.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#product-location-filter-trigger',
+            popover: {
+                title: '📍 LOCATION-BASED INVENTORY',
+                description:
+                    'Filter by storage location or warehouse to manage multi-location inventory and track stock distribution across different sites.',
+                side: 'bottom',
+                align: 'center',
             },
         },
         {
             element: '#clear-product-filters-button',
             popover: {
-                title: 'CLEAR FILTERS',
+                title: '❌ RESET INVENTORY VIEW',
                 description:
-                    '❌ This button appears when filters are active. Click to remove search and filters.',
+                    'Clear all active filters and search terms to return to the complete product catalog overview. This appears when filters are applied.',
                 side: 'left',
+                align: 'end',
+            },
+        },
+        {
+            element: '#add-product-button',
+            popover: {
+                title: '➕ ADD NEW PRODUCTS',
+                description:
+                    'Expand your inventory! Add new products with complete details: SKU, pricing, supplier information, stock levels, and reorder parameters.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#bulk-inventory-actions',
+            popover: {
+                title: '📊 BULK OPERATIONS',
+                description:
+                    'Select multiple products for batch operations: price updates, stock adjustments, category changes, or bulk exports for analysis.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#inventory-alerts-panel',
+            popover: {
+                title: '🚨 INVENTORY ALERTS',
+                description:
+                    'Monitor critical inventory alerts: low stock warnings, overstock notifications, expired products, and reorder reminders to maintain optimal inventory levels.',
+                side: 'bottom',
                 align: 'end',
             },
         },
         {
             element: '#inventory-table',
             popover: {
-                title: 'STOCK LEVEL OVERVIEW',
+                title: '📋 COMPREHENSIVE PRODUCT CATALOG',
                 description:
-                    '📋 View current stock quantities, cost, and total value for all products based on your filters. Click a product for more actions.',
+                    'Your complete inventory database! This table displays all products with critical information: stock levels, costs, pricing, suppliers, and performance metrics.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-table-header-product',
+            popover: {
+                title: '🏷️ PRODUCT IDENTIFICATION',
+                description:
+                    'Product names, SKUs, and descriptions for easy identification. Click to sort alphabetically or by SKU for quick location.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#inventory-table-header-stock',
+            popover: {
+                title: '📊 STOCK LEVELS',
+                description:
+                    'Current stock quantities with visual indicators for low stock, optimal levels, and overstock situations. Critical for availability planning.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#inventory-table-header-cost',
+            popover: {
+                title: '💰 COST ANALYSIS',
+                description:
+                    'Product costs including unit cost, total inventory value, and cost per unit metrics for financial planning and profitability analysis.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-table-header-price',
+            popover: {
+                title: '💲 PRICING INFORMATION',
+                description:
+                    'Selling prices, profit margins, and pricing tiers to understand profitability and competitive positioning for each product.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-table-header-supplier',
+            popover: {
+                title: '🚚 SUPPLIER DETAILS',
+                description:
+                    'Primary suppliers for each product, lead times, and supplier performance metrics for procurement planning and vendor management.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-table-header-movement',
+            popover: {
+                title: '📈 STOCK MOVEMENT',
+                description:
+                    'Recent stock movements, turnover rates, and velocity metrics to understand product performance and demand patterns.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '.product-row',
+            popover: {
+                title: '🖱️ DETAILED PRODUCT PROFILE',
+                description:
+                    'Click any product row to access comprehensive product details, stock history, supplier information, and available inventory management actions.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        {
+            element: '#product-row-example .product-image',
+            popover: {
+                title: '📸 PRODUCT VISUALIZATION',
+                description:
+                    'Product images for visual identification and catalog presentation. Helps with quick recognition and customer-facing materials.',
+                side: 'right',
+                align: 'start',
+            },
+        },
+        {
+            element: '#product-row-example .product-name-sku',
+            popover: {
+                title: '🏷️ PRODUCT IDENTIFICATION',
+                description:
+                    'Complete product name and SKU (Stock Keeping Unit) for precise identification and catalog management.',
+                side: 'right',
+                align: 'center',
+            },
+        },
+        {
+            element: '#product-row-example .stock-level-indicator',
+            popover: {
+                title: '📊 STOCK STATUS INDICATOR',
+                description:
+                    'Visual stock level indicator with color coding: Green (optimal), Yellow (low stock), Red (out of stock), Blue (overstocked).',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#product-row-example .quantity-display',
+            popover: {
+                title: '📦 QUANTITY METRICS',
+                description:
+                    'Current stock quantity, minimum stock level, and maximum stock level for automated reorder management.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#product-row-example .cost-pricing-info',
+            popover: {
+                title: '💰 FINANCIAL METRICS',
+                description:
+                    'Unit cost, selling price, and total inventory value for financial analysis and profitability calculations.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#product-row-example .supplier-info',
+            popover: {
+                title: '🚚 SUPPLIER DETAILS',
+                description:
+                    'Primary supplier information and lead time data for procurement planning and vendor relationship management.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#product-row-example .movement-metrics',
+            popover: {
+                title: '📈 PERFORMANCE INDICATORS',
+                description:
+                    'Recent sales velocity, turnover rate, and movement trends to understand product performance and demand patterns.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#product-row-example .inventory-actions',
+            popover: {
+                title: '⚡ QUICK INVENTORY ACTIONS',
+                description:
+                    'Fast access to common inventory tasks: adjust stock, update pricing, reorder product, or view detailed history.',
+                side: 'left',
+                align: 'end',
+            },
+        },
+        {
+            element: '#inventory-summary-cards',
+            popover: {
+                title: '📊 INVENTORY ANALYTICS',
+                description:
+                    'Key inventory metrics: total products, total value, low stock alerts, and inventory turnover rates for strategic decision making.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-value-chart',
+            popover: {
+                title: '💹 INVENTORY VALUE TRACKING',
+                description:
+                    'Visual representation of inventory value trends over time, helping you understand investment levels and asset management.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#reorder-recommendations',
+            popover: {
+                title: '🔄 AUTOMATED REORDER SUGGESTIONS',
+                description:
+                    'AI-powered reorder recommendations based on sales velocity, lead times, and seasonal patterns to maintain optimal stock levels.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#inventory-table-pagination',
+            popover: {
+                title: '📄 NAVIGATE PRODUCT CATALOG',
+                description:
+                    'For large product catalogs, use pagination controls to browse through different pages of your inventory efficiently.',
                 side: 'top',
                 align: 'center',
             },
         },
         {
             popover: {
+                title: '📦 INVENTORY MANAGEMENT INSIGHTS',
                 description:
-                    "That's Inventory Management! You\'re ready to track your stock.",
+                    'Monitor key indicators: stock turnover rates, carrying costs, stockout frequency, and supplier performance. Healthy inventory management balances availability with cost efficiency.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🎯 INVENTORY BEST PRACTICES',
+                description:
+                    'Regularly review stock levels, analyze movement patterns, maintain accurate counts, and optimize reorder points. Use alerts to prevent stockouts and reduce excess inventory.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🚀 INVENTORY MASTERY COMPLETE!',
+                description:
+                    'You\'re now equipped to effectively manage your entire product catalog! Use search and filters to find products quickly, monitor stock levels proactively, and make data-driven inventory decisions.',
                 align: 'center',
             },
         },
@@ -1564,6 +2263,216 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 description:
                     "That's the Settings area! You\'re ready to configure the application.",
+                align: 'center',
+            },
+        },
+    ],
+
+    // ====================
+    // My Reports Page Tour (/my-reports or /reports/personal)
+    // ====================
+    '/my-reports': [
+        {
+            popover: {
+                title: '📊 WELCOME TO YOUR PERSONAL ANALYTICS!',
+                description:
+                    'This is your personal performance dashboard! Here you can track your individual metrics, productivity, achievements, and progress over time. Let\'s explore what insights await you!',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-reports-header',
+            popover: {
+                title: '🎯 YOUR PERFORMANCE HUB',
+                description:
+                    'Welcome to your personalized analytics center! This dashboard focuses specifically on YOUR contributions, achievements, and performance metrics within the organization.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-reports-time-filter',
+            popover: {
+                title: '📅 TIME PERIOD SELECTOR',
+                description:
+                    'Choose your analysis timeframe: Today, This Week, This Month, This Quarter, or This Year. Different time periods reveal different insights about your performance trends.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#my-reports-refresh-button',
+            popover: {
+                title: '🔄 REFRESH YOUR DATA',
+                description:
+                    'Get the latest updates on your performance metrics! Click to refresh all charts and statistics with the most current data available.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#my-performance-summary-cards',
+            popover: {
+                title: '📈 YOUR KEY METRICS',
+                description:
+                    'These cards provide a quick snapshot of your performance across different areas: tasks completed, hours worked, client interactions, sales generated, and more!',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-tasks-completed-card',
+            popover: {
+                title: '✅ TASKS ACHIEVEMENT',
+                description:
+                    'Track your task completion rate and productivity. See how many tasks you\'ve completed in the selected time period and your success rate.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#my-hours-worked-card',
+            popover: {
+                title: '⏰ TIME CONTRIBUTION',
+                description:
+                    'Monitor your working hours and time efficiency. See total hours worked, average daily hours, and how you compare to your targets.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-client-interactions-card',
+            popover: {
+                title: '🤝 CLIENT ENGAGEMENT',
+                description:
+                    'Track your client relationship building! See how many client interactions, meetings, calls, and follow-ups you\'ve completed.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-sales-revenue-card',
+            popover: {
+                title: '💰 REVENUE GENERATION',
+                description:
+                    'If you\'re in sales, see your revenue contributions! Track deals closed, quotations sent, and your impact on company revenue.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#my-reports-tabs',
+            popover: {
+                title: '📋 DETAILED ANALYTICS TABS',
+                description:
+                    'Dive deeper into specific areas of your performance. Each tab reveals detailed charts and metrics for different aspects of your work.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-tasks-analytics-tab',
+            popover: {
+                title: '✅ TASK PERFORMANCE DEEP DIVE',
+                description:
+                    'Analyze your task management skills: completion rates over time, priority handling, deadline adherence, and areas for improvement.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#my-time-analytics-tab',
+            popover: {
+                title: '⏱️ TIME UTILIZATION ANALYSIS',
+                description:
+                    'Understand your working patterns: peak productivity hours, time spent on different activities, and work-life balance insights.',
+                side: 'bottom',
+                align: 'start',
+            },
+        },
+        {
+            element: '#my-client-analytics-tab',
+            popover: {
+                title: '🤝 CLIENT RELATIONSHIP METRICS',
+                description:
+                    'Review your client interaction quality: response times, satisfaction ratings, relationship building progress, and communication effectiveness.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-sales-analytics-tab',
+            popover: {
+                title: '💼 SALES PERFORMANCE REVIEW',
+                description:
+                    'For sales professionals: conversion rates, pipeline management, quota achievement, and sales cycle analysis to boost your performance.',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-goals-progress-tab',
+            popover: {
+                title: '🎯 GOAL TRACKING',
+                description:
+                    'Monitor your progress toward personal and professional goals set with your manager. See completion percentages and upcoming milestones.',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '#my-performance-chart',
+            popover: {
+                title: '📊 PERFORMANCE TRENDS',
+                description:
+                    'Visual representation of your performance over time. Identify patterns, growth areas, and celebrate your achievements with clear trend analysis.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-achievements-section',
+            popover: {
+                title: '🏆 YOUR ACHIEVEMENTS',
+                description:
+                    'Celebrate your wins! This section highlights your major accomplishments, milestones reached, and recognition received during the selected period.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#my-improvement-suggestions',
+            popover: {
+                title: '💡 GROWTH OPPORTUNITIES',
+                description:
+                    'AI-powered suggestions for improvement based on your performance data. These insights help you identify areas to focus on for professional growth.',
+                side: 'top',
+                align: 'center',
+            },
+        },
+        {
+            element: '#export-my-report-button',
+            popover: {
+                title: '📄 EXPORT YOUR REPORT',
+                description:
+                    'Share your achievements! Export your performance report as PDF for performance reviews, goal-setting meetings, or personal records.',
+                side: 'left',
+                align: 'end',
+            },
+        },
+        {
+            popover: {
+                title: '🌟 PERFORMANCE INSIGHTS',
+                description:
+                    'Use these analytics to understand your work patterns, identify your strengths, and find opportunities for growth. Regular review helps you stay aligned with your career goals.',
+                align: 'center',
+            },
+        },
+        {
+            popover: {
+                title: '🚀 YOUR ANALYTICS JOURNEY COMPLETE!',
+                description:
+                    'You\'re now equipped to track and improve your personal performance! Use different time periods to see various trends, and don\'t forget to celebrate your achievements along the way!',
                 align: 'center',
             },
         },

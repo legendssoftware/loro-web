@@ -173,64 +173,91 @@ function ProductCardComponent({
                 </div>
 
                 {/* Product Details */}
-                <div className="mt-2 space-y-4 text-xs text-muted-foreground">
+                <div className="mt-2 space-y-3 text-xs text-muted-foreground">
                     {/* Product Meta Information */}
-                    <div className="grid grid-cols-2 gap-1">
+                    <div className="grid grid-cols-2 gap-2">
                         {/* Category */}
-                        <div className="flex items-center col-span-2">
+                        <div className="flex items-center col-span-2 mb-1">
                             <Tag className="w-4 h-4 mr-1" />
-                            <span className="text-[10px] font-normal font-body">
+                            <span className="text-[10px] font-medium font-body text-primary">
                                 {product.category || 'Uncategorized'}
                             </span>
                         </div>
 
-                        {/* Price */}
+                        {/* Brand & Manufacturer */}
+                        {(product.brand || (product as any).manufacturer) && (
+                            <div className="flex items-center col-span-2">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="w-4 h-4 mr-1 text-blue-500"
+                                >
+                                    <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                                </svg>
+                                <span className="text-[10px] font-normal font-body truncate">
+                                    {product.brand || (product as any).manufacturer}
+                                    {(product as any).model && ` - ${(product as any).model}`}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Price Row */}
                         <div className="flex items-center">
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            <span className="text-[10px] font-normal font-body">
-                                Sale: {formatPrice(product.price)}
+                            <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                            <span className="text-[10px] font-medium font-body text-green-700">
+                                {formatPrice(product.salePrice || product.price)}
                             </span>
                         </div>
 
-                        {/* Cost Price */}
-                        <div className="flex items-center">
-                            <DollarSign className="w-4 h-4 mr-1 text-muted-foreground" />
-                            <span className="text-[10px] font-normal font-body">
-                                Cost: {formatPrice((product as any).costPrice)}
-                            </span>
-                        </div>
+                        {/* Original Price (if on sale) */}
+                        {product.salePrice && product.price && product.salePrice < product.price && (
+                            <div className="flex items-center">
+                                <DollarSign className="w-4 h-4 mr-1 text-muted-foreground" />
+                                <span className="text-[10px] font-normal font-body line-through text-muted-foreground">
+                                    {formatPrice(product.price)}
+                                </span>
+                            </div>
+                        )}
 
-                        {/* Stock */}
+                        {/* Stock Status */}
                         <div className="flex items-center">
                             <Box className="w-4 h-4 mr-1" />
-                            <span className="text-[10px] font-normal font-body">
-                                Stock: {product.stockQuantity || 0}
+                            <span className={`text-[10px] font-medium font-body ${
+                                (product.stockQuantity || 0) <= (product.reorderPoint || 10)
+                                    ? 'text-red-600'
+                                    : (product.stockQuantity || 0) > 50
+                                    ? 'text-green-600'
+                                    : 'text-yellow-600'
+                            }`}>
+                                {product.stockQuantity || 0} units
                             </span>
                         </div>
 
-                        {/* Supplier */}
-                        <div className="flex items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-4 h-4 mr-1"
-                            >
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            <span className="text-[10px] font-normal font-body truncate">
-                                {(product as any).supplier || 'No Supplier'}
-                            </span>
-                        </div>
+                        {/* Rating */}
+                        {(product as any).rating && (
+                            <div className="flex items-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="w-4 h-4 mr-1 text-yellow-500"
+                                >
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                <span className="text-[10px] font-normal font-body">
+                                    {(product as any).rating} ({(product as any).reviewCount || 0})
+                                </span>
+                            </div>
+                        )}
 
                         {/* SKU */}
                         <div className="flex items-center col-span-2">
@@ -241,11 +268,138 @@ function ProductCardComponent({
                         </div>
                     </div>
 
+                    {/* Advanced Product Information */}
+                    {((product as any).specifications || (product as any).features || (product as any).warrantyPeriod) && (
+                        <div className="pt-2 mt-2 border-t border-border/30">
+                            {/* Specifications Preview */}
+                            {(product as any).specifications && (
+                                <div className="mb-2">
+                                    <div className="flex items-center mb-1">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            className="w-3 h-3 mr-1 text-purple-500"
+                                        >
+                                            <path d="M9 12l2 2 4-4"/>
+                                            <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                                            <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                                            <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                                            <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                                        </svg>
+                                        <span className="text-[9px] font-medium font-body text-purple-600 uppercase">
+                                            Specs
+                                        </span>
+                                    </div>
+                                    <p className="text-[9px] font-normal font-body text-muted-foreground line-clamp-2">
+                                        {(product as any).specifications}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Features Preview */}
+                            {(product as any).features && (
+                                <div className="mb-2">
+                                    <div className="flex items-center mb-1">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            className="w-3 h-3 mr-1 text-blue-500"
+                                        >
+                                            <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4"/>
+                                            <path d="M9 7H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4"/>
+                                            <path d="M14 11h4a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-4"/>
+                                            <path d="M14 7h4a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-4"/>
+                                            <path d="M9 12h6"/>
+                                        </svg>
+                                        <span className="text-[9px] font-medium font-body text-blue-600 uppercase">
+                                            Features
+                                        </span>
+                                    </div>
+                                    <p className="text-[9px] font-normal font-body text-muted-foreground line-clamp-2">
+                                        {(product as any).features}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Warranty & Additional Info */}
+                            <div className="grid grid-cols-2 gap-1 text-[9px]">
+                                {(product as any).warrantyPeriod && (
+                                    <div className="flex items-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            className="w-3 h-3 mr-1 text-green-500"
+                                        >
+                                            <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                                            <path d="M9 12l2 2 4-4"/>
+                                        </svg>
+                                        <span className="font-normal text-green-600 font-body">
+                                            {(product as any).warrantyPeriod} {(product as any).warrantyUnit || 'months'}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {(product as any).origin && (
+                                    <div className="flex items-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            className="w-3 h-3 mr-1 text-gray-500"
+                                        >
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="2" y1="12" x2="22" y2="12"/>
+                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                        </svg>
+                                        <span className="font-normal font-body text-muted-foreground">
+                                            {(product as any).origin}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Promotion Banner */}
+                    {product.isOnPromotion && (
+                        <div className="pt-2 mt-2 border-t border-border/30">
+                            <div className="px-2 py-1 text-center rounded-md bg-gradient-to-r from-orange-100 to-red-100">
+                                <span className="text-[9px] font-bold font-body text-orange-700 uppercase">
+                                    🔥 Limited Time Offer
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Date Added */}
                     <div className="flex items-center justify-between pt-2 mt-2 text-[10px] border-t border-border/50">
                         <span className="font-normal font-body">
                             Added: {formatDate(product.createdAt)}
                         </span>
+                        {((product as any).bulkDiscountPercentage && (product as any).bulkDiscountMinQty) && (
+                            <span className="font-normal text-blue-600 font-body">
+                                Bulk: {(product as any).bulkDiscountPercentage}% off {(product as any).bulkDiscountMinQty}+
+                            </span>
+                        )}
                     </div>
                 </div>
 

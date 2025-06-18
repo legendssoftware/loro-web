@@ -116,7 +116,7 @@ export function middleware(request: NextRequest) {
         }
     }
 
-        // If user is authenticated and tries to access a public-only path like /sign-in
+    // If user is authenticated and tries to access a public-only path like /sign-in
     if (isAuthenticated && publicPaths.some(publicPath => pathname.startsWith(publicPath))) {
         let callbackUrlStr = searchParams.get('callbackUrl');
         let targetUrl = '/'; // Default redirect target

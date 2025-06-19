@@ -236,7 +236,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 {/* Profile Photo Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <UserPlus className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Profile Photo
@@ -258,7 +258,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 </Avatar>
                                 <label
                                     htmlFor="user-image-upload"
-                                    className="absolute bottom-0 right-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
+                                    className="absolute right-0 bottom-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
                                 >
                                     <Camera
                                         className="w-4 h-4 text-white"
@@ -286,7 +286,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 {/* Basic Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <User className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Basic Information
@@ -347,7 +347,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Mail
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -375,7 +375,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Phone
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -398,7 +398,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 {/* Account Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Key className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Account Information
@@ -446,7 +446,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     />
                                     <button
                                         type="button"
-                                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                        className="flex absolute inset-y-0 right-0 items-center pr-3"
                                         onClick={togglePasswordVisibility}
                                     >
                                         {showPassword ? (
@@ -476,8 +476,8 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     name="accessLevel"
                                     render={({ field }: { field: any }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <ShieldCheck
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -492,7 +492,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -510,7 +510,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                             key={level}
                                                             value={level}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <ShieldCheck
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -546,8 +546,8 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     name="status"
                                     render={({ field }: { field: any }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <ToggleLeft
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -562,7 +562,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -580,7 +580,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                             key={status}
                                                             value={status}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <ToggleLeft
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -616,8 +616,8 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     name="branchId"
                                     render={({ field }: { field: any }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Building
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -636,7 +636,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -661,7 +661,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                     {branches.length === 0 &&
                                                     !isLoadingBranches ? (
                                                         <SelectItem
-                                                            value=""
+                                                            value="no-branches"
                                                             disabled
                                                         >
                                                             <span className="text-[10px] font-thin font-body text-muted-foreground">
@@ -678,7 +678,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                                     }
                                                                     value={branch.uid.toString()}
                                                                 >
-                                                                    <div className="flex items-center gap-2">
+                                                                    <div className="flex gap-2 items-center">
                                                                         <Building
                                                                             className="w-4 h-4"
                                                                             strokeWidth={
@@ -712,7 +712,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             </fieldset>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border">
+            <div className="flex gap-2 justify-end pt-4 mt-6 border-t border-border">
                 <Button
                     type="button"
                     variant="outline"

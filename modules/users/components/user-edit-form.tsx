@@ -238,7 +238,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 {/* Profile Photo Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <UserIcon className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Profile Photo
@@ -260,7 +260,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 </Avatar>
                                 <label
                                     htmlFor="user-image-upload"
-                                    className="absolute bottom-0 right-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
+                                    className="absolute right-0 bottom-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
                                 >
                                     <Camera
                                         className="w-4 h-4 text-white"
@@ -288,7 +288,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 {/* Basic Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <UserIcon className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Basic Information
@@ -349,7 +349,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Mail
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -376,7 +376,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Phone
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -399,7 +399,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 {/* Account Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <ShieldCheck
                                 className="w-4 h-4"
                                 strokeWidth={1.5}
@@ -457,7 +457,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <div className="relative">
                                     <div className="relative">
                                         <Key
-                                            className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                            className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                             strokeWidth={1.5}
                                         />
                                         <Input
@@ -469,11 +469,11 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                             }
                                             {...register('password')}
                                             placeholder="leave blank to keep current password"
-                                            className="pl-10 pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            className="pr-10 pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                         />
                                         <button
                                             type="button"
-                                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                            className="flex absolute inset-y-0 right-0 items-center pr-3"
                                             onClick={togglePasswordVisibility}
                                         >
                                             {showPassword ? (
@@ -513,8 +513,8 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     name="accessLevel"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <ShieldCheck
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -529,7 +529,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -547,7 +547,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                             key={level}
                                                             value={level}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <ShieldCheck
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -582,8 +582,8 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     name="status"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <ToggleLeft
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -598,7 +598,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -616,7 +616,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                             key={status}
                                                             value={status}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <ToggleLeft
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -652,8 +652,8 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     name="branchId"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Building
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -673,7 +673,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -698,7 +698,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                     {branches.length === 0 &&
                                                     !isLoadingBranches ? (
                                                         <SelectItem
-                                                            value=""
+                                                            value="No branches available"
                                                             disabled
                                                         >
                                                             <span className="text-[10px] font-thin font-body text-muted-foreground">
@@ -715,7 +715,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                                     }
                                                                     value={branch.uid.toString()}
                                                                 >
-                                                                    <div className="flex items-center gap-2">
+                                                                    <div className="flex gap-2 items-center">
                                                                         <Building
                                                                             className="w-4 h-4"
                                                                             strokeWidth={
@@ -749,7 +749,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
             </fieldset>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border">
+            <div className="flex gap-2 justify-end pt-4 mt-6 border-t border-border">
                 <Button
                     type="submit"
                     variant="outline"

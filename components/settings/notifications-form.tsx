@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Form,
@@ -65,11 +66,18 @@ export default function NotificationsForm() {
                             settings.notifications.feedbackTokenExpiryDays ?? 7,
                     });
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching notification settings:', error);
-                toast.error(
-                    'Failed to load notification settings. Please try again.',
-                );
+                
+                if (error?.message?.includes('Organization reference not found') ||
+                    error?.message?.includes('Please log in again')) {
+                    showErrorToast('Please log in again to access your organization settings.', toast);
+                } else if (error?.message?.includes('not found')) {
+                    // Settings not created yet, use defaults
+                    showSuccessToast('Notification settings not found. Using default values.', toast);
+                } else {
+                    showErrorToast('Failed to load notification settings. Please try again.', toast);
+                }
             } finally {
                 setIsInitialLoading(false);
             }
@@ -96,11 +104,12 @@ export default function NotificationsForm() {
             // Submit data to server
             await organizationSettingsApi.updateSettings(settingsData);
 
-            toast.success('Notification settings updated successfully');
+            showSuccessToast('Notification settings updated successfully', toast);
         } catch (error) {
             console.error('Error updating notification settings:', error);
-            toast.error(
+            showErrorToast(
                 'Failed to update notification settings. Please try again.',
+                toast
             );
         } finally {
             setIsLoading(false);
@@ -111,9 +120,9 @@ export default function NotificationsForm() {
     if (isInitialLoading) {
         return (
             <Card className="border-border/50">
-                <CardContent className="flex items-center justify-center p-8">
+                <CardContent className="flex justify-center items-center p-8">
                     <div className="text-center">
-                        <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
+                        <Loader2 className="mx-auto mb-4 w-8 h-8 animate-spin" />
                         <p className="text-xs font-normal uppercase font-body">
                             Loading notification settings...
                         </p>
@@ -150,7 +159,7 @@ export default function NotificationsForm() {
                                     control={form.control}
                                     name="email"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                                        <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-xs font-thin uppercase font-body">
                                                     Email Notifications
@@ -176,7 +185,7 @@ export default function NotificationsForm() {
                                     control={form.control}
                                     name="sms"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                                        <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-xs font-thin uppercase font-body">
                                                     SMS Notifications
@@ -202,7 +211,7 @@ export default function NotificationsForm() {
                                     control={form.control}
                                     name="push"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                                        <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-xs font-thin uppercase font-body">
                                                     Push Notifications
@@ -228,7 +237,7 @@ export default function NotificationsForm() {
                                     control={form.control}
                                     name="whatsapp"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                                        <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-xs font-thin uppercase font-body">
                                                     WhatsApp Notifications
@@ -261,7 +270,7 @@ export default function NotificationsForm() {
                                 control={form.control}
                                 name="taskNotifications"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                                    <FormItem className="flex flex-row justify-between items-center p-4 rounded-lg border">
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-xs font-thin uppercase font-body">
                                                 Enable Task Notifications
@@ -320,7 +329,7 @@ export default function NotificationsForm() {
                                 className="text-xs font-thin text-white uppercase bg-primary font-body"
                             >
                                 {isLoading && (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                                 )}
                                 Save Changes
                             </Button>

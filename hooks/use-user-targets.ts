@@ -6,6 +6,10 @@ export interface UserTarget {
     id: number;
     targetSalesAmount?: number;
     currentSalesAmount?: number;
+    targetQuotationsAmount?: number;
+    currentQuotationsAmount?: number;
+
+    currentOrdersAmount?: number;
     targetCurrency?: string;
     targetHoursWorked?: number;
     currentHoursWorked?: number;

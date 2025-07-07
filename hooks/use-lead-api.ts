@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { Lead, LeadFilterParams, PaginatedLeadsResponse } from '@/lib/types/lead';
 import { axiosInstance } from '@/lib/services/api-client';
+import { useAuthStore, selectProfileData } from '@/store/auth-store';
+import { AccessLevel } from '@/lib/types/user';
 
 // Branch type with uid as required by the API
 interface BranchRef {
@@ -8,10 +10,29 @@ interface BranchRef {
 }
 
 /**
- * A hook that provides lead API methods
+ * A hook that provides lead API methods with role-based routing
  * Relies on axios interceptors for token handling
  */
 export const useLeadApi = () => {
+    const profileData = useAuthStore(selectProfileData);
+    
+    // Determine the appropriate endpoint based on user role
+    const getEndpointForUser = useCallback(() => {
+        const userAccessLevel = profileData?.accessLevel;
+        const userId = profileData?.uid;
+        
+        // Check if user is admin, manager, developer or owner - they can see all leads
+        if (userAccessLevel === AccessLevel.ADMIN || 
+            userAccessLevel === AccessLevel.MANAGER || 
+            userAccessLevel === AccessLevel.OWNER ||
+            userAccessLevel === AccessLevel.DEVELOPER) {
+            return '/leads'; // All leads endpoint
+        } else {
+            // Regular users can only see their own leads
+            return `/leads/for/${userId}`;
+        }
+    }, [profileData]);
+
     // Get leads with pagination and filtering
     const getLeads = useCallback(async (filters: LeadFilterParams = {}): Promise<PaginatedLeadsResponse> => {
         try {
@@ -37,13 +58,15 @@ export const useLeadApi = () => {
                 queryParams.append('endDate', filters.endDate.toISOString());
             }
 
-            const response = await axiosInstance.get(`/leads?${queryParams.toString()}`);
+            // Use role-based endpoint
+            const endpoint = getEndpointForUser();
+            const response = await axiosInstance.get(`${endpoint}?${queryParams.toString()}`);
 
             // Process response based on server format from leads.controller.ts
             if (response.data) {
                 return {
-                    items: response.data.data || [],
-                    total: response.data.meta?.total || 0,
+                    items: response.data.data || response.data.leads || [],
+                    total: response.data.meta?.total || response.data.leads?.length || 0,
                     page: response.data.meta?.page || 1,
                     limit: response.data.meta?.limit || 10,
                     totalPages: response.data.meta?.totalPages || 1,
@@ -60,7 +83,7 @@ export const useLeadApi = () => {
         } catch (error) {
             throw error;
         }
-    }, []);
+    }, [getEndpointForUser]);
 
     // Get a single lead by ID
     const getLead = useCallback(async (leadId: number): Promise<Lead> => {
@@ -149,5 +172,6 @@ export const useLeadApi = () => {
         updateLead,
         deleteLead,
         createLead,
+        getEndpointForUser, // Export for external use
     };
 };

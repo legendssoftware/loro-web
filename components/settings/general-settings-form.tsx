@@ -100,7 +100,7 @@ export default function GeneralSettingsForm() {
     const [activeTab, setActiveTab] = useState('contact');
     const [isLoading, setIsLoading] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const [organisationRef] = useState(getOrganizationRef());
+    const [organisationRef, setOrganisationRef] = useState<string | null>(null);
     const [originalSettings, setOriginalSettings] =
         useState<OrganisationSettings>({});
 
@@ -196,32 +196,32 @@ export default function GeneralSettingsForm() {
         setIsInitialLoading(true);
         setFetchError(false);
         try {
+            // Try to get organization reference first
+            const orgRef = getOrganizationRef();
+            setOrganisationRef(orgRef);
+            
             const settings = await organizationSettingsApi.getSettings();
-            
             setOriginalSettings(settings);
-            
-            // Reset forms with fetched settings
-            if (settings?.contact) {
-                const addressData = settings.contact.address || {
-                    street: '',
-                    suburb: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    postalCode: '',
-                };
 
-                const contactData: ContactSettings = {
+            // Populate forms with fetched data
+            if (settings?.contact) {
+                contactForm.reset({
                     email: settings.contact.email || '',
-                    phone: settings.contact.phone || {
-                        code: '',
-                        number: '',
+                    phone: {
+                        code: settings.contact.phone?.code || '',
+                        number: settings.contact.phone?.number || '',
                     },
                     website: settings.contact.website || '',
-                    address: addressData,
-                };
-
-                contactForm.reset(contactData);
+                    address: {
+                        street: settings.contact.address?.street || '',
+                        suburb: settings.contact.address?.suburb || '',
+                        city: settings.contact.address?.city || '',
+                        state: settings.contact.address?.state || '',
+                        country: settings.contact.address?.country || '',
+                        postalCode:
+                            settings.contact.address?.postalCode || '',
+                    },
+                });
             }
 
             if (settings?.regional) {
@@ -237,30 +237,29 @@ export default function GeneralSettingsForm() {
             if (settings?.business) {
                 businessForm.reset({
                     name: settings.business.name || '',
-                    registrationNumber: settings.business.registrationNumber || '',
+                    registrationNumber:
+                        settings.business.registrationNumber || '',
                     taxId: settings.business.taxId || '',
                     industry: settings.business.industry || '',
                     size: settings.business.size || 'small',
                 });
-            } else {
-                // Initialize with default empty values if no business settings
-                businessForm.reset({
-                    name: '',
-                    registrationNumber: '',
-                    taxId: '',
-                    industry: '',
-                    size: 'small',
-                });
             }
-        } catch (error) {
-            console.error('Error fetching organization settings:', error);
+        } catch (error: any) {
+            console.error('Error fetching general settings:', error);
             setFetchError(true);
-            showErrorToast(
-                'Unable to load your settings. Using defaults instead.',
-                toast
-            );
-            // Initialize with default values
-            initializeFormsWithDefaults();
+            
+            // Handle specific error types
+            if (error?.message?.includes('Organization reference not found') ||
+                error?.message?.includes('Please log in again')) {
+                showErrorToast('Please log in again to access your organization settings.', toast);
+            } else if (error?.message?.includes('not found')) {
+                // Settings not created yet, use defaults
+                showSuccessToast('Settings not found. Using default values.', toast);
+                initializeFormsWithDefaults();
+                setFetchError(false);
+            } else {
+                showErrorToast('Failed to load settings. Please try again.', toast);
+            }
         } finally {
             setIsInitialLoading(false);
         }
@@ -484,9 +483,9 @@ export default function GeneralSettingsForm() {
     if (isInitialLoading) {
         return (
             <Card className="border-border/50">
-                <CardContent className="flex items-center justify-center p-8">
+                <CardContent className="flex justify-center items-center p-8">
                     <div className="text-center">
-                        <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
+                        <Loader2 className="mx-auto mb-4 w-8 h-8 animate-spin" />
                         <p className="text-xs font-normal uppercase font-body">
                             Loading settings...
                         </p>
@@ -509,11 +508,11 @@ export default function GeneralSettingsForm() {
                     </p>
                 </div>
 
-                <div className="flex items-center px-4 mb-6 overflow-x-auto border-b border-border/10">
+                <div className="flex overflow-x-auto items-center px-4 mb-6 border-b border-border/10">
                     {['contact', 'regional', 'business'].map((tab) => (
                         <div
                             key={tab}
-                            className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
+                            className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
                         >
                             <div
                                 className={`mb-3 font-body px-0 font-normal cursor-pointer ${
@@ -545,7 +544,7 @@ export default function GeneralSettingsForm() {
                             >
                                 {/* Status indicator */}
                                 {formStatus !== 'clean' && (
-                                    <div className="flex items-center justify-between mb-2 text-xs">
+                                    <div className="flex justify-between items-center mb-2 text-xs">
                                         {formStatus === 'dirty' && (
                                             <span className="text-amber-500 dark:text-amber-400">
                                                 Changes not saved
@@ -918,7 +917,7 @@ export default function GeneralSettingsForm() {
                                     {isLoading ? (
                                         <>
                                             <Loader2
-                                                className="w-4 h-4 mr-2 animate-spin"
+                                                className="mr-2 w-4 h-4 animate-spin"
                                                 strokeWidth={1.5}
                                             />
                                             Saving...
@@ -1386,7 +1385,7 @@ export default function GeneralSettingsForm() {
                                     {isLoading ? (
                                         <>
                                             <Loader2
-                                                className="w-4 h-4 mr-2 animate-spin"
+                                                className="mr-2 w-4 h-4 animate-spin"
                                                 strokeWidth={1.5}
                                             />
                                             Saving...
@@ -1620,7 +1619,7 @@ export default function GeneralSettingsForm() {
                                     {isLoading ? (
                                         <>
                                             <Loader2
-                                                className="w-4 h-4 mr-2 animate-spin"
+                                                className="mr-2 w-4 h-4 animate-spin"
                                                 strokeWidth={1.5}
                                             />
                                             Saving...

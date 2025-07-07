@@ -1,14 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import {
     Card,
     CardContent,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -22,146 +17,50 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
 import { Loader2 } from 'lucide-react';
-import { organizationAppearanceApi } from '@/lib/services/organization-api';
-
-const appearanceSchema = z.object({
-    primaryColor: z.string().min(4, 'Please enter a valid color'),
-    secondaryColor: z.string().min(4, 'Please enter a valid color'),
-    accentColor: z.string().min(4, 'Please enter a valid color'),
-    errorColor: z.string().min(4, 'Please enter a valid color'),
-    successColor: z.string().min(4, 'Please enter a valid color'),
-    logoUrl: z
-        .string()
-        .url('Please enter a valid URL')
-        .or(z.string().length(0)),
-    logoAltText: z.string(),
-    theme: z.enum(['light', 'dark', 'system']),
-    customFont: z.string().optional(),
-    customCss: z.string().optional(),
-});
+import { useAppearanceSettings } from '@/hooks/use-organization-settings';
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 export default function AppearanceForm() {
     const [activeTab, setActiveTab] = useState('branding');
-    const [isLoading, setIsLoading] = useState(false);
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const [originalAppearance, setOriginalAppearance] = useState<z.infer<
-        typeof appearanceSchema
-    > | null>(null);
-
-    const form = useForm<z.infer<typeof appearanceSchema>>({
-        resolver: zodResolver(appearanceSchema),
-        defaultValues: {}
-    });
-
-    useEffect(() => {
-        const fetchAppearance = async () => {
-            setIsInitialLoading(true);
-            try {
-                const appearance =
-                    await organizationAppearanceApi.getAppearance();
-
-                // Now the server guarantees these values will exist with defaults
-                const formattedAppearance = {
-                    primaryColor: appearance.primaryColor,
-                    secondaryColor: appearance.secondaryColor,
-                    accentColor: appearance.accentColor,
-                    errorColor: appearance.errorColor,
-                    successColor: appearance.successColor,
-                    logoUrl: appearance.logoUrl || '',
-                    logoAltText: appearance.logoAltText,
-                    theme: appearance.theme || 'light',
-                    customFont: appearance.customFont || '',
-                    customCss: appearance.customCss || '',
-                };
-
-                console.log('Loaded appearance settings:', formattedAppearance);
-                setOriginalAppearance(formattedAppearance);
-                form.reset(formattedAppearance);
-            } catch (error) {
-                console.error('Error fetching appearance settings:', error);
-                // Silently handle the error without showing a toast
-                // This is a background operation, so we don't want to alert the user
-
-                // Initialize with default values if we can't load from server
-                form.reset({
-                    primaryColor: '#4F46E5',
-                    secondaryColor: '#3F3ACA',
-                    accentColor: '#F97316',
-                    errorColor: '#EF4444',
-                    successColor: '#10B981',
-                    logoUrl: '',
-                    logoAltText: 'Company Logo',
-                    theme: 'light',
-                    customFont: '',
-                    customCss: '',
-                });
-            } finally {
-                setIsInitialLoading(false);
-            }
-        };
-
-        fetchAppearance();
-    }, [form]);
-
-    // Helper function to get only the changed fields
-    const getChangedFields = (
-        currentValues: z.infer<typeof appearanceSchema>,
-    ) => {
-        if (!originalAppearance) return currentValues;
-
-        const changedFields: Partial<z.infer<typeof appearanceSchema>> = {};
-
-        Object.keys(currentValues).forEach((key) => {
-            const typedKey = key as keyof z.infer<typeof appearanceSchema>;
-            if (currentValues[typedKey] !== originalAppearance[typedKey]) {
-                changedFields[typedKey] = currentValues[typedKey] as any;
-            }
-        });
-
-        return changedFields;
-    };
-
-    async function onSubmit(values: z.infer<typeof appearanceSchema>) {
-        setIsLoading(true);
-        try {
-            // Get only changed fields
-            const changedFields = getChangedFields(values);
-
-            // Only send update if there are changes
-            if (Object.keys(changedFields).length > 0) {
-                const updatedAppearance = await organizationAppearanceApi.updateAppearance(changedFields);
-                setOriginalAppearance({
-                    ...values,
-                    ...updatedAppearance
-                });
-                toast.success('Appearance settings updated successfully');
-            } else {
-                toast.success('No changes to save');
-            }
-        } catch (error) {
-            console.error('Error updating appearance settings:', error);
-            toast.error(
-                'Failed to update appearance settings. Please try again.',
-            );
-        } finally {
-            setIsLoading(false);
-        }
-    }
+    
+    const {
+        form,
+        data,
+        isLoading,
+        isSaving,
+        error,
+        handleSubmit,
+        isDirty,
+    } = useAppearanceSettings();
 
     // Show loading state while fetching initial data
-    if (isInitialLoading) {
+    if (isLoading) {
         return (
             <Card className="border-border/50">
-                <CardContent className="flex items-center justify-center p-8">
+                <CardContent className="flex justify-center items-center p-8">
                     <div className="text-center">
-                        <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
+                        <Loader2 className="mx-auto mb-4 w-8 h-8 animate-spin" />
                         <p className="text-xs font-normal uppercase font-body">
                             Loading appearance settings...
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Show error state if there's an error
+    if (error) {
+        return (
+            <Card className="border-border/50">
+                <CardContent className="p-8">
+                    <div className="text-center text-red-500">
+                        <p className="text-xs font-normal uppercase font-body">
+                            Error loading appearance settings: {error.message}
                         </p>
                     </div>
                 </CardContent>
@@ -179,20 +78,36 @@ export default function AppearanceForm() {
             <CardContent>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        onSubmit={form.handleSubmit(handleSubmit)}
                         className="space-y-6"
                     >
-                        <Tabs
-                            value={activeTab}
-                            onValueChange={setActiveTab}
-                            defaultValue="branding"
-                        >
-                            <div className="flex items-center mb-6 overflow-x-auto border-b border-border/10">
+                        {/* Status indicator */}
+                        {(isDirty || isSaving) && (
+                            <div className="flex justify-between items-center mb-2 text-xs">
+                                {isDirty && !isSaving && (
+                                    <span className="text-amber-500 dark:text-amber-400">
+                                        Changes not saved
+                                    </span>
+                                )}
+                                {isSaving && (
+                                    <span className="text-blue-500 dark:text-blue-400">
+                                        Saving changes...
+                                    </span>
+                                )}
+                                {!isDirty && !isSaving && (
+                                    <span className="text-green-500 dark:text-green-400">
+                                        Changes saved
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
                                 {['branding', 'theme', 'customization'].map(
                                     (tab) => (
                                         <div
                                             key={tab}
-                                            className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
+                                        className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
                                         >
                                             <div
                                                 className={`mb-3 font-body px-0 font-normal cursor-pointer ${
@@ -219,7 +134,7 @@ export default function AppearanceForm() {
                                 )}
                             </div>
 
-                            <TabsContent value="branding" className="space-y-4">
+                        {activeTab === 'branding' && (
                                 <div className="space-y-4">
                                     <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
                                         <div className="w-full md:w-1/2">
@@ -234,7 +149,7 @@ export default function AppearanceForm() {
                                                         <div className="flex space-x-2">
                                                             <input
                                                                 type="color"
-                                                                className="w-10 h-10 border rounded-md cursor-pointer font-body"
+                                                            className="w-10 h-10 rounded-md border cursor-pointer font-body"
                                                                 {...field}
                                                             />
                                                             <FormControl>
@@ -261,7 +176,7 @@ export default function AppearanceForm() {
                                                         <div className="flex space-x-2">
                                                             <input
                                                                 type="color"
-                                                                className="w-10 h-10 rounded outline-none cursor-pointer"
+                                                            className="w-10 h-10 rounded cursor-pointer outline-none"
                                                                 {...field}
                                                             />
                                                             <FormControl>
@@ -291,7 +206,7 @@ export default function AppearanceForm() {
                                                         <div className="flex space-x-2">
                                                             <input
                                                                 type="color"
-                                                                className="w-10 h-10 border rounded-md cursor-pointer"
+                                                            className="w-10 h-10 rounded-md border cursor-pointer"
                                                                 {...field}
                                                             />
                                                             <FormControl>
@@ -318,7 +233,7 @@ export default function AppearanceForm() {
                                                         <div className="flex space-x-2">
                                                             <input
                                                                 type="color"
-                                                                className="w-10 h-10 border rounded-md cursor-pointer"
+                                                            className="w-10 h-10 rounded-md border cursor-pointer"
                                                                 {...field}
                                                             />
                                                             <FormControl>
@@ -345,7 +260,7 @@ export default function AppearanceForm() {
                                                         <div className="flex space-x-2">
                                                             <input
                                                                 type="color"
-                                                                className="w-10 h-10 border rounded-md cursor-pointer"
+                                                            className="w-10 h-10 rounded-md border cursor-pointer"
                                                                 {...field}
                                                             />
                                                             <FormControl>
@@ -415,14 +330,10 @@ export default function AppearanceForm() {
                                                 <p className="mb-2 text-xs font-normal uppercase font-body">
                                                     Logo Preview
                                                 </p>
-                                                <div className="flex items-center justify-center w-full h-20 p-2 border rounded-md">
-                                                    <img
-                                                        src={form.watch(
-                                                            'logoUrl',
-                                                        )}
-                                                        alt={form.watch(
-                                                            'logoAltText',
-                                                        )}
+                                            <div className="flex justify-center items-center p-2 w-full h-20 rounded-md border">
+                                                <img
+                                                    src={form.watch('logoUrl')}
+                                                    alt={form.watch('logoAltText')}
                                                         className="object-contain max-w-full max-h-full"
                                                         onError={(e) => {
                                                             e.currentTarget.src =
@@ -434,9 +345,9 @@ export default function AppearanceForm() {
                                         )}
                                     </div>
                                 </div>
-                            </TabsContent>
+                        )}
 
-                            <TabsContent value="theme" className="space-y-4">
+                        {activeTab === 'theme' && (
                                 <FormField
                                     control={form.control}
                                     name="theme"
@@ -447,21 +358,19 @@ export default function AppearanceForm() {
                                             </FormLabel>
                                             <FormControl>
                                                 <RadioGroup
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }
+                                                onValueChange={field.onChange}
                                                     value={field.value}
                                                     className="grid grid-cols-1 gap-8 pt-2 md:grid-cols-3"
                                                 >
-                                                    <FormItem className="relative flex flex-col items-center p-4 space-y-3 border rounded-md hover:shadow-sm">
+                                                <FormItem className="flex relative flex-col items-center p-4 space-y-3 rounded-md border hover:shadow-sm">
                                                         <FormControl>
                                                             <RadioGroupItem
                                                                 value="light"
-                                                                className="absolute right-2 top-2"
+                                                            className="absolute top-2 right-2"
                                                             />
                                                         </FormControl>
-                                                        <div className="w-full space-y-1 text-center">
-                                                            <div className="w-full h-20 mb-2 bg-white border rounded-md"></div>
+                                                    <div className="space-y-1 w-full text-center">
+                                                        <div className="mb-2 w-full h-20 bg-white rounded-md border"></div>
                                                             <FormLabel className="text-xs font-normal uppercase font-body">
                                                                 Light
                                                             </FormLabel>
@@ -471,15 +380,15 @@ export default function AppearanceForm() {
                                                             </FormDescription>
                                                         </div>
                                                     </FormItem>
-                                                    <FormItem className="relative flex flex-col items-center p-4 space-y-3 border rounded-md hover:shadow-sm">
+                                                <FormItem className="flex relative flex-col items-center p-4 space-y-3 rounded-md border hover:shadow-sm">
                                                         <FormControl>
                                                             <RadioGroupItem
                                                                 value="dark"
-                                                                className="absolute right-2 top-2"
+                                                            className="absolute top-2 right-2"
                                                             />
                                                         </FormControl>
-                                                        <div className="w-full space-y-1 text-center">
-                                                            <div className="w-full h-20 mb-2 rounded-md bg-slate-900"></div>
+                                                    <div className="space-y-1 w-full text-center">
+                                                        <div className="mb-2 w-full h-20 rounded-md bg-slate-900"></div>
                                                             <FormLabel className="text-xs font-normal uppercase font-body">
                                                                 Dark
                                                             </FormLabel>
@@ -488,15 +397,15 @@ export default function AppearanceForm() {
                                                             </FormDescription>
                                                         </div>
                                                     </FormItem>
-                                                    <FormItem className="relative flex flex-col items-center p-4 space-y-3 border rounded-md hover:shadow-sm">
+                                                <FormItem className="flex relative flex-col items-center p-4 space-y-3 rounded-md border hover:shadow-sm">
                                                         <FormControl>
                                                             <RadioGroupItem
                                                                 value="system"
-                                                                className="absolute right-2 top-2"
+                                                            className="absolute top-2 right-2"
                                                             />
                                                         </FormControl>
-                                                        <div className="w-full space-y-1 text-center">
-                                                            <div className="w-full h-20 mb-2 rounded-md bg-gradient-to-r from-white to-slate-900"></div>
+                                                    <div className="space-y-1 w-full text-center">
+                                                        <div className="mb-2 w-full h-20 bg-gradient-to-r from-white rounded-md to-slate-900"></div>
                                                             <FormLabel className="text-xs font-normal uppercase font-body">
                                                                 System
                                                             </FormLabel>
@@ -512,12 +421,10 @@ export default function AppearanceForm() {
                                         </FormItem>
                                     )}
                                 />
-                            </TabsContent>
+                        )}
 
-                            <TabsContent
-                                value="customization"
-                                className="space-y-4"
-                            >
+                        {activeTab === 'customization' && (
+                            <div className="space-y-4">
                                 <FormField
                                     control={form.control}
                                     name="customFont"
@@ -552,7 +459,7 @@ export default function AppearanceForm() {
                                             </FormLabel>
                                             <FormControl>
                                                 <textarea
-                                                    className="flex w-full px-3 py-2 text-sm border rounded-md min-h-24 border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="flex px-3 py-2 w-full text-sm rounded-md border min-h-24 border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                     placeholder=":root { --custom-variable: value; }"
                                                     {...field}
                                                 />
@@ -565,17 +472,17 @@ export default function AppearanceForm() {
                                         </FormItem>
                                     )}
                                 />
-                            </TabsContent>
-                        </Tabs>
+                            </div>
+                        )}
 
                         <Button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={isSaving}
                             className="w-full text-xs font-thin text-white uppercase md:w-auto font-body bg-primary"
                         >
-                            {isLoading ? (
+                            {isSaving ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                                     Saving...
                                 </>
                             ) : (

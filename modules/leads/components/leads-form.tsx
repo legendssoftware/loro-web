@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { 
-    LeadStatus, 
-    LeadIntent, 
-    LeadTemperature, 
-    LeadSource, 
-    LeadPriority, 
-    BusinessSize, 
-    Industry, 
-    BudgetRange, 
-    Timeline, 
-    CommunicationPreference 
+import {
+    LeadStatus,
+    LeadIntent,
+    LeadTemperature,
+    LeadSource,
+    LeadPriority,
+    BusinessSize,
+    Industry,
+    BudgetRange,
+    Timeline,
+    CommunicationPreference,
+    DecisionMakerRole,
+    LeadLifecycleStage
 } from '@/lib/types/lead';
 import { useUsersQuery } from '@/hooks/use-users-query';
 import { useAuthStore, selectProfileData } from '@/store/auth-store';
@@ -42,7 +44,6 @@ import {
     MapPin,
     Tag,
     BriefcaseBusiness,
-    FileText,
     Paperclip,
     Upload,
     X,
@@ -55,6 +56,11 @@ import {
     DollarSign,
     Star,
     Loader2,
+    Calendar,
+    User,
+    TrendingUp,
+    MessageSquare,
+    Activity,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -80,7 +86,7 @@ const leadFormSchema = z.object({
             }),
         )
         .optional(),
-    
+
     // Enhanced fields - all optional for editing
     intent: z.nativeEnum(LeadIntent).optional(),
     userQualityRating: z.number().optional(),
@@ -94,6 +100,22 @@ const leadFormSchema = z.object({
     purchaseTimeline: z.nativeEnum(Timeline).optional(),
     preferredCommunication: z.nativeEnum(CommunicationPreference).optional(),
     estimatedValue: z.number().optional(),
+
+    // Additional fields from server entity
+    decisionMakerRole: z.nativeEnum(DecisionMakerRole).optional(),
+    lifecycleStage: z.nativeEnum(LeadLifecycleStage).optional(),
+    timezone: z.string().optional(),
+    bestContactTime: z.string().optional(),
+    painPoints: z.string().optional(),
+    competitorInfo: z.string().optional(),
+    referralSource: z.string().optional(),
+    campaignName: z.string().optional(),
+    landingPage: z.string().optional(),
+    utmSource: z.string().optional(),
+    utmMedium: z.string().optional(),
+    utmCampaign: z.string().optional(),
+    utmTerm: z.string().optional(),
+    utmContent: z.string().optional(),
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
@@ -140,6 +162,21 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
         priority: LeadPriority.MEDIUM,
         userQualityRating: 3,
         preferredCommunication: CommunicationPreference.EMAIL,
+        // Additional field defaults
+        decisionMakerRole: undefined,
+        lifecycleStage: LeadLifecycleStage.LEAD,
+        timezone: '',
+        bestContactTime: '',
+        painPoints: '',
+        competitorInfo: '',
+        referralSource: '',
+        campaignName: '',
+        landingPage: '',
+        utmSource: '',
+        utmMedium: '',
+        utmCampaign: '',
+        utmTerm: '',
+        utmContent: '',
         ...initialData,
         // Ensure owner is properly set
         owner: correctOwner,
@@ -155,18 +192,6 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
     } = useForm<LeadFormValues>({
         resolver: zodResolver(leadFormSchema),
         defaultValues,
-    });
-
-    // Debug logging for form state
-    console.log('🔍 Form Debug Info:', {
-        isEdit,
-        isValid,
-        isSubmitting,
-        hasErrors: Object.keys(errors).length > 0,
-        errors: errors,
-        currentUserId,
-        initialData,
-        correctOwner
     });
 
     const { users } = useUsersQuery();
@@ -241,9 +266,6 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
     };
 
     const onFormSubmit = async (data: LeadFormValues) => {
-        console.log('📋 Form submitted with data:', data);
-        console.log('✏️ Is Edit mode:', isEdit);
-        
         try {
             // Upload image if selected
             if (selectedFiles.length > 0) {
@@ -285,7 +307,6 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                 ...(isEdit ? {} : { branch: { uid: currentBranchId } })
             };
 
-            console.log('🚀 Calling onSubmit with processed data:', leadData);
             onSubmit(leadData);
         } catch (error) {
             console.error('Error submitting lead form:', error);
@@ -414,8 +435,8 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                             name="status"
                             render={({ field }) => (
                                 <div className="relative">
-                                    <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                        <div className="flex gap-2 items-center">
                                             <Tag
                                                 className="w-4 h-4 text-muted-foreground"
                                                 strokeWidth={1.5}
@@ -425,7 +446,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                             </span>
                                         </div>
                                         <ChevronDown
-                                            className="w-4 h-4 ml-2 opacity-50"
+                                            className="ml-2 w-4 h-4 opacity-50"
                                             strokeWidth={1.5}
                                         />
                                     </div>
@@ -472,8 +493,8 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                             name="assignTo"
                             render={({ field }) => (
                                 <div className="relative">
-                                    <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                        <div className="flex gap-2 items-center">
                                             <Users
                                                 className="w-4 h-4 text-muted-foreground"
                                                 strokeWidth={1.5}
@@ -485,7 +506,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                             </span>
                                         </div>
                                         <ChevronDown
-                                            className="w-4 h-4 ml-2 opacity-50"
+                                            className="ml-2 w-4 h-4 opacity-50"
                                             strokeWidth={1.5}
                                         />
                                     </div>
@@ -514,7 +535,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                                     key={user.uid}
                                                     value={user.uid.toString()}
                                                 >
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex gap-2 items-center">
                                                         <Avatar className="w-6 h-6">
                                                             <AvatarImage
                                                                 src={
@@ -600,7 +621,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                 {/* Enhanced Lead Qualification Fields */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Target className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Lead Qualification
@@ -611,7 +632,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                         {/* First Row - Intent & Source */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
-                                <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                <Label className="flex gap-1 items-center text-xs font-light uppercase font-body">
                                     Intent
                                     <Star className="w-3 h-3 text-red-500" />
                                 </Label>
@@ -620,14 +641,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                     name="intent"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Target className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                     <span className="text-[10px] font-thin font-body">
                                                         {field.value ? field.value.replace(/_/g, ' ') : 'SELECT INTENT'}
                                                     </span>
                                                 </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -647,7 +668,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                 </div>
 
                                 <div className="space-y-1">
-                                    <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    <Label className="flex gap-1 items-center text-xs font-light uppercase font-body">
                                         Source
                                         <Star className="w-3 h-3 text-red-500" />
                                     </Label>
@@ -656,14 +677,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="source"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? field.value.replace(/_/g, ' ') : 'SELECT SOURCE'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -694,14 +715,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="temperature"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <ThermometerSun className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value || 'SELECT TEMPERATURE'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -729,14 +750,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="priority"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <AlertCircle className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value || 'SELECT PRIORITY'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -759,7 +780,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                             {/* Third Row - Industry & Business Size */}
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
-                                    <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    <Label className="flex gap-1 items-center text-xs font-light uppercase font-body">
                                         Industry
                                         <Star className="w-3 h-3 text-red-500" />
                                     </Label>
@@ -768,14 +789,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="industry"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Building className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? field.value.replace(/_/g, ' ') : 'SELECT INDUSTRY'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -803,8 +824,8 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="businessSize"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Building2 className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? (() => {
@@ -827,7 +848,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                                             })() : 'SELECT SIZE'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -875,7 +896,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                             {/* Fourth Row - Budget Range & Quality Rating */}
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
-                                    <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    <Label className="flex gap-1 items-center text-xs font-light uppercase font-body">
                                         Budget Range
                                         <Star className="w-3 h-3 text-red-500" />
                                     </Label>
@@ -884,14 +905,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="budgetRange"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <DollarSign className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? field.value.replace(/_/g, ' ') : 'SELECT BUDGET'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -911,7 +932,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                 </div>
 
                                 <div className="space-y-1">
-                                    <Label className="flex items-center gap-1 text-xs font-light uppercase font-body">
+                                    <Label className="flex gap-1 items-center text-xs font-light uppercase font-body">
                                         Quality Rating (1-5)
                                         <Star className="w-3 h-3 text-red-500" />
                                     </Label>
@@ -944,14 +965,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="purchaseTimeline"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Clock className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? field.value.replace(/_/g, ' ') : 'SELECT TIMELINE'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -979,14 +1000,14 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         name="preferredCommunication"
                                         render={({ field }) => (
                                             <div className="relative">
-                                                <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Phone className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-[10px] font-thin font-body">
                                                             {field.value ? field.value.replace(/_/g, ' ') : 'SELECT METHOD'}
                                                         </span>
                                                     </div>
-                                                    <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                                                 </div>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
@@ -1048,10 +1069,344 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                         </CardContent>
                     </Card>
 
+                    {/* Contact & Personal Details Section */}
+                    <Card className="border-border/50">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                                <User className="w-4 h-4" strokeWidth={1.5} />
+                                <span className="font-light uppercase font-body">
+                                    Contact & Personal Details
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* Decision Maker Role & Lifecycle Stage */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Decision Maker Role
+                                    </Label>
+                                    <Controller
+                                        control={control}
+                                        name="decisionMakerRole"
+                                        render={({ field }) => (
+                                            <div className="relative">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
+                                                        <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                        <span className="text-[10px] font-thin font-body">
+                                                            {field.value ? field.value.replace(/_/g, ' ') : 'SELECT ROLE'}
+                                                        </span>
+                                                    </div>
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
+                                                </div>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                    <SelectContent>
+                                                        {Object.values(DecisionMakerRole).map((role) => (
+                                                            <SelectItem key={role} value={role}>
+                                                                <span className="text-[10px] font-normal font-body">
+                                                                    {role.replace(/_/g, ' ')}
+                                                                </span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Lifecycle Stage
+                                    </Label>
+                                    <Controller
+                                        control={control}
+                                        name="lifecycleStage"
+                                        render={({ field }) => (
+                                            <div className="relative">
+                                                <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                    <div className="flex gap-2 items-center">
+                                                        <TrendingUp className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                        <span className="text-[10px] font-thin font-body">
+                                                            {field.value ? field.value.replace(/_/g, ' ') : 'SELECT STAGE'}
+                                                        </span>
+                                                    </div>
+                                                    <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
+                                                </div>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                    <SelectContent>
+                                                        {Object.values(LeadLifecycleStage).map((stage) => (
+                                                            <SelectItem key={stage} value={stage}>
+                                                                <span className="text-[10px] font-normal font-body">
+                                                                    {stage.replace(/_/g, ' ')}
+                                                                </span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Communication Preferences Section */}
+                    <Card className="border-border/50">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                                <MessageSquare className="w-4 h-4" strokeWidth={1.5} />
+                                <span className="font-light uppercase font-body">
+                                    Communication Preferences
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* Timezone & Best Contact Time */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Timezone
+                                    </Label>
+                                    <Input
+                                        {...register('timezone')}
+                                        placeholder="e.g. Africa/Johannesburg"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.timezone && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.timezone.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Best Contact Time
+                                    </Label>
+                                    <Input
+                                        {...register('bestContactTime')}
+                                        placeholder="e.g. 9:00-17:00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.bestContactTime && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.bestContactTime.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Pain Points & Competitive Info Section */}
+                    <Card className="border-border/50">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                                <Activity className="w-4 h-4" strokeWidth={1.5} />
+                                <span className="font-light uppercase font-body">
+                                    Pain Points & Competitive Info
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* Pain Points */}
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    Pain Points
+                                </Label>
+                                <Textarea
+                                    {...register('painPoints')}
+                                    placeholder="Describe the lead's pain points and challenges..."
+                                    rows={3}
+                                    className="font-light resize-none bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.painPoints && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.painPoints.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Competitor Info & Referral Source */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Competitor Info
+                                    </Label>
+                                    <Textarea
+                                        {...register('competitorInfo')}
+                                        placeholder="Current provider or competitors being considered..."
+                                        rows={3}
+                                        className="font-light resize-none bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.competitorInfo && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.competitorInfo.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Referral Source
+                                    </Label>
+                                    <Input
+                                        {...register('referralSource')}
+                                        placeholder="Who referred this lead?"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.referralSource && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.referralSource.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Campaign & UTM Tracking Section */}
+                    <Card className="border-border/50">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                                <Share2 className="w-4 h-4" strokeWidth={1.5} />
+                                <span className="font-light uppercase font-body">
+                                    Campaign & UTM Tracking
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* Campaign Name & Landing Page */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Campaign Name
+                                    </Label>
+                                    <Input
+                                        {...register('campaignName')}
+                                        placeholder="e.g. Q1 2024 Digital Campaign"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.campaignName && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.campaignName.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        Landing Page
+                                    </Label>
+                                    <Input
+                                        {...register('landingPage')}
+                                        placeholder="https://example.com/landing"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.landingPage && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.landingPage.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* UTM Parameters */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        UTM Source
+                                    </Label>
+                                    <Input
+                                        {...register('utmSource')}
+                                        placeholder="e.g. google, facebook, newsletter"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.utmSource && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.utmSource.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        UTM Medium
+                                    </Label>
+                                    <Input
+                                        {...register('utmMedium')}
+                                        placeholder="e.g. cpc, email, social"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.utmMedium && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.utmMedium.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        UTM Campaign
+                                    </Label>
+                                    <Input
+                                        {...register('utmCampaign')}
+                                        placeholder="e.g. spring_sale, product_launch"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.utmCampaign && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.utmCampaign.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label className="block text-xs font-light uppercase font-body">
+                                        UTM Term
+                                    </Label>
+                                    <Input
+                                        {...register('utmTerm')}
+                                        placeholder="e.g. lead generation, crm software"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.utmTerm && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.utmTerm.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label className="block text-xs font-light uppercase font-body">
+                                    UTM Content
+                                </Label>
+                                <Input
+                                    {...register('utmContent')}
+                                    placeholder="e.g. logolink, textlink, banner"
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                                {errors.utmContent && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.utmContent.message}
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Lead Image Upload */}
                     <Card className="border-border/50">
                         <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                            <CardTitle className="flex gap-2 items-center text-sm font-medium">
                                 <Paperclip className="w-4 h-4" strokeWidth={1.5} />
                                 <span className="font-light uppercase font-body">
                                     Lead Image
@@ -1064,7 +1419,7 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                 <div className="flex flex-col items-center">
                                     <label
                                         htmlFor="lead-image-upload"
-                                        className="flex items-center gap-2 px-4 py-2 transition-colors rounded cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary"
+                                        className="flex gap-2 items-center px-4 py-2 rounded transition-colors cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary"
                                     >
                                         <Upload className="w-4 h-4" strokeWidth={1.5} />
                                         <span className="text-xs font-light uppercase font-body">
@@ -1087,11 +1442,11 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         <p className="text-[9px] font-normal uppercase text-muted-foreground font-body">
                                             Selected Image
                                         </p>
-                                        <div className="p-2 space-y-2 border rounded border-border">
+                                        <div className="p-2 space-y-2 rounded border border-border">
                                             {selectedFiles.map((file, index) => (
-                                                <div key={index} className="flex items-center justify-between">
+                                                <div key={index} className="flex justify-between items-center">
                                                     <div className="flex items-center">
-                                                        <FileIcon className="w-4 h-4 mr-2 text-muted-foreground" strokeWidth={1.5} />
+                                                        <FileIcon className="mr-2 w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                         <span className="text-xs font-light font-body truncate max-w-[150px]">
                                                             {file.name}
                                                         </span>
@@ -1103,13 +1458,13 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                                         type="button"
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="w-6 h-6 p-0"
+                                                        className="p-0 w-6 h-6"
                                                         onClick={() => removeFile(index)}
                                                     >
                                                         <X className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                                     </Button>
                                                     {uploadProgress[file.name] && uploadProgress[file.name] < 100 && (
-                                                        <Progress value={uploadProgress[file.name]} className="w-full h-1 mt-1" />
+                                                        <Progress value={uploadProgress[file.name]} className="mt-1 w-full h-1" />
                                                     )}
                                                 </div>
                                             ))}
@@ -1123,13 +1478,13 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                                         <p className="text-[9px] font-normal uppercase text-muted-foreground font-body">
                                             Current Image
                                         </p>
-                                        <div className="p-2 border rounded border-border">
-                                            <div className="flex items-center justify-between">
+                                        <div className="p-2 rounded border border-border">
+                                            <div className="flex justify-between items-center">
                                                 <div className="flex items-center">
                                                     <img
                                                         src={initialData.image}
                                                         alt="Lead"
-                                                        className="object-cover w-10 h-10 mr-2 rounded"
+                                                        className="object-cover mr-2 w-10 h-10 rounded"
                                                     />
                                                     <span className="text-xs font-light font-body">
                                                         Current lead image
@@ -1143,37 +1498,6 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                         </CardContent>
                     </Card>
                 </fieldset>
-
-                {/* Debug Section - Remove after fixing */}
-                {isEdit && process.env.NODE_ENV === 'development' && (
-                    <div className="p-4 border border-yellow-200 rounded-lg bg-yellow-50">
-                        <h3 className="mb-2 text-sm font-medium text-yellow-800">Debug Info (Edit Mode)</h3>
-                        <div className="space-y-1 text-xs">
-                            <p><strong>Form Valid:</strong> {isValid ? 'Yes' : 'No'}</p>
-                            <p><strong>Is Submitting:</strong> {isSubmitting ? 'Yes' : 'No'}</p>
-                            <p><strong>Current User ID:</strong> {currentUserId}</p>
-                            <p><strong>Has Errors:</strong> {Object.keys(errors).length > 0 ? 'Yes' : 'No'}</p>
-                            {Object.keys(errors).length > 0 && (
-                                <div>
-                                    <strong>Validation Errors:</strong>
-                                    <pre className="p-2 mt-1 overflow-auto text-xs border border-red-200 rounded bg-red-50">
-                                        {JSON.stringify(errors, null, 2)}
-                                    </pre>
-                                </div>
-                            )}
-                            <button 
-                                type="button" 
-                                onClick={() => {
-                                    console.log('🔧 Direct form data test:', watch());
-                                    console.log('🔧 Current errors:', errors);
-                                }}
-                                className="px-2 py-1 text-xs text-white bg-blue-500 rounded"
-                            >
-                                Log Current Form Data
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 {/* Submit Button */}
                 <Button
@@ -1194,40 +1518,6 @@ const LeadForm: React.FunctionComponent<LeadFormProps> = ({
                         </span>
                     )}
                 </Button>
-
-                {/* Debug Test Button - Remove after fixing */}
-                {isEdit && process.env.NODE_ENV === 'development' && (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={async () => {
-                            console.log('🧪 Testing direct submit bypass...');
-                            const currentData = watch();
-                            console.log('🧪 Current form data:', currentData);
-                            
-                            // Create test data similar to what onFormSubmit would create
-                            const testData = {
-                                ...currentData,
-                                assignees: currentData.assignTo,
-                                assignTo: undefined,
-                                owner: currentData.owner || { uid: currentUserId }
-                            };
-                            
-                            console.log('🧪 Calling onSubmit directly with test data:', testData);
-                            try {
-                                await onSubmit(testData);
-                                console.log('🧪 Direct submit test completed successfully');
-                            } catch (error) {
-                                console.error('🧪 Direct submit test failed:', error);
-                            }
-                        }}
-                        className="ml-2 text-orange-600 border-orange-200 hover:bg-orange-50"
-                    >
-                        <span className="text-xs font-normal uppercase font-body">
-                            Test Direct Submit
-                        </span>
-                    </Button>
-                )}
             </form>
         );
     };

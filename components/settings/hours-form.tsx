@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { Loader2, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -156,11 +157,11 @@ export default function HoursForm() {
             // In a real app, this would call your API
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            toast.success('Business hours saved successfully');
+            showSuccessToast('Business hours saved successfully', toast);
             console.log(data);
         } catch (error) {
             console.error('Error saving business hours:', error);
-            toast.error('Failed to save business hours');
+            showErrorToast('Failed to save business hours', toast);
         } finally {
             setIsLoading(false);
         }
@@ -169,9 +170,9 @@ export default function HoursForm() {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <div className="flex items-center px-2 overflow-x-auto border-b border-border/10">
+                <div className="flex overflow-x-auto items-center px-2 border-b border-border/10">
                     <div
-                        className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer"
+                        className="flex relative gap-1 justify-center items-center mr-8 cursor-pointer"
                         onClick={() => setActiveSubTab('general')}
                     >
                         <div
@@ -190,7 +191,7 @@ export default function HoursForm() {
                         )}
                     </div>
                     <div
-                        className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer"
+                        className="flex relative gap-1 justify-center items-center mr-8 cursor-pointer"
                         onClick={() => setActiveSubTab('schedule')}
                     >
                         <div
@@ -209,7 +210,7 @@ export default function HoursForm() {
                         )}
                     </div>
                     <div
-                        className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer"
+                        className="flex relative gap-1 justify-center items-center mr-8 cursor-pointer"
                         onClick={() => setActiveSubTab('holidays')}
                     >
                         <div
@@ -325,7 +326,7 @@ export default function HoursForm() {
                 {activeSubTab === 'schedule' && (
                     <div className="mt-6 space-y-6">
                         {businessHoursMode === 'standard' ? (
-                            <div className="p-4 space-y-6 border rounded-md bg-card/50">
+                            <div className="p-4 space-y-6 rounded-md border bg-card/50">
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-thin uppercase font-body">
                                         WEEKDAY HOURS (MONDAY - FRIDAY)
@@ -439,7 +440,7 @@ export default function HoursForm() {
                                         control={form.control}
                                         name="standardHours.isOpenWeekends"
                                         render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between p-3 border rounded-lg shadow-sm bg-card border-border">
+                                            <FormItem className="flex flex-row justify-between items-center p-3 rounded-lg border shadow-sm bg-card border-border">
                                                 <div className="space-y-0.5">
                                                     <FormLabel className="text-xs font-thin uppercase font-body">
                                                         OPEN ON WEEKENDS
@@ -572,10 +573,10 @@ export default function HoursForm() {
                                 {weekdays.map((day) => (
                                     <div
                                         key={day}
-                                        className="p-4 border rounded-md bg-card/50"
+                                        className="p-4 rounded-md border bg-card/50"
                                     >
                                         <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex justify-between items-center">
                                                 <h3 className="text-sm font-normal uppercase font-body">
                                                     {day}
                                                 </h3>
@@ -725,7 +726,7 @@ export default function HoursForm() {
 
                 {activeSubTab === 'holidays' && (
                     <div className="mt-6 space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex justify-between items-center">
                             <h3 className="text-sm font-normal uppercase font-body">
                                 HOLIDAYS & SPECIAL DAYS
                             </h3>
@@ -757,7 +758,7 @@ export default function HoursForm() {
                             {form.watch('holidays').map((_, index) => (
                                 <div
                                     key={index}
-                                    className="p-4 space-y-4 border rounded-md bg-card/50"
+                                    className="p-4 space-y-4 rounded-md border bg-card/50"
                                 >
                                     <div className="flex justify-between">
                                         <h4 className="text-xs font-normal uppercase font-body">
@@ -833,7 +834,7 @@ export default function HoursForm() {
                                         control={form.control}
                                         name={`holidays.${index}.isOpen` as any}
                                         render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between p-3 border rounded-lg shadow-sm bg-card border-border">
+                                            <FormItem className="flex flex-row justify-between items-center p-3 rounded-lg border shadow-sm bg-card border-border">
                                                 <div className="space-y-0.5">
                                                     <FormLabel className="text-xs font-thin uppercase font-body">
                                                         OPEN ON THIS HOLIDAY
@@ -978,7 +979,7 @@ export default function HoursForm() {
                         {isLoading ? (
                             <>
                                 <Loader2
-                                    className="w-4 h-4 mr-2 animate-spin"
+                                    className="mr-2 w-4 h-4 animate-spin"
                                     strokeWidth={1.5}
                                 />
                                 SAVING...

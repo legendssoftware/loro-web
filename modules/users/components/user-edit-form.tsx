@@ -13,6 +13,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -27,26 +28,79 @@ import {
     Eye,
     EyeOff,
     Key,
+    MapPin,
+    Calendar,
+    Briefcase,
+    Target,
+    Globe,
+    Settings,
+    Award,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useBranchQuery, Branch } from '@/hooks/use-branch-query';
 
-// Form schema definition - less strict for editing (no password required)
+// Enhanced form schema definition - comprehensive editing with all user entity fields
 const userEditFormSchema = z.object({
+    // Basic Authentication
     username: z
         .string()
         .min(3, { message: 'Username must be at least 3 characters' })
         .optional(),
+    password: z.string().optional(), // Optional for editing
+
+    // Personal Information
     name: z.string().min(1, { message: 'First name is required' }),
     surname: z.string().min(1, { message: 'Last name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
     phone: z.string().optional(),
     photoURL: z.string().optional(),
+
+    // System Fields
+    role: z.string().optional(),
     accessLevel: z.nativeEnum(AccessLevel).optional(),
     status: z.nativeEnum(UserStatus).optional(),
     userref: z.string().optional(),
     branchId: z.number().optional(),
-    password: z.string().optional(),
+    organisationRef: z.string().optional(),
+    departmentId: z.number().optional(),
+
+    // HR and Employee Information
+    hrID: z.number().optional(),
+    businesscardURL: z.string().optional(),
+
+    // User Profile Fields
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+    dob: z.string().optional(), // Date of birth as string for form handling
+
+    // Employment Profile
+    position: z.string().optional(),
+    department: z.string().optional(),
+    startDate: z.string().optional(), // Employment start date
+
+    // Address Information
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    country: z.string().optional(),
+    postalCode: z.string().optional(),
+
+    // Target Information
+    targetSalesAmount: z.string().optional(),
+    targetQuotationsAmount: z.string().optional(),
+    targetCurrency: z.string().optional(),
+    targetHoursWorked: z.number().optional(),
+    targetNewClients: z.number().optional(),
+    targetNewLeads: z.number().optional(),
+    targetCheckIns: z.number().optional(),
+    targetCalls: z.number().optional(),
+    targetPeriod: z.string().optional(),
+
+    // Device Information
+    expoPushToken: z.string().optional(),
+    deviceId: z.string().optional(),
+    platform: z.enum(['ios', 'android', 'web']).optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -86,7 +140,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         setShowPassword(!showPassword);
     };
 
-    // Default form values from initialData
+    // Default form values from initialData - now comprehensive
     const defaultValues: Partial<UserEditFormValues> = {
         username: initialData.username || '',
         name: initialData.name || '',
@@ -94,11 +148,56 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         email: initialData.email || '',
         phone: initialData.phone || '',
         photoURL: initialData.photoURL || '',
+        role: (initialData as any).role || '',
         accessLevel: initialData.accessLevel,
         status: initialData.status as UserStatus,
         userref: initialData.userref || '',
         branchId: (initialData.branch as unknown as Branch)?.uid,
+        organisationRef: initialData.organisationRef?.toString() || '',
+        departmentId: (initialData as any).departmentId || 0,
         password: '',
+
+        // HR and Employee Information
+        hrID: (initialData as any).hrID || 0,
+        businesscardURL: (initialData as any).businesscardURL || '',
+
+        // User Profile Fields (from userProfile relationship)
+        height: (initialData as any).userProfile?.height || '',
+        weight: (initialData as any).userProfile?.weight || '',
+        gender: (initialData as any).userProfile?.gender || undefined,
+        dob: (initialData as any).userProfile?.dateOfBirth
+            ? new Date((initialData as any).userProfile.dateOfBirth).toISOString().split('T')[0]
+            : '',
+
+        // Employment Profile (from userEmployeementProfile relationship)
+        position: (initialData as any).userEmployeementProfile?.position || '',
+        department: (initialData as any).userEmployeementProfile?.department || '',
+        startDate: (initialData as any).userEmployeementProfile?.startDate
+            ? new Date((initialData as any).userEmployeementProfile.startDate).toISOString().split('T')[0]
+            : '',
+
+        // Address Information (from userProfile)
+        street: (initialData as any).userProfile?.address || '',
+        city: (initialData as any).userProfile?.city || '',
+        state: (initialData as any).userProfile?.state || '',
+        country: (initialData as any).userProfile?.country || '',
+        postalCode: (initialData as any).userProfile?.zipCode || '',
+
+        // Target Information (from userTarget relationship)
+        targetSalesAmount: (initialData as any).userTarget?.targetSalesAmount?.toString() || '0',
+        targetQuotationsAmount: (initialData as any).userTarget?.targetQuotationsAmount?.toString() || '0',
+        targetCurrency: (initialData as any).userTarget?.targetCurrency || 'USD',
+        targetHoursWorked: (initialData as any).userTarget?.targetHoursWorked || 40,
+        targetNewClients: (initialData as any).userTarget?.targetNewClients || 0,
+        targetNewLeads: (initialData as any).userTarget?.targetNewLeads || 0,
+        targetCheckIns: (initialData as any).userTarget?.targetCheckIns || 0,
+        targetCalls: (initialData as any).userTarget?.targetCalls || 0,
+        targetPeriod: (initialData as any).userTarget?.targetPeriod || 'monthly',
+
+        // Device Information
+        expoPushToken: (initialData as any).expoPushToken || '',
+        deviceId: (initialData as any).deviceId || '',
+        platform: (initialData as any).platform || undefined,
     };
 
     // Initialize form
@@ -742,6 +841,568 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         Loading branches...
                                     </p>
                                 )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Personal Profile Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Personal Profile
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <UserIcon className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Personal Details
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="gender"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Gender
+                                </Label>
+                                <Controller
+                                    name="gender"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <div className="flex gap-2 items-center">
+                                                    <UserIcon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT GENDER'}
+                                                    </span>
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="dob"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Date of Birth
+                                </Label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                                    <Input
+                                        id="dob"
+                                        type="date"
+                                        {...register('dob')}
+                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="height"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Height (cm)
+                                </Label>
+                                <Input
+                                    id="height"
+                                    {...register('height')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="180"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="weight"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Weight (kg)
+                                </Label>
+                                <Input
+                                    id="weight"
+                                    {...register('weight')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="75"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Employment Information Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Employment Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Briefcase className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Work Details
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="position"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Position
+                                </Label>
+                                <Input
+                                    id="position"
+                                    {...register('position')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="Sales Manager"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="department"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Department
+                                </Label>
+                                <Input
+                                    id="department"
+                                    {...register('department')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="Sales"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="startDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Start Date
+                                </Label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                                    <Input
+                                        id="startDate"
+                                        type="date"
+                                        {...register('startDate')}
+                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="hrID"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    HR ID
+                                </Label>
+                                <Input
+                                    id="hrID"
+                                    type="number"
+                                    {...register('hrID', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="12345"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="businesscardURL"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Business Card URL
+                                </Label>
+                                <Input
+                                    id="businesscardURL"
+                                    type="url"
+                                    {...register('businesscardURL')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="https://example.com/card.pdf"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Address Information Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Address Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <MapPin className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Contact Address
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="street"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Street Address
+                                </Label>
+                                <Input
+                                    id="street"
+                                    {...register('street')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="123 Main Street"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="city"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        City
+                                    </Label>
+                                    <Input
+                                        id="city"
+                                        {...register('city')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="Johannesburg"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="state"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        State/Province
+                                    </Label>
+                                    <Input
+                                        id="state"
+                                        {...register('state')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="Gauteng"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="country"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Country
+                                    </Label>
+                                    <Input
+                                        id="country"
+                                        {...register('country')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="South Africa"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="postalCode"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Postal Code
+                                    </Label>
+                                    <Input
+                                        id="postalCode"
+                                        {...register('postalCode')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="2000"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Performance Targets Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Performance Targets
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Target className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Sales & Performance Goals
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetSalesAmount"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Sales Amount
+                                </Label>
+                                <Input
+                                    id="targetSalesAmount"
+                                    {...register('targetSalesAmount')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="100000"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetQuotationsAmount"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Quotations Amount
+                                </Label>
+                                <Input
+                                    id="targetQuotationsAmount"
+                                    {...register('targetQuotationsAmount')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="50000"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCurrency"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Currency
+                                </Label>
+                                <Input
+                                    id="targetCurrency"
+                                    {...register('targetCurrency')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="ZAR"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetHoursWorked"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Hours Worked
+                                </Label>
+                                <Input
+                                    id="targetHoursWorked"
+                                    type="number"
+                                    {...register('targetHoursWorked', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="40"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetNewClients"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target New Clients
+                                </Label>
+                                <Input
+                                    id="targetNewClients"
+                                    type="number"
+                                    {...register('targetNewClients', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="10"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetNewLeads"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target New Leads
+                                </Label>
+                                <Input
+                                    id="targetNewLeads"
+                                    type="number"
+                                    {...register('targetNewLeads', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="20"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCheckIns"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Check-ins
+                                </Label>
+                                <Input
+                                    id="targetCheckIns"
+                                    type="number"
+                                    {...register('targetCheckIns', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="50"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCalls"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Calls
+                                </Label>
+                                <Input
+                                    id="targetCalls"
+                                    type="number"
+                                    {...register('targetCalls', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="100"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetPeriod"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Period
+                                </Label>
+                                <Controller
+                                    name="targetPeriod"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <div className="flex gap-2 items-center">
+                                                    <Award className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.toUpperCase() : 'SELECT PERIOD'}
+                                                    </span>
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Device Information Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Device Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Globe className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Device & Platform
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="platform"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Platform
+                                </Label>
+                                <Controller
+                                    name="platform"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <div className="flex gap-2 items-center">
+                                                    <Globe className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <span className="uppercase text-[10px] font-thin font-body">
+                                                        {field.value ? field.value.toUpperCase() : 'SELECT PLATFORM'}
+                                                    </span>
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ios">iOS</SelectItem>
+                                                <SelectItem value="android">Android</SelectItem>
+                                                <SelectItem value="web">Web</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="deviceId"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Device ID
+                                </Label>
+                                <Input
+                                    id="deviceId"
+                                    {...register('deviceId')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="device-123456"
+                                />
+                            </div>
+
+                            <div className="space-y-1 md:col-span-2">
+                                <Label
+                                    htmlFor="expoPushToken"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Expo Push Token
+                                </Label>
+                                <Input
+                                    id="expoPushToken"
+                                    {...register('expoPushToken')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="ExponentPushToken[...]"
+                                />
                             </div>
                         </div>
                     </CardContent>

@@ -1905,6 +1905,21 @@ export function LeadDetailsModal({
                             purchaseTimeline: lead.purchaseTimeline,
                             preferredCommunication: lead.preferredCommunication,
                             estimatedValue: lead.estimatedValue,
+                            // Additional fields from server entity
+                            decisionMakerRole: lead.decisionMakerRole,
+                            lifecycleStage: lead.lifecycleStage,
+                            timezone: lead.timezone,
+                            bestContactTime: lead.bestContactTime,
+                            painPoints: lead.painPoints,
+                            competitorInfo: lead.competitorInfo,
+                            referralSource: lead.referralSource,
+                            campaignName: lead.campaignName,
+                            landingPage: lead.landingPage,
+                            utmSource: lead.utmSource,
+                            utmMedium: lead.utmMedium,
+                            utmCampaign: lead.utmCampaign,
+                            utmTerm: lead.utmTerm,
+                            utmContent: lead.utmContent,
                         }}
                         isLoading={isUpdating}
                         isEdit={true}

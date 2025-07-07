@@ -335,7 +335,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             <div className="space-y-6">
                 <Card>
                     <CardContent className="py-8">
-                        <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="flex flex-col justify-center items-center space-y-4">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
                             <p className="text-[10px] text-muted-foreground font-body uppercase">
                                 Loading targets data...
@@ -352,7 +352,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                             <AlertCircle className="w-5 h-5 text-muted-foreground" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 No Targets Set
@@ -374,8 +374,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             {/* Target Period Info */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                    <div className="flex justify-between items-center">
+                        <div className="flex gap-2 items-center">
                             <Goal className="w-5 h-5 text-primary" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 Performance Targets
@@ -410,18 +410,27 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
             {/* Sales Targets */}
             {(targetsData.targetSalesAmount || targetsData.currentSalesAmount) && (
-                <Card>
+                <Card className="relative">
                     <CardHeader>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                             <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 Sales Performance
                             </CardTitle>
                         </div>
+                        {/* Green badge for target reached */}
+                        {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount) >= 100 && (
+                            <div className="absolute top-2 right-2">
+                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                    <CheckCircle className="mr-1 w-3 h-3" />
+                                    Target Reached
+                                </Badge>
+                            </div>
+                        )}
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between">
+                            <div className="flex justify-between items-center">
                                 <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Sales Target</p>
                                 <Badge variant="outline" className="text-[10px] font-body">
                                     {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount).toFixed(1)}%
@@ -448,20 +457,110 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </Card>
             )}
 
-            {/* Work Hours Target */}
-            {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
-                <Card>
+            {/* Quotations Targets */}
+            {(targetsData.targetQuotationsAmount || targetsData.currentQuotationsAmount) && (
+                <Card className="relative">
                     <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                        <div className="flex gap-2 items-center">
+                            <Target className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
-                                Work Hours
+                                Quotations Performance
+                            </CardTitle>
+                        </div>
+                        {/* Green badge for target reached */}
+                        {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount) >= 100 && (
+                            <div className="absolute top-2 right-2">
+                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                    <CheckCircle className="mr-1 w-3 h-3" />
+                                    Target Reached
+                                </Badge>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Quotations Target</p>
+                                <Badge variant="outline" className="text-[10px] font-body">
+                                    {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount).toFixed(1)}%
+                                </Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body">
+                                <span>{formatCurrency(targetsData.currentQuotationsAmount, targetsData.targetCurrency)}</span>
+                                <span>{formatCurrency(targetsData.targetQuotationsAmount, targetsData.targetCurrency)}</span>
+                            </div>
+                            <Progress
+                                value={getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount)}
+                                className="h-3"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body uppercase">
+                                <span>Complete</span>
+                                <span>
+                                    {targetsData.targetQuotationsAmount && targetsData.currentQuotationsAmount
+                                        ? formatCurrency(targetsData.targetQuotationsAmount - targetsData.currentQuotationsAmount, targetsData.targetCurrency) + ' remaining'
+                                        : 'Target needed'}
+                                </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Orders Performance - Shows current orders without target */}
+            {targetsData.currentOrdersAmount && (
+                <Card className="relative">
+                    <CardHeader>
+                        <div className="flex gap-2 items-center">
+                            <Zap className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                            <CardTitle className="text-sm font-normal uppercase font-body">
+                                Orders Performance
                             </CardTitle>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between">
+                            <div className="flex justify-between items-center">
+                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Current Orders</p>
+                                <Badge variant="outline" className="text-[10px] font-body">
+                                    {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
+                                </Badge>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 font-body">
+                                    {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">
+                                    Total Orders (Converted from Quotations)
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Work Hours Target */}
+            {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
+                <Card className="relative">
+                    <CardHeader>
+                        <div className="flex gap-2 items-center">
+                            <CheckCircle className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                            <CardTitle className="text-sm font-normal uppercase font-body">
+                                Work Hours
+                            </CardTitle>
+                        </div>
+                        {/* Green badge for target reached */}
+                        {getProgressPercentage(targetsData.currentHoursWorked, targetsData.targetHoursWorked) >= 100 && (
+                            <div className="absolute top-2 right-2">
+                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                    <CheckCircle className="mr-1 w-3 h-3" />
+                                    Target Reached
+                                </Badge>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
                                 <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Hours Target</p>
                                 <Badge variant="outline" className="text-[10px] font-body">
                                     {getProgressPercentage(targetsData.currentHoursWorked, targetsData.targetHoursWorked).toFixed(1)}%
@@ -492,11 +591,20 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* New Clients */}
                 {(targetsData.targetNewClients || targetsData.currentNewClients) && (
-                    <Card>
+                    <Card className="relative">
                         <CardHeader>
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 New Clients
                             </CardTitle>
+                            {/* Green badge for target reached */}
+                            {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients) >= 100 && (
+                                <div className="absolute top-2 right-2">
+                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                        <CheckCircle className="mr-1 w-3 h-3" />
+                                        Target Reached
+                                    </Badge>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2 text-center">
@@ -520,11 +628,20 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                 {/* New Leads */}
                 {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
-                    <Card>
+                    <Card className="relative">
                         <CardHeader>
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 New Leads
                             </CardTitle>
+                            {/* Green badge for target reached */}
+                            {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads) >= 100 && (
+                                <div className="absolute top-2 right-2">
+                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                        <CheckCircle className="mr-1 w-3 h-3" />
+                                        Target Reached
+                                    </Badge>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2 text-center">
@@ -551,11 +668,20 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Check-ins */}
                 {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
-                    <Card>
+                    <Card className="relative">
                         <CardHeader>
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 Check-ins
                             </CardTitle>
+                            {/* Green badge for target reached */}
+                            {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns) >= 100 && (
+                                <div className="absolute top-2 right-2">
+                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                        <CheckCircle className="mr-1 w-3 h-3" />
+                                        Target Reached
+                                    </Badge>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2 text-center">
@@ -579,11 +705,20 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                 {/* Calls */}
                 {(targetsData.targetCalls || targetsData.currentCalls) && (
-                    <Card>
+                    <Card className="relative">
                         <CardHeader>
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 Calls
                             </CardTitle>
+                            {/* Green badge for target reached */}
+                            {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls) >= 100 && (
+                                <div className="absolute top-2 right-2">
+                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
+                                        <CheckCircle className="mr-1 w-3 h-3" />
+                                        Target Reached
+                                    </Badge>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2 text-center">
@@ -609,14 +744,14 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
             {/* AI Insights Section */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                    <div className="flex justify-between items-center">
+                        <div className="flex gap-2 items-center">
                             <Brain className="w-5 h-5 text-purple-500 dark:text-purple-400" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 AI Performance Insights
                             </CardTitle>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -625,16 +760,16 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                 className="text-xs uppercase font-body"
                             >
                                 {isGeneratingInsights ? (
-                                    <><Loader2 className="w-3 h-3 mr-1 animate-spin" strokeWidth={1.5} /> Generating</>
+                                    <><Loader2 className="mr-1 w-3 h-3 animate-spin" strokeWidth={1.5} /> Generating</>
                                 ) : (
-                                    <><RefreshCw className="w-3 h-3 mr-1" strokeWidth={1.5} /> Refresh</>
+                                    <><RefreshCw className="mr-1 w-3 h-3" strokeWidth={1.5} /> Refresh</>
                                 )}
                             </Button>
                         </div>
                     </div>
                     {quickSummary && (
-                        <div className="p-3 mt-3 border border-purple-200 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-500/10 dark:to-blue-500/10 dark:border-purple-500/20">
-                            <div className="flex items-start gap-2">
+                        <div className="p-3 mt-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 dark:from-purple-500/10 dark:to-blue-500/10 dark:border-purple-500/20">
+                            <div className="flex gap-2 items-start">
                                 <Star className="w-4 h-4 text-purple-500 mt-0.5" />
                                 <p className="text-sm text-purple-800 dark:text-purple-300 font-body">
                                     {quickSummary}
@@ -645,13 +780,13 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeInsightTab} onValueChange={setActiveInsightTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid grid-cols-2 w-full">
                             <TabsTrigger value="insights" className="text-xs font-body">
-                                <Lightbulb className="w-3 h-3 mr-1" />
+                                <Lightbulb className="mr-1 w-3 h-3" />
                                 <span className="hidden sm:inline">Insights</span>
                             </TabsTrigger>
                             <TabsTrigger value="email" className="text-xs font-body">
-                                <Mail className="w-3 h-3 mr-1" />
+                                <Mail className="mr-1 w-3 h-3" />
                                 <span className="hidden sm:inline">Email Template</span>
                             </TabsTrigger>
                         </TabsList>
@@ -659,7 +794,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         <TabsContent value="insights" className="mt-6 space-y-4">
                             {isGeneratingInsights ? (
                                 <div className="py-8 text-center">
-                                    <Loader2 className="w-6 h-6 mx-auto mb-3 text-purple-500 animate-spin" />
+                                    <Loader2 className="mx-auto mb-3 w-6 h-6 text-purple-500 animate-spin" />
                                     <p className="text-sm text-muted-foreground font-body">
                                         AI is analyzing your performance data...
                                     </p>
@@ -669,7 +804,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                     {insights.map((insight, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-start gap-3 p-4 border border-blue-200 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"
+                                            className="flex gap-3 items-start p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"
                                         >
                                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold font-body ${
                                                 index === 0 ? 'bg-green-500' :
@@ -687,7 +822,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                 </div>
                             ) : (
                                 <div className="py-8 text-center">
-                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
+                                    <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 rounded-full bg-muted">
                                         <Brain className="w-8 h-8 text-muted-foreground" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-medium text-foreground font-body">No Insights Yet</h3>
@@ -699,7 +834,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                         size="sm"
                                         className="text-xs uppercase font-body"
                                     >
-                                        <Zap className="w-3 h-3 mr-1" strokeWidth={1.5} />
+                                        <Zap className="mr-1 w-3 h-3" strokeWidth={1.5} />
                                         Generate Insights
                                     </Button>
                                 </div>
@@ -709,19 +844,19 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         <TabsContent value="email" className="mt-6 space-y-4">
                             {emailTemplate ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 border border-green-200 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
-                                        <div className="flex items-center gap-2 mb-3">
+                                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
+                                        <div className="flex gap-2 items-center mb-3">
                                             <Mail className="w-4 h-4 text-green-600" />
                                             <h4 className="text-sm font-medium text-green-800 uppercase dark:text-green-300 font-body">
                                                 Generated Email Template
                                             </h4>
                                         </div>
-                                        <div className="p-4 bg-white border rounded-lg dark:bg-gray-800">
+                                        <div className="p-4 bg-white rounded-lg border dark:bg-gray-800">
                                             <pre className="font-mono text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
                                                 {emailTemplate}
                                             </pre>
                                         </div>
-                                        <div className="flex items-center gap-2 mt-3">
+                                        <div className="flex gap-2 items-center mt-3">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -738,9 +873,9 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                                 className="text-xs uppercase font-body"
                                             >
                                                 {isGeneratingInsights ? (
-                                                    <><Loader2 className="w-3 h-3 mr-1 animate-spin" strokeWidth={1.5} /> Generating</>
+                                                    <><Loader2 className="mr-1 w-3 h-3 animate-spin" strokeWidth={1.5} /> Generating</>
                                                 ) : (
-                                                    <><RefreshCw className="w-3 h-3 mr-1" strokeWidth={1.5} /> Regenerate</>
+                                                    <><RefreshCw className="mr-1 w-3 h-3" strokeWidth={1.5} /> Regenerate</>
                                                 )}
                                             </Button>
                                         </div>
@@ -748,7 +883,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                 </div>
                             ) : (
                                 <div className="py-8 text-center">
-                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
+                                    <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 rounded-full bg-muted">
                                         <Mail className="w-8 h-8 text-muted-foreground" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-medium text-foreground font-body">No Email Template</h3>
@@ -761,7 +896,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                         size="sm"
                                         className="text-xs uppercase font-body"
                                     >
-                                        <Mail className="w-3 h-3 mr-1" strokeWidth={1.5} />
+                                        <Mail className="mr-1 w-3 h-3" strokeWidth={1.5} />
                                         Generate Email
                                     </Button>
                                 </div>

@@ -8,11 +8,13 @@ import { AccessLevel } from '@/lib/types/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -28,28 +30,83 @@ import {
     Building,
     Eye,
     EyeOff,
+    MapPin,
+    Calendar,
+    Briefcase,
+    Award,
+    Target,
+    CreditCard,
+    Globe,
+    Clock,
+    Settings,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AccountStatus } from '@/lib/enums/status.enums';
 import { useBranchQuery } from '@/hooks/use-branch-query';
 
-// Form schema definition
+// Enhanced form schema with all user entity fields
 const userFormSchema = z.object({
+    // Basic Authentication
     username: z
         .string()
         .min(3, { message: 'Username must be at least 3 characters' }),
     password: z
         .string()
         .min(8, { message: 'Password must be at least 8 characters' }),
+    
+    // Personal Information
     name: z.string().min(1, { message: 'First name is required' }),
     surname: z.string().min(1, { message: 'Last name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
     phone: z.string().min(1, { message: 'Phone number is required' }),
     photoURL: z.string().optional(),
+    
+    // System Fields
+    role: z.string().optional(),
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
     userref: z.string(),
     branchId: z.number().optional(),
+    organisationRef: z.string().optional(),
+    departmentId: z.number().optional(),
+    
+    // HR and Employee Information
+    hrID: z.number().optional(),
+    businesscardURL: z.string().optional(),
+    
+    // User Profile Fields
+    height: z.string().optional(),
+    weight: z.string().optional(),
+    gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+    dob: z.string().optional(), // Date of birth as string for form handling
+    
+    // Employment Profile
+    position: z.string().optional(),
+    department: z.string().optional(),
+    startDate: z.string().optional(), // Employment start date
+    
+    // Address Information
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    country: z.string().optional(),
+    postalCode: z.string().optional(),
+    
+    // Target Information
+    targetSalesAmount: z.string().optional(),
+    targetQuotationsAmount: z.string().optional(),
+    targetCurrency: z.string().optional(),
+    targetHoursWorked: z.number().optional(),
+    targetNewClients: z.number().optional(),
+    targetNewLeads: z.number().optional(),
+    targetCheckIns: z.number().optional(),
+    targetCalls: z.number().optional(),
+    targetPeriod: z.string().optional(),
+    
+    // Device Information
+    expoPushToken: z.string().optional(),
+    deviceId: z.string().optional(),
+    platform: z.enum(['ios', 'android', 'web']).optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -57,7 +114,7 @@ export type UserFormValues = z.infer<typeof userFormSchema>;
 
 // Props interface
 interface UserFormProps {
-    onSubmit: (data: UserFormValues) => void;
+    onSubmit: (data: UserFormValues) => Promise<void>;
     initialData?: Partial<UserFormValues>;
     isLoading?: boolean;
 }
@@ -94,10 +151,39 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         email: '',
         phone: '',
         photoURL: '',
+        role: 'user',
         accessLevel: AccessLevel.USER,
         status: AccountStatus.ACTIVE,
         userref: generateUserRef(),
         branchId: initialData?.branchId,
+        organisationRef: '',
+        departmentId: 0,
+        hrID: 0,
+        businesscardURL: '',
+        height: '',
+        weight: '',
+        gender: undefined,
+        dob: '',
+        position: '',
+        department: '',
+        startDate: '',
+        street: '',
+        city: '',
+        state: '',
+        country: '',
+        postalCode: '',
+        targetSalesAmount: '0',
+        targetQuotationsAmount: '0',
+        targetCurrency: 'USD',
+        targetHoursWorked: 40,
+        targetNewClients: 0,
+        targetNewLeads: 0,
+        targetCheckIns: 0,
+        targetCalls: 0,
+        targetPeriod: 'monthly',
+        expoPushToken: '',
+        deviceId: '',
+        platform: undefined,
         ...initialData,
     };
 
@@ -127,190 +213,111 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         setUserImage(previewUrl);
     };
 
-    // Upload image function that will be called on form submission
-    const uploadImage = async (file: File): Promise<string | null> => {
-        try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('type', 'image');
-
-            // Get access token from auth store for authentication
-            const accessToken = useAuthStore.getState().accessToken;
-
-            // Upload directly to the backend using axiosInstance
-            const response = await axiosInstance.post(
-                '/docs/upload',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                },
-            );
-
-            const data = response.data;
-
-            if (data.publicUrl) {
-                return data.publicUrl;
-            } else {
-                return null;
-            }
-        } catch (error) {
-            return null;
-        }
-    };
-
-    // Form submission handler
-    const onFormSubmit = async (data: UserFormValues) => {
+    // Handle form submission
+    const handleFormSubmit = async (data: UserFormValues) => {
         try {
             setIsSubmitting(true);
-            let photoURL = data.photoURL || '';
 
-            // Upload the image if one was selected
+            // If there's a selected file, upload it first
             if (selectedFile) {
-                const uploadedUrl = await uploadImage(selectedFile);
-                if (uploadedUrl) {
-                    photoURL = uploadedUrl;
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const uploadResponse = await axiosInstance.post(
+                    '/upload',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    },
+                );
+
+                if (uploadResponse.data?.url) {
+                    data.photoURL = uploadResponse.data.url;
                 }
             }
 
-            // If no image was uploaded or upload failed, use a default avatar
-            if (!photoURL) {
-                photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    data.name + ' ' + data.surname,
-                )}&background=random`;
-            }
-
-            // Get auth store data for organisational context
-            const profileData = useAuthStore.getState().profileData;
-
-            // Create user with organizational context if available
-            const userData = {
-                ...data,
-                photoURL,
-                ...(profileData?.organisationRef
-                    ? {
-                          organisation: {
-                              uid: parseInt(profileData.organisationRef, 10),
-                          },
-                      }
-                    : {}),
-
-                // Add branch from the selector
-                ...(data.branchId
-                    ? {
-                          branch: { uid: data.branchId },
-                      }
-                    : {}),
-            };
-
-            // Submit the data to the parent component
-            await onSubmit(userData);
-
-            reset();
-            setUserImage(null);
-            setSelectedFile(null);
+            // Submit the form data
+            await onSubmit(data);
         } catch (error) {
+            console.error('Form submission error:', error);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Clean up object URLs when component unmounts or when image changes
-    useEffect(() => {
-        return () => {
-            if (userImage && !userImage.startsWith('http')) {
-                URL.revokeObjectURL(userImage);
-            }
-        };
-    }, [userImage]);
-
     return (
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-            <fieldset
-                disabled={isLoading || isSubmitting}
-                className="space-y-6"
-            >
-                {/* Profile Photo Section */}
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+            {/* Profile Image Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Profile Image
+                </legend>
                 <Card className="border-border/50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
-                            <UserPlus className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="font-light uppercase font-body">
-                                Profile Photo
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col items-center">
-                            <div className="relative mb-4">
-                                <Avatar className="w-24 h-24 border-2 border-primary">
-                                    <AvatarImage
-                                        src={userImage || ''}
-                                        alt="User avatar"
-                                    />
-                                    <AvatarFallback className="text-lg font-normal uppercase font-body">
-                                        {watch('name').charAt(0) || ''}
-                                        {watch('surname').charAt(0) || ''}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <label
-                                    htmlFor="user-image-upload"
-                                    className="absolute right-0 bottom-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="w-20 h-20">
+                                <AvatarImage src={userImage || ''} alt="Profile" />
+                                <AvatarFallback>
+                                    <User className="w-10 h-10 text-muted-foreground" />
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                                <Label
+                                    htmlFor="avatar"
+                                    className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-xs font-medium border rounded-md hover:bg-accent"
                                 >
-                                    <Camera
-                                        className="w-4 h-4 text-white"
-                                        strokeWidth={1.5}
-                                    />
-                                </label>
-                                <input
-                                    id="user-image-upload"
+                                    <Camera className="w-4 h-4" />
+                                    Upload Image
+                                </Label>
+                                <Input
+                                    id="avatar"
                                     type="file"
                                     accept="image/*"
-                                    className="hidden"
                                     onChange={handleImageSelection}
-                                    disabled={isLoading || isSubmitting}
+                                    className="hidden"
                                 />
-                            </div>
-                            {selectedFile && (
-                                <p className="text-[10px] font-thin font-body text-primary">
-                                    {selectedFile.name} selected
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    JPG, PNG up to 10MB
                                 </p>
-                            )}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
+            </fieldset>
 
-                {/* Basic Information Section */}
+            {/* Basic Information Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Basic Information
+                </legend>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <User className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
-                                Basic Information
+                                Personal Details
                             </span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="name"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    First Name{' '}
-                                    <span className="text-red-500">*</span>
+                                    First Name
                                 </Label>
                                 <Input
                                     id="name"
                                     {...register('name')}
-                                    placeholder="brandon"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="John"
                                 />
                                 {errors.name && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.name.message}
                                     </p>
                                 )}
@@ -321,17 +328,16 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="surname"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Last Name{' '}
-                                    <span className="text-red-500">*</span>
+                                    Last Name
                                 </Label>
                                 <Input
                                     id="surname"
                                     {...register('surname')}
-                                    placeholder="nelson"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="Doe"
                                 />
                                 {errors.surname && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.surname.message}
                                     </p>
                                 )}
@@ -342,24 +348,17 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="email"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Email{' '}
-                                    <span className="text-red-500">*</span>
+                                    Email
                                 </Label>
-                                <div className="relative">
-                                    <Mail
-                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
-                                        strokeWidth={1.5}
-                                    />
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        {...register('email')}
-                                        placeholder="brandonn@gmail.com"
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    />
-                                </div>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register('email')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="john@example.com"
+                                />
                                 {errors.email && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.email.message}
                                     </p>
                                 )}
@@ -370,59 +369,133 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="phone"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Phone{' '}
-                                    <span className="text-red-500">*</span>
+                                    Phone
                                 </Label>
-                                <div className="relative">
-                                    <Phone
-                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
-                                        strokeWidth={1.5}
-                                    />
-                                    <Input
-                                        id="phone"
-                                        {...register('phone')}
-                                        placeholder="011 123 4567"
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    />
-                                </div>
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    {...register('phone')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="+1 (555) 123-4567"
+                                />
                                 {errors.phone && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.phone.message}
                                     </p>
                                 )}
                             </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="gender"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Gender
+                                </Label>
+                                <Controller
+                                    name="gender"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select gender" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                                <SelectItem value="prefer_not_to_say">
+                                                    Prefer not to say
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="dob"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Date of Birth
+                                </Label>
+                                <Input
+                                    id="dob"
+                                    type="date"
+                                    {...register('dob')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="height"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Height (cm)
+                                </Label>
+                                <Input
+                                    id="height"
+                                    {...register('height')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="180"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="weight"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Weight (kg)
+                                </Label>
+                                <Input
+                                    id="weight"
+                                    {...register('weight')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="75"
+                                />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
+            </fieldset>
 
-                {/* Account Information Section */}
+            {/* Authentication Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Authentication
+                </legend>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Key className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
-                                Account Information
+                                Login Credentials
                             </span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="username"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Username{' '}
-                                    <span className="text-red-500">*</span>
+                                    Username
                                 </Label>
                                 <Input
                                     id="username"
                                     {...register('username')}
-                                    placeholder="brandon.n"
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="john_doe"
                                 />
                                 {errors.username && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.username.message}
                                     </p>
                                 )}
@@ -433,34 +506,453 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="password"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Password{' '}
-                                    <span className="text-red-500">*</span>
+                                    Password
                                 </Label>
                                 <div className="relative">
                                     <Input
                                         id="password"
-                                        type={showPassword ? "text" : "password"}
+                                        type={showPassword ? 'text' : 'password'}
                                         {...register('password')}
-                                        placeholder="***********************"
-                                        className="pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body pr-10"
+                                        placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
-                                        className="flex absolute inset-y-0 right-0 items-center pr-3"
                                         onClick={togglePasswordVisibility}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
                                     >
                                         {showPassword ? (
-                                            <EyeOff className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                            <EyeOff className="w-4 h-4" />
                                         ) : (
-                                            <Eye className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                            <Eye className="w-4 h-4" />
                                         )}
                                     </button>
                                 </div>
                                 {errors.password && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500 font-body">
                                         {errors.password.message}
                                     </p>
                                 )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Employment Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Employment Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Briefcase className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Work Details
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="position"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Position
+                                </Label>
+                                <Input
+                                    id="position"
+                                    {...register('position')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="Software Engineer"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="department"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Department
+                                </Label>
+                                <Input
+                                    id="department"
+                                    {...register('department')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="Engineering"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="startDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Start Date
+                                </Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    {...register('startDate')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="hrID"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    HR ID
+                                </Label>
+                                <Input
+                                    id="hrID"
+                                    type="number"
+                                    {...register('hrID', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="12345"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="departmentId"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Department ID
+                                </Label>
+                                <Input
+                                    id="departmentId"
+                                    type="number"
+                                    {...register('departmentId', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="1"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="businesscardURL"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Business Card URL
+                                </Label>
+                                <Input
+                                    id="businesscardURL"
+                                    type="url"
+                                    {...register('businesscardURL')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="https://example.com/business-card.pdf"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Address Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Address Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <MapPin className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Contact Address
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="street"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Street Address
+                                </Label>
+                                <Input
+                                    id="street"
+                                    {...register('street')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="123 Main Street"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="city"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        City
+                                    </Label>
+                                    <Input
+                                        id="city"
+                                        {...register('city')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="New York"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="state"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        State/Province
+                                    </Label>
+                                    <Input
+                                        id="state"
+                                        {...register('state')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="NY"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="country"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Country
+                                    </Label>
+                                    <Input
+                                        id="country"
+                                        {...register('country')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="United States"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label
+                                        htmlFor="postalCode"
+                                        className="block text-xs font-light uppercase font-body"
+                                    >
+                                        Postal Code
+                                    </Label>
+                                    <Input
+                                        id="postalCode"
+                                        {...register('postalCode')}
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                        placeholder="10001"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Targets Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Performance Targets
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Target className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Sales & Performance Goals
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetSalesAmount"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Sales Amount
+                                </Label>
+                                <Input
+                                    id="targetSalesAmount"
+                                    {...register('targetSalesAmount')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="100000"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetQuotationsAmount"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Quotations Amount
+                                </Label>
+                                <Input
+                                    id="targetQuotationsAmount"
+                                    {...register('targetQuotationsAmount')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="50000"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCurrency"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Currency
+                                </Label>
+                                <Input
+                                    id="targetCurrency"
+                                    {...register('targetCurrency')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="USD"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetHoursWorked"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Hours Worked
+                                </Label>
+                                <Input
+                                    id="targetHoursWorked"
+                                    type="number"
+                                    {...register('targetHoursWorked', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="40"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetNewClients"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target New Clients
+                                </Label>
+                                <Input
+                                    id="targetNewClients"
+                                    type="number"
+                                    {...register('targetNewClients', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="10"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetNewLeads"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target New Leads
+                                </Label>
+                                <Input
+                                    id="targetNewLeads"
+                                    type="number"
+                                    {...register('targetNewLeads', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="20"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCheckIns"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Check-ins
+                                </Label>
+                                <Input
+                                    id="targetCheckIns"
+                                    type="number"
+                                    {...register('targetCheckIns', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="22"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetCalls"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Calls
+                                </Label>
+                                <Input
+                                    id="targetCalls"
+                                    type="number"
+                                    {...register('targetCalls', { valueAsNumber: true })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="50"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="targetPeriod"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Target Period
+                                </Label>
+                                <Controller
+                                    name="targetPeriod"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select period" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* System Settings Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    System Settings
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Settings className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Access & Organization
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="role"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Role
+                                </Label>
+                                <Input
+                                    id="role"
+                                    {...register('role')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="user"
+                                />
                             </div>
 
                             <div className="space-y-1">
@@ -468,67 +960,27 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="accessLevel"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Access Level{' '}
-                                    <span className="text-red-500">*</span>
+                                    Access Level
                                 </Label>
                                 <Controller
-                                    control={control}
                                     name="accessLevel"
-                                    render={({ field }: { field: any }) => (
-                                        <div className="relative">
-                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
-                                                <div className="flex gap-2 items-center">
-                                                    <ShieldCheck
-                                                        className="w-4 h-4 text-muted-foreground"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                    <span className="uppercase text-[10px] font-thin font-body">
-                                                        {field.value
-                                                            ? field.value.replace(
-                                                                  /_/g,
-                                                                  ' ',
-                                                              )
-                                                            : 'SELECT ACCESS LEVEL'}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown
-                                                    className="ml-2 w-4 h-4 opacity-50"
-                                                    strokeWidth={1.5}
-                                                />
-                                            </div>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                value={field.value}
-                                            >
-                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
-                                                <SelectContent>
-                                                    {Object.values(
-                                                        AccessLevel,
-                                                    ).map((level) => (
-                                                        <SelectItem
-                                                            key={level}
-                                                            value={level}
-                                                        >
-                                                            <div className="flex gap-2 items-center">
-                                                                <ShieldCheck
-                                                                    className="w-4 h-4"
-                                                                    strokeWidth={
-                                                                        1.5
-                                                                    }
-                                                                />
-                                                                <span className="uppercase text-[10px] font-thin font-body">
-                                                                    {level.replace(
-                                                                        /_/g,
-                                                                        ' ',
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select access level" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {Object.values(AccessLevel).map((level) => (
+                                                    <SelectItem key={level} value={level}>
+                                                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     )}
                                 />
                             </div>
@@ -538,73 +990,32 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="status"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Status{' '}
-                                    <span className="text-red-500">*</span>
+                                    Status
                                 </Label>
                                 <Controller
-                                    control={control}
                                     name="status"
-                                    render={({ field }: { field: any }) => (
-                                        <div className="relative">
-                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
-                                                <div className="flex gap-2 items-center">
-                                                    <ToggleLeft
-                                                        className="w-4 h-4 text-muted-foreground"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                    <span className="uppercase text-[10px] font-thin font-body">
-                                                        {field.value
-                                                            ? field.value.replace(
-                                                                  /_/g,
-                                                                  ' ',
-                                                              )
-                                                            : 'SELECT STATUS'}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown
-                                                    className="ml-2 w-4 h-4 opacity-50"
-                                                    strokeWidth={1.5}
-                                                />
-                                            </div>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                value={field.value}
-                                            >
-                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
-                                                <SelectContent>
-                                                    {Object.values(
-                                                        AccountStatus,
-                                                    ).map((status) => (
-                                                        <SelectItem
-                                                            key={status}
-                                                            value={status}
-                                                        >
-                                                            <div className="flex gap-2 items-center">
-                                                                <ToggleLeft
-                                                                    className="w-4 h-4"
-                                                                    strokeWidth={
-                                                                        1.5
-                                                                    }
-                                                                />
-                                                                <span className="uppercase text-[10px] font-thin font-body">
-                                                                    {status.replace(
-                                                                        /_/g,
-                                                                        ' ',
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {Object.values(AccountStatus).map((status) => (
+                                                    <SelectItem key={status} value={status}>
+                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     )}
                                 />
                             </div>
 
-                            {/* Branch Selector */}
-                            <div className="space-y-1 md:col-span-2">
+                            <div className="space-y-1">
                                 <Label
                                     htmlFor="branchId"
                                     className="block text-xs font-light uppercase font-body"
@@ -612,89 +1023,28 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     Branch
                                 </Label>
                                 <Controller
-                                    control={control}
                                     name="branchId"
+                                    control={control}
                                     render={({ field }: { field: any }) => (
                                         <div className="relative">
-                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
-                                                <div className="flex gap-2 items-center">
-                                                    <Building
-                                                        className="w-4 h-4 text-muted-foreground"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                    <span className="uppercase text-[10px] font-thin font-body">
-                                                        {isLoadingBranches
-                                                            ? 'LOADING BRANCHES...'
-                                                            : branches.find(
-                                                                  (b) =>
-                                                                      b.uid ===
-                                                                      parseInt(
-                                                                          field.value,
-                                                                      ),
-                                                              )?.name ||
-                                                              'SELECT BRANCH'}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown
-                                                    className="ml-2 w-4 h-4 opacity-50"
-                                                    strokeWidth={1.5}
-                                                />
-                                            </div>
                                             <Select
+                                                value={field.value?.toString()}
                                                 onValueChange={(value) =>
-                                                    field.onChange(
-                                                        parseInt(value, 10),
-                                                    )
-                                                }
-                                                value={
-                                                    field.value
-                                                        ? field.value.toString()
-                                                        : undefined
-                                                }
-                                                disabled={
-                                                    isLoadingBranches ||
-                                                    branches.length === 0
+                                                    field.onChange(parseInt(value))
                                                 }
                                             >
-                                                <SelectTrigger className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" />
+                                                <SelectTrigger className="font-light bg-card border-border">
+                                                    <SelectValue placeholder="Select branch" />
+                                                </SelectTrigger>
                                                 <SelectContent>
-                                                    {branches.length === 0 &&
-                                                    !isLoadingBranches ? (
+                                                    {branches?.map((branch) => (
                                                         <SelectItem
-                                                            value="no-branches"
-                                                            disabled
+                                                            key={branch.uid}
+                                                            value={branch.uid.toString()}
                                                         >
-                                                            <span className="text-[10px] font-thin font-body text-muted-foreground">
-                                                                No branches
-                                                                available
-                                                            </span>
+                                                            {branch.name}
                                                         </SelectItem>
-                                                    ) : (
-                                                        branches.map(
-                                                            (branch) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        branch.uid
-                                                                    }
-                                                                    value={branch.uid.toString()}
-                                                                >
-                                                                    <div className="flex gap-2 items-center">
-                                                                        <Building
-                                                                            className="w-4 h-4"
-                                                                            strokeWidth={
-                                                                                1.5
-                                                                            }
-                                                                        />
-                                                                        <span className="uppercase text-[10px] font-thin font-body">
-                                                                            {
-                                                                                branch.name
-                                                                            }
-                                                                        </span>
-                                                                    </div>
-                                                                </SelectItem>
-                                                            ),
-                                                        )
-                                                    )}
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -705,6 +1055,114 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         Loading branches...
                                     </p>
                                 )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="userref"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    User Reference
+                                </Label>
+                                <Input
+                                    id="userref"
+                                    {...register('userref')}
+                                    disabled={true}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="organisationRef"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Organization Reference
+                                </Label>
+                                <Input
+                                    id="organisationRef"
+                                    {...register('organisationRef')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="ORG123"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Device Information Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Device Information
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Globe className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Device & Platform
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="platform"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Platform
+                                </Label>
+                                <Controller
+                                    name="platform"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select platform" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ios">iOS</SelectItem>
+                                                <SelectItem value="android">Android</SelectItem>
+                                                <SelectItem value="web">Web</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="deviceId"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Device ID
+                                </Label>
+                                <Input
+                                    id="deviceId"
+                                    {...register('deviceId')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="device-123456"
+                                />
+                            </div>
+
+                            <div className="space-y-1 md:col-span-2">
+                                <Label
+                                    htmlFor="expoPushToken"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Expo Push Token
+                                </Label>
+                                <Input
+                                    id="expoPushToken"
+                                    {...register('expoPushToken')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="ExponentPushToken[xxxxx]"
+                                />
                             </div>
                         </div>
                     </CardContent>

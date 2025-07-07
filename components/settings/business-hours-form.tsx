@@ -1,10 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -33,7 +28,10 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { organizationHoursApi, OrganisationHours } from '@/lib/services/organization-api';
+import { useBusinessHours } from '@/hooks/use-organization-settings';
+import {z} from 'zod'
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 // Time options for the schedule
 const timeOptions = [
@@ -145,147 +143,58 @@ const hoursSchema = z.object({
 });
 
 export default function BusinessHoursForm() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const [originalHours, setOriginalHours] = useState<OrganisationHours | null>(null);
-    const [hours, setHours] = useState<OrganisationHours | null>(null);
-
-    const form = useForm<z.infer<typeof hoursSchema>>({
-        resolver: zodResolver(hoursSchema),
-        defaultValues: {
-            schedule: {
-                monday: { start: '09:00', end: '17:00', closed: false },
-                tuesday: { start: '09:00', end: '17:00', closed: false },
-                wednesday: { start: '09:00', end: '17:00', closed: false },
-                thursday: { start: '09:00', end: '17:00', closed: false },
-                friday: { start: '09:00', end: '17:00', closed: false },
-                saturday: { start: '10:00', end: '16:00', closed: true },
-                sunday: { start: '10:00', end: '16:00', closed: true },
-            },
-            timezone: 'UTC',
-            holidayMode: false,
-            holidayUntil: null,
-        },
-    });
+    const {
+        form,
+        data,
+        isLoading,
+        isSaving,
+        error,
+        handleSubmit,
+        isDirty,
+        refetch,
+    } = useBusinessHours();
 
     // Watch holiday mode to conditionally show date picker
     const holidayMode = form.watch('holidayMode');
 
-    // Fetch current hours when component mounts
-    useEffect(() => {
-        const fetchHours = async () => {
-            setIsInitialLoading(true);
-            try {
-                const hours = await organizationHoursApi.getHours();
-                setOriginalHours(hours);
-                setHours(hours);
-
-                // Reset form with fetched hours
-                form.reset({
-                    schedule: hours.schedule || {
-                        monday: { start: '09:00', end: '17:00', closed: false },
-                        tuesday: {
-                            start: '09:00',
-                            end: '17:00',
-                            closed: false,
-                        },
-                        wednesday: {
-                            start: '09:00',
-                            end: '17:00',
-                            closed: false,
-                        },
-                        thursday: {
-                            start: '09:00',
-                            end: '17:00',
-                            closed: false,
-                        },
-                        friday: { start: '09:00', end: '17:00', closed: false },
-                        saturday: {
-                            start: '10:00',
-                            end: '16:00',
-                            closed: true,
-                        },
-                        sunday: { start: '10:00', end: '16:00', closed: true },
-                    },
-                    timezone: hours.timezone || 'UTC',
-                    holidayMode: hours.holidayMode || false,
-                    holidayUntil: hours.holidayUntil
-                        ? new Date(hours.holidayUntil)
-                        : null,
-                });
-            } catch (error) {
-                console.error('Error fetching business hours:', error);
-                // Silently handle the error without showing a toast
-                // Initialize with default values
-                const defaultSchedule = {
-                    monday: { start: '09:00', end: '17:00', closed: false },
-                    tuesday: { start: '09:00', end: '17:00', closed: false },
-                    wednesday: { start: '09:00', end: '17:00', closed: false },
-                    thursday: { start: '09:00', end: '17:00', closed: false },
-                    friday: { start: '09:00', end: '17:00', closed: false },
-                    saturday: { start: '10:00', end: '16:00', closed: true },
-                    sunday: { start: '10:00', end: '16:00', closed: true },
-                };
-
-                const defaultHours = {
-                    schedule: defaultSchedule,
-                    timezone: 'UTC',
-                    holidayMode: false,
-                };
-
-                setHours(defaultHours);
-                setOriginalHours(defaultHours);
-
-                form.reset({
-                    schedule: defaultSchedule,
-                    timezone: 'UTC',
-                    holidayMode: false,
-                    holidayUntil: null,
-                });
-            } finally {
-                setIsInitialLoading(false);
-            }
-        };
-
-        fetchHours();
-    }, [form]);
-
-    async function onSubmit(values: z.infer<typeof hoursSchema>) {
-        setIsLoading(true);
-        try {
-            // Prepare data for submission
-            const hoursData = {
-                ...values,
-                // Convert Date object to ISO string if it exists
-                holidayUntil: values.holidayUntil
-                    ? values.holidayUntil.toISOString()
-                    : undefined,
-            };
-
-            console.log('Business hours data to be sent to server:', hoursData);
-
-            // Submit data to server
-            await organizationHoursApi.updateHours(hoursData);
-
-            toast.success('Business hours updated successfully');
-        } catch (error) {
-            console.error('Error updating business hours:', error);
-            toast.error('Failed to update business hours. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     // Show loading state while fetching initial data
-    if (isInitialLoading) {
+    if (isLoading) {
         return (
             <Card className="border-border/50">
-                <CardContent className="flex items-center justify-center p-8">
+                <CardContent className="flex justify-center items-center p-8">
                     <div className="text-center">
-                        <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
+                        <Loader2 className="mx-auto mb-4 w-8 h-8 animate-spin" />
                         <p className="text-xs font-normal uppercase font-body">
                             Loading business hours...
                         </p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Show error state if there's an error
+    if (error) {
+        return (
+            <Card className="border-border/50">
+                <CardContent className="p-8">
+                    <div className="text-center">
+                        <div className="mb-4 text-red-500">
+                            <p className="mb-2 text-xs font-normal uppercase font-body">
+                                Error loading business hours
+                            </p>
+                            <p className="text-[10px] font-thin text-muted-foreground font-body">
+                                {error.message}
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => refetch()} 
+                            variant="outline" 
+                            size="sm"
+                            className="text-xs font-thin uppercase font-body"
+                        >
+                            Try Again
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -302,9 +211,30 @@ export default function BusinessHoursForm() {
             <CardContent>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        onSubmit={form.handleSubmit(handleSubmit)}
                         className="space-y-6"
                     >
+                        {/* Status indicator */}
+                        {(isDirty || isSaving) && (
+                            <div className="flex justify-between items-center mb-2 text-xs">
+                                {isDirty && !isSaving && (
+                                    <span className="text-amber-500 dark:text-amber-400">
+                                        Changes not saved
+                                    </span>
+                                )}
+                                {isSaving && (
+                                    <span className="text-blue-500 dark:text-blue-400">
+                                        Saving changes...
+                                    </span>
+                                )}
+                                {!isDirty && !isSaving && (
+                                    <span className="text-green-500 dark:text-green-400">
+                                        Changes saved
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
                         <div className="space-y-6">
                             <FormField
                                 control={form.control}
@@ -414,7 +344,7 @@ export default function BusinessHoursForm() {
                                     control={form.control}
                                     name="holidayMode"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between">
+                                        <FormItem className="flex flex-row justify-between items-center">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-xs font-normal uppercase font-body">
                                                     Holiday Mode
@@ -469,12 +399,12 @@ export default function BusinessHoursForm() {
                                                                             date
                                                                         </span>
                                                                     )}
-                                                                    <CalendarIcon className="w-4 h-4 ml-auto opacity-50" />
+                                                                    <CalendarIcon className="ml-auto w-4 h-4 opacity-50" />
                                                                 </Button>
                                                             </FormControl>
                                                         </PopoverTrigger>
                                                         <PopoverContent
-                                                            className="w-auto p-0"
+                                                            className="p-0 w-auto"
                                                             align="start"
                                                         >
                                                             <Calendar
@@ -513,11 +443,11 @@ export default function BusinessHoursForm() {
                         <div className="flex justify-end">
                             <Button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isSaving}
                                 className="text-xs font-thin text-white uppercase font-body bg-primary"
                             >
-                                {isLoading && (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                {isSaving && (
+                                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                                 )}
                                 Save Changes
                             </Button>
@@ -548,18 +478,18 @@ function DaySchedule({ day, label, form, timeOptions }: DayScheduleProps) {
     const closed = form.watch(`schedule.${day}.closed`);
 
     return (
-        <div className="grid grid-cols-12 gap-4 p-4 border rounded-md">
-            <div className="flex items-center col-span-12 sm:col-span-3">
+        <div className="grid grid-cols-12 gap-4 p-4 rounded-md border">
+            <div className="flex col-span-12 items-center sm:col-span-3">
                 <h4 className="text-xs font-thin uppercase font-body">
                     {label}
                 </h4>
             </div>
-            <div className="flex items-center col-span-12 sm:col-span-3">
+            <div className="flex col-span-12 items-center sm:col-span-3">
                 <FormField
                     control={form.control}
                     name={`schedule.${day}.closed`}
                     render={({ field }) => (
-                        <FormItem className="flex items-center justify-between space-x-2">
+                        <FormItem className="flex justify-between items-center space-x-2">
                             <FormLabel className="text-xs font-thin uppercase font-body">
                                 Closed
                             </FormLabel>

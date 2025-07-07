@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Form,
@@ -61,11 +62,18 @@ export default function GeofenceSettingsForm() {
                         alertDistance: settings.geofence.alertDistance || 50,
                     });
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching geofence settings:', error);
-                toast.error(
-                    'Failed to load geofence settings. Please try again.',
-                );
+                
+                if (error?.message?.includes('Organization reference not found') ||
+                    error?.message?.includes('Please log in again')) {
+                    showErrorToast('Please log in again to access your organization settings.', toast);
+                } else if (error?.message?.includes('not found')) {
+                    // Settings not created yet, use defaults
+                    showSuccessToast('Geofence settings not found. Using default values.', toast);
+                } else {
+                    showErrorToast('Failed to load geofence settings. Please try again.', toast);
+                }
             } finally {
                 setIsInitialLoading(false);
             }
@@ -92,11 +100,12 @@ export default function GeofenceSettingsForm() {
             // Submit data to server
             await organizationSettingsApi.updateSettings(settingsData);
 
-            toast.success('Geofence settings updated successfully');
+            showSuccessToast('Geofence settings updated successfully', toast);
         } catch (error) {
             console.error('Error updating geofence settings:', error);
-            toast.error(
+            showErrorToast(
                 'Failed to update geofence settings. Please try again.',
+                toast
             );
         } finally {
             setIsLoading(false);

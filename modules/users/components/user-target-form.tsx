@@ -78,6 +78,18 @@ const userTargetSchema = z.object({
                 return isNaN(num) ? undefined : num;
             }),
     ),
+    targetQuotationsAmount: z.preprocess(
+        (val) => (val === '' || val === null ? undefined : String(val)),
+        z
+            .string()
+            .optional()
+            .transform((val) => {
+                if (val === undefined) return undefined;
+                const num = parseFloat(val);
+                return isNaN(num) ? undefined : num;
+            }),
+    ),
+
     targetCurrency: z.string().optional(),
     targetHoursWorked: z.preprocess(
         (val) => (val === '' || val === null ? undefined : String(val)),
@@ -142,6 +154,8 @@ const userTargetSchema = z.object({
 // Form input type (string values)
 type UserTargetFormInput = {
     targetSalesAmount: string;
+    targetQuotationsAmount: string;
+
     targetCurrency?: string;
     targetHoursWorked: string;
     targetNewClients: string;
@@ -159,6 +173,8 @@ export type UserTargetFormValues = z.output<typeof userTargetSchema>;
 interface UserTarget {
     id?: number;
     targetSalesAmount?: number;
+    targetQuotationsAmount?: number;
+
     targetCurrency?: string;
     targetHoursWorked?: number;
     targetNewClients?: number;
@@ -199,6 +215,10 @@ export default function UserTargetForm({
             targetSalesAmount: initialData?.targetSalesAmount
                 ? initialData.targetSalesAmount.toString()
                 : '',
+            targetQuotationsAmount: initialData?.targetQuotationsAmount
+                ? initialData.targetQuotationsAmount.toString()
+                : '',
+
             targetCurrency: initialData?.targetCurrency || 'USD',
             targetHoursWorked: initialData?.targetHoursWorked
                 ? initialData.targetHoursWorked.toString()
@@ -241,6 +261,10 @@ export default function UserTargetForm({
                             targetSalesAmount: userTarget.targetSalesAmount
                                 ? userTarget.targetSalesAmount.toString()
                                 : '',
+                            targetQuotationsAmount: userTarget.targetQuotationsAmount
+                                ? userTarget.targetQuotationsAmount.toString()
+                                : '',
+
                             targetCurrency: userTarget.targetCurrency || 'ZAR',
                             targetHoursWorked: userTarget.targetHoursWorked
                                 ? userTarget.targetHoursWorked.toString()
@@ -327,6 +351,8 @@ export default function UserTargetForm({
             setCurrentTarget(null);
             form.reset({
                 targetSalesAmount: '',
+                targetQuotationsAmount: '',
+
                 targetCurrency: 'ZAR',
                 targetHoursWorked: '',
                 targetNewClients: '',
@@ -384,13 +410,13 @@ export default function UserTargetForm({
                                                 htmlFor="target-amount"
                                                 className="block text-xs font-light text-white uppercase font-body"
                                             >
-                                                Target Amount
+                                                Total Sales Target
                                             </label>
                                             <FormControl>
                                                 <Input
                                                     {...field}
                                                     type="number"
-                                                    placeholder="enter target amount"
+                                                    placeholder="enter total sales target"
                                                     className="font-thin font-body"
                                                 />
                                             </FormControl>
@@ -440,6 +466,32 @@ export default function UserTargetForm({
                                         </FormItem>
                                     )}
                                 />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="targetQuotationsAmount"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <label
+                                                htmlFor="target-quotations-amount"
+                                                className="block text-xs font-light text-white uppercase font-body"
+                                            >
+                                                Quotations Target
+                                            </label>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    type="number"
+                                                    placeholder="enter quotations target"
+                                                    className="font-thin font-body"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
                             </div>
                         </div>
 

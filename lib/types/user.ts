@@ -17,6 +17,7 @@ export enum AccessLevel {
     MANAGER = 'manager',
     SUPPORT = 'support',
     DEVELOPER = 'developer',
+    OWNER = 'owner',
     USER = 'user',
 }
 
@@ -47,6 +48,10 @@ export interface UserTarget {
     uid: number;
     targetSalesAmount: string;
     currentSalesAmount: string;
+    targetQuotationsAmount: string;
+    currentQuotationsAmount: string;
+
+    currentOrdersAmount: string;
     targetCurrency: string;
     targetHoursWorked: number;
     currentHoursWorked: number | null;

@@ -60,6 +60,9 @@ interface InsightRequest {
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
 
+// Model fallback strategy: Try newer models first, then fall back to older ones
+// This handles the case where gemini-pro is deprecated and no longer available
+
 // Enhanced comprehensive prompt that generates all sections in one response
 function createComprehensivePrompt(request: InsightRequest): string {
     const {
@@ -235,13 +238,13 @@ function determineUrgencyLevel(
 export async function POST(request: NextRequest) {
     try {
         const body: InsightRequest = await request.json();
-        
+
         // Normalize target data to ensure numeric values
         if (body.targetData) {
             body.targetData = body.targetData.map(target => ({
                 ...target,
-                currentValue: typeof target.currentValue === 'string' 
-                    ? parseFloat(target.currentValue) || 0 
+                currentValue: typeof target.currentValue === 'string'
+                    ? parseFloat(target.currentValue) || 0
                     : target.currentValue,
                 targetValue: typeof target.targetValue === 'string'
                     ? parseFloat(target.targetValue) || 0
@@ -291,10 +294,35 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-        const prompt = createComprehensivePrompt(body);
+        // Try different model names in order of preference
+        const modelNames = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'];
+        let result;
+        let modelUsed = '';
 
-        const result = await model.generateContent(prompt);
+        for (const modelName of modelNames) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const prompt = createComprehensivePrompt(body);
+
+                result = await model.generateContent(prompt);
+                modelUsed = modelName;
+                console.log(`Successfully used model: ${modelName}`);
+                break;
+            } catch (modelError: any) {
+                console.warn(`Failed to use model ${modelName}:`, modelError.message);
+
+                // If this is the last model to try, throw the error
+                if (modelName === modelNames[modelNames.length - 1]) {
+                    throw modelError;
+                }
+                continue;
+            }
+        }
+
+        if (!result) {
+            throw new Error('All model attempts failed');
+        }
+
         const response = result.response;
         const text = response.text();
 
@@ -317,17 +345,47 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: unknown) {
         console.error('Error generating insights:', error);
+
+        // Determine error type and provide appropriate response
+        const errorMessage = (error as Error)?.message || String(error);
+        let errorType = 'general';
+        let statusCode = 500;
+
+        if (errorMessage.includes('API key') || errorMessage.includes('GOOGLE_AI_API_KEY')) {
+            errorType = 'api_key';
+            statusCode = 401;
+        } else if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
+            errorType = 'model_unavailable';
+            statusCode = 503;
+        } else if (errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+            errorType = 'rate_limit';
+            statusCode = 429;
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+            errorType = 'network';
+            statusCode = 503;
+        }
+
         const errorInsights = [
-            'Unable to generate AI insights at this time. Please try again later.',
+            errorType === 'api_key'
+                ? 'AI insights require a valid API key to function. Please contact your administrator.'
+                : errorType === 'model_unavailable'
+                ? 'AI model is temporarily unavailable. Using fallback insights based on your data.'
+                : errorType === 'rate_limit'
+                ? 'AI service usage limit reached. Please try again in a few minutes.'
+                : errorType === 'network'
+                ? 'Network connectivity issue. Please check your connection and try again.'
+                : 'Unable to generate AI insights at this time. Please try again later.',
             'Review your current targets and focus on high-priority activities.',
             'Consider reaching out to recent leads for immediate opportunities.',
             'Analyze your sales pipeline for conversion opportunities.',
         ];
+
         const errorRecommendations = [
             'Review your pipeline manually for immediate opportunities',
             'Follow up with recent leads and prospects',
             'Set clear daily and weekly activity goals',
         ];
+
         const errorQuickActions = [
             'Contact warm leads from this week',
             'Update your CRM with recent activities',
@@ -337,17 +395,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             {
                 error: 'Failed to generate insights',
+                errorType,
                 insights: errorInsights,
                 feasibilityAnalysis: errorRecommendations,
                 actionableRecommendations: errorQuickActions,
                 urgencyLevel: 'medium' as const,
-                summary: 'Focus on your core activities and maintain consistent effort toward your goals.',
+                summary: errorType === 'model_unavailable'
+                    ? 'AI insights are temporarily unavailable, but your performance data shows continued progress. Focus on core activities.'
+                    : 'Focus on your core activities and maintain consistent effort toward your goals.',
                 recommendations: errorRecommendations,
                 quickActions: errorQuickActions,
                 generatedAt: new Date().toISOString(),
                 usingFallback: true,
             },
-            { status: 500 },
+            { status: statusCode },
         );
     }
 }

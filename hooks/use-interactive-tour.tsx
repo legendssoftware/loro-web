@@ -893,13 +893,11 @@ const tourSteps: { [key: string]: DriveStep[] } = {
     // ====================
     '/staff': [
         {
-            element: '#staff-page-title',
             popover: {
                 title: '👥 STAFF MANAGEMENT CENTRAL',
                 description:
                     'Welcome to Staff Management! This is your comprehensive hub for managing team members, roles, permissions, and organizational structure. Let\'s explore how to effectively manage your workforce.',
-                side: 'bottom',
-                align: 'start',
+                align: 'center',
             },
         },
         {
@@ -925,7 +923,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🚦 STATUS FILTERING',
                 description:
-                    'Filter your team by employment status: Active (currently working), Pending (awaiting onboarding), Suspended (temporarily inactive), or Terminated (no longer with company). This helps you focus on specific groups.',
+                    'Filter your team by employment status: Active (currently working), Inactive (awaiting onboarding), Suspended (temporarily inactive), or Deleted (no longer with company). This helps you focus on specific groups.',
                 side: 'bottom',
                 align: 'start',
             },
@@ -935,7 +933,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🛡️ ROLE-BASED FILTERING',
                 description:
-                    'Filter by access levels and roles: Admin (full system access), Manager (departmental oversight), Executive (strategic access), Developer (technical access), User (standard employee), or Client (external access). Essential for security audits!',
+                    'Filter by access levels and roles: Admin (full system access), Manager (departmental oversight), Support (customer service), Developer (technical access), User (standard employee). Essential for security audits!',
                 side: 'bottom',
                 align: 'center',
             },
@@ -975,143 +973,23 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '📋 COMPREHENSIVE STAFF DIRECTORY',
                 description:
-                    'Your complete team roster! This table shows all staff members with their key information: name, role, status, branch, contact details, and more. Each row represents one team member.',
+                    'Your complete team roster! This grid shows all staff members with their key information: name, role, status, branch, contact details, and more. Each card represents one team member.',
                 side: 'top',
                 align: 'center',
             },
         },
         {
-            element: '#staff-table-header-name',
-            popover: {
-                title: '👤 EMPLOYEE IDENTIFICATION',
-                description:
-                    'Staff member names and basic identification. Click the column header to sort alphabetically by name for easy browsing.',
-                side: 'bottom',
-                align: 'start',
-            },
-        },
-        {
-            element: '#staff-table-header-role',
-            popover: {
-                title: '🎯 ROLE & RESPONSIBILITIES',
-                description:
-                    'Each person\'s role and access level within your organization. This determines what features and data they can access in the system.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
-            element: '#staff-table-header-status',
-            popover: {
-                title: '📊 EMPLOYMENT STATUS',
-                description:
-                    'Current employment status indicator. Green typically means active, yellow for pending, red for suspended, and gray for terminated staff.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
-            element: '#staff-table-header-branch',
-            popover: {
-                title: '🏢 ORGANIZATIONAL STRUCTURE',
-                description:
-                    'Which branch or location each staff member is assigned to. Important for multi-location businesses and reporting structure.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
-            element: '#staff-table-header-contact',
-            popover: {
-                title: '📞 CONTACT INFORMATION',
-                description:
-                    'Quick access to staff contact details including email and phone numbers for easy communication.',
-                side: 'bottom',
-                align: 'end',
-            },
-        },
-        {
-            element: '.staff-row',
+            element: '.user-card',
             popover: {
                 title: '🖱️ DETAILED STAFF PROFILE',
                 description:
-                    'Click any staff member row to open their complete profile. You\'ll see full personal details, employment history, permissions, and available actions based on your role.',
+                    'Click any staff member card to open their complete profile. You\'ll see full personal details, employment history, permissions, and available actions based on your role.',
                 side: 'right',
                 align: 'start',
             },
         },
         {
-            element: '#staff-row-example .staff-avatar',
-            popover: {
-                title: '📸 STAFF PHOTO',
-                description:
-                    'Visual identification helps put faces to names. Staff can upload their own photos or admins can add them during onboarding.',
-                side: 'right',
-                align: 'start',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-name',
-            popover: {
-                title: '👨‍💼 FULL NAME & TITLE',
-                description:
-                    'Complete staff member name and their job title. This helps identify who does what in your organization.',
-                side: 'right',
-                align: 'center',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-role-badge',
-            popover: {
-                title: '🏷️ ROLE INDICATOR',
-                description:
-                    'Visual badge showing the staff member\'s role and access level. Color-coded for quick identification of permission levels.',
-                side: 'bottom',
-                align: 'start',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-status-badge',
-            popover: {
-                title: '🚦 STATUS INDICATOR',
-                description:
-                    'Current employment status with color coding: Active (green), Pending (yellow), Suspended (red), Terminated (gray).',
-                side: 'bottom',
-                align: 'start',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-branch-info',
-            popover: {
-                title: '🏢 BRANCH ASSIGNMENT',
-                description:
-                    'Shows which branch or location this staff member belongs to. Important for organizational structure and reporting.',
-                side: 'bottom',
-                align: 'center',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-contact-info',
-            popover: {
-                title: '📧 QUICK CONTACT',
-                description:
-                    'Email and phone information for immediate communication. Click to open your email client or dial the number directly.',
-                side: 'bottom',
-                align: 'end',
-            },
-        },
-        {
-            element: '#staff-row-example .staff-actions',
-            popover: {
-                title: '⚡ QUICK ACTIONS',
-                description:
-                    'Depending on your permissions, you might see action buttons for editing details, changing status, resetting passwords, or other management functions.',
-                side: 'left',
-                align: 'end',
-            },
-        },
-        {
-            element: '#staff-table-pagination',
+            element: '#staff-pagination',
             popover: {
                 title: '📄 NAVIGATE LARGE TEAMS',
                 description:
@@ -1140,7 +1018,7 @@ const tourSteps: { [key: string]: DriveStep[] } = {
             popover: {
                 title: '🚀 STAFF MANAGEMENT COMPLETE!',
                 description:
-                    'You\'re now equipped to effectively manage your entire workforce! Use the search and filters to find specific team members, click on rows for detailed profiles, and add new staff as your organization grows.',
+                    'You\'re now equipped to effectively manage your entire workforce! Use the search and filters to find specific team members, click on cards for detailed profiles, and add new staff as your organization grows.',
                 align: 'center',
             },
         },

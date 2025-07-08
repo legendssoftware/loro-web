@@ -36,7 +36,6 @@ import {
     Award,
     Target,
     CreditCard,
-    Globe,
     Clock,
     Settings,
 } from 'lucide-react';
@@ -44,7 +43,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AccountStatus } from '@/lib/enums/status.enums';
 import { useBranchQuery } from '@/hooks/use-branch-query';
 
-// Enhanced form schema with all user entity fields
+// Enhanced form schema with essential user entity fields for creation
 const userFormSchema = z.object({
     // Basic Authentication
     username: z
@@ -65,18 +64,9 @@ const userFormSchema = z.object({
     role: z.string().optional(),
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
-    userref: z.string(),
     branchId: z.number().optional(),
-    organisationRef: z.string().optional(),
-    departmentId: z.number().optional(),
     
-    // HR and Employee Information
-    hrID: z.number().optional(),
-    businesscardURL: z.string().optional(),
-    
-    // User Profile Fields
-    height: z.string().optional(),
-    weight: z.string().optional(),
+    // User Profile Fields (optional)
     gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
     dob: z.string().optional(), // Date of birth as string for form handling
     
@@ -92,7 +82,7 @@ const userFormSchema = z.object({
     country: z.string().optional(),
     postalCode: z.string().optional(),
     
-    // Target Information
+    // Target Information (basic targets only)
     targetSalesAmount: z.string().optional(),
     targetQuotationsAmount: z.string().optional(),
     targetCurrency: z.string().optional(),
@@ -102,11 +92,6 @@ const userFormSchema = z.object({
     targetCheckIns: z.number().optional(),
     targetCalls: z.number().optional(),
     targetPeriod: z.string().optional(),
-    
-    // Device Information
-    expoPushToken: z.string().optional(),
-    deviceId: z.string().optional(),
-    platform: z.enum(['ios', 'android', 'web']).optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -138,10 +123,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         setShowPassword(!showPassword);
     };
 
-    // Generate a unique user reference code
-    const generateUserRef = () =>
-        `USR${Math.floor(100000 + Math.random() * 900000)}`;
-
     // Default form values
     const defaultValues: Partial<UserFormValues> = {
         username: '',
@@ -154,14 +135,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         role: 'user',
         accessLevel: AccessLevel.USER,
         status: AccountStatus.ACTIVE,
-        userref: generateUserRef(),
         branchId: initialData?.branchId,
-        organisationRef: '',
-        departmentId: 0,
-        hrID: 0,
-        businesscardURL: '',
-        height: '',
-        weight: '',
         gender: undefined,
         dob: '',
         position: '',
@@ -181,9 +155,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         targetCheckIns: 0,
         targetCalls: 0,
         targetPeriod: 'monthly',
-        expoPushToken: '',
-        deviceId: '',
-        platform: undefined,
         ...initialData,
     };
 
@@ -256,7 +227,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 </legend>
                 <Card className="border-border/50">
                     <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex gap-4 items-center">
                             <Avatar className="w-20 h-20">
                                 <AvatarImage src={userImage || ''} alt="Profile" />
                                 <AvatarFallback>
@@ -266,7 +237,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                             <div className="flex-1">
                                 <Label
                                     htmlFor="avatar"
-                                    className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-xs font-medium border rounded-md hover:bg-accent"
+                                    className="inline-flex gap-2 items-center px-3 py-2 text-xs font-medium rounded-md border cursor-pointer hover:bg-accent"
                                 >
                                     <Camera className="w-4 h-4" />
                                     Upload Image
@@ -302,7 +273,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="name"
@@ -430,36 +401,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
                             </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="height"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Height (cm)
-                                </Label>
-                                <Input
-                                    id="height"
-                                    {...register('height')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="180"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="weight"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Weight (kg)
-                                </Label>
-                                <Input
-                                    id="weight"
-                                    {...register('weight')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="75"
-                                />
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -480,7 +421,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="username"
@@ -513,13 +454,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
                                         {...register('password')}
-                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body pr-10"
+                                        className="pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                         placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
                                         onClick={togglePasswordVisibility}
-                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                        className="flex absolute inset-y-0 right-0 items-center pr-3 text-gray-400 hover:text-gray-600"
                                     >
                                         {showPassword ? (
                                             <EyeOff className="w-4 h-4" />
@@ -554,7 +495,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="position"
@@ -599,54 +540,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
                             </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="hrID"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    HR ID
-                                </Label>
-                                <Input
-                                    id="hrID"
-                                    type="number"
-                                    {...register('hrID', { valueAsNumber: true })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="12345"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="departmentId"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Department ID
-                                </Label>
-                                <Input
-                                    id="departmentId"
-                                    type="number"
-                                    {...register('departmentId', { valueAsNumber: true })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="1"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="businesscardURL"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Business Card URL
-                                </Label>
-                                <Input
-                                    id="businesscardURL"
-                                    type="url"
-                                    {...register('businesscardURL')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="https://example.com/business-card.pdf"
-                                />
-                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -683,7 +576,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-1">
                                     <Label
                                         htmlFor="city"
@@ -764,7 +657,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="targetSalesAmount"
@@ -939,7 +832,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="role"
@@ -1055,114 +948,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         Loading branches...
                                     </p>
                                 )}
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="userref"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    User Reference
-                                </Label>
-                                <Input
-                                    id="userref"
-                                    {...register('userref')}
-                                    disabled={true}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="organisationRef"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Organization Reference
-                                </Label>
-                                <Input
-                                    id="organisationRef"
-                                    {...register('organisationRef')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="ORG123"
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </fieldset>
-
-            {/* Device Information Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Device Information
-                </legend>
-                <Card className="border-border/50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
-                            <Globe className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="font-light uppercase font-body">
-                                Device & Platform
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="platform"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Platform
-                                </Label>
-                                <Controller
-                                    name="platform"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                        >
-                                            <SelectTrigger className="font-light bg-card border-border">
-                                                <SelectValue placeholder="Select platform" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="ios">iOS</SelectItem>
-                                                <SelectItem value="android">Android</SelectItem>
-                                                <SelectItem value="web">Web</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="deviceId"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Device ID
-                                </Label>
-                                <Input
-                                    id="deviceId"
-                                    {...register('deviceId')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="device-123456"
-                                />
-                            </div>
-
-                            <div className="space-y-1 md:col-span-2">
-                                <Label
-                                    htmlFor="expoPushToken"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Expo Push Token
-                                </Label>
-                                <Input
-                                    id="expoPushToken"
-                                    {...register('expoPushToken')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="ExponentPushToken[xxxxx]"
-                                />
                             </div>
                         </div>
                     </CardContent>

@@ -17,7 +17,6 @@ import {
     Warehouse,
     Settings,
     Building,
-    LibraryBig,
 } from 'lucide-react';
 import {
     Sheet,
@@ -47,14 +46,7 @@ const navigationItems = [
         // Everyone can access the dashboard home
         feature: 'dashboard',
     },
-    {
-        title: 'My Reports',
-        icon: <LibraryBig size={18} strokeWidth={1.5} />,
-        href: '/my-reports',
-        description: 'View your reports',
-        // Everyone can access the dashboard home
-        feature: 'dashboard',
-    },
+
     {
         title: 'Leads',
         icon: <Handshake size={18} strokeWidth={1.5} />,

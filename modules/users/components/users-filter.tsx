@@ -10,6 +10,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
     User,
     UserStatus,
@@ -29,6 +30,7 @@ import {
     UserMinus,
     UserCog,
     Mail,
+    Search,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import React from 'react';
@@ -59,6 +61,42 @@ export function UsersFilter({
 
     // Use the global branch query hook instead of generating branches from users
     const { branches, isLoading: isLoadingBranches } = useBranchQuery();
+
+    // Handle search input changes
+    const handleSearchChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearch(e.target.value);
+            // Apply search filter with slight delay to avoid too many requests during typing
+            setTimeout(() => {
+                const filters: UserFilterParams = {};
+                const newActiveFilters: string[] = [];
+
+                if (status) {
+                    filters.status = status;
+                    newActiveFilters.push('Status');
+                }
+
+                if (accessLevel) {
+                    filters.accessLevel = accessLevel;
+                    newActiveFilters.push('Access Level');
+                }
+
+                if (branchId) {
+                    filters.branchId = branchId;
+                    newActiveFilters.push('Branch');
+                }
+
+                if (e.target.value) {
+                    filters.search = e.target.value;
+                    newActiveFilters.push('Search');
+                }
+
+                setActiveFilters(newActiveFilters);
+                onApplyFilters(filters);
+            }, 300);
+        },
+        [status, accessLevel, branchId, onApplyFilters],
+    );
 
     const handleApplyFilters = useCallback(() => {
         const filters: UserFilterParams = {};
@@ -204,44 +242,68 @@ export function UsersFilter({
         [UserStatus.DECLINED]: 'text-rose-600',
     };
 
-    const accessLevelColors = {
+    const accessLevelColors: Record<AccessLevel, string> = {
         [AccessLevel.ADMIN]: 'text-purple-600',
         [AccessLevel.MANAGER]: 'text-blue-600',
         [AccessLevel.SUPPORT]: 'text-teal-600',
         [AccessLevel.DEVELOPER]: 'text-indigo-600',
         [AccessLevel.USER]: 'text-gray-600',
+        [AccessLevel.OWNER]: 'text-red-600',
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2 px-2">
-            {/* User Status Filter */}
-            <div className="w-[180px]">
+        <div className="flex flex-1 gap-2 justify-end items-center px-2">
+            {/* Search Box */}
+            <div className="relative flex-1 max-w-sm" id="staff-search-input">
+                <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    placeholder="search users..."
+                    value={search}
+                    onChange={handleSearchChange}
+                    className="h-10 rounded-md pl-9 pr-9 bg-card border-border placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
+                />
+                {search && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 w-8 h-8 transform -translate-y-1/2"
+                        onClick={() => {
+                            setSearch('');
+                            if (activeFilters.includes('Search')) {
+                                handleApplyFilters();
+                            }
+                        }}
+                    >
+                        <X className="w-4 h-4" />
+                        <span className="sr-only">Clear search</span>
+                    </Button>
+                )}
+            </div>
+
+            {/* Status Filter */}
+            <div className="w-[180px]" id="user-status-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div
-                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
-                            id="user-status-filter-trigger"
-                        >
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 {status ? (
                                     <>
-                                        {statusIcons[status] &&
-                                            React.createElement(
-                                                statusIcons[status],
-                                                {
-                                                    className: `w-4 h-4 ${statusColors[status]}`,
-                                                    strokeWidth: 1.5,
-                                                },
-                                            )}
+                                        {React.createElement(
+                                            statusIcons[status],
+                                            {
+                                                className: `w-4 h-4 ${statusColors[status]}`,
+                                                strokeWidth: 1.5,
+                                            },
+                                        )}
                                         <span
-                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                            className={`font-thin text-[10px] font-body ${statusColors[status]}`}
                                         >
                                             {statusLabels[status]}
                                         </span>
                                     </>
                                 ) : (
                                     <>
-                                        <Users
+                                        <UserCheck
                                             className="w-4 h-4 text-muted-foreground"
                                             strokeWidth={1.5}
                                         />
@@ -252,55 +314,48 @@ export function UsersFilter({
                                 )}
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className="w-56"
-                        align="start"
-                        id="user-status-filter-content"
-                    >
+                    <DropdownMenuContent className="w-56" align="start">
                         <DropdownMenuLabel className="text-[10px] font-thin font-body">
                             Filter by Status
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {Object.values(UserStatus).map((statusOption) => {
-                                const StatusIcon = statusIcons[statusOption];
-
+                            {Object.entries(statusLabels).map(([key, label]) => {
+                                const Icon = statusIcons[key as UserStatus];
                                 return (
                                     <DropdownMenuItem
-                                        key={statusOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                        key={key}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             const newStatus =
-                                                status === statusOption
+                                                status === (key as UserStatus)
                                                     ? undefined
-                                                    : statusOption;
+                                                    : (key as UserStatus);
                                             setStatus(newStatus);
                                             applyFilter('status', newStatus);
                                         }}
                                     >
-                                        {StatusIcon && (
-                                            <StatusIcon
-                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
-                                                strokeWidth={1.5}
-                                            />
-                                        )}
+                                        <Icon
+                                            className={`mr-2 w-4 h-4 ${ statusColors[key as UserStatus] }`}
+                                            strokeWidth={1.5}
+                                        />
                                         <span
                                             className={`text-[10px] font-normal font-body ${
-                                                status === statusOption
-                                                    ? statusColors[statusOption]
+                                                status === key
+                                                    ? statusColors[key as UserStatus]
                                                     : ''
                                             }`}
                                         >
-                                            {statusLabels[statusOption]}
+                                            {label}
                                         </span>
-                                        {status === statusOption && (
+                                        {status === key && (
                                             <Check
-                                                className="w-4 h-4 ml-auto text-primary"
+                                                className="ml-auto w-4 h-4 text-primary"
                                                 strokeWidth={1.5}
                                             />
                                         )}
@@ -314,14 +369,11 @@ export function UsersFilter({
             </div>
 
             {/* Access Level Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="user-access-level-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div
-                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
-                            id="user-access-level-filter-trigger"
-                        >
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 {accessLevel ? (
                                     <>
                                         <Shield
@@ -329,7 +381,7 @@ export function UsersFilter({
                                             strokeWidth={1.5}
                                         />
                                         <span
-                                            className={`text-[10px] font-thin font-body ${accessLevelColors[accessLevel]}`}
+                                            className={`font-thin text-[10px] font-body ${accessLevelColors[accessLevel]}`}
                                         >
                                             {accessLevel.toUpperCase()}
                                         </span>
@@ -347,7 +399,7 @@ export function UsersFilter({
                                 )}
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
@@ -358,38 +410,33 @@ export function UsersFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            {Object.values(AccessLevel).map((levelOption) => (
+                            {Object.values(AccessLevel).map((level) => (
                                 <DropdownMenuItem
-                                    key={levelOption}
-                                    className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                    key={level}
+                                    className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                                     onClick={() => {
                                         const newAccessLevel =
-                                            accessLevel === levelOption
-                                                ? undefined
-                                                : levelOption;
+                                            accessLevel === level ? undefined : level;
                                         setAccessLevel(newAccessLevel);
-                                        applyFilter(
-                                            'accessLevel',
-                                            newAccessLevel,
-                                        );
+                                        applyFilter('accessLevel', newAccessLevel);
                                     }}
                                 >
                                     <Shield
-                                        className={`w-4 h-4 mr-2 ${accessLevelColors[levelOption]}`}
+                                        className={`mr-2 w-4 h-4 ${accessLevelColors[level]}`}
                                         strokeWidth={1.5}
                                     />
                                     <span
                                         className={`text-[10px] font-normal font-body ${
-                                            accessLevel === levelOption
-                                                ? accessLevelColors[levelOption]
+                                            accessLevel === level
+                                                ? accessLevelColors[level]
                                                 : ''
                                         }`}
                                     >
-                                        {levelOption.toUpperCase()}
+                                        {level.toUpperCase()}
                                     </span>
-                                    {accessLevel === levelOption && (
+                                    {accessLevel === level && (
                                         <Check
-                                            className="w-4 h-4 ml-auto text-primary"
+                                            className="ml-auto w-4 h-4 text-primary"
                                             strokeWidth={1.5}
                                         />
                                     )}
@@ -402,32 +449,19 @@ export function UsersFilter({
             </div>
 
             {/* Branch Filter */}
-            <div className="w-[180px]">
+            <div className="w-[180px]" id="user-branch-filter-trigger">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div
-                            className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border"
-                            id="user-branch-filter-trigger"
-                        >
-                            <div className="flex items-center gap-2">
-                                {branchId &&
-                                branches.find(
-                                    (b) =>
-                                        b.uid === branchId || b.id === branchId,
-                                ) ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {branchId ? (
                                     <>
                                         <Building
                                             className="w-4 h-4 text-blue-600"
                                             strokeWidth={1.5}
                                         />
                                         <span className="text-[10px] font-thin text-blue-600 font-body">
-                                            {branches
-                                                .find(
-                                                    (b) =>
-                                                        b.uid === branchId ||
-                                                        b.id === branchId,
-                                                )
-                                                ?.name.toUpperCase()}
+                                            {branches?.find(b => b.uid === branchId)?.name?.toUpperCase() || 'BRANCH'}
                                         </span>
                                     </>
                                 ) : (
@@ -443,7 +477,7 @@ export function UsersFilter({
                                 )}
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
@@ -453,40 +487,41 @@ export function UsersFilter({
                             Filter by Branch
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
+                        <DropdownMenuGroup>
                             {isLoadingBranches ? (
                                 <div className="px-2 py-1 text-xs text-gray-400">
-                                    Loading branches...
+                                    <span className="text-[10px] font-normal font-body uppercase">
+                                        Loading branches...
+                                    </span>
                                 </div>
-                            ) : branches.length > 0 ? (
+                            ) : branches && branches.length > 0 ? (
                                 branches.map((branch) => (
                                     <DropdownMenuItem
-                                        key={branch.uid || branch.id}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                        key={branch.uid}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                                         onClick={() => {
                                             const newBranchId =
-                                                branchId ===
-                                                (branch.uid || branch.id)
-                                                    ? undefined
-                                                    : branch.uid || branch.id;
+                                                branchId === branch.uid ? undefined : branch.uid;
                                             setBranchId(newBranchId);
-                                            applyFilter(
-                                                'branchId',
-                                                newBranchId,
-                                            );
+                                            applyFilter('branchId', newBranchId);
                                         }}
                                     >
                                         <Building
-                                            className="w-4 h-4 mr-2 text-blue-600"
+                                            className="mr-2 w-4 h-4 text-blue-600"
                                             strokeWidth={1.5}
                                         />
-                                        <span className="text-[10px] font-normal font-body">
+                                        <span
+                                            className={`text-[10px] font-normal font-body ${
+                                                branchId === branch.uid
+                                                    ? 'text-blue-600'
+                                                    : ''
+                                            }`}
+                                        >
                                             {branch.name.toUpperCase()}
                                         </span>
-                                        {branchId ===
-                                            (branch.uid || branch.id) && (
+                                        {branchId === branch.uid && (
                                             <Check
-                                                className="w-4 h-4 ml-auto text-primary"
+                                                className="ml-auto w-4 h-4 text-primary"
                                                 strokeWidth={1.5}
                                             />
                                         )}
@@ -494,25 +529,63 @@ export function UsersFilter({
                                 ))
                             ) : (
                                 <div className="px-2 py-1 text-xs text-gray-400">
-                                    No branches available
+                                    <span className="text-[10px] font-normal font-body uppercase">
+                                        No branches found
+                                    </span>
                                 </div>
                             )}
+                            <DropdownMenuSeparator />
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            {/* Re-invite All Users Button */}
-            <Button
-                variant="outline"
-                size="sm"
-                className="text-[10px] hover:text-blue-500 font-normal uppercase border border-blue-500 rounded h-9 font-body text-blue-400"
-                onClick={handleReInviteAllUsers}
-                disabled={isReInviting}
-            >
-                <Mail className="w-4 h-4 mr-1" strokeWidth={1.5} />
-                {isReInviting ? 'Sending...' : 'Re-invite All'}
-            </Button>
+            {/* Actions Dropdown */}
+            <div className="w-[120px]">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                <Mail
+                                    className="w-4 h-4 text-muted-foreground"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-thin font-body">
+                                    ACTIONS
+                                </span>
+                            </div>
+                            <ChevronDown
+                                className="ml-2 w-4 h-4 opacity-50"
+                                strokeWidth={1.5}
+                            />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel className="text-[10px] font-thin font-body">
+                            Bulk Actions
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                onClick={handleReInviteAllUsers}
+                                disabled={isReInviting}
+                                className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                            >
+                                <Mail
+                                    className="mr-2 w-4 h-4 text-blue-600"
+                                    strokeWidth={1.5}
+                                />
+                                <span className="text-[10px] font-normal font-body">
+                                    {isReInviting
+                                        ? 'RE-INVITING...'
+                                        : 'RE-INVITE ALL USERS'}
+                                </span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilters.length > 0 && (
@@ -522,7 +595,7 @@ export function UsersFilter({
                     className="text-[10px] hover:text-red-500 font-normal uppercase border border-red-500 rounded h-9 font-body text-red-400"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-4 h-4 mr-1" strokeWidth={1.5} />
+                    <X className="mr-1 w-4 h-4" strokeWidth={1.5} />
                     Clear All
                 </Button>
             )}

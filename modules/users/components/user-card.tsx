@@ -97,7 +97,7 @@ function UserCardComponent({
     return (
         <>
             <div
-                className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear"
+                className="p-3 overflow-hidden border rounded-md shadow-sm cursor-pointer bg-card border-border/50 hover:shadow-md animate-task-appear user-card"
                 style={cardStyle}
                 onClick={openModal}
             >

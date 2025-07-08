@@ -18,8 +18,8 @@ const ClaimsTabContent = dynamic(
         ),
     {
         loading: () => (
-            <div className="flex items-center justify-center w-full h-full">
-                <AppLoader />
+            <div className="flex justify-center items-center w-full h-full">
+                <AppLoader  />
             </div>
         ),
     },
@@ -106,14 +106,14 @@ export default function ClaimsPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen gap-2 overflow-hidden">
+            <div className="flex overflow-hidden flex-col gap-2 h-screen">
                 <ClaimsTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
-                <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
+                <div className="flex overflow-hidden flex-col flex-1">
+                    <div className="flex overflow-hidden flex-1 justify-center items-center px-3 py-3 xl:px-8 xl:px-4">
                         <ClaimsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}

@@ -96,11 +96,13 @@ export function UsersGridComponent({
                 ))}
             </div>
             {/* Pagination - always render the component, it will hide itself if only 1 page */}
-            <FloatingPagination
-                currentPage={localCurrentPage}
-                totalPages={localTotalPages}
-                onPageChange={handlePageChange}
-            />
+            <div id="staff-pagination">
+                <FloatingPagination
+                    currentPage={localCurrentPage}
+                    totalPages={localTotalPages}
+                    onPageChange={handlePageChange}
+                />
+            </div>
         </div>
     );
 }

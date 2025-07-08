@@ -33,7 +33,6 @@ import {
     Briefcase,
     Target,
     Globe,
-    Settings,
     Award,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

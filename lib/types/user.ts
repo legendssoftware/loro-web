@@ -1,5 +1,6 @@
 import { Branch } from './branch';
 import { Organisation } from './organisation';
+import { Client } from './client';
 
 export enum UserStatus {
     ACTIVE = 'active',
@@ -95,6 +96,8 @@ export interface User {
     avatarUrl?: string;
     photo?: string;
     userTarget?: UserTarget;
+    assignedClients?: Client[];
+    assignedClientIds?: number[];
 }
 
 export interface UsersByStatus {

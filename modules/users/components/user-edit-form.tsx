@@ -137,9 +137,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
 
     // Use the global branch query hook
     const { branches, isLoading: isLoadingBranches, error: branchError, refetch: refetchBranches } = useBranchQuery();
-    
+
     // Use the admin clients query hook to get all clients for user assignment
-    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({ 
+    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({
         limit: 500, // Get all available clients for assignment
         status: ClientStatus.ACTIVE // Only fetch active clients for assignment
     });
@@ -260,7 +260,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         expoPushToken: (initialData as any).expoPushToken || '',
         deviceId: (initialData as any).deviceId || '',
         platform: (initialData as any).platform || undefined,
-        
+
         // Assigned Clients
         assignedClients: (initialData as any).assignedClients || [],
     };
@@ -1170,7 +1170,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="space-y-1">
                             <Label
                                 htmlFor="assignedClients"

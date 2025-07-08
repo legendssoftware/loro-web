@@ -27,6 +27,7 @@ import {
     AtSign,
     Gauge,
     Send,
+    Users,
 } from 'lucide-react';
 import { User, UserStatus, AccessLevel } from '@/lib/types/user';
 import { useState } from 'react';
@@ -261,6 +262,7 @@ export function UserDetailsModal({
         { id: 'details', label: 'Details' },
         { id: 'access', label: 'Access' },
         { id: 'targets', label: 'Targets' },
+        { id: 'clients', label: 'Assigned Clients' },
         { id: 'activity', label: 'Activity' },
     ];
 
@@ -274,7 +276,7 @@ export function UserDetailsModal({
                             <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                 Personal Information
                             </h3>
-                            <div className="flex items-start gap-4">
+                            <div className="flex gap-4 items-start">
                                 <Avatar className="w-20 h-20 border-2 border-primary">
                                     <AvatarImage
                                         src={user.photoURL}
@@ -290,7 +292,7 @@ export function UserDetailsModal({
                                         <h2 className="text-xl font-normal font-body">
                                             {user.name} {user.surname}
                                         </h2>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex gap-2 items-center">
                                             <Badge
                                                 variant="outline"
                                                 className={`text-[10px] px-4 py-1 font-body border-0 ${getAccessLevelBadgeColor(
@@ -312,7 +314,7 @@ export function UserDetailsModal({
                                         {user.userEmploymentProfile
                                             ?.position && (
                                             <div className="flex items-center text-sm text-muted-foreground">
-                                                <Briefcase className="w-4 h-4 mr-1" />
+                                                <Briefcase className="mr-1 w-4 h-4" />
                                                 <span className="text-xs font-thin uppercase font-body">
                                                     {
                                                         user
@@ -334,14 +336,14 @@ export function UserDetailsModal({
                             </h3>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
-                                    <Mail className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <Mail className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         {user.email}
                                     </span>
                                 </div>
                                 {user.phone && (
                                     <div className="flex items-center">
-                                        <Phone className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <Phone className="mr-2 w-4 h-4 text-card-foreground/60" />
                                         <span className="text-xs font-thin font-body">
                                             {user.phone}
                                         </span>
@@ -358,7 +360,7 @@ export function UserDetailsModal({
                             <div className="grid gap-3">
                                 {user.branch && (
                                     <div className="flex items-center">
-                                        <Building className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <Building className="mr-2 w-4 h-4 text-card-foreground/60" />
                                         <span className="text-xs font-thin font-body">
                                             Branch: {user.branch.name}
                                         </span>
@@ -366,7 +368,7 @@ export function UserDetailsModal({
                                 )}
                                 {user.organisation && (
                                     <div className="flex items-center">
-                                        <Building className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                        <Building className="mr-2 w-4 h-4 text-card-foreground/60" />
                                         <span className="text-xs font-thin font-body">
                                             Organization:{' '}
                                             {user.organisation.name}
@@ -387,25 +389,25 @@ export function UserDetailsModal({
                             </h3>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
-                                    <UserSquare className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <UserSquare className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         Username: {user.username}
                                     </span>
                                 </div>
                                 <div className="flex items-center">
-                                    <AtSign className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <AtSign className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         Reference: {user.userref || 'Not set'}
                                     </span>
                                 </div>
                                 <div className="flex items-center">
-                                    <Calendar className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <Calendar className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         Created: {formatDate(user.createdAt)}
                                     </span>
                                 </div>
                                 <div className="flex items-center">
-                                    <Calendar className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <Calendar className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         Last Updated:{' '}
                                         {formatDate(user.updatedAt)}
@@ -421,7 +423,7 @@ export function UserDetailsModal({
                             </h3>
                             <div className="grid gap-3">
                                 <div className="flex items-center">
-                                    <Shield className="w-4 h-4 mr-2 text-card-foreground/60" />
+                                    <Shield className="mr-2 w-4 h-4 text-card-foreground/60" />
                                     <span className="text-xs font-thin font-body">
                                         Current Access Level: {user.accessLevel}
                                     </span>
@@ -467,6 +469,65 @@ export function UserDetailsModal({
                         />
                     </div>
                 );
+            case 'clients':
+                return (
+                    <div className="space-y-6">
+                        {/* Assigned Clients Information */}
+                        <div className="p-4 rounded-lg bg-card/50">
+                            <h3 className="flex gap-2 items-center mb-4 text-xs font-normal uppercase font-body">
+                                <Users className="w-4 h-4" />
+                                Assigned Clients
+                            </h3>
+                            {user.assignedClients && user.assignedClients.length > 0 ? (
+                                <div className="grid gap-3">
+                                    {user.assignedClients.map((client, index) => (
+                                        <div key={client.uid || index} className="flex justify-between items-center p-3 rounded-lg border border-border/20 bg-background/50">
+                                            <div className="flex gap-3 items-center">
+                                                <div className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10">
+                                                    <Building className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium font-body">
+                                                        {client.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground font-body">
+                                                        {client.contactPerson}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 items-center">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-[10px] px-2 py-1 font-body"
+                                                >
+                                                    {client.status || 'Active'}
+                                                </Badge>
+                                                <div className="text-right">
+                                                    <p className="text-xs text-muted-foreground font-body">
+                                                        {client.email}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground font-body">
+                                                        {client.phone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col justify-center items-center p-8 text-center rounded-lg border border-dashed border-border/50">
+                                    <Users className="mb-4 w-12 h-12 text-muted-foreground/50" />
+                                    <p className="text-sm font-medium font-body text-muted-foreground">
+                                        No Assigned Clients
+                                    </p>
+                                    <p className="text-xs font-body text-muted-foreground">
+                                        This user has no clients assigned to them yet.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
             case 'activity':
                 return (
                     <div className="p-4 rounded-lg bg-card/50">
@@ -488,13 +549,13 @@ export function UserDetailsModal({
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
-                    <DialogHeader className="flex flex-row items-start justify-between">
-                        <div className="flex items-center gap-3">
+                    <DialogHeader className="flex flex-row justify-between items-start">
+                        <div className="flex gap-3 items-center">
                             <div>
                                 <DialogTitle className="text-xl font-semibold uppercase font-body">
                                     {`${user.name} ${user.surname}`}
                                 </DialogTitle>
-                                <div className="flex items-center gap-2 mt-2">
+                                <div className="flex gap-2 items-center mt-2">
                                     <Badge
                                         variant="outline"
                                         className={`text-[10px] px-4 py-1 font-body border-0 ${getStatusBadgeColor(
@@ -514,11 +575,11 @@ export function UserDetailsModal({
                                 disabled={isReInviting}
                                 title="Re-invite user to platform"
                             >
-                                <Send className="w-3 h-3 mr-1" strokeWidth={1.5} />
+                                <Send className="mr-1 w-3 h-3" strokeWidth={1.5} />
                                 {isReInviting ? 'Sending...' : 'Re-invite'}
                             </Button>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -530,11 +591,11 @@ export function UserDetailsModal({
                         </div>
                     </DialogHeader>
                     <div className="mt-4">
-                        <div className="flex items-center mb-6 overflow-x-auto border-b border-border/10">
+                        <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
                             {tabs.map((tab) => (
                                 <div
                                     key={tab?.id}
-                                    className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
+                                    className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
                                 >
                                     <div
                                         className={`mb-3 font-body px-0 font-normal ${
@@ -557,12 +618,12 @@ export function UserDetailsModal({
                         {renderTabContent()}
                     </div>
                     <DialogFooter className="flex flex-col flex-wrap gap-4 pt-4 mt-6 border-t dark:border-gray-700">
-                        <div className="flex flex-col items-center justify-center w-full">
+                        <div className="flex flex-col justify-center items-center w-full">
                             <p className="text-xs font-thin uppercase font-body">
                                 Quick Actions
                             </p>
                         </div>
-                        <div className="flex flex-wrap justify-center w-full gap-3">
+                        <div className="flex flex-wrap gap-3 justify-center w-full">
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -574,7 +635,7 @@ export function UserDetailsModal({
                             >
                                 <UserCheck
                                     strokeWidth={1.2}
-                                    className="text-green-600 w-7 h-7 dark:text-green-400"
+                                    className="w-7 h-7 text-green-600 dark:text-green-400"
                                 />
                             </Button>
                             <Button
@@ -588,7 +649,7 @@ export function UserDetailsModal({
                             >
                                 <UserX
                                     strokeWidth={1.2}
-                                    className="text-gray-600 w-7 h-7 dark:text-gray-400"
+                                    className="w-7 h-7 text-gray-600 dark:text-gray-400"
                                 />
                             </Button>
                             <Button
@@ -602,38 +663,38 @@ export function UserDetailsModal({
                             >
                                 <UserMinus
                                     strokeWidth={1.2}
-                                    className="text-red-600 w-7 h-7 dark:text-red-400"
+                                    className="w-7 h-7 text-red-600 dark:text-red-400"
                                 />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                className="w-14 h-14 text-blue-800 rounded-full border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
                                 onClick={handleEditClick}
                                 title="Edit User"
                             >
                                 <Edit
                                     strokeWidth={1.2}
-                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                    className="w-7 h-7 text-blue-600 dark:text-blue-400"
                                 />
                             </Button>
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="text-teal-800 border-teal-200 rounded-full w-14 h-14 hover:bg-teal-50 hover:border-teal-300 dark:text-teal-300 dark:hover:bg-teal-900/20 dark:border-teal-900/30"
+                                className="w-14 h-14 text-teal-800 rounded-full border-teal-200 hover:bg-teal-50 hover:border-teal-300 dark:text-teal-300 dark:hover:bg-teal-900/20 dark:border-teal-900/30"
                                 onClick={handleTargetsClick}
                                 title="Manage User Targets"
                             >
                                 <Gauge
                                     strokeWidth={1.2}
-                                    className="text-teal-600 w-7 h-7 dark:text-teal-400"
+                                    className="w-7 h-7 text-teal-600 dark:text-teal-400"
                                 />
                             </Button>
                             {onDelete && (
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
+                                    className="w-14 h-14 text-purple-800 rounded-full border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
                                     onClick={() =>
                                         setShowDeleteConfirmation(true)
                                     }
@@ -641,7 +702,7 @@ export function UserDetailsModal({
                                 >
                                     <UserCog
                                         strokeWidth={1.2}
-                                        className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                        className="w-7 h-7 text-purple-600 dark:text-purple-400"
                                     />
                                 </Button>
                             )}
@@ -656,7 +717,7 @@ export function UserDetailsModal({
                     open={showStatusConfirmation}
                     onOpenChange={() => setShowStatusConfirmation(false)}
                 >
-                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                    <DialogContent className="p-6 max-w-md text-white border-0 bg-black/90">
                         <DialogTitle className="sr-only">
                             Confirm Status Change
                         </DialogTitle>
@@ -672,7 +733,7 @@ export function UserDetailsModal({
                                 </span>
                                 ? This action cannot be undone.
                             </p>
-                            <div className="flex justify-center gap-4">
+                            <div className="flex gap-4 justify-center">
                                 <Button
                                     variant="outline"
                                     className="w-32 h-10 text-xs text-gray-300 uppercase border-gray-600 font-body hover:bg-gray-800"
@@ -699,7 +760,7 @@ export function UserDetailsModal({
                     open={showDeleteConfirmation}
                     onOpenChange={() => setShowDeleteConfirmation(false)}
                 >
-                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                    <DialogContent className="p-6 max-w-md text-white border-0 bg-black/90">
                         <DialogTitle className="sr-only">
                             Confirm Delete User
                         </DialogTitle>
@@ -711,7 +772,7 @@ export function UserDetailsModal({
                                 Are you sure you want to delete this user? This
                                 action cannot be undone.
                             </p>
-                            <div className="flex justify-center gap-4">
+                            <div className="flex gap-4 justify-center">
                                 <Button
                                     variant="outline"
                                     className="w-32 h-10 text-xs text-gray-300 uppercase border-gray-600 font-body hover:bg-gray-800"

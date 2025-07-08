@@ -40,8 +40,10 @@ import {
     Settings,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { AccountStatus } from '@/lib/enums/status.enums';
 import { useBranchQuery } from '@/hooks/use-branch-query';
+import { useAdminClientsQuery, ClientStatus, Client } from '@/hooks/use-clients-query';
 
 // Enhanced form schema with essential user entity fields for creation
 const userFormSchema = z.object({
@@ -65,6 +67,7 @@ const userFormSchema = z.object({
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
     branchId: z.number().optional(),
+    assignedClients: z.array(z.number()).optional(),
     
     // User Profile Fields (optional)
     gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
@@ -114,9 +117,69 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     const [userImage, setUserImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [selectedClients, setSelectedClients] = useState<number[]>([]);
 
     // Use the global branch query hook
-    const { branches, isLoading: isLoadingBranches } = useBranchQuery();
+    const { branches, isLoading: isLoadingBranches, error: branchError, refetch: refetchBranches } = useBranchQuery();
+    
+    // Use the admin clients query hook to get all clients for user assignment
+    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({ 
+        limit: 500, // Get all available clients for assignment
+        status: ClientStatus.ACTIVE // Only fetch active clients for assignment
+    });
+
+    // Position options
+    const positionOptions = [
+        'Sales Representative',
+        'Sales Manager',
+        'Account Manager',
+        'Business Development Manager',
+        'Regional Manager',
+        'Territory Manager',
+        'Sales Director',
+        'Sales Coordinator',
+        'Customer Success Manager',
+        'Marketing Manager',
+        'HR Manager',
+        'Operations Manager',
+        'Project Manager',
+        'Product Manager',
+        'Finance Manager',
+        'IT Manager',
+        'Software Developer',
+        'QA Engineer',
+        'Data Analyst',
+        'Customer Service Representative',
+        'Administrative Assistant',
+        'Executive Assistant',
+        'CEO',
+        'CTO',
+        'CFO',
+        'COO',
+        'Other'
+    ];
+
+    // Department options
+    const departmentOptions = [
+        'Sales',
+        'Marketing',
+        'Human Resources',
+        'Finance',
+        'Operations',
+        'Information Technology',
+        'Customer Service',
+        'Research & Development',
+        'Quality Assurance',
+        'Administration',
+        'Legal',
+        'Procurement',
+        'Logistics',
+        'Business Development',
+        'Product Management',
+        'Project Management',
+        'Training & Development',
+        'Other'
+    ];
 
     // Toggle password visibility
     const togglePasswordVisibility = () => {
@@ -155,6 +218,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         targetCheckIns: 0,
         targetCalls: 0,
         targetPeriod: 'monthly',
+        assignedClients: [],
         ...initialData,
     };
 
@@ -171,6 +235,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         defaultValues,
     });
 
+    // Initialize selected clients from initial data
+    useEffect(() => {
+        if (initialData?.assignedClients) {
+            setSelectedClients(initialData.assignedClients);
+        }
+    }, [initialData?.assignedClients]);
+
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -184,10 +255,19 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         setUserImage(previewUrl);
     };
 
+    // Prepare client options for MultiSelect with better labeling
+    const clientOptions: MultiSelectOption[] = clients?.map((client: Client) => ({
+        value: client.uid,
+        label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`
+    })) || [];
+
     // Handle form submission
     const handleFormSubmit = async (data: UserFormValues) => {
         try {
             setIsSubmitting(true);
+
+            // Include selected clients in form data
+            data.assignedClients = selectedClients;
 
             // If there's a selected file, upload it first
             if (selectedFile) {
@@ -495,7 +575,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="position"
@@ -503,11 +583,26 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 >
                                     Position
                                 </Label>
-                                <Input
-                                    id="position"
-                                    {...register('position')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="Software Engineer"
+                                <Controller
+                                    name="position"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select position" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {positionOptions.map((position) => (
+                                                    <SelectItem key={position} value={position}>
+                                                        {position}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 />
                             </div>
 
@@ -518,11 +613,26 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 >
                                     Department
                                 </Label>
-                                <Input
-                                    id="department"
-                                    {...register('department')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="Engineering"
+                                <Controller
+                                    name="department"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select department" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {departmentOptions.map((department) => (
+                                                    <SelectItem key={department} value={department}>
+                                                        {department}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 />
                             </div>
 
@@ -540,6 +650,40 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                 />
                             </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                            <Label
+                                htmlFor="assignedClients"
+                                className="block text-xs font-light uppercase font-body"
+                            >
+                                Assigned Clients
+                            </Label>
+                            <MultiSelect
+                                options={clientOptions}
+                                selectedValues={selectedClients}
+                                onSelectionChange={(values) => setSelectedClients(values as number[])}
+                                placeholder="Select clients..."
+                                disabled={isLoadingClients}
+                                className="w-full"
+                            />
+                            {isLoadingClients && (
+                                <p className="text-xs text-muted-foreground">
+                                    Loading clients...
+                                </p>
+                            )}
+                            {clientError && (
+                                <div className="text-xs text-red-500">
+                                    Failed to load clients.{' '}
+                                    <button
+                                        type="button"
+                                        onClick={() => refetchClients()}
+                                        className="underline hover:no-underline"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -947,6 +1091,18 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     <p className="mt-1 text-xs text-muted-foreground">
                                         Loading branches...
                                     </p>
+                                )}
+                                {branchError && (
+                                    <div className="mt-1 text-xs text-red-500">
+                                        Failed to load branches.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={refetchBranches}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>

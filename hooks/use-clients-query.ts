@@ -358,3 +358,69 @@ export function useClientsQuery(options: ClientFilterParams = {}) {
         },
     };
 }
+
+/**
+ * Hook for fetching all clients for admin purposes (bypasses user-specific filtering)
+ * Ideal for user assignment dropdowns and other admin tasks that need access to all clients
+ * @param options Query options for filtering clients
+ * @returns All clients data without user-specific restrictions
+ */
+export function useAdminClientsQuery(options: ClientFilterParams = {}) {
+    const queryClient = useQueryClient();
+    const clientApi = useClientApi();
+
+    // Ensure we use a reasonable limit for admin purposes
+    const enhancedFilters = useMemo(
+        () => ({
+            ...options,
+            limit: options.limit || 500, // Higher default for admin purposes
+        }),
+        [options],
+    );
+
+    // Fetch all clients with React Query (admin endpoint)
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: ['admin-clients', enhancedFilters],
+        queryFn: () => clientApi.getAllClientsForAdmin(enhancedFilters),
+        placeholderData: (previousData) => previousData,
+        staleTime: 1000 * 60 * 5, // 5 minutes for admin data
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        enabled: true, // Always enabled for admin queries
+    });
+
+    // Group clients by status
+    const clientsByStatus = useMemo<ClientsByStatus>(() => {
+        const statusGroups = {
+            [ClientStatus.ACTIVE]: [],
+            [ClientStatus.INACTIVE]: [],
+            [ClientStatus.PENDING]: [],
+            [ClientStatus.DELETED]: [],
+        } as ClientsByStatus;
+
+        if (data?.data) {
+            data.data.forEach((client) => {
+                const status = client.status || ClientStatus.PENDING;
+                if (!client.isDeleted || status === ClientStatus.DELETED) {
+                    statusGroups[status].push(client);
+                }
+            });
+        }
+
+        return statusGroups;
+    }, [data?.data]);
+
+    return {
+        clients: data?.data || [],
+        clientsByStatus,
+        loading: isLoading,
+        error: error as Error | null,
+        refetch,
+        pagination: data?.meta || {
+            page: 1,
+            limit: 500,
+            total: 0,
+            totalPages: 1,
+        },
+    };
+}

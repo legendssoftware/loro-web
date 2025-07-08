@@ -37,7 +37,9 @@ import {
     Award,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { useBranchQuery, Branch } from '@/hooks/use-branch-query';
+import { useAdminClientsQuery, ClientStatus, Client } from '@/hooks/use-clients-query';
 
 // Enhanced form schema definition - comprehensive editing with all user entity fields
 const userEditFormSchema = z.object({
@@ -63,6 +65,7 @@ const userEditFormSchema = z.object({
     branchId: z.number().optional(),
     organisationRef: z.string().optional(),
     departmentId: z.number().optional(),
+    assignedClients: z.array(z.number()).optional(),
 
     // HR and Employee Information
     hrID: z.number().optional(),
@@ -131,9 +134,69 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [selectedClients, setSelectedClients] = useState<number[]>([]);
 
     // Use the global branch query hook
-    const { branches, isLoading: isLoadingBranches } = useBranchQuery();
+    const { branches, isLoading: isLoadingBranches, error: branchError, refetch: refetchBranches } = useBranchQuery();
+    
+    // Use the admin clients query hook to get all clients for user assignment
+    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({ 
+        limit: 500, // Get all available clients for assignment
+        status: ClientStatus.ACTIVE // Only fetch active clients for assignment
+    });
+
+    // Position options
+    const positionOptions = [
+        'Sales Representative',
+        'Sales Manager',
+        'Account Manager',
+        'Business Development Manager',
+        'Regional Manager',
+        'Territory Manager',
+        'Sales Director',
+        'Sales Coordinator',
+        'Customer Success Manager',
+        'Marketing Manager',
+        'HR Manager',
+        'Operations Manager',
+        'Project Manager',
+        'Product Manager',
+        'Finance Manager',
+        'IT Manager',
+        'Software Developer',
+        'QA Engineer',
+        'Data Analyst',
+        'Customer Service Representative',
+        'Administrative Assistant',
+        'Executive Assistant',
+        'CEO',
+        'CTO',
+        'CFO',
+        'COO',
+        'Other'
+    ];
+
+    // Department options
+    const departmentOptions = [
+        'Sales',
+        'Marketing',
+        'Human Resources',
+        'Finance',
+        'Operations',
+        'Information Technology',
+        'Customer Service',
+        'Research & Development',
+        'Quality Assurance',
+        'Administration',
+        'Legal',
+        'Procurement',
+        'Logistics',
+        'Business Development',
+        'Product Management',
+        'Project Management',
+        'Training & Development',
+        'Other'
+    ];
 
     // Toggle password visibility
     const togglePasswordVisibility = () => {
@@ -198,6 +261,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         expoPushToken: (initialData as any).expoPushToken || '',
         deviceId: (initialData as any).deviceId || '',
         platform: (initialData as any).platform || undefined,
+        
+        // Assigned Clients
+        assignedClients: (initialData as any).assignedClients || [],
     };
 
     // Initialize form
@@ -211,6 +277,19 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         resolver: zodResolver(userEditFormSchema),
         defaultValues,
     });
+
+    // Prepare client options for MultiSelect with better labeling
+    const clientOptions: MultiSelectOption[] = clients?.map((client: Client) => ({
+        value: client.uid,
+        label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`
+    })) || [];
+
+    // Initialize selected clients from initial data
+    useEffect(() => {
+        if ((initialData as any)?.assignedClients) {
+            setSelectedClients((initialData as any).assignedClients);
+        }
+    }, [(initialData as any)?.assignedClients]);
 
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -274,6 +353,11 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 // Use type assertion to handle the typing issue
                 changedData[fieldKey] = data[fieldKey] as any;
             });
+
+            // Always include assigned clients if they've been changed
+            if (JSON.stringify(selectedClients) !== JSON.stringify((initialData as any)?.assignedClients || [])) {
+                changedData.assignedClients = selectedClients;
+            }
 
             // Special handling for photo upload
             if (selectedFile) {
@@ -841,6 +925,18 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         Loading branches...
                                     </p>
                                 )}
+                                {branchError && (
+                                    <div className="mt-1 text-xs text-red-500">
+                                        Failed to load branches.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchBranches()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </CardContent>
@@ -972,11 +1068,26 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 >
                                     Position
                                 </Label>
-                                <Input
-                                    id="position"
-                                    {...register('position')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="Sales Manager"
+                                <Controller
+                                    name="position"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select position" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {positionOptions.map((position) => (
+                                                    <SelectItem key={position} value={position}>
+                                                        {position}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 />
                             </div>
 
@@ -987,11 +1098,26 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 >
                                     Department
                                 </Label>
-                                <Input
-                                    id="department"
-                                    {...register('department')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="Sales"
+                                <Controller
+                                    name="department"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select department" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {departmentOptions.map((department) => (
+                                                    <SelectItem key={department} value={department}>
+                                                        {department}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 />
                             </div>
 
@@ -1044,6 +1170,40 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     placeholder="https://example.com/card.pdf"
                                 />
                             </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                            <Label
+                                htmlFor="assignedClients"
+                                className="block text-xs font-light uppercase font-body"
+                            >
+                                Assigned Clients
+                            </Label>
+                            <MultiSelect
+                                options={clientOptions}
+                                selectedValues={selectedClients}
+                                onSelectionChange={(values) => setSelectedClients(values as number[])}
+                                placeholder="Select clients..."
+                                disabled={isLoadingClients}
+                                className="w-full"
+                            />
+                            {isLoadingClients && (
+                                <p className="text-xs text-muted-foreground">
+                                    Loading clients...
+                                </p>
+                            )}
+                            {clientError && (
+                                <div className="text-xs text-red-500">
+                                    Failed to load clients.{' '}
+                                    <button
+                                        type="button"
+                                        onClick={() => refetchClients()}
+                                        className="underline hover:no-underline"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

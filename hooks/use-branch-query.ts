@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { axiosInstance } from '@/lib/services/api-client';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+import { showErrorToast } from '@/lib/utils/toast-config';
 
 // Define Branch interface
 export interface Branch {
@@ -31,6 +32,12 @@ export function useBranchQuery() {
             const accessToken = useAuthStore.getState().accessToken;
             const profileData = useAuthStore.getState().profileData;
 
+            console.log('Fetching branches with:', {
+                hasAccessToken: !!accessToken,
+                organisationRef: profileData?.organisationRef,
+                profileData: profileData
+            });
+
             // Make API call to get branches for the current organization
             const response = await axiosInstance.get('/branch', {
                 headers: {
@@ -40,6 +47,8 @@ export function useBranchQuery() {
                     organisationRef: profileData?.organisationRef,
                 },
             });
+
+            console.log('Branch API response:', response.data);
 
             if (response.data && Array.isArray(response.data.branches)) {
                 // Normalize branch data to have both uid and id (for compatibility with different components)
@@ -55,7 +64,7 @@ export function useBranchQuery() {
         } catch (error) {
             console.error('Error fetching branches:', error);
             setError(error as Error);
-            toast.error('Failed to load branches');
+            showErrorToast('Failed to load branches', toast);
             setBranches([]);
         } finally {
             setIsLoading(false);

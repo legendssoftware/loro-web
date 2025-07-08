@@ -77,6 +77,57 @@ export const useClientApi = () => {
         [],
     );
 
+    // Get all clients for admin purposes (bypasses user-specific filtering)
+    const getAllClientsForAdmin = useCallback(
+        async (
+            filters: ClientFilterParams = {},
+        ): Promise<PaginatedClientsResponse> => {
+            try {
+                const queryParams = new URLSearchParams();
+
+                // Map frontend filter parameters to backend expectations
+                if (filters.status)
+                    queryParams.append('status', filters.status);
+                if (filters.search)
+                    queryParams.append('search', filters.search);
+
+                // The backend expects these specific parameter names based on the controller
+                if (filters.page)
+                    queryParams.append('page', String(filters.page));
+                if (filters.limit)
+                    queryParams.append('limit', String(filters.limit));
+
+                // The axios interceptor will add the token headers
+                console.log(
+                    `Fetching all clients for admin with params: ${queryParams.toString()}`,
+                );
+                const response = await axiosInstance.get(
+                    `/clients/admin/all?${queryParams.toString()}`,
+                );
+
+                if (!response.data) {
+                    throw new Error('Failed to fetch admin clients data');
+                }
+
+                return response.data;
+            } catch (error: any) {
+                console.error('Error fetching admin clients:', error);
+                // Return empty data structure on error
+                return {
+                    data: [],
+                    meta: {
+                        total: 0,
+                        page: 1,
+                        limit: 500,
+                        totalPages: 0,
+                    },
+                    message: error?.response?.data?.message || (error instanceof Error ? error.message : 'Unknown error'),
+                };
+            }
+        },
+        [],
+    );
+
     // Get a single client by ID with comprehensive data
     const getClient = useCallback(async (clientId: number): Promise<Client | null> => {
         try {
@@ -204,6 +255,7 @@ export const useClientApi = () => {
 
     return {
         getClients,
+        getAllClientsForAdmin,
         getClient,
         createClient,
         updateClient,

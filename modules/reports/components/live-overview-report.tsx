@@ -50,8 +50,8 @@ export function LiveOverviewReport({
                                 Sales Analytics & Performance
                             </h3>
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <DollarSign className="w-5 h-5 text-green-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Revenue Analytics</h4>
                                     </div>
@@ -61,8 +61,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <TrendingUp className="w-5 h-5 text-blue-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Sales Trends</h4>
                                     </div>
@@ -72,8 +72,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <BarChart3 className="w-5 h-5 text-purple-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Product Performance</h4>
                                     </div>
@@ -83,8 +83,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Target className="w-5 h-5 text-orange-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Sales Targets</h4>
                                     </div>
@@ -102,15 +102,15 @@ export function LiveOverviewReport({
                                 Coming Soon
                             </h3>
                             <div className="space-y-3">
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <PieChart className="w-4 h-4 text-indigo-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Customer segmentation and lifetime value analysis</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <BarChart3 className="w-4 h-4 text-emerald-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Interactive sales dashboards with real-time updates</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <TrendingUp className="w-4 h-4 text-rose-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Advanced sales forecasting and AI-powered insights</span>
                                 </div>
@@ -127,8 +127,8 @@ export function LiveOverviewReport({
                                 Human Resources Analytics
                             </h3>
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Users className="w-5 h-5 text-blue-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Workforce Analytics</h4>
                                     </div>
@@ -138,8 +138,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Clock className="w-5 h-5 text-green-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Attendance & Time</h4>
                                     </div>
@@ -149,8 +149,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Award className="w-5 h-5 text-purple-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Performance Management</h4>
                                     </div>
@@ -160,8 +160,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <UserCheck className="w-5 h-5 text-orange-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Employee Engagement</h4>
                                     </div>
@@ -179,15 +179,15 @@ export function LiveOverviewReport({
                                 Coming Soon
                             </h3>
                             <div className="space-y-3">
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <Calendar className="w-4 h-4 text-cyan-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Automated payroll reports and expense tracking</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <TrendingUp className="w-4 h-4 text-violet-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Predictive turnover analysis and retention strategies</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <Users className="w-4 h-4 text-amber-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Skills gap analysis and training recommendations</span>
                                 </div>
@@ -204,8 +204,8 @@ export function LiveOverviewReport({
                                 Personal Performance Insights
                             </h3>
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Target className="w-5 h-5 text-blue-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Personal Targets</h4>
                                     </div>
@@ -215,8 +215,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Award className="w-5 h-5 text-green-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Achievements & Rewards</h4>
                                     </div>
@@ -226,8 +226,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <Clock className="w-5 h-5 text-purple-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Time & Productivity</h4>
                                     </div>
@@ -237,8 +237,8 @@ export function LiveOverviewReport({
                                     </p>
                                 </div>
 
-                                <div className="p-4 border rounded-lg border-border/30">
-                                    <div className="flex items-center gap-3 mb-3">
+                                <div className="p-4 rounded-lg border border-border/30">
+                                    <div className="flex gap-3 items-center mb-3">
                                         <TrendingUp className="w-5 h-5 text-orange-600" strokeWidth={1.5} />
                                         <h4 className="text-sm font-medium font-body">Growth Analytics</h4>
                                     </div>
@@ -256,15 +256,15 @@ export function LiveOverviewReport({
                                 Coming Soon
                             </h3>
                             <div className="space-y-3">
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <BarChart3 className="w-4 h-4 text-emerald-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">AI-powered personal performance insights and recommendations</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <Calendar className="w-4 h-4 text-indigo-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Personal calendar integration and time optimization</span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 border rounded border-border/20">
+                                <div className="flex gap-2 items-center p-3 rounded border border-border/20">
                                     <Award className="w-4 h-4 text-rose-600" strokeWidth={1.5} />
                                     <span className="text-xs font-body">Peer comparison and team collaboration metrics</span>
                                 </div>
@@ -282,7 +282,7 @@ export function LiveOverviewReport({
             {/* Header */}
             <Card className="border-border/50">
                 <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg font-medium">
+                    <CardTitle className="flex gap-2 items-center text-lg font-medium">
                         <BarChart3 className="w-5 h-5" strokeWidth={1.5} />
                         <span className="font-light uppercase font-body">
                             Reports & Analytics
@@ -290,7 +290,7 @@ export function LiveOverviewReport({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex gap-2 items-center text-sm text-muted-foreground">
                         <TrendingUp className="w-4 h-4" strokeWidth={1.5} />
                         <span className="font-light font-body">
                             Comprehensive analytics and insights across sales, HR, and personal performance metrics
@@ -302,11 +302,11 @@ export function LiveOverviewReport({
             {/* Tab Navigation */}
             <Card className="border-border/50">
                 <CardContent className="p-0">
-                    <div className="flex items-center mb-6 overflow-x-auto border-b border-border/10">
+                    <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
                         {tabs.map((tab) => (
                             <div
                                 key={tab?.id}
-                                className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
+                                className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
                             >
                                 <div
                                     className={`mb-3 font-body px-4 py-3 font-normal ${

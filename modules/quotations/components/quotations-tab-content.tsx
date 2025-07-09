@@ -7,6 +7,7 @@ import { memo } from 'react';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { FolderMinus } from 'lucide-react';
 import { ClientQuotationReport } from '@/modules/reports/components/client-quotation-report';
+import { ClientSettings } from './client-settings';
 
 interface QuotationsTabContentProps {
     activeTab: string;
@@ -88,6 +89,12 @@ function QuotationsTabContentComponent({
                             Activating soon
                         </p>
                     </div>
+                </div>
+            )}
+
+            {activeTab === 'settings' && (
+                <div className="h-full pb-6 overflow-auto">
+                    <ClientSettings />
                 </div>
             )}
         </div>

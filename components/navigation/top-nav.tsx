@@ -90,13 +90,57 @@ export function TopNav() {
         setHelpDropdownOpen(false);
     };
 
-    // Get user initials for avatar display
+    // Check if user is a client by examining profileData or JWT token
+    const isClient =
+        profileData?.accessLevel === 'client' ||
+        (() => {
+            if (accessToken) {
+                try {
+                    const base64Url = accessToken.split('.')[1];
+                    const base64 = base64Url
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(
+                        atob(base64)
+                            .split('')
+                            .map(
+                                (c) =>
+                                    '%' +
+                                    ('00' + c.charCodeAt(0).toString(16)).slice(
+                                        -2,
+                                    ),
+                            )
+                            .join(''),
+                    );
+                    const payload = JSON.parse(jsonPayload);
+                    return payload.role === 'client';
+                } catch (e) {
+                    return false;
+                }
+            }
+            return false;
+        })();
+
+    // Get user initials for avatar display (dynamic for both clients and users)
     const userInitials = useMemo(() => {
-        if (profileData?.name && profileData?.surname) {
-            return `${profileData.name.charAt(0)}${profileData.surname.charAt(0)}`.toUpperCase();
+        if (isClient) {
+            // For clients, use the client name
+            if (profileData?.name) {
+                const nameParts = profileData.name.split(' ');
+                if (nameParts.length >= 2) {
+                    return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
+                }
+                return profileData.name.charAt(0).toUpperCase();
+            }
+            return 'C';
+        } else {
+            // For users, use name and surname
+            if (profileData?.name && profileData?.surname) {
+                return `${profileData.name.charAt(0)}${profileData.surname.charAt(0)}`.toUpperCase();
+            }
+            return 'U';
         }
-        return 'U';
-    }, [profileData]);
+    }, [profileData, isClient]);
 
     // Get display names for the toggle
     const getUserDisplayName = () => {
@@ -137,37 +181,6 @@ export function TopNav() {
             },
         );
     };
-
-    // Check if user is a client by examining profileData or JWT token
-    const isClient =
-        profileData?.accessLevel === 'client' ||
-        (() => {
-            if (accessToken) {
-                try {
-                    const base64Url = accessToken.split('.')[1];
-                    const base64 = base64Url
-                        .replace(/-/g, '+')
-                        .replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(
-                        atob(base64)
-                            .split('')
-                            .map(
-                                (c) =>
-                                    '%' +
-                                    ('00' + c.charCodeAt(0).toString(16)).slice(
-                                        -2,
-                                    ),
-                            )
-                            .join(''),
-                    );
-                    const payload = JSON.parse(jsonPayload);
-                    return payload.role === 'client';
-                } catch (e) {
-                    return false;
-                }
-            }
-            return false;
-        })();
 
     const handleSignOut = async () => {
         try {
@@ -239,7 +252,7 @@ export function TopNav() {
                         >
                             {isClient ? (
                                 <span className="px-2 py-1 text-xs font-thin uppercase rounded-md text-primary font-body bg-primary/10">
-                                    Client Portal
+                                    {profileData?.name || 'Client Portal'}
                                 </span>
                             ) : (
                                 <span className="text-xs font-normal uppercase font-body text-foreground">
@@ -348,16 +361,17 @@ export function TopNav() {
                                 className="w-8 h-8 ring-2 ring-primary"
                                 id="tour-step-avatar"
                             >
-                                {profileData?.photoURL && (
+                                {/* Show client logo if available, otherwise show user photoURL */}
+                                {(isClient && (profileData as any)?.logo) || profileData?.photoURL ? (
                                     <AvatarImage
-                                        src={profileData?.photoURL}
+                                        src={isClient ? (profileData as any)?.logo : profileData?.photoURL}
                                         alt={
                                             isClient
-                                                ? profileData?.email
+                                                ? profileData?.name || profileData?.email
                                                 : `${profileData?.name} ${profileData?.surname}`
                                         }
                                     />
-                                )}
+                                ) : null}
                                 <AvatarFallback
                                     className={`${isClient ? 'bg-primary' : 'bg-black'} text-white text-[10px] font-body uppercase`}
                                 >

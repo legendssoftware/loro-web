@@ -71,6 +71,7 @@ import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import { showErrorToast } from '@/lib/utils/toast-config';
 import Link from 'next/link';
+import { AccessLevel } from '@/types/auth';
 
 interface QuotationDetailsModalProps {
     onUpdateStatus: (
@@ -121,9 +122,42 @@ export function QuotationDetailsModal({
     const [attachments, setAttachments] = useState<File[]>([]);
     const [isLoadingChat, setIsLoadingChat] = useState<boolean>(false);
     const profileData = useAuthStore(selectProfileData);
+    const { accessToken } = useAuthStore();
     const [localInteractions, setLocalInteractions] = useState<any[]>([]); // Use any[] for optimistic updates
 
     const quotation = data as Quotation;
+
+    // Determine if user is a client
+    const isClient = useMemo(() => {
+        // Check profileData first
+        if (profileData?.accessLevel === AccessLevel.CLIENT) {
+            return true;
+        }
+
+        // If not found in profileData, check JWT token
+        if (accessToken) {
+            try {
+                const base64Url = accessToken.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map(
+                            (c) =>
+                                '%' +
+                                ('00' + c.charCodeAt(0).toString(16)).slice(-2),
+                        )
+                        .join(''),
+                );
+                const payload = JSON.parse(jsonPayload);
+                return payload.role === 'client' || payload.accessLevel === AccessLevel.CLIENT;
+            } catch (e) {
+                console.error('Failed to extract role from token:', e);
+            }
+        }
+
+        return false;
+    }, [profileData, accessToken]);
 
     // Interactions Query Hook
     const {
@@ -376,6 +410,12 @@ export function QuotationDetailsModal({
         field: 'quantity' | 'price',
         value: string,
     ) => {
+        // Prevent clients from editing prices
+        if (isClient && field === 'price') {
+            toast.error('Clients cannot edit item prices. Please contact your sales representative.');
+            return;
+        }
+        
         setEditingItemId(itemId);
         setEditingField(field);
         setEditValue(value);
@@ -1355,9 +1395,16 @@ export function QuotationDetailsModal({
                                                                     </div>
                                                                 ) : (
                                                                     <div
-                                                                        className={`flex items-center justify-end ${isEditing ? 'cursor-pointer group' : ''}`}
+                                                                        className={`flex items-center justify-end ${
+                                                                            isEditing && !isClient 
+                                                                                ? 'cursor-pointer group' 
+                                                                                : isClient 
+                                                                                    ? 'cursor-not-allowed opacity-60' 
+                                                                                    : ''
+                                                                        }`}
                                                                         onClick={() =>
                                                                             isEditing &&
+                                                                            !isClient &&
                                                                             handleStartEdit(
                                                                                 item.uid,
                                                                                 'price',
@@ -1365,6 +1412,7 @@ export function QuotationDetailsModal({
                                                                                     '0',
                                                                             )
                                                                         }
+                                                                        title={isClient ? 'Clients cannot edit item prices' : ''}
                                                                     >
                                                                         <span
                                                                             className={`text-[10px] font-medium font-body ${
@@ -1390,7 +1438,7 @@ export function QuotationDetailsModal({
                                                                                     0,
                                                                             )}
                                                                         </span>
-                                                                        {isEditing && (
+                                                                        {isEditing && !isClient && (
                                                                             <PenLine
                                                                                 className="ml-1 text-primary"
                                                                                 size={
@@ -1400,6 +1448,9 @@ export function QuotationDetailsModal({
                                                                                     1.2
                                                                                 }
                                                                             />
+                                                                        )}
+                                                                        {isEditing && isClient && (
+                                                                            <span className="ml-1 text-xs text-muted-foreground">(Read Only)</span>
                                                                         )}
                                                                     </div>
                                                                 )}

@@ -1,16 +1,17 @@
 'use client';
 
 import { PageTransition } from '@/components/animations/page-transition';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { QuotationFilterParams } from '@/lib/types/quotation';
 import { OrderStatus } from '@/lib/enums/status.enums';
 import { useQuotationsQuery } from '@/hooks/use-quotations-query';
 import { useAuthStatus } from '@/hooks/use-auth-status';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { QuotationsTabGroup } from '@/modules/quotations/components/quotations-tab-group';
 import { useQuotationDetailsModal } from '@/hooks/use-modal-store';
 import { AppLoader } from '@/components/ui/app-loader';
+import { useAuthStore, selectProfileData } from '@/store/auth-store';
 
 // Dynamic imports for components that don't need to be loaded immediately
 const QuotationsTabContent = dynamic(
@@ -20,7 +21,7 @@ const QuotationsTabContent = dynamic(
         ),
     {
         loading: () => (
-            <div className="flex items-center justify-center w-full h-full">
+            <div className="flex justify-center items-center w-full h-full">
                 <AppLoader />
             </div>
         ),
@@ -38,18 +39,26 @@ const QuotationDetailsModal = dynamic(
 // Tab configuration
 const tabs = [{ id: 'quotations', label: 'Quotations' }];
 
-export default function QuotationsPage() {
+function QuotationsPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isAuthenticated, checkStatus } = useAuthStatus();
-    // State for client role
-    const [isClientRole, setIsClientRole] = useState(false);
+    const profileData = useAuthStore(selectProfileData);
+
+    // Determine if user is a client based on auth store profile data
+    const isClientRole = useMemo(() => {
+        return profileData?.accessLevel === 'client';
+    }, [profileData?.accessLevel]);
+
     // State
-    const [activeTab, setActiveTab] = useState<string>('quotations');
+    const [activeTab, setActiveTab] = useState<string>(isClientRole ? 'quotations' : 'quotations');
+
     // Tabs based on user role
     const clientTabs = useMemo(
         () => [
-            { id: 'reports', label: 'Reports' },
             { id: 'quotations', label: 'Quotations' },
+            { id: 'reports', label: 'Reports' },
+            { id: 'settings', label: 'Settings' },
         ],
         [],
     );
@@ -65,59 +74,15 @@ export default function QuotationsPage() {
         if (!status.isAuthenticated) {
             console.warn('User not authenticated. Redirecting to login page.');
             router.push('/sign-in');
-        } else {
-            // For client authentication, extract role from JWT token
-            const getClientRoleFromToken = () => {
-                const token = sessionStorage.getItem('auth-storage');
-                if (token) {
-                    try {
-                        const authData = JSON.parse(token);
-                        const accessToken = authData?.state?.accessToken;
-
-                        if (accessToken) {
-                            const base64Url = accessToken.split('.')[1];
-                            const base64 = base64Url
-                                .replace(/-/g, '+')
-                                .replace(/_/g, '/');
-                            const jsonPayload = decodeURIComponent(
-                                atob(base64)
-                                    .split('')
-                                    .map(
-                                        (c) =>
-                                            '%' +
-                                            (
-                                                '00' +
-                                                c.charCodeAt(0).toString(16)
-                                            ).slice(-2),
-                                    )
-                                    .join(''),
-                            );
-                            const payload = JSON.parse(jsonPayload);
-                            return payload.role;
-                        }
-                    } catch (e) {
-                        console.error('Failed to extract role from token:', e);
-                    }
-                }
-                return null;
-            };
-
-            // If client role is detected, make sure we're on the quotations page
-            const role = getClientRoleFromToken();
-            if (role === 'client') {
-                console.log(
-                    'Client role detected, ensuring access to quotations page',
-                );
-                setIsClientRole(true);
-                setActiveTab('reports');
-            }
         }
-    }, [checkStatus, router, clientTabs, setActiveTab]);
+    }, [checkStatus, router]);
 
-    // Update activeTab when isClientRole changes
+    // Set appropriate initial tab when client role changes
     useEffect(() => {
         if (isClientRole) {
-            setActiveTab('reports');
+            setActiveTab('quotations');
+        } else {
+            setActiveTab('quotations');
         }
     }, [isClientRole]);
 
@@ -148,6 +113,40 @@ export default function QuotationsPage() {
         }
     }, [isAuthenticated, refetch]);
 
+    // Handle URL parameters for opening specific quotations
+    useEffect(() => {
+        const quotationId = searchParams.get('id');
+        
+        if (quotationId && isAuthenticated && quotationsByStatus) {
+            // Find the quotation in the loaded data
+            const findQuotationInStatus = (statusGroups: any) => {
+                if (!statusGroups) return null;
+                
+                for (const statusGroup of Object.values(statusGroups)) {
+                    const quotations = (statusGroup as any)?.quotations || [];
+                    const foundQuotation = quotations.find((q: any) => q.uid === parseInt(quotationId));
+                    if (foundQuotation) {
+                        return foundQuotation;
+                    }
+                }
+                return null;
+            };
+
+            const quotation = findQuotationInStatus(quotationsByStatus);
+            
+            if (quotation) {
+                // Switch to quotations tab and open the modal
+                setActiveTab('quotations');
+                quotationModal.onOpen(quotation);
+                
+                // Clean up the URL parameter
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete('id');
+                window.history.replaceState({}, '', newUrl.toString());
+            }
+        }
+    }, [searchParams, isAuthenticated, quotationsByStatus, quotationModal, setActiveTab]);
+
     // Handlers
     const handleUpdateQuotationStatus = useCallback(
         async (quotationId: number, newStatus: OrderStatus) => {
@@ -172,14 +171,14 @@ export default function QuotationsPage() {
 
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen overflow-hidden">
+            <div className="flex overflow-hidden flex-col h-screen">
                 <QuotationsTabGroup
                     tabs={displayTabs}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
-                <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
+                <div className="flex overflow-hidden flex-col flex-1">
+                    <div className="flex overflow-hidden flex-1 justify-center items-center px-3 py-3 xl:px-8 xl:px-4">
                         <QuotationsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
@@ -201,5 +200,13 @@ export default function QuotationsPage() {
                 onDeleteQuotation={handleDeleteQuotation}
             />
         </PageTransition>
+    );
+}
+
+export default function QuotationsPage() {
+    return (
+        <Suspense fallback={<AppLoader />}>
+            <QuotationsPageContent />
+        </Suspense>
     );
 }

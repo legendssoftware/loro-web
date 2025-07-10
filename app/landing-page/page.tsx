@@ -7,6 +7,7 @@ import {  Check, PhoneCall, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { MotionSection } from '@/components/animations/motion-section';
 import { StaggerContainer } from '@/components/animations/stagger-container';
 import { StaggerItem } from '@/components/animations/stagger-item';
@@ -882,52 +883,61 @@ export default function Home() {
                         </div>
                     </MotionSection>
 
-                    {/* Value Proposition */}
+                    {/* Video Player Section */}
                     <MotionSection className="py-12 md:py-16" direction="up">
                         <div className="container px-4 mx-auto md:px-6">
-                            <div className="max-w-3xl mx-auto text-center">
-                                <motion.p
-                                    className="mb-4 text-xs uppercase text-muted-foreground font-body md:text-xs"
+                            <div className="max-w-4xl mx-auto text-center">
+                                <motion.h2
+                                    className="mb-8 text-2xl font-normal tracking-tighter uppercase sm:text-3xl md:text-4xl font-body"
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.8 }}
                                     viewport={{ once: true }}
                                 >
-                                    <span className="font-normal text-foreground">
-                                        Stop juggling multiple systems.
-                                    </span>{' '}
-                                    Loro combines{' '}
-                                    <span className="font-normal text-foreground">
-                                        CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics
-                                    </span>{' '}
-                                    in one powerful platform.
-                                    <span className="font-normal text-foreground">
-                                        {' '}
-                                        Built for South African businesses
-                                    </span>{' '}
-                                    with{' '}
-                                    <span className="font-normal text-foreground">
-                                        offline capabilities
-                                    </span>{' '}
-                                    and{' '}
-                                    <span className="font-normal text-foreground">
-                                        99.9% uptime guarantee
-                                    </span>
-                                    .
-                                </motion.p>
+                                    DISCOVER LORO
+                                </motion.h2>
                                 <motion.div
+                                    className="relative mx-auto max-w-5xl"
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.3 }}
+                                    transition={{ duration: 0.8, delay: 0.2 }}
                                     viewport={{ once: true }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
                                 >
-                                    <Button variant="outline" className="mt-2 text-xs font-normal uppercase font-body">
-                                        <Link href="#features">
-                                            See All Features
-                                        </Link>
-                                    </Button>
+                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/50 border border-border">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <motion.button
+                                                        className="flex items-center justify-center w-20 h-20 bg-white/90 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 group"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                    >
+                                                        <div className="w-0 h-0 border-l-[12px] border-l-primary border-y-[8px] border-y-transparent ml-1" />
+                                                    </motion.button>
+                                                </DialogTrigger>
+                                                <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full sm:max-w-[80vw] sm:max-h-[80vh] p-0">
+                                                    <div className="relative w-full h-full">
+                                                        <div className="aspect-video w-full h-full bg-black rounded-lg overflow-hidden">
+                                                            <iframe
+                                                                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&modestbranding=1"
+                                                                title="Discover Loro - Complete Business Management Platform"
+                                                                className="w-full h-full"
+                                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                                allowFullScreen
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                                            <p className="text-xs uppercase text-white/80 font-body">
+                                                Watch how Loro transforms your business operations
+                                            </p>
+                                        </div>
+                                    </div>
                                 </motion.div>
                             </div>
                         </div>

@@ -12,9 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/components/ui/use-toast';
 import { Edit, Settings, Mail, Phone, Globe, MapPin, Building2, Tag, CreditCard, Calendar, DollarSign, User, Languages, Briefcase, Factory, Shield, Zap, Users, TrendingUp, Navigation, AlertTriangle } from 'lucide-react';
 import { AccessLevel } from '@/types/auth';
+import { ClientService } from '../../clients/services/client-service';
+import { toast } from 'react-hot-toast';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 // Enums for form options
 enum ClientContactPreference {
@@ -217,7 +219,6 @@ export function ClientSettings() {
     const { profileData, accessToken } = useAuthStore();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { toast } = useToast();
 
     // Cast profileData to extended type for client-specific fields
     const clientProfile = profileData as ExtendedClientProfile;
@@ -437,22 +438,19 @@ export function ClientSettings() {
                 acquisitionDate: formData.acquisitionDate ? new Date(formData.acquisitionDate) : undefined,
             };
 
-            // TODO: Implement API call to update client profile
-            // await updateClientProfile(updateData);
+            // Call the client profile update API
+            const result = await ClientService.updateClientProfile(updateData);
 
-            toast({
-                title: "Profile Updated",
-                description: "Your client profile has been successfully updated.",
-            });
+            if (!result.success) {
+                showErrorToast(result.message, toast);
+                return;
+            }
 
+            showSuccessToast(result.message, toast);
             setIsEditModalOpen(false);
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast({
-                title: "Error",
-                description: "Failed to update profile. Please try again.",
-                variant: "destructive",
-            });
+            showErrorToast('Failed to update profile. Please try again.', toast);
         } finally {
             setIsSubmitting(false);
         }
@@ -479,8 +477,8 @@ export function ClientSettings() {
                 </div>
                 <Dialog open={isEditModalOpen} onOpenChange={handleEditModalOpen}>
                     <DialogTrigger asChild>
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             size="sm"
                             className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white"
                         >
@@ -799,8 +797,8 @@ export function ClientSettings() {
                                             Price Tier
                                             {isClient && <span className="ml-2 text-xs text-muted-foreground">(Read Only)</span>}
                                         </Label>
-                                        <Select 
-                                            value={formData.priceTier} 
+                                        <Select
+                                            value={formData.priceTier}
                                             onValueChange={(value) => handleInputChange('priceTier', value)}
                                             disabled={isClient}
                                         >
@@ -836,8 +834,8 @@ export function ClientSettings() {
                                             Preferred Payment Method
                                             {isClient && <span className="ml-2 text-xs text-muted-foreground">(Read Only)</span>}
                                         </Label>
-                                        <Select 
-                                            value={formData.preferredPaymentMethod} 
+                                        <Select
+                                            value={formData.preferredPaymentMethod}
                                             onValueChange={(value) => handleInputChange('preferredPaymentMethod', value)}
                                             disabled={isClient}
                                         >
@@ -877,8 +875,8 @@ export function ClientSettings() {
                                             Acquisition Channel
                                             {isClient && <span className="ml-2 text-xs text-muted-foreground">(Read Only)</span>}
                                         </Label>
-                                        <Select 
-                                            value={formData.acquisitionChannel} 
+                                        <Select
+                                            value={formData.acquisitionChannel}
                                             onValueChange={(value) => handleInputChange('acquisitionChannel', value)}
                                             disabled={isClient}
                                         >
@@ -904,8 +902,8 @@ export function ClientSettings() {
                                             Risk Level
                                             {isClient && <span className="ml-2 text-xs text-muted-foreground">(Read Only)</span>}
                                         </Label>
-                                        <Select 
-                                            value={formData.riskLevel} 
+                                        <Select
+                                            value={formData.riskLevel}
                                             onValueChange={(value) => handleInputChange('riskLevel', value)}
                                             disabled={isClient}
                                         >
@@ -1131,8 +1129,8 @@ export function ClientSettings() {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="geofenceType">Geofence Type</Label>
-                                                <Select 
-                                                    value={formData.geofenceType} 
+                                                <Select
+                                                    value={formData.geofenceType}
                                                     onValueChange={(value) => handleInputChange('geofenceType', value)}
                                                     disabled={isClient}
                                                 >
@@ -1174,8 +1172,8 @@ export function ClientSettings() {
                                 >
                                     Cancel
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     disabled={isSubmitting}
                                     className="text-white bg-purple-600 hover:bg-purple-700"
                                 >

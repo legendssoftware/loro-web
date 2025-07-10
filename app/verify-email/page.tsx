@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { containerVariants } from '@/lib/utils/animations';
+import { toastConfig } from '@/lib/utils/toast-config';
 
 // Client component that uses useSearchParams
 const VerifyEmailClient = () => {
@@ -16,19 +17,13 @@ const VerifyEmailClient = () => {
     useEffect(() => {
         const verifyEmail = async () => {
             if (!token) {
-                toast.error('Invalid verification link', {
+                toast.error('❌ Invalid verification link', {
+                    ...toastConfig,
                     style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
+                        ...toastConfig.style,
+                        background: '#EF4444',
                     },
                     duration: 5000,
-                    position: 'bottom-center',
                     icon: '❌',
                 });
                 router.push('/sign-up');
@@ -50,19 +45,13 @@ const VerifyEmailClient = () => {
                     throw new Error(data.message || 'Verification failed');
                 }
 
-                toast.success(data.message, {
+                toast.success(`✅ ${data.message}`, {
+                    ...toastConfig,
                     style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
+                        ...toastConfig.style,
+                        background: '#10B981',
                     },
                     duration: 5000,
-                    position: 'bottom-center',
                     icon: '✅',
                 });
 
@@ -71,19 +60,13 @@ const VerifyEmailClient = () => {
                 router.push(`/new-password?token=${token}`);
             } catch (error) {
                 if (error instanceof Error) {
-                    toast.error(error.message, {
+                    toast.error(`❌ ${error.message}`, {
+                        ...toastConfig,
                         style: {
-                            borderRadius: '5px',
-                            background: '#333',
-                            color: '#fff',
-                            fontFamily: 'var(--font-unbounded)',
-                            fontSize: '12px',
-                            textTransform: 'uppercase',
-                            fontWeight: '300',
-                            padding: '16px',
+                            ...toastConfig.style,
+                            background: '#EF4444',
                         },
                         duration: 5000,
-                        position: 'bottom-center',
                         icon: '❌',
                     });
                 }

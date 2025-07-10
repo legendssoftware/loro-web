@@ -69,7 +69,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import { showErrorToast } from '@/lib/utils/toast-config';
+import { showErrorToast, showSuccessToast } from '@/lib/utils/toast-config';
 import Link from 'next/link';
 import { AccessLevel } from '@/types/auth';
 
@@ -415,13 +415,19 @@ export function QuotationDetailsModal({
             toast.error('Clients cannot edit item prices. Please contact your sales representative.');
             return;
         }
-        
+
         setEditingItemId(itemId);
         setEditingField(field);
         setEditValue(value);
     };
 
     const handleStartDiscountEdit = () => {
+        // Prevent clients from editing discount values
+        if (isClient) {
+            toast.error('Clients cannot edit discount values. Please contact your sales representative.');
+            return;
+        }
+
         setEditingField('discount');
         setDiscountValue('0');
     };
@@ -590,6 +596,9 @@ export function QuotationDetailsModal({
             // Call the onEditQuotation function with the updated data
             await onEditQuotation(quotation.uid, updatedQuotationData);
 
+            // Show success toast
+            showSuccessToast('Quotation updated successfully', toast);
+
             // Exit editing mode
             setIsEditing(false);
 
@@ -601,6 +610,8 @@ export function QuotationDetailsModal({
             setEditedDiscount(0);
         } catch (error) {
             console.error('Error updating quotation:', error);
+            // Show error toast
+            showErrorToast('Failed to update quotation. Please try again.', toast);
         }
     };
 
@@ -1396,10 +1407,10 @@ export function QuotationDetailsModal({
                                                                 ) : (
                                                                     <div
                                                                         className={`flex items-center justify-end ${
-                                                                            isEditing && !isClient 
-                                                                                ? 'cursor-pointer group' 
-                                                                                : isClient 
-                                                                                    ? 'cursor-not-allowed opacity-60' 
+                                                                            isEditing && !isClient
+                                                                                ? 'cursor-pointer group'
+                                                                                : isClient
+                                                                                    ? 'cursor-not-allowed opacity-60'
                                                                                     : ''
                                                                         }`}
                                                                         onClick={() =>

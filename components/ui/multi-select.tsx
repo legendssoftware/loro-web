@@ -88,7 +88,13 @@ export function MultiSelect({
                         <ChevronDown className="ml-2 w-4 h-4 opacity-50 shrink-0" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[300px] overflow-y-auto">
+                <DropdownMenuContent 
+                    className={cn(
+                        'overflow-y-auto w-[var(--radix-dropdown-menu-trigger-width)] max-h-[300px]',
+                        // Use the same high z-index as Select components
+                        'z-[11000]'
+                    )}
+                >
                     <DropdownMenuLabel className="text-[10px] font-body font-normal uppercase">
                         {placeholder}
                     </DropdownMenuLabel>

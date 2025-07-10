@@ -84,4 +84,28 @@ export const ClientService = {
       };
     }
   },
+
+  /**
+   * Update client profile (for authenticated clients)
+   * @param profileData - The profile data to update
+   * @returns The updated profile
+   */
+  async updateClientProfile(profileData: Partial<any>): Promise<ApiResponse<any>> {
+    try {
+      const response = await axiosInstance.patch('/clients/profile', profileData);
+      return {
+        data: response.data.data || null,
+        message: response.data.message || 'Profile updated successfully',
+        success: true
+      };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to update profile';
+      console.error('Error updating client profile:', error);
+      return {
+        data: null,
+        message: errorMessage,
+        success: false
+      };
+    }
+  }
 };

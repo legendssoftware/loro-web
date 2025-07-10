@@ -6,6 +6,7 @@ import { LayoutProvider } from '@/providers/layout.provider';
 import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
 import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
+import { MiddlewareNotifications } from '@/components/middleware-notifications';
 
 const urbanist = Urbanist({
     variable: '--font-urbanist',
@@ -190,20 +191,22 @@ export default function RootLayout({
                         <TopNav />
                         <main>{children}</main>
                         <SessionTimeoutHandler />
+                        <MiddlewareNotifications />
                     </LayoutProvider>
                     <Toaster
-                        position="top-right"
+                        position="bottom-center"
                         toastOptions={{
-                            duration: 3000,
+                            duration: 4000,
                             style: {
+                                borderRadius: '5px',
                                 background: '#333',
                                 color: '#fff',
-                                zIndex: 9999999,
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                padding: '12px 16px',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                fontFamily: 'var(--font-unbounded)',
+                                fontSize: '12px',
+                                textTransform: 'uppercase',
+                                fontWeight: '300',
+                                padding: '16px',
+                                zIndex: 100000,
                             },
                             success: {
                                 style: {
@@ -225,10 +228,11 @@ export default function RootLayout({
                             },
                         }}
                         containerStyle={{
-                            zIndex: 9999999,
+                            zIndex: 100000,
                             position: 'fixed',
-                            top: '1.5rem',
-                            right: '1.5rem',
+                            bottom: '1.5rem',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
                         }}
                     />
                 </ThemeProvider>

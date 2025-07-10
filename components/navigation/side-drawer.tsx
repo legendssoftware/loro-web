@@ -42,7 +42,7 @@ const navigationItems = [
         title: 'Live',
         icon: <ChartSpline size={18} strokeWidth={1.5} />,
         href: '/',
-        description: 'Overview dashboard and statistics',
+        description: 'Real-time dashboard with live metrics, KPIs, and business insights',
         // Everyone can access the dashboard home
         feature: 'dashboard',
     },
@@ -51,7 +51,7 @@ const navigationItems = [
         title: 'Leads',
         icon: <Handshake size={18} strokeWidth={1.5} />,
         href: '/leads',
-        description: 'Manage potential customers',
+        description: 'Capture, track, and convert potential customers into sales',
         // Basic users can access leads
         feature: 'leads',
     },
@@ -59,7 +59,7 @@ const navigationItems = [
         title: 'Staff',
         icon: <Users size={18} strokeWidth={1.5} />,
         href: '/staff',
-        description: 'Manage team members',
+        description: 'Manage team members, roles, attendance, and performance',
         // Only admins, managers, and supervisors can access staff
         allowedRoles: [
             AccessLevel.ADMIN,
@@ -72,7 +72,7 @@ const navigationItems = [
         title: 'Tasks',
         icon: <CalendarCheck2 size={18} strokeWidth={1.5} />,
         href: '/tasks',
-        description: 'Track work assignments',
+        description: 'Create, assign, and track work assignments and deadlines',
         // Basic users can access tasks
         feature: 'tasks',
     },
@@ -80,7 +80,7 @@ const navigationItems = [
         title: 'Claims',
         icon: <HandCoins size={18} strokeWidth={1.5} />,
         href: '/claims',
-        description: 'Handle employee claims',
+        description: 'Submit, review, and process employee expense claims',
         // Basic users can access claims
         feature: 'claims',
     },
@@ -88,7 +88,7 @@ const navigationItems = [
         title: 'Journals',
         icon: <Images size={18} strokeWidth={1.5} />,
         href: '/journals',
-        description: 'Manage journal entries',
+        description: 'Document daily activities with photos and notes',
         // All authenticated users can access journals
         feature: 'journal',
     },
@@ -96,7 +96,7 @@ const navigationItems = [
         title: 'Map View',
         icon: <MapPin size={18} strokeWidth={1.5} />,
         href: '/map',
-        description: 'View check-ins, tasks, events and team locations',
+        description: 'Visual map showing team locations, check-ins, and field activities',
         // All authenticated users can access the map
         feature: 'dashboard',
     },
@@ -104,7 +104,7 @@ const navigationItems = [
         title: 'Quotations',
         icon: <ShoppingBag size={18} strokeWidth={1.5} />,
         href: '/quotations',
-        description: 'View and manage quotations',
+        description: 'Create, send, and manage customer quotes and proposals',
         // Use array to check for any quotations-related permission
         featureCheck: ['quotations', 'quotations.view', 'quotations.access'],
     },
@@ -112,7 +112,7 @@ const navigationItems = [
         title: 'Clients',
         icon: <BriefcaseBusiness size={18} strokeWidth={1.5} />,
         href: '/clients',
-        description: 'View & manage clients',
+        description: 'Manage customer database, contacts, and relationship history',
         // Only admin, manager, supervisor can access clients
         allowedRoles: [
             AccessLevel.ADMIN,
@@ -124,7 +124,7 @@ const navigationItems = [
         title: 'Inventory',
         icon: <Warehouse size={18} strokeWidth={1.5} />,
         href: '/inventory',
-        description: 'Track product stock levels',
+        description: 'Track product stock levels, manage supplies, and monitor usage',
         // Only admin, manager can access inventory
         allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
     },
@@ -132,7 +132,7 @@ const navigationItems = [
         title: 'Settings',
         icon: <Settings size={18} strokeWidth={1.5} />,
         href: '/settings',
-        description: 'Manage system settings',
+        description: 'Configure system preferences, user permissions, and integrations',
         // Only admin, manager can access settings
         allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER],
     },

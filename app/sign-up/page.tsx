@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { signUpSchema } from '@/lib/schema/auth';
+import { toastConfig } from '@/lib/utils/toast-config';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/utils/animations';
@@ -53,19 +54,13 @@ const SignUpPage = () => {
             });
 
             // Show success toast
-            toast.success('Verification email sent! Please check your inbox.', {
+            toast.success('✉️ Verification email sent! Please check your inbox.', {
+                ...toastConfig,
                 style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
+                    ...toastConfig.style,
+                    background: '#10B981',
                 },
                 duration: 5000,
-                position: 'bottom-center',
                 icon: '✉️',
             });
 
@@ -76,19 +71,13 @@ const SignUpPage = () => {
         } catch (error) {
             // Error handling
             if (error instanceof Error) {
-                toast.error(error.message || 'Failed to sign up. Please try again.', {
+                toast.error(`❌ ${error.message || 'Failed to sign up. Please try again.'}`, {
+                    ...toastConfig,
                     style: {
-                        borderRadius: '5px',
-                        background: '#333',
-                        color: '#fff',
-                        fontFamily: 'var(--font-unbounded)',
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        fontWeight: '300',
-                        padding: '16px',
+                        ...toastConfig.style,
+                        background: '#EF4444',
                     },
                     duration: 5000,
-                    position: 'bottom-center',
                     icon: '❌',
                 });
             }

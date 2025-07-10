@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { axiosInstance } from '@/lib/services/api-client';
+import { toast } from 'react-hot-toast';
+import { showErrorToast } from '@/lib/utils/toast-config';
 
 interface ReportResponse<T> {
     data: T;
@@ -60,11 +62,15 @@ export const useReportApi = () => {
                     `API Error: Failed to fetch report for client ${clientId}:`,
                     error,
                 );
+
+                const errorMessage = error?.response?.data?.message || 'Failed to fetch report';
+
+                // Show toast notification for user feedback
+                showErrorToast(errorMessage, toast);
+
                 return {
                     data: null,
-                    message:
-                        error?.response?.data?.message ||
-                        'Failed to fetch report',
+                    message: errorMessage,
                     success: false,
                 };
             }
@@ -100,11 +106,15 @@ export const useReportApi = () => {
                 };
             } catch (error: any) {
                 console.error(`Error generating ${type} report:`, error);
+
+                const errorMessage = error?.response?.data?.message || 'Failed to generate report';
+
+                // Show toast notification for user feedback
+                showErrorToast(errorMessage, toast);
+
                 return {
                     data: null,
-                    message:
-                        error?.response?.data?.message ||
-                        'Failed to generate report',
+                    message: errorMessage,
                     success: false,
                 };
             }

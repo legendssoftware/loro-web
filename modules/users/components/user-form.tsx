@@ -186,6 +186,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         setShowPassword(!showPassword);
     };
 
+    // Generate avatar URL based on user initials
+    const generateAvatarUrl = (firstName: string, lastName: string) => {
+        const fullName = `${firstName} ${lastName}`.trim();
+        const encodedName = encodeURIComponent(fullName);
+        return `https://ui-avatars.com/api/?name=${encodedName}&background=random&size=256&bold=true`;
+    };
+
     // Default form values
     const defaultValues: Partial<UserFormValues> = {
         username: '',
@@ -242,6 +249,18 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         }
     }, [initialData?.assignedClients]);
 
+    // Watch for name changes to generate avatar preview
+    const watchedName = watch('name');
+    const watchedSurname = watch('surname');
+
+    // Update avatar preview when name changes and no image is selected
+    useEffect(() => {
+        if (watchedName && watchedSurname && !selectedFile && !initialData?.photoURL) {
+            const avatarUrl = generateAvatarUrl(watchedName, watchedSurname);
+            setUserImage(avatarUrl);
+        }
+    }, [watchedName, watchedSurname, selectedFile, initialData?.photoURL]);
+
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -286,6 +305,11 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
 
                 if (uploadResponse.data?.url) {
                     data.photoURL = uploadResponse.data.url;
+                }
+            } else {
+                // If no file uploaded, generate avatar based on initials
+                if (data.name && data.surname) {
+                    data.photoURL = generateAvatarUrl(data.name, data.surname);
                 }
             }
 
@@ -663,7 +687,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 options={clientOptions}
                                 selectedValues={selectedClients}
                                 onSelectionChange={(values) => setSelectedClients(values as number[])}
-                                placeholder="Select clients..."
+                                placeholder={
+                                    isLoadingClients 
+                                        ? "Loading clients..." 
+                                        : clientOptions.length === 0 
+                                            ? "No clients available" 
+                                            : "Select clients..."
+                                }
                                 disabled={isLoadingClients}
                                 className="w-full"
                             />
@@ -683,6 +713,11 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         Retry
                                     </button>
                                 </div>
+                            )}
+                            {!isLoadingClients && !clientError && clientOptions.length === 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                    No clients available for assignment.
+                                </p>
                             )}
                         </div>
                     </CardContent>

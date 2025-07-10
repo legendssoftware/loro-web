@@ -1182,7 +1182,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 options={clientOptions}
                                 selectedValues={selectedClients}
                                 onSelectionChange={(values) => setSelectedClients(values as number[])}
-                                placeholder="Select clients..."
+                                placeholder={
+                                    isLoadingClients 
+                                        ? "Loading clients..." 
+                                        : clientOptions.length === 0 
+                                            ? "No clients available" 
+                                            : "Select clients..."
+                                }
                                 disabled={isLoadingClients}
                                 className="w-full"
                             />
@@ -1202,6 +1208,11 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         Retry
                                     </button>
                                 </div>
+                            )}
+                            {!isLoadingClients && !clientError && clientOptions.length === 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                    No clients available for assignment.
+                                </p>
                             )}
                         </div>
                     </CardContent>

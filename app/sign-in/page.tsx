@@ -35,12 +35,15 @@ const clientSignInSchema = z.object({
 
 type ClientSignInSchema = z.infer<typeof clientSignInSchema>;
 
-// User sign in form component
-const UserSignInForm = () => {
+// User sign in form component - now receives searchParams as props
+interface UserSignInFormProps {
+    callbackUrl: string;
+    reason: string | null;
+}
+
+const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get('callbackUrl') || '/';
 
     const { signIn, isLoading, error, clearAuthError, profileData } = useAuthStore();
 
@@ -68,7 +71,6 @@ const UserSignInForm = () => {
 
     // Handle URL reason parameters for cases like token expiration or refresh failure
     useEffect(() => {
-        const reason = searchParams.get('reason');
         if (reason) {
             let message = '';
             switch (reason) {
@@ -84,7 +86,7 @@ const UserSignInForm = () => {
             }
             showErrorToast(message, toast);
         }
-    }, [searchParams]);
+    }, [reason]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -297,12 +299,14 @@ const UserSignInForm = () => {
     );
 };
 
-// Client sign in form component
-const ClientSignInForm = () => {
+// Client sign in form component - now receives searchParams as props
+interface ClientSignInFormProps {
+    callbackUrl: string;
+}
+
+const ClientSignInForm = ({ callbackUrl }: ClientSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get('callbackUrl') || '/';
     const { clientSignIn, isLoading, error, clearAuthError } = useAuthStore();
 
     const [form, setForm] = useState<ClientSignInSchema>({
@@ -515,11 +519,12 @@ const ClientSignInForm = () => {
     );
 };
 
-// Sign in form component with tabs
+// Sign in form component with tabs - now handles all useSearchParams calls
 const SignInForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const reason = searchParams.get('reason');
     const { isLoading } = useAuthStore();
     const [activeTab, setActiveTab] = useState<string>('employee');
 
@@ -620,8 +625,17 @@ const SignInForm = () => {
                             </div>
 
                             <div className="mt-4">
-                                {activeTab === 'employee' && <UserSignInForm />}
-                                {activeTab === 'client' && <ClientSignInForm />}
+                                {activeTab === 'employee' && (
+                                    <UserSignInForm
+                                        callbackUrl={callbackUrl}
+                                        reason={reason}
+                                    />
+                                )}
+                                {activeTab === 'client' && (
+                                    <ClientSignInForm
+                                        callbackUrl={callbackUrl}
+                                    />
+                                )}
                             </div>
                         </div>
 

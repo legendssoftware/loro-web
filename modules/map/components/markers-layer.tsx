@@ -413,12 +413,12 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 Tags
                             </p>
                             <div className="flex flex-wrap gap-1">
-                                {worker.tags.slice(0, 4).map((tag: string, index: number) => (
+                                {worker.tags?.slice(0, 4)?.map((tag: string, index: number) => (
                                     <span key={index} className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[8px]">
                                         {tag}
                                     </span>
                                 ))}
-                                {worker.tags.length > 4 && (
+                                {worker.tags && worker.tags.length > 4 && (
                                     <span className="text-[8px] text-muted-foreground">+{worker.tags.length - 4} more</span>
                                 )}
                             </div>
@@ -577,10 +577,10 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 Key Products
                             </p>
                             <div className="space-y-0.5">
-                                {worker.keyProducts.slice(0, 3).map((product: string, index: number) => (
+                                {worker.keyProducts?.slice(0, 3)?.map((product: string, index: number) => (
                                     <p key={index} className="text-[9px] text-muted-foreground">• {product}</p>
                                 ))}
-                                {worker.keyProducts.length > 3 && (
+                                {worker.keyProducts && worker.keyProducts.length > 3 && (
                                     <p className="text-[8px] text-muted-foreground">+{worker.keyProducts.length - 3} more</p>
                                 )}
                             </div>
@@ -593,10 +593,10 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 Key Strengths
                             </p>
                             <div className="space-y-0.5">
-                                {worker.keyStrengths.slice(0, 2).map((strength: string, index: number) => (
+                                {worker.keyStrengths?.slice(0, 2)?.map((strength: string, index: number) => (
                                     <p key={index} className="text-[9px] text-muted-foreground">• {strength}</p>
                                 ))}
-                                {worker.keyStrengths.length > 2 && (
+                                {worker.keyStrengths && worker.keyStrengths.length > 2 && (
                                     <p className="text-[8px] text-muted-foreground">+{worker.keyStrengths.length - 2} more</p>
                                 )}
                             </div>
@@ -609,10 +609,10 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 Key Weaknesses
                             </p>
                             <div className="space-y-0.5">
-                                {worker.keyWeaknesses.slice(0, 2).map((weakness: string, index: number) => (
+                                {worker.keyWeaknesses?.slice(0, 2)?.map((weakness: string, index: number) => (
                                     <p key={index} className="text-[9px] text-muted-foreground">• {weakness}</p>
                                 ))}
-                                {worker.keyWeaknesses.length > 2 && (
+                                {worker.keyWeaknesses && worker.keyWeaknesses.length > 2 && (
                                     <p className="text-[8px] text-muted-foreground">+{worker.keyWeaknesses.length - 2} more</p>
                                 )}
                             </div>

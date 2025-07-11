@@ -38,7 +38,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { useBranchQuery, Branch } from '@/hooks/use-branch-query';
-import { useAdminClientsQuery, ClientStatus, Client } from '@/hooks/use-clients-query';
+import {
+    useAdminClientsQuery,
+    ClientStatus,
+    Client,
+} from '@/hooks/use-clients-query';
 
 // Enhanced form schema definition - comprehensive editing with all user entity fields
 const userEditFormSchema = z.object({
@@ -136,12 +140,23 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     const [selectedClients, setSelectedClients] = useState<number[]>([]);
 
     // Use the global branch query hook
-    const { branches, isLoading: isLoadingBranches, error: branchError, refetch: refetchBranches } = useBranchQuery();
+    const {
+        branches: branchesData,
+        isLoading: isLoadingBranches,
+        error: branchError,
+        refetch: refetchBranches,
+    } = useBranchQuery();
+    const branches = (branchesData as Branch[]) || [];
 
     // Use the admin clients query hook to get all clients for user assignment
-    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({
+    const {
+        clients,
+        loading: isLoadingClients,
+        error: clientError,
+        refetch: refetchClients,
+    } = useAdminClientsQuery({
         limit: 500, // Get all available clients for assignment
-        status: ClientStatus.ACTIVE // Only fetch active clients for assignment
+        status: ClientStatus.ACTIVE, // Only fetch active clients for assignment
     });
 
     // Position options
@@ -172,7 +187,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         'CTO',
         'CFO',
         'COO',
-        'Other'
+        'Other',
     ];
 
     // Department options
@@ -194,7 +209,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         'Product Management',
         'Project Management',
         'Training & Development',
-        'Other'
+        'Other',
     ];
 
     // Toggle password visibility
@@ -228,14 +243,19 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         weight: (initialData as any).userProfile?.weight || '',
         gender: (initialData as any).userProfile?.gender || undefined,
         dob: (initialData as any).userProfile?.dateOfBirth
-            ? new Date((initialData as any).userProfile.dateOfBirth).toISOString().split('T')[0]
+            ? new Date((initialData as any).userProfile.dateOfBirth)
+                  .toISOString()
+                  .split('T')[0]
             : '',
 
         // Employment Profile (from userEmployeementProfile relationship)
         position: (initialData as any).userEmployeementProfile?.position || '',
-        department: (initialData as any).userEmployeementProfile?.department || '',
+        department:
+            (initialData as any).userEmployeementProfile?.department || '',
         startDate: (initialData as any).userEmployeementProfile?.startDate
-            ? new Date((initialData as any).userEmployeementProfile.startDate).toISOString().split('T')[0]
+            ? new Date((initialData as any).userEmployeementProfile.startDate)
+                  .toISOString()
+                  .split('T')[0]
             : '',
 
         // Address Information (from userProfile)
@@ -246,15 +266,24 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         postalCode: (initialData as any).userProfile?.zipCode || '',
 
         // Target Information (from userTarget relationship)
-        targetSalesAmount: (initialData as any).userTarget?.targetSalesAmount?.toString() || '0',
-        targetQuotationsAmount: (initialData as any).userTarget?.targetQuotationsAmount?.toString() || '0',
-        targetCurrency: (initialData as any).userTarget?.targetCurrency || 'USD',
-        targetHoursWorked: (initialData as any).userTarget?.targetHoursWorked || 40,
-        targetNewClients: (initialData as any).userTarget?.targetNewClients || 0,
+        targetSalesAmount:
+            (initialData as any).userTarget?.targetSalesAmount?.toString() ||
+            '0',
+        targetQuotationsAmount:
+            (
+                initialData as any
+            ).userTarget?.targetQuotationsAmount?.toString() || '0',
+        targetCurrency:
+            (initialData as any).userTarget?.targetCurrency || 'USD',
+        targetHoursWorked:
+            (initialData as any).userTarget?.targetHoursWorked || 40,
+        targetNewClients:
+            (initialData as any).userTarget?.targetNewClients || 0,
         targetNewLeads: (initialData as any).userTarget?.targetNewLeads || 0,
         targetCheckIns: (initialData as any).userTarget?.targetCheckIns || 0,
         targetCalls: (initialData as any).userTarget?.targetCalls || 0,
-        targetPeriod: (initialData as any).userTarget?.targetPeriod || 'monthly',
+        targetPeriod:
+            (initialData as any).userTarget?.targetPeriod || 'monthly',
 
         // Device Information
         expoPushToken: (initialData as any).expoPushToken || '',
@@ -278,10 +307,11 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     });
 
     // Prepare client options for MultiSelect with better labeling
-    const clientOptions: MultiSelectOption[] = clients?.map((client: Client) => ({
-        value: client.uid,
-        label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`
-    })) || [];
+    const clientOptions: MultiSelectOption[] =
+        clients?.map((client: Client) => ({
+            value: client.uid,
+            label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`,
+        })) || [];
 
     // Initialize selected clients from initial data
     useEffect(() => {
@@ -340,21 +370,29 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
 
     // Form submission handler
     const onFormSubmit = async (data: UserEditFormValues) => {
+        console.log('Form submitted with data');
         try {
             setIsSubmitting(true);
 
-            // Initialize with only changed fields
+            // Initialize with all form data for editing
             const changedData: UserEditServerData = {};
 
             // Add only dirty (changed) fields to the update data
             Object.keys(dirtyFields).forEach((key) => {
                 const fieldKey = key as keyof UserEditFormValues;
-                // Use type assertion to handle the typing issue
-                changedData[fieldKey] = data[fieldKey] as any;
+                const value = data[fieldKey];
+
+                // Only include non-empty values or explicitly set values
+                if (value !== undefined && value !== '' && value !== null) {
+                    (changedData as any)[fieldKey] = value;
+                }
             });
 
             // Always include assigned clients if they've been changed
-            if (JSON.stringify(selectedClients) !== JSON.stringify((initialData as any)?.assignedClients || [])) {
+            if (
+                JSON.stringify(selectedClients) !==
+                JSON.stringify((initialData as any)?.assignedClients || [])
+            ) {
                 changedData.assignedClients = selectedClients;
             }
 
@@ -366,35 +404,49 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 }
             }
 
-            // Only include password if it was changed and not empty
-            if (data.password && dirtyFields.password) {
+            // Handle password - only include if it was changed and not empty
+            if (
+                data.password &&
+                data.password.trim() !== '' &&
+                dirtyFields.password
+            ) {
                 changedData.password = data.password;
-            } else {
-                delete changedData.password;
             }
 
-            // Special handling for branch - only include if changed
-            if (dirtyFields.branchId && changedData.branchId) {
-                changedData.branch = { uid: changedData.branchId };
-                delete changedData.branchId; // Remove branchId as we're using branch object
+            // Special handling for branch - convert branchId to branch object
+            if (
+                data.branchId &&
+                (dirtyFields.branchId || !initialData.branch)
+            ) {
+                changedData.branch = { uid: data.branchId };
+                delete (changedData as any).branchId; // Remove branchId as we're using branch object
             }
 
             // Get auth store data for organisational context
             const profileData = useAuthStore.getState().profileData;
 
             // Add organization if needed and it doesn't exist
-            if (profileData?.organisationRef && !initialData.organisation && Object.keys(changedData).length > 0) {
+            if (profileData?.organisationRef && !initialData.organisation) {
                 changedData.organisation = {
                     uid: parseInt(profileData.organisationRef, 10),
                 };
             }
 
-            // Only submit if there are changes
-            if (Object.keys(changedData).length > 0) {
-                // Submit the data to the parent component
+            // Submit even if no changes detected (for debugging)
+            // In production, you might want to show a message if no changes
+            if (
+                Object.keys(changedData).length > 0 ||
+                Object.keys(dirtyFields).length > 0
+            ) {
                 await onSubmit(changedData);
             } else {
-                // Show message if no changes were made
+                // Force submit with essential fields to ensure API is called
+                const essentialData: UserEditServerData = {
+                    name: data.name,
+                    surname: data.surname,
+                    email: data.email,
+                };
+                await onSubmit(essentialData);
             }
         } catch (error) {
         } finally {
@@ -412,11 +464,8 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     }, [userImage]);
 
     return (
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-            <fieldset
-                disabled={isLoading || isSubmitting}
-                className="space-y-6"
-            >
+        <form className="space-y-6">
+            <div className="space-y-6">
                 {/* Profile Photo Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
@@ -940,13 +989,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Personal Profile Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
                     Personal Profile
-                </legend>
+                </h3>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
@@ -975,17 +1024,33 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         >
                                             <SelectTrigger className="font-light bg-card border-border">
                                                 <div className="flex gap-2 items-center">
-                                                    <UserIcon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <UserIcon
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
                                                     <span className="uppercase text-[10px] font-thin font-body">
-                                                        {field.value ? field.value.replace(/_/g, ' ') : 'SELECT GENDER'}
+                                                        {field.value
+                                                            ? field.value.replace(
+                                                                  /_/g,
+                                                                  ' ',
+                                                              )
+                                                            : 'SELECT GENDER'}
                                                     </span>
                                                 </div>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="male">Male</SelectItem>
-                                                <SelectItem value="female">Female</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
-                                                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                                                <SelectItem value="male">
+                                                    Male
+                                                </SelectItem>
+                                                <SelectItem value="female">
+                                                    Female
+                                                </SelectItem>
+                                                <SelectItem value="other">
+                                                    Other
+                                                </SelectItem>
+                                                <SelectItem value="prefer_not_to_say">
+                                                    Prefer not to say
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1000,7 +1065,10 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     Date of Birth
                                 </Label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                                    <Calendar
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
+                                        strokeWidth={1.5}
+                                    />
                                     <Input
                                         id="dob"
                                         type="date"
@@ -1042,13 +1110,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Employment Information Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
                     Employment Information
-                </legend>
+                </h3>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
@@ -1079,11 +1147,16 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                 <SelectValue placeholder="Select position" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {positionOptions.map((position) => (
-                                                    <SelectItem key={position} value={position}>
-                                                        {position}
-                                                    </SelectItem>
-                                                ))}
+                                                {positionOptions.map(
+                                                    (position) => (
+                                                        <SelectItem
+                                                            key={position}
+                                                            value={position}
+                                                        >
+                                                            {position}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1109,11 +1182,16 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                 <SelectValue placeholder="Select department" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {departmentOptions.map((department) => (
-                                                    <SelectItem key={department} value={department}>
-                                                        {department}
-                                                    </SelectItem>
-                                                ))}
+                                                {departmentOptions.map(
+                                                    (department) => (
+                                                        <SelectItem
+                                                            key={department}
+                                                            value={department}
+                                                        >
+                                                            {department}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1128,7 +1206,10 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     Start Date
                                 </Label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                                    <Calendar
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
+                                        strokeWidth={1.5}
+                                    />
                                     <Input
                                         id="startDate"
                                         type="date"
@@ -1148,7 +1229,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="hrID"
                                     type="number"
-                                    {...register('hrID', { valueAsNumber: true })}
+                                    {...register('hrID', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="12345"
                                 />
@@ -1181,13 +1264,15 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                             <MultiSelect
                                 options={clientOptions}
                                 selectedValues={selectedClients}
-                                onSelectionChange={(values) => setSelectedClients(values as number[])}
+                                onSelectionChange={(values) =>
+                                    setSelectedClients(values as number[])
+                                }
                                 placeholder={
-                                    isLoadingClients 
-                                        ? "Loading clients..." 
-                                        : clientOptions.length === 0 
-                                            ? "No clients available" 
-                                            : "Select clients..."
+                                    isLoadingClients
+                                        ? 'Loading clients...'
+                                        : clientOptions.length === 0
+                                          ? 'No clients available'
+                                          : 'Select clients...'
                                 }
                                 disabled={isLoadingClients}
                                 className="w-full"
@@ -1209,21 +1294,23 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                     </button>
                                 </div>
                             )}
-                            {!isLoadingClients && !clientError && clientOptions.length === 0 && (
-                                <p className="text-xs text-muted-foreground">
-                                    No clients available for assignment.
-                                </p>
-                            )}
+                            {!isLoadingClients &&
+                                !clientError &&
+                                clientOptions.length === 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        No clients available for assignment.
+                                    </p>
+                                )}
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Address Information Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
                     Address Information
-                </legend>
+                </h3>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
@@ -1314,13 +1401,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Performance Targets Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
                     Performance Targets
-                </legend>
+                </h3>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
@@ -1387,7 +1474,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="targetHoursWorked"
                                     type="number"
-                                    {...register('targetHoursWorked', { valueAsNumber: true })}
+                                    {...register('targetHoursWorked', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="40"
                                 />
@@ -1403,7 +1492,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="targetNewClients"
                                     type="number"
-                                    {...register('targetNewClients', { valueAsNumber: true })}
+                                    {...register('targetNewClients', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="10"
                                 />
@@ -1419,7 +1510,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="targetNewLeads"
                                     type="number"
-                                    {...register('targetNewLeads', { valueAsNumber: true })}
+                                    {...register('targetNewLeads', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="20"
                                 />
@@ -1435,7 +1528,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="targetCheckIns"
                                     type="number"
-                                    {...register('targetCheckIns', { valueAsNumber: true })}
+                                    {...register('targetCheckIns', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="50"
                                 />
@@ -1451,7 +1546,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 <Input
                                     id="targetCalls"
                                     type="number"
-                                    {...register('targetCalls', { valueAsNumber: true })}
+                                    {...register('targetCalls', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="100"
                                 />
@@ -1474,18 +1571,33 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         >
                                             <SelectTrigger className="font-light bg-card border-border">
                                                 <div className="flex gap-2 items-center">
-                                                    <Award className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <Award
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
                                                     <span className="uppercase text-[10px] font-thin font-body">
-                                                        {field.value ? field.value.toUpperCase() : 'SELECT PERIOD'}
+                                                        {field.value
+                                                            ? field.value.toUpperCase()
+                                                            : 'SELECT PERIOD'}
                                                     </span>
                                                 </div>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="daily">Daily</SelectItem>
-                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                                <SelectItem value="daily">
+                                                    Daily
+                                                </SelectItem>
+                                                <SelectItem value="weekly">
+                                                    Weekly
+                                                </SelectItem>
+                                                <SelectItem value="monthly">
+                                                    Monthly
+                                                </SelectItem>
+                                                <SelectItem value="quarterly">
+                                                    Quarterly
+                                                </SelectItem>
+                                                <SelectItem value="yearly">
+                                                    Yearly
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1494,13 +1606,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Device Information Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
                     Device Information
-                </legend>
+                </h3>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex gap-2 items-center text-sm font-medium">
@@ -1529,16 +1641,27 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         >
                                             <SelectTrigger className="font-light bg-card border-border">
                                                 <div className="flex gap-2 items-center">
-                                                    <Globe className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                                                    <Globe
+                                                        className="w-4 h-4 text-muted-foreground"
+                                                        strokeWidth={1.5}
+                                                    />
                                                     <span className="uppercase text-[10px] font-thin font-body">
-                                                        {field.value ? field.value.toUpperCase() : 'SELECT PLATFORM'}
+                                                        {field.value
+                                                            ? field.value.toUpperCase()
+                                                            : 'SELECT PLATFORM'}
                                                     </span>
                                                 </div>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="ios">iOS</SelectItem>
-                                                <SelectItem value="android">Android</SelectItem>
-                                                <SelectItem value="web">Web</SelectItem>
+                                                <SelectItem value="ios">
+                                                    iOS
+                                                </SelectItem>
+                                                <SelectItem value="android">
+                                                    Android
+                                                </SelectItem>
+                                                <SelectItem value="web">
+                                                    Web
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1577,15 +1700,16 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-            </fieldset>
+            </div>
 
             {/* Submit Button */}
             <div className="flex gap-2 justify-end pt-4 mt-6 border-t border-border">
                 <Button
-                    type="submit"
+                    type="button"
                     variant="outline"
                     disabled={isLoading || isSubmitting}
                     className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
+                    onClick={() => onFormSubmit(watch())}
                 >
                     {isSubmitting
                         ? 'Saving...'

@@ -1501,7 +1501,7 @@ export function ClientSettings() {
                     <CardContent>
                         <div className="flex flex-wrap gap-2">
                             {clientProfile.tags && clientProfile.tags.length > 0 ? (
-                                clientProfile.tags.map((tag, index) => (
+                                clientProfile.tags?.map((tag, index) => (
                                     <Badge key={index} variant="secondary">
                                         {tag}
                                     </Badge>
@@ -1524,7 +1524,7 @@ export function ClientSettings() {
                     <CardContent>
                         <div className="flex flex-wrap gap-2">
                             {clientProfile.visibleCategories && clientProfile.visibleCategories.length > 0 ? (
-                                clientProfile.visibleCategories.map((category, index) => (
+                                clientProfile.visibleCategories?.map((category, index) => (
                                     <Badge key={index} variant="outline">
                                         {category}
                                     </Badge>

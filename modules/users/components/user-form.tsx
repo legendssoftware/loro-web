@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuthStore } from '@/store/auth-store';
 import { axiosInstance } from '@/lib/services/api-client';
 import { AccessLevel } from '@/lib/types/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -20,30 +18,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Camera,
     User,
-    Mail,
-    Phone,
     Key,
-    ShieldCheck,
-    ToggleLeft,
-    ChevronDown,
-    UserPlus,
-    Building,
     Eye,
     EyeOff,
     MapPin,
     Calendar,
     Briefcase,
-    Award,
     Target,
-    CreditCard,
-    Clock,
     Settings,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
 import { AccountStatus } from '@/lib/enums/status.enums';
 import { useBranchQuery } from '@/hooks/use-branch-query';
-import { useAdminClientsQuery, ClientStatus, Client } from '@/hooks/use-clients-query';
+import {
+    useAdminClientsQuery,
+    ClientStatus,
+    Client,
+} from '@/hooks/use-clients-query';
+import { showErrorToast } from '@/lib/utils/toast-config';
+import toast from 'react-hot-toast';
 
 // Enhanced form schema with essential user entity fields for creation
 const userFormSchema = z.object({
@@ -54,37 +48,37 @@ const userFormSchema = z.object({
     password: z
         .string()
         .min(8, { message: 'Password must be at least 8 characters' }),
-    
+
     // Personal Information
     name: z.string().min(1, { message: 'First name is required' }),
     surname: z.string().min(1, { message: 'Last name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
     phone: z.string().min(1, { message: 'Phone number is required' }),
     photoURL: z.string().optional(),
-    
+
     // System Fields
     role: z.string().optional(),
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
     branchId: z.number().optional(),
     assignedClients: z.array(z.number()).optional(),
-    
+
     // User Profile Fields (optional)
     gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
     dob: z.string().optional(), // Date of birth as string for form handling
-    
+
     // Employment Profile
     position: z.string().optional(),
     department: z.string().optional(),
     startDate: z.string().optional(), // Employment start date
-    
+
     // Address Information
     street: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
     country: z.string().optional(),
     postalCode: z.string().optional(),
-    
+
     // Target Information (basic targets only)
     targetSalesAmount: z.string().optional(),
     targetQuotationsAmount: z.string().optional(),
@@ -120,12 +114,22 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     const [selectedClients, setSelectedClients] = useState<number[]>([]);
 
     // Use the global branch query hook
-    const { branches, isLoading: isLoadingBranches, error: branchError, refetch: refetchBranches } = useBranchQuery();
-    
+    const {
+        branches,
+        isLoading: isLoadingBranches,
+        error: branchError,
+        refetch: refetchBranches,
+    } = useBranchQuery();
+
     // Use the admin clients query hook to get all clients for user assignment
-    const { clients, loading: isLoadingClients, error: clientError, refetch: refetchClients } = useAdminClientsQuery({ 
+    const {
+        clients,
+        loading: isLoadingClients,
+        error: clientError,
+        refetch: refetchClients,
+    } = useAdminClientsQuery({
         limit: 500, // Get all available clients for assignment
-        status: ClientStatus.ACTIVE // Only fetch active clients for assignment
+        status: ClientStatus.ACTIVE, // Only fetch active clients for assignment
     });
 
     // Position options
@@ -156,7 +160,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         'CTO',
         'CFO',
         'COO',
-        'Other'
+        'Other',
     ];
 
     // Department options
@@ -178,7 +182,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         'Product Management',
         'Project Management',
         'Training & Development',
-        'Other'
+        'Other',
     ];
 
     // Toggle password visibility
@@ -255,7 +259,12 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
 
     // Update avatar preview when name changes and no image is selected
     useEffect(() => {
-        if (watchedName && watchedSurname && !selectedFile && !initialData?.photoURL) {
+        if (
+            watchedName &&
+            watchedSurname &&
+            !selectedFile &&
+            !initialData?.photoURL
+        ) {
             const avatarUrl = generateAvatarUrl(watchedName, watchedSurname);
             setUserImage(avatarUrl);
         }
@@ -275,10 +284,11 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     };
 
     // Prepare client options for MultiSelect with better labeling
-    const clientOptions: MultiSelectOption[] = clients?.map((client: Client) => ({
-        value: client.uid,
-        label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`
-    })) || [];
+    const clientOptions: MultiSelectOption[] =
+        clients?.map((client: Client) => ({
+            value: client.uid,
+            label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`,
+        })) || [];
 
     // Handle form submission
     const handleFormSubmit = async (data: UserFormValues) => {
@@ -316,7 +326,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             // Submit the form data
             await onSubmit(data);
         } catch (error) {
-            console.error('Form submission error:', error);
+            showErrorToast('Failed to create user', toast);
         } finally {
             setIsSubmitting(false);
         }
@@ -333,7 +343,10 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                     <CardContent className="p-4">
                         <div className="flex gap-4 items-center">
                             <Avatar className="w-20 h-20">
-                                <AvatarImage src={userImage || ''} alt="Profile" />
+                                <AvatarImage
+                                    src={userImage || ''}
+                                    alt="Profile"
+                                />
                                 <AvatarFallback>
                                     <User className="w-10 h-10 text-muted-foreground" />
                                 </AvatarFallback>
@@ -479,9 +492,15 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select gender" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="male">Male</SelectItem>
-                                                <SelectItem value="female">Female</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
+                                                <SelectItem value="male">
+                                                    Male
+                                                </SelectItem>
+                                                <SelectItem value="female">
+                                                    Female
+                                                </SelectItem>
+                                                <SelectItem value="other">
+                                                    Other
+                                                </SelectItem>
                                                 <SelectItem value="prefer_not_to_say">
                                                     Prefer not to say
                                                 </SelectItem>
@@ -513,7 +532,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             {/* Authentication Section */}
             <fieldset className="space-y-4">
                 <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Authentication
+                    Authenticati
                 </legend>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
@@ -556,7 +575,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <div className="relative">
                                     <Input
                                         id="password"
-                                        type={showPassword ? 'text' : 'password'}
+                                        type={
+                                            showPassword ? 'text' : 'password'
+                                        }
                                         {...register('password')}
                                         className="pr-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                         placeholder="••••••••"
@@ -619,11 +640,16 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select position" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {positionOptions.map((position) => (
-                                                    <SelectItem key={position} value={position}>
-                                                        {position}
-                                                    </SelectItem>
-                                                ))}
+                                                {positionOptions.map(
+                                                    (position) => (
+                                                        <SelectItem
+                                                            key={position}
+                                                            value={position}
+                                                        >
+                                                            {position}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -649,11 +675,16 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select department" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {departmentOptions.map((department) => (
-                                                    <SelectItem key={department} value={department}>
-                                                        {department}
-                                                    </SelectItem>
-                                                ))}
+                                                {departmentOptions.map(
+                                                    (department) => (
+                                                        <SelectItem
+                                                            key={department}
+                                                            value={department}
+                                                        >
+                                                            {department}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -675,7 +706,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="space-y-1">
                             <Label
                                 htmlFor="assignedClients"
@@ -686,13 +717,15 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                             <MultiSelect
                                 options={clientOptions}
                                 selectedValues={selectedClients}
-                                onSelectionChange={(values) => setSelectedClients(values as number[])}
+                                onSelectionChange={(values) =>
+                                    setSelectedClients(values as number[])
+                                }
                                 placeholder={
-                                    isLoadingClients 
-                                        ? "Loading clients..." 
-                                        : clientOptions.length === 0 
-                                            ? "No clients available" 
-                                            : "Select clients..."
+                                    isLoadingClients
+                                        ? 'Loading clients...'
+                                        : clientOptions.length === 0
+                                          ? 'No clients available'
+                                          : 'Select clients...'
                                 }
                                 disabled={isLoadingClients}
                                 className="w-full"
@@ -714,11 +747,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     </button>
                                 </div>
                             )}
-                            {!isLoadingClients && !clientError && clientOptions.length === 0 && (
-                                <p className="text-xs text-muted-foreground">
-                                    No clients available for assignment.
-                                </p>
-                            )}
+                            {!isLoadingClients &&
+                                !clientError &&
+                                clientOptions.length === 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        No clients available for assignment.
+                                    </p>
+                                )}
                         </div>
                     </CardContent>
                 </Card>
@@ -892,7 +927,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <Input
                                     id="targetHoursWorked"
                                     type="number"
-                                    {...register('targetHoursWorked', { valueAsNumber: true })}
+                                    {...register('targetHoursWorked', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="40"
                                 />
@@ -908,7 +945,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <Input
                                     id="targetNewClients"
                                     type="number"
-                                    {...register('targetNewClients', { valueAsNumber: true })}
+                                    {...register('targetNewClients', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="10"
                                 />
@@ -924,7 +963,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <Input
                                     id="targetNewLeads"
                                     type="number"
-                                    {...register('targetNewLeads', { valueAsNumber: true })}
+                                    {...register('targetNewLeads', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="20"
                                 />
@@ -940,7 +981,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <Input
                                     id="targetCheckIns"
                                     type="number"
-                                    {...register('targetCheckIns', { valueAsNumber: true })}
+                                    {...register('targetCheckIns', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="22"
                                 />
@@ -956,7 +999,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                 <Input
                                     id="targetCalls"
                                     type="number"
-                                    {...register('targetCalls', { valueAsNumber: true })}
+                                    {...register('targetCalls', {
+                                        valueAsNumber: true,
+                                    })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                     placeholder="50"
                                 />
@@ -981,11 +1026,21 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select period" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="daily">Daily</SelectItem>
-                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                                <SelectItem value="daily">
+                                                    Daily
+                                                </SelectItem>
+                                                <SelectItem value="weekly">
+                                                    Weekly
+                                                </SelectItem>
+                                                <SelectItem value="monthly">
+                                                    Monthly
+                                                </SelectItem>
+                                                <SelectItem value="quarterly">
+                                                    Quarterly
+                                                </SelectItem>
+                                                <SelectItem value="yearly">
+                                                    Yearly
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1046,11 +1101,19 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select access level" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {Object.values(AccessLevel).map((level) => (
-                                                    <SelectItem key={level} value={level}>
-                                                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                                                    </SelectItem>
-                                                ))}
+                                                {Object.values(AccessLevel).map(
+                                                    (level) => (
+                                                        <SelectItem
+                                                            key={level}
+                                                            value={level}
+                                                        >
+                                                            {level
+                                                                .charAt(0)
+                                                                .toUpperCase() +
+                                                                level.slice(1)}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -1076,9 +1139,17 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                                 <SelectValue placeholder="Select status" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {Object.values(AccountStatus).map((status) => (
-                                                    <SelectItem key={status} value={status}>
-                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                {Object.values(
+                                                    AccountStatus,
+                                                ).map((status) => (
+                                                    <SelectItem
+                                                        key={status}
+                                                        value={status}
+                                                    >
+                                                        {status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            status.slice(1)}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -1102,7 +1173,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                             <Select
                                                 value={field.value?.toString()}
                                                 onValueChange={(value) =>
-                                                    field.onChange(parseInt(value))
+                                                    field.onChange(
+                                                        parseInt(value),
+                                                    )
                                                 }
                                             >
                                                 <SelectTrigger className="font-light bg-card border-border">
@@ -1132,7 +1205,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         Failed to load branches.{' '}
                                         <button
                                             type="button"
-                                            onClick={refetchBranches}
+                                            onClick={() => refetchBranches()}
                                             className="underline hover:no-underline"
                                         >
                                             Retry

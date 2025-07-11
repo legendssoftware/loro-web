@@ -480,7 +480,7 @@ export function UserDetailsModal({
                             </h3>
                             {user.assignedClients && user.assignedClients.length > 0 ? (
                                 <div className="grid gap-3">
-                                    {user.assignedClients.map((client, index) => (
+                                    {user.assignedClients?.map((client, index) => (
                                         <div key={client.uid || index} className="flex justify-between items-center p-3 rounded-lg border border-border/20 bg-background/50">
                                             <div className="flex gap-3 items-center">
                                                 <div className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10">

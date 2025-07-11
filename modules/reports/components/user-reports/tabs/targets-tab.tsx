@@ -232,7 +232,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         targetData: transformedTargetData
                     }),
                 }).then(response => {
@@ -248,7 +248,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
             // Handle both old and new response formats
             const insights = Array.isArray(insightsResult) ? insightsResult : (insightsResult.insights || []);
-            
+
             setInsights(insights);
             // Handle summary result which might be string or object
             const summary = typeof summaryResult === 'string' ? summaryResult : summaryResult.summary;
@@ -801,7 +801,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                 </div>
                             ) : insights.length > 0 ? (
                                 <div className="space-y-3">
-                                    {insights.map((insight, index) => (
+                                    {insights?.map((insight, index) => (
                                         <div
                                             key={index}
                                             className="flex gap-3 items-start p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"

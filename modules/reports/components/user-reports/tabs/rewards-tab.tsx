@@ -291,7 +291,7 @@ export const RewardsTab: React.FunctionComponent<TabProps> = ({
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {rewardsData.achievements.map((achievement) => (
+                            {rewardsData.achievements?.map((achievement) => (
                                 <div key={achievement.uid} className="flex items-center p-3 rounded-lg bg-muted/30">
                                     <div className="p-2 rounded-md bg-yellow-50 dark:bg-yellow-500/10">
                                         <Trophy className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />

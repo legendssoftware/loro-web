@@ -4,9 +4,10 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState } from 'react';
 import { Users, TrendingUp, FileText, BarChart3, Calendar, Target } from 'lucide-react';
+import { SalesAnalyticsDashboard } from '@/components/analytics/sales-analytics-dashboard';
 
 export default function Home() {
-    const [activeTab, setActiveTab] = useState<string>('hr');
+    const [activeTab, setActiveTab] = useState<string>('sales');
 
     const tabs = [
         { id: 'hr', label: 'HR' },
@@ -86,67 +87,7 @@ export default function Home() {
                     </div>
                 );
             case 'sales':
-                return (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div className="p-6 rounded-lg bg-card/50 border border-border/20">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <TrendingUp className="w-8 h-8 text-green-500" />
-                                    <h3 className="text-lg font-medium font-body">Sales Performance</h3>
-                                </div>
-                                <p className="text-sm text-muted-foreground font-body mb-4">
-                                    Track sales performance, revenue trends, and team achievements.
-                                </p>
-                                <div className="space-y-2">
-                                    <div className="text-xs font-body text-muted-foreground">• Monthly sales reports</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Revenue analytics</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Team performance</div>
-                                </div>
-                            </div>
-
-                            <div className="p-6 rounded-lg bg-card/50 border border-border/20">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Users className="w-8 h-8 text-blue-500" />
-                                    <h3 className="text-lg font-medium font-body">Customer Insights</h3>
-                                </div>
-                                <p className="text-sm text-muted-foreground font-body mb-4">
-                                    Analyze customer behavior, satisfaction, and retention metrics.
-                                </p>
-                                <div className="space-y-2">
-                                    <div className="text-xs font-body text-muted-foreground">• Customer satisfaction</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Retention analysis</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Purchase patterns</div>
-                                </div>
-                            </div>
-
-                            <div className="p-6 rounded-lg bg-card/50 border border-border/20">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Target className="w-8 h-8 text-orange-500" />
-                                    <h3 className="text-lg font-medium font-body">Sales Targets</h3>
-                                </div>
-                                <p className="text-sm text-muted-foreground font-body mb-4">
-                                    Monitor sales targets, quotas, and achievement progress.
-                                </p>
-                                <div className="space-y-2">
-                                    <div className="text-xs font-body text-muted-foreground">• Target vs actual</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Quota tracking</div>
-                                    <div className="text-xs font-body text-muted-foreground">• Performance goals</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 rounded-lg bg-card/50 border border-border/20">
-                            <div className="flex items-center gap-3 mb-4">
-                                <BarChart3 className="w-6 h-6 text-muted-foreground" />
-                                <h3 className="text-base font-medium font-body">Sales Analytics Dashboard</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground font-body">
-                                Comprehensive sales analytics and forecasting tools will be available here.
-                                Track conversion rates, pipeline health, and sales trends.
-                            </p>
-                        </div>
-                    </div>
-                );
+                return <SalesAnalyticsDashboard />;
             case 'my-reports':
                 return (
                     <div className="space-y-6">

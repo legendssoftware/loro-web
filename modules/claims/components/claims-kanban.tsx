@@ -50,7 +50,7 @@ export function ClaimsKanban({
                         </div>
                     </div>
                     <div className="space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2">
-                        {claims.map((claim, index) => (
+                        {claims?.map((claim, index) => (
                             <MemoizedClaimCard
                                 key={claim?.uid}
                                 claim={claim}

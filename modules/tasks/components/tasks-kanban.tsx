@@ -71,7 +71,7 @@ export function TasksKanban({
                     <div className="space-y-3 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-240px)] pr-1 pb-2">
                         <div className="mt-2 space-y-2 overflow-hidden">
                             {tasks.length > 0 ? (
-                                tasks.map((task, index) => (
+                                tasks?.map((task, index) => (
                                     <MemoizedTaskCard
                                         key={task.uid}
                                         task={task}

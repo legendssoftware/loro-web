@@ -7,6 +7,7 @@ import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
 import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
 import { MiddlewareNotifications } from '@/components/middleware-notifications';
+import { Suspense } from 'react';
 
 const urbanist = Urbanist({
     variable: '--font-urbanist',
@@ -191,7 +192,9 @@ export default function RootLayout({
                         <TopNav />
                         <main>{children}</main>
                         <SessionTimeoutHandler />
-                        <MiddlewareNotifications />
+                        <Suspense fallback={null}>
+                            <MiddlewareNotifications />
+                        </Suspense>
                     </LayoutProvider>
                     <Toaster
                         position="bottom-center"

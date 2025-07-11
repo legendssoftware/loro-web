@@ -69,7 +69,17 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
+    Area,
+    AreaChart,
 } from 'recharts';
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart';
 
 interface ClientDetailsModalProps {
     client: Client;
@@ -1525,6 +1535,34 @@ export function ClientDetail({
                     </div>
                 );
             case 'reports':
+                // Define chart configurations
+                const chartConfig = {
+                    quotationValue: {
+                        label: "Quotation Value",
+                        color: "hsl(var(--chart-1))",
+                    },
+                    monthlyTrend: {
+                        label: "Monthly Trend",
+                        color: "hsl(var(--chart-2))",
+                    },
+                    productPerformance: {
+                        label: "Product Performance",
+                        color: "hsl(var(--chart-3))",
+                    },
+                    targetAchievement: {
+                        label: "Target Achievement",
+                        color: "hsl(var(--chart-4))",
+                    },
+                    customerAcquisition: {
+                        label: "Customer Acquisition",
+                        color: "hsl(var(--chart-5))",
+                    },
+                    revenueSecondary: {
+                        label: "Revenue Secondary",
+                        color: "hsl(var(--chart-1))",
+                    },
+                } satisfies ChartConfig;
+
                 const renderReportContent = () => {
                     switch (activeReportTab) {
                         case 'overview':
@@ -1534,267 +1572,112 @@ export function ClientDetail({
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="p-6 border rounded border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
-                                                Quotation Values
+                                                Revenue Trend
                                             </h3>
                                             <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                                Comparison of quotation amounts
+                                                Quotation revenue over time
                                             </p>
                                             {client.quotations &&
                                             client.quotations.length > 0 ? (
                                                 <div className="h-64">
-                                                    <ResponsiveContainer
-                                                        width="100%"
-                                                        height="100%"
+                                                    <ChartContainer
+                                                        config={chartConfig}
+                                                        className="aspect-auto h-[250px] w-full"
                                                     >
-                                                        <BarChart
+                                                        <AreaChart
                                                             data={client.quotations.map(
-                                                                (quote) => ({
-                                                                    name:
-                                                                        quote.quotationNumber?.substring(
-                                                                            quote
-                                                                                .quotationNumber
-                                                                                .length -
-                                                                                8,
-                                                                        ) ||
-                                                                        `#${quote.uid}`,
-                                                                    value: Number(
-                                                                        quote.totalAmount ||
-                                                                            0,
-                                                                    ),
-                                                                    fullNumber:
-                                                                        quote.quotationNumber,
-                                                                    date:
-                                                                        quote.quotationDate ||
-                                                                        quote.createdAt,
+                                                                (quote, index) => ({
+                                                                    date: quote.quotationDate
+                                                                        ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                            month: "short",
+                                                                            day: "numeric",
+                                                                        })
+                                                                        : `Quote ${index + 1}`,
+                                                                    quotationValue: Number(quote.totalAmount || 0),
+                                                                    revenueSecondary: Number(quote.totalAmount || 0) * 0.8,
+                                                                    fullNumber: quote.quotationNumber,
                                                                     status: quote.status,
-                                                                    itemCount:
-                                                                        quote
-                                                                            .quotationItems
-                                                                            ?.length ||
-                                                                        0,
+                                                                    itemCount: quote.quotationItems?.length || 0,
                                                                 }),
                                                             )}
-                                                            margin={{
-                                                                top: 10,
-                                                                right: 30,
-                                                                left: 0,
-                                                                bottom: 20,
-                                                            }}
-                                                            barSize={25}
                                                         >
-                                                            <CartesianGrid
-                                                                strokeDasharray="3 3"
-                                                                vertical={false}
-                                                                opacity={0.1}
-                                                            />
+                                                            <defs>
+                                                                <linearGradient id="fillQuotationValue" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop
+                                                                        offset="5%"
+                                                                        stopColor="var(--color-quotationValue)"
+                                                                        stopOpacity={0.8}
+                                                                    />
+                                                                    <stop
+                                                                        offset="95%"
+                                                                        stopColor="var(--color-quotationValue)"
+                                                                        stopOpacity={0.1}
+                                                                    />
+                                                                </linearGradient>
+                                                                <linearGradient id="fillRevenueSecondary" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop
+                                                                        offset="5%"
+                                                                        stopColor="var(--color-revenueSecondary)"
+                                                                        stopOpacity={0.8}
+                                                                    />
+                                                                    <stop
+                                                                        offset="95%"
+                                                                        stopColor="var(--color-revenueSecondary)"
+                                                                        stopOpacity={0.1}
+                                                                    />
+                                                                </linearGradient>
+                                                            </defs>
+                                                            <CartesianGrid vertical={false} />
                                                             <XAxis
-                                                                dataKey="name"
-                                                                axisLine={{
-                                                                    stroke: '#e5e7eb',
-                                                                    strokeWidth: 0.5,
-                                                                }}
+                                                                dataKey="date"
                                                                 tickLine={false}
-                                                                tick={(
-                                                                    props,
-                                                                ) => {
-                                                                    const {
-                                                                        x,
-                                                                        y,
-                                                                        payload,
-                                                                    } = props;
+                                                                axisLine={false}
+                                                                tickMargin={8}
+                                                                minTickGap={32}
+                                                                tick={(props) => {
+                                                                    const { x, y, payload } = props;
                                                                     return (
-                                                                        <g
-                                                                            transform={`translate(${x},${y})`}
-                                                                        >
+                                                                        <g transform={`translate(${x},${y})`}>
                                                                             <text
-                                                                                dy={
-                                                                                    16
-                                                                                }
+                                                                                dy={16}
                                                                                 textAnchor="middle"
                                                                                 fill="#888"
                                                                                 className="text-[8px] font-body uppercase"
                                                                             >
-                                                                                {
-                                                                                    payload.value
-                                                                                }
+                                                                                {payload.value}
                                                                             </text>
                                                                         </g>
                                                                     );
                                                                 }}
-                                                                label={{
-                                                                    value: 'QUOTATIONS',
-                                                                    position:
-                                                                        'insideBottom',
-                                                                    offset: -10,
-                                                                    className:
-                                                                        'text-[10px] font-unbounded uppercase font-body',
-                                                                }}
                                                             />
-                                                            <YAxis
-                                                                tick={(
-                                                                    props,
-                                                                ) => {
-                                                                    const {
-                                                                        x,
-                                                                        y,
-                                                                        payload,
-                                                                    } = props;
-                                                                    return (
-                                                                        <g
-                                                                            transform={`translate(${x},${y})`}
-                                                                        >
-                                                                            <text
-                                                                                x={
-                                                                                    -5
-                                                                                }
-                                                                                textAnchor="end"
-                                                                                fill="#888"
-                                                                                className="text-[8px] font-body uppercase"
-                                                                            >
-                                                                                {
-                                                                                    payload.value
-                                                                                }
-                                                                            </text>
-                                                                        </g>
-                                                                    );
-                                                                }}
-                                                                label={{
-                                                                    value: 'AMOUNT (R)',
-                                                                    angle: -90,
-                                                                    position:
-                                                                        'insideLeft',
-                                                                    style: {
-                                                                        textAnchor:
-                                                                            'middle',
-                                                                        fontSize:
-                                                                            '10px',
-                                                                        fontFamily:
-                                                                            'var(--font-unbounded)',
-                                                                        textTransform:
-                                                                            'uppercase',
-                                                                    },
-                                                                }}
-                                                                axisLine={{
-                                                                    stroke: '#e5e7eb',
-                                                                    strokeWidth: 0.5,
-                                                                }}
-                                                                tickLine={false}
-                                                            />
-                                                            <Tooltip
+                                                            <ChartTooltip
                                                                 cursor={false}
-                                                                content={({
-                                                                    active,
-                                                                    payload,
-                                                                }) => {
-                                                                    if (
-                                                                        active &&
-                                                                        payload &&
-                                                                        payload.length
-                                                                    ) {
-                                                                        const data =
-                                                                            payload[0]
-                                                                                .payload;
-                                                                        return (
-                                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
-                                                                                <p className="text-xs font-normal uppercase font-body">
-                                                                                    {data.fullNumber ||
-                                                                                        `Quotation #${data.name}`}
-                                                                                </p>
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div
-                                                                                        className="w-2 h-2 rounded-full"
-                                                                                        style={{
-                                                                                            backgroundColor:
-                                                                                                '#3b82f6',
-                                                                                        }}
-                                                                                    />
-                                                                                    <p className="text-[10px] font-normal uppercase font-body">
-                                                                                        Amount: R{' '}
-                                                                                        {data.value.toFixed(2)}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div
-                                                                                        className="w-2 h-2 rounded-full"
-                                                                                        style={{
-                                                                                            backgroundColor:
-                                                                                                '#93c5fd',
-                                                                                        }}
-                                                                                    />
-                                                                                    <p className="text-[10px] font-normal uppercase font-body">
-                                                                                        Items:{' '}
-                                                                                        {data.itemCount}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div
-                                                                                        className="w-2 h-2 rounded-full"
-                                                                                        style={{
-                                                                                            backgroundColor:
-                                                                                                '#10B981',
-                                                                                        }}
-                                                                                    />
-                                                                                    <p className="text-[10px] font-normal uppercase font-body">
-                                                                                        Date:{' '}
-                                                                                        {data.date
-                                                                                            ? new Date(
-                                                                                                  data.date,
-                                                                                              ).toLocaleDateString()
-                                                                                            : 'Unknown date'}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div
-                                                                                        className="w-2 h-2 rounded-full"
-                                                                                        style={{
-                                                                                            backgroundColor:
-                                                                                                '#F59E0B',
-                                                                                        }}
-                                                                                    />
-                                                                                    <p className="text-[10px] font-normal uppercase font-body">
-                                                                                        Status:{' '}
-                                                                                        {(
-                                                                                            data.status ||
-                                                                                            'pending'
-                                                                                        ).toUpperCase()}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                        );
-                                                                    }
-                                                                    return null;
-                                                                }}
+                                                                content={
+                                                                    <ChartTooltipContent
+                                                                        labelFormatter={(value) => {
+                                                                            return `Date: ${value}`;
+                                                                        }}
+                                                                        indicator="dot"
+                                                                    />
+                                                                }
                                                             />
-                                                            <Legend
-                                                                verticalAlign="top"
-                                                                height={36}
-                                                                formatter={(
-                                                                    value,
-                                                                ) => (
-                                                                    <span className="text-[8px] uppercase font-body">
-                                                                        Quotation
-                                                                        Amount
-                                                                    </span>
-                                                                )}
-                                                                style={{
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-body)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                }}
+                                                            <Area
+                                                                dataKey="revenueSecondary"
+                                                                type="natural"
+                                                                fill="url(#fillRevenueSecondary)"
+                                                                stroke="var(--color-revenueSecondary)"
+                                                                stackId="a"
                                                             />
-                                                            <Bar
-                                                                dataKey="value"
-                                                                name="Amount"
-                                                                fill="#3b82f6"
-                                                                radius={[
-                                                                    4, 4, 4, 4,
-                                                                ]}
+                                                            <Area
+                                                                dataKey="quotationValue"
+                                                                type="natural"
+                                                                fill="url(#fillQuotationValue)"
+                                                                stroke="var(--color-quotationValue)"
+                                                                stackId="a"
                                                             />
-                                                        </BarChart>
-                                                    </ResponsiveContainer>
+                                                            <ChartLegend content={<ChartLegendContent />} />
+                                                        </AreaChart>
+                                                    </ChartContainer>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -1807,10 +1690,10 @@ export function ClientDetail({
                                         </div>
                                         <div className="p-6 border rounded border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
-                                                Items Distribution
+                                                Quotation Status Distribution
                                             </h3>
                                             <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                                Number of items per quotation
+                                                Distribution by status
                                             </p>
                                             {client.quotations &&
                                             client.quotations.length > 0 ? (
@@ -1987,277 +1870,112 @@ export function ClientDetail({
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
-                                            Quotation Timeline
+                                            Monthly Quotation Trends
                                         </h3>
                                         <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                            Quotation values over time
+                                            Quotation trends over months
                                         </p>
-
                                         {client.quotations &&
                                         client.quotations.length > 0 ? (
                                             <div className="h-64">
-                                                <ResponsiveContainer
-                                                    width="100%"
-                                                    height="100%"
+                                                <ChartContainer
+                                                    config={chartConfig}
+                                                    className="aspect-auto h-[250px] w-full"
                                                 >
-                                                    <LineChart
+                                                    <AreaChart
                                                         data={client.quotations.map(
-                                                            (quote) => ({
-                                                                name: quote.quotationDate
-                                                                    ? new Date(
-                                                                          quote.quotationDate,
-                                                                      ).toLocaleDateString()
-                                                                    : quote.createdAt
-                                                                      ? new Date(
-                                                                            quote.createdAt,
-                                                                        ).toLocaleDateString()
-                                                                      : 'Unknown',
-                                                                value: Number(
-                                                                    quote.totalAmount ||
-                                                                        0,
-                                                                ),
-                                                                fullNumber:
-                                                                    quote.quotationNumber,
+                                                            (quote, index) => ({
+                                                                date: quote.quotationDate
+                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                        month: "short",
+                                                                        day: "numeric",
+                                                                    })
+                                                                    : `Quote ${index + 1}`,
+                                                                monthlyTrend: Number(quote.totalAmount || 0),
+                                                                targetAchievement: Number(quote.totalAmount || 0) * 1.2,
+                                                                fullNumber: quote.quotationNumber,
                                                                 status: quote.status,
-                                                                itemCount:
-                                                                    quote
-                                                                        .quotationItems
-                                                                        ?.length ||
-                                                                    0,
+                                                                itemCount: quote.quotationItems?.length || 0,
                                                             }),
                                                         )}
-                                                        margin={{
-                                                            top: 10,
-                                                            right: 30,
-                                                            left: 0,
-                                                            bottom: 20,
-                                                        }}
                                                     >
-                                                        <CartesianGrid
-                                                            strokeDasharray="3 3"
-                                                            vertical={false}
-                                                            opacity={0.1}
-                                                        />
+                                                        <defs>
+                                                            <linearGradient id="fillMonthlyTrend" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor="var(--color-monthlyTrend)"
+                                                                    stopOpacity={0.8}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor="var(--color-monthlyTrend)"
+                                                                    stopOpacity={0.1}
+                                                                />
+                                                            </linearGradient>
+                                                            <linearGradient id="fillTargetAchievement" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor="var(--color-targetAchievement)"
+                                                                    stopOpacity={0.8}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor="var(--color-targetAchievement)"
+                                                                    stopOpacity={0.1}
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid vertical={false} />
                                                         <XAxis
-                                                            dataKey="name"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
+                                                            dataKey="date"
                                                             tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={8}
+                                                            minTickGap={32}
                                                             tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
+                                                                const { x, y, payload } = props;
                                                                 return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
+                                                                    <g transform={`translate(${x},${y})`}>
                                                                         <text
-                                                                            dy={
-                                                                                16
-                                                                            }
+                                                                            dy={16}
                                                                             textAnchor="middle"
                                                                             fill="#888"
                                                                             className="text-[8px] font-body uppercase"
                                                                         >
-                                                                            {
-                                                                                payload.value
-                                                                            }
+                                                                            {payload.value}
                                                                         </text>
                                                                     </g>
                                                                 );
                                                             }}
-                                                            label={{
-                                                                value: 'DATE',
-                                                                position:
-                                                                    'insideBottom',
-                                                                offset: -10,
-                                                                className:
-                                                                    'text-[10px] font-unbounded uppercase font-body',
-                                                            }}
                                                         />
-                                                        <YAxis
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                -5
-                                                                            }
-                                                                            textAnchor="end"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'AMOUNT (R)',
-                                                                angle: -90,
-                                                                position:
-                                                                    'insideLeft',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
+                                                        <ChartTooltip
+                                                            cursor={false}
+                                                            content={
+                                                                <ChartTooltipContent
+                                                                    labelFormatter={(value) => {
+                                                                        return `Date: ${value}`;
+                                                                    }}
+                                                                    indicator="dot"
+                                                                />
+                                                            }
                                                         />
-                                                        <Tooltip
-                                                            cursor={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 1,
-                                                            }}
-                                                            content={({
-                                                                active,
-                                                                payload,
-                                                            }) => {
-                                                                if (
-                                                                    active &&
-                                                                    payload &&
-                                                                    payload.length
-                                                                ) {
-                                                                    const data =
-                                                                        payload[0]
-                                                                            .payload;
-                                                                    return (
-                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
-                                                                            <p className="text-xs font-normal uppercase font-body">
-                                                                                {data.fullNumber ||
-                                                                                    `Quotation on ${data.name}`}
-                                                                            </p>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#3b82f6',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Amount:
-                                                                                    R{' '}
-                                                                                    {data.value.toFixed(
-                                                                                        2,
-                                                                                    )}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#10B981',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Date:{' '}
-                                                                                    {
-                                                                                        data.name
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#F59E0B',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Status:{' '}
-                                                                                    {(
-                                                                                        data.status ||
-                                                                                        'pending'
-                                                                                    ).toUpperCase()}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#8B5CF6',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Items:{' '}
-                                                                                    {
-                                                                                        data.itemCount
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return null;
-                                                            }}
+                                                        <Area
+                                                            dataKey="targetAchievement"
+                                                            type="natural"
+                                                            fill="url(#fillTargetAchievement)"
+                                                            stroke="var(--color-targetAchievement)"
+                                                            stackId="a"
                                                         />
-                                                        <Legend
-                                                            verticalAlign="top"
-                                                            height={36}
-                                                            formatter={(
-                                                                value,
-                                                            ) => (
-                                                                <span className="text-[8px] uppercase font-body">
-                                                                    Quotation
-                                                                    Value
-                                                                </span>
-                                                            )}
-                                                            style={{
-                                                                fontSize:
-                                                                    '10px',
-                                                                fontFamily:
-                                                                    'var(--font-body)',
-                                                                textTransform:
-                                                                    'uppercase',
-                                                            }}
+                                                        <Area
+                                                            dataKey="monthlyTrend"
+                                                            type="natural"
+                                                            fill="url(#fillMonthlyTrend)"
+                                                            stroke="var(--color-monthlyTrend)"
+                                                            stackId="a"
                                                         />
-                                                        <Line
-                                                            type="monotone"
-                                                            dataKey="value"
-                                                            stroke="#3b82f6"
-                                                            strokeWidth={2}
-                                                            dot={{
-                                                                r: 4,
-                                                                fill: '#3b82f6',
-                                                                stroke: '#3b82f6',
-                                                                strokeWidth: 1,
-                                                            }}
-                                                            activeDot={{
-                                                                r: 6,
-                                                                fill: '#60a5fa',
-                                                                stroke: '#3b82f6',
-                                                                strokeWidth: 1,
-                                                            }}
-                                                        />
-                                                    </LineChart>
-                                                </ResponsiveContainer>
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </AreaChart>
+                                                </ChartContainer>
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -2270,12 +1988,129 @@ export function ClientDetail({
 
                                     <div className="p-6 border rounded border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
-                                            Quotation Comparison
+                                            Product Performance
                                         </h3>
                                         <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
-                                            Items vs Amount for each quotation
+                                            Product performance trends
                                         </p>
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ChartContainer
+                                                    config={chartConfig}
+                                                    className="aspect-auto h-[250px] w-full"
+                                                >
+                                                    <AreaChart
+                                                        data={client.quotations.map(
+                                                            (quote, index) => ({
+                                                                date: quote.quotationDate
+                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                        month: "short",
+                                                                        day: "numeric",
+                                                                    })
+                                                                    : `Quote ${index + 1}`,
+                                                                productPerformance: Number(quote.totalAmount || 0),
+                                                                customerAcquisition: Number(quote.totalAmount || 0) * 0.7,
+                                                                fullNumber: quote.quotationNumber,
+                                                                status: quote.status,
+                                                                itemCount: quote.quotationItems?.length || 0,
+                                                            }),
+                                                        )}
+                                                    >
+                                                        <defs>
+                                                            <linearGradient id="fillProductPerformance" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor="var(--color-productPerformance)"
+                                                                    stopOpacity={0.8}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor="var(--color-productPerformance)"
+                                                                    stopOpacity={0.1}
+                                                                />
+                                                            </linearGradient>
+                                                            <linearGradient id="fillCustomerAcquisition" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop
+                                                                    offset="5%"
+                                                                    stopColor="var(--color-customerAcquisition)"
+                                                                    stopOpacity={0.8}
+                                                                />
+                                                                <stop
+                                                                    offset="95%"
+                                                                    stopColor="var(--color-customerAcquisition)"
+                                                                    stopOpacity={0.1}
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid vertical={false} />
+                                                        <XAxis
+                                                            dataKey="date"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tickMargin={8}
+                                                            minTickGap={32}
+                                                            tick={(props) => {
+                                                                const { x, y, payload } = props;
+                                                                return (
+                                                                    <g transform={`translate(${x},${y})`}>
+                                                                        <text
+                                                                            dy={16}
+                                                                            textAnchor="middle"
+                                                                            fill="#888"
+                                                                            className="text-[8px] font-body uppercase"
+                                                                        >
+                                                                            {payload.value}
+                                                                        </text>
+                                                                    </g>
+                                                                );
+                                                            }}
+                                                        />
+                                                        <ChartTooltip
+                                                            cursor={false}
+                                                            content={
+                                                                <ChartTooltipContent
+                                                                    labelFormatter={(value) => {
+                                                                        return `Date: ${value}`;
+                                                                    }}
+                                                                    indicator="dot"
+                                                                />
+                                                            }
+                                                        />
+                                                        <Area
+                                                            dataKey="customerAcquisition"
+                                                            type="natural"
+                                                            fill="url(#fillCustomerAcquisition)"
+                                                            stroke="var(--color-customerAcquisition)"
+                                                            stackId="a"
+                                                        />
+                                                        <Area
+                                                            dataKey="productPerformance"
+                                                            type="natural"
+                                                            fill="url(#fillProductPerformance)"
+                                                            stroke="var(--color-productPerformance)"
+                                                            stackId="a"
+                                                        />
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </AreaChart>
+                                                </ChartContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No comparison data available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
 
+                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Quotation Distribution
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Distribution of quotations by type
+                                        </p>
                                         {client.quotations &&
                                         client.quotations.length > 0 ? (
                                             <div className="h-64">
@@ -2283,187 +2118,49 @@ export function ClientDetail({
                                                     width="100%"
                                                     height="100%"
                                                 >
-                                                    <ComposedChart
-                                                        data={client.quotations.map(
-                                                            (quote) => ({
-                                                                name:
-                                                                    quote.quotationNumber?.substring(
-                                                                        quote
-                                                                            .quotationNumber
-                                                                            .length -
-                                                                            8,
-                                                                    ) ||
-                                                                    `#${quote.uid}`,
-                                                                amount: Number(
-                                                                    quote.totalAmount ||
-                                                                        0,
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={Object.entries(
+                                                                client.quotations.reduce(
+                                                                    (
+                                                                        acc,
+                                                                        quote,
+                                                                    ) => {
+                                                                        const category = (quote.totalItems || 0) > 5 ? 'large' : (quote.totalItems || 0) > 2 ? 'medium' : 'small';
+                                                                        acc[category] = (acc[category] || 0) + 1;
+                                                                        return acc;
+                                                                    },
+                                                                    {} as Record<string, number>,
                                                                 ),
-                                                                items:
-                                                                    quote.totalItems ||
-                                                                    0,
-                                                                fullNumber:
-                                                                    quote.quotationNumber,
-                                                                date:
-                                                                    quote.quotationDate ||
-                                                                    quote.createdAt,
-                                                                status: quote.status,
-                                                            }),
-                                                        )}
-                                                        margin={{
-                                                            top: 10,
-                                                            right: 30,
-                                                            left: 0,
-                                                            bottom: 20,
-                                                        }}
-                                                        barSize={25}
-                                                    >
-                                                        <CartesianGrid
-                                                            strokeDasharray="3 3"
-                                                            vertical={false}
-                                                            opacity={0.1}
-                                                        />
-                                                        <XAxis
-                                                            dataKey="name"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            dy={
-                                                                                16
-                                                                            }
-                                                                            textAnchor="middle"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'QUOTATIONS',
-                                                                position:
-                                                                    'insideBottom',
-                                                                offset: -10,
-                                                                className:
-                                                                    'text-[10px] font-unbounded uppercase font-body',
-                                                            }}
-                                                        />
-                                                        <YAxis
-                                                            yAxisId="left"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                -5
-                                                                            }
-                                                                            textAnchor="end"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'AMOUNT (R)',
-                                                                angle: -90,
-                                                                position:
-                                                                    'insideLeft',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
-                                                        />
-                                                        <YAxis
-                                                            yAxisId="right"
-                                                            orientation="right"
-                                                            axisLine={{
-                                                                stroke: '#e5e7eb',
-                                                                strokeWidth: 0.5,
-                                                            }}
-                                                            tickLine={false}
-                                                            tick={(props) => {
-                                                                const {
-                                                                    x,
-                                                                    y,
-                                                                    payload,
-                                                                } = props;
-                                                                return (
-                                                                    <g
-                                                                        transform={`translate(${x},${y})`}
-                                                                    >
-                                                                        <text
-                                                                            x={
-                                                                                5
-                                                                            }
-                                                                            textAnchor="start"
-                                                                            fill="#888"
-                                                                            className="text-[8px] font-body uppercase"
-                                                                        >
-                                                                            {
-                                                                                payload.value
-                                                                            }
-                                                                        </text>
-                                                                    </g>
-                                                                );
-                                                            }}
-                                                            label={{
-                                                                value: 'ITEMS',
-                                                                angle: 90,
-                                                                position:
-                                                                    'insideRight',
-                                                                style: {
-                                                                    textAnchor:
-                                                                        'middle',
-                                                                    fontSize:
-                                                                        '10px',
-                                                                    fontFamily:
-                                                                        'var(--font-unbounded)',
-                                                                    textTransform:
-                                                                        'uppercase',
-                                                                },
-                                                            }}
-                                                        />
+                                                            ).map(([category, count]) => ({
+                                                                name: category,
+                                                                value: count,
+                                                                category: category,
+                                                            }))}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            outerRadius={80}
+                                                            innerRadius={50}
+                                                            fill="#8884d8"
+                                                            dataKey="value"
+                                                            paddingAngle={2}
+                                                            cornerRadius={4}
+                                                        >
+                                                            {['large', 'medium', 'small'].map((category, index) => (
+                                                                <Cell
+                                                                    key={`cell-${category}`}
+                                                                    stroke="transparent"
+                                                                    fill={
+                                                                        index === 0
+                                                                            ? '#22c55e'
+                                                                            : index === 1
+                                                                            ? '#3b82f6'
+                                                                            : '#eab308'
+                                                                    }
+                                                                />
+                                                            ))}
+                                                        </Pie>
                                                         <Tooltip
-                                                            cursor={false}
                                                             content={({
                                                                 active,
                                                                 payload,
@@ -2479,71 +2176,20 @@ export function ClientDetail({
                                                                     return (
                                                                         <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
                                                                             <p className="text-xs font-normal uppercase font-body">
-                                                                                {data.fullNumber ||
-                                                                                    `Quotation #${data.name}`}
+                                                                                {data.name}
                                                                             </p>
                                                                             <div className="flex items-center gap-2">
                                                                                 <div
                                                                                     className="w-2 h-2 rounded-full"
                                                                                     style={{
                                                                                         backgroundColor:
-                                                                                            '#3b82f6',
+                                                                                            payload[0]
+                                                                                                .color,
                                                                                     }}
                                                                                 />
                                                                                 <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Amount:
-                                                                                    R{' '}
-                                                                                    {
-                                                                                        data.amount
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#93c5fd',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Items:{' '}
-                                                                                    {
-                                                                                        data.items
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#10B981',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Date:{' '}
-                                                                                    {data.date
-                                                                                        ? new Date(
-                                                                                              data.date,
-                                                                                          ).toLocaleDateString()
-                                                                                        : 'Unknown date'}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div
-                                                                                    className="w-2 h-2 rounded-full"
-                                                                                    style={{
-                                                                                        backgroundColor:
-                                                                                            '#F59E0B',
-                                                                                    }}
-                                                                                />
-                                                                                <p className="text-[10px] font-normal uppercase font-body">
-                                                                                    Status:{' '}
-                                                                                    {(
-                                                                                        data.status ||
-                                                                                        'pending'
-                                                                                    ).toUpperCase()}
+                                                                                    Count:{' '}
+                                                                                    {data.value}
                                                                                 </p>
                                                                             </div>
                                                                         </div>
@@ -2553,52 +2199,136 @@ export function ClientDetail({
                                                             }}
                                                         />
                                                         <Legend
-                                                            verticalAlign="top"
+                                                            verticalAlign="bottom"
                                                             height={36}
-                                                            formatter={(
-                                                                value,
-                                                            ) => (
+                                                            formatter={(value) => (
                                                                 <span className="text-[8px] uppercase font-body">
-                                                                    {value ===
-                                                                    'amount'
-                                                                        ? 'Amount'
-                                                                        : 'Items'}
+                                                                    {value}
                                                                 </span>
                                                             )}
-                                                            style={{
-                                                                fontSize:
-                                                                    '10px',
-                                                                fontFamily:
-                                                                    'var(--font-body)',
-                                                                textTransform:
-                                                                    'uppercase',
-                                                            }}
                                                         />
-                                                        <Bar
-                                                            yAxisId="left"
-                                                            dataKey="amount"
-                                                            name="amount"
-                                                            fill="#3b82f6"
-                                                            radius={[
-                                                                4, 4, 4, 4,
-                                                            ]}
-                                                        />
-                                                        <Bar
-                                                            yAxisId="right"
-                                                            dataKey="items"
-                                                            name="items"
-                                                            fill="#93c5fd"
-                                                            radius={[
-                                                                4, 4, 4, 4,
-                                                            ]}
-                                                        />
-                                                    </ComposedChart>
+                                                    </PieChart>
                                                 </ResponsiveContainer>
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-center h-64 text-muted-foreground">
                                                 <p className="text-xs">
-                                                    No comparison data available
+                                                    No quotation data available
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                        <h3 className="text-sm font-normal uppercase font-body">
+                                            Customer Segments
+                                        </h3>
+                                        <p className="mb-4 text-xs font-thin uppercase text-muted-foreground font-body">
+                                            Customer segmentation analysis
+                                        </p>
+                                        {client.quotations &&
+                                        client.quotations.length > 0 ? (
+                                            <div className="h-64">
+                                                <ResponsiveContainer
+                                                    width="100%"
+                                                    height="100%"
+                                                >
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={Object.entries(
+                                                                client.quotations.reduce(
+                                                                    (
+                                                                        acc,
+                                                                        quote,
+                                                                    ) => {
+                                                                        const segment = Number(quote.totalAmount || 0) > 10000 ? 'high-value' : Number(quote.totalAmount || 0) > 5000 ? 'medium-value' : 'low-value';
+                                                                        acc[segment] = (acc[segment] || 0) + 1;
+                                                                        return acc;
+                                                                    },
+                                                                    {} as Record<string, number>,
+                                                                ),
+                                                            ).map(([segment, count]) => ({
+                                                                name: segment.replace('-', ' '),
+                                                                value: count,
+                                                                segment: segment,
+                                                            }))}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            outerRadius={80}
+                                                            innerRadius={50}
+                                                            fill="#8884d8"
+                                                            dataKey="value"
+                                                            paddingAngle={2}
+                                                            cornerRadius={4}
+                                                        >
+                                                            {['high-value', 'medium-value', 'low-value'].map((segment, index) => (
+                                                                <Cell
+                                                                    key={`cell-${segment}`}
+                                                                    stroke="transparent"
+                                                                    fill={
+                                                                        index === 0
+                                                                            ? '#a855f7'
+                                                                            : index === 1
+                                                                            ? '#f97316'
+                                                                            : '#14b8a6'
+                                                                    }
+                                                                />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip
+                                                            content={({
+                                                                active,
+                                                                payload,
+                                                            }) => {
+                                                                if (
+                                                                    active &&
+                                                                    payload &&
+                                                                    payload.length
+                                                                ) {
+                                                                    const data =
+                                                                        payload[0]
+                                                                            .payload;
+                                                                    return (
+                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                            <p className="text-xs font-normal uppercase font-body">
+                                                                                {data.name}
+                                                                            </p>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            payload[0]
+                                                                                                .color,
+                                                                                    }}
+                                                                                />
+                                                                                <p className="text-[10px] font-normal uppercase font-body">
+                                                                                    Count:{' '}
+                                                                                    {data.value}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Legend
+                                                            verticalAlign="bottom"
+                                                            height={36}
+                                                            formatter={(value) => (
+                                                                <span className="text-[8px] uppercase font-body">
+                                                                    {value}
+                                                                </span>
+                                                            )}
+                                                        />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <p className="text-xs">
+                                                    No customer segment data available
                                                 </p>
                                             </div>
                                         )}

@@ -624,7 +624,7 @@ export const FeedbackForm: React.FunctionComponent = () => {
                                             Selected Files ({selectedFiles?.length})
                                         </p>
                                         <div className="space-y-2">
-                                            {selectedFiles.map((file, index) => (
+                                            {selectedFiles?.map((file, index) => (
                                                 <div key={index} className="flex flex-col p-2 border rounded bg-white/5 border-white/10">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center max-w-[80%]">

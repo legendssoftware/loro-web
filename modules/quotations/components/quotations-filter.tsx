@@ -565,7 +565,7 @@ function QuotationsFilterComponent({
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {uniqueClients.map((client) => (
+                        {uniqueClients?.map((client) => (
                             <DropdownMenuItem
                                 key={client.id}
                                 className="text-xs font-normal font-body"

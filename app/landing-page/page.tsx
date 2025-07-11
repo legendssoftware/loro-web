@@ -908,13 +908,19 @@ export default function Home() {
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <Dialog>
                                                 <DialogTrigger asChild>
-                                                    <motion.button
-                                                        className="flex items-center justify-center w-20 h-20 bg-white/90 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 group"
+                                                    <motion.div
                                                         whileHover={{ scale: 1.1 }}
                                                         whileTap={{ scale: 0.95 }}
+                                                        className="inline-block"
                                                     >
-                                                        <div className="w-0 h-0 border-l-[12px] border-l-primary border-y-[8px] border-y-transparent ml-1" />
-                                                    </motion.button>
+                                                        <button
+                                                            className="flex items-center justify-center w-20 h-20 bg-white/90 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                                                            type="button"
+                                                            aria-label="Play video"
+                                                        >
+                                                            <div className="w-0 h-0 border-l-[12px] border-l-red-500 border-y-[8px] border-y-transparent ml-1" />
+                                                        </button>
+                                                    </motion.div>
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full sm:max-w-[80vw] sm:max-h-[80vh] p-0">
                                                     <div className="relative w-full h-full">

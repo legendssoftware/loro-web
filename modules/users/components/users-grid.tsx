@@ -85,7 +85,7 @@ export function UsersGridComponent({
     return (
         <div className="relative w-full h-full" id="staff-table">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                {displayedUsers.map((user, index) => (
+                {displayedUsers?.map((user, index) => (
                     <UserCard
                         key={user.uid}
                         user={user}

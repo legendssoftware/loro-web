@@ -22,7 +22,6 @@ import {
     Eye,
     EyeOff,
     MapPin,
-    Calendar,
     Briefcase,
     Target,
     Settings,

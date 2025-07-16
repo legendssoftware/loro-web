@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Sector, RadialBarChart, RadialBar, PolarGrid, PolarRadiusAxis, Label, RadarChart, Radar, PolarAngleAxis } from 'recharts';
-import { TrendingUp, DollarSign, Users, ShoppingCart, Target, BarChart3, RefreshCw, PieChart as PieChartIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, ShoppingCart, Target, BarChart3, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useReportsQuery, type SalesOverview, type QuotationAnalytics, type RevenueAnalytics, type SalesPerformance, type CustomerAnalytics, type BlankQuotationAnalytics } from '@/hooks/use-reports-query';
 import { useBranchQuery } from '@/hooks/use-branch-query';
@@ -482,7 +482,7 @@ export function SalesAnalyticsDashboard() {
   } = useReportsQuery(selectedBranch);
 
   // Use actual data from reports service with proper defaults
-  const salesData = salesOverview.data || { 
+  const salesData = salesOverview.data || {
     summary: { totalRevenue: 0, revenueGrowth: 0, totalQuotations: 0, conversionRate: 0, averageOrderValue: 0, topPerformingProduct: 'N/A' },
     trends: { revenue: [], quotationsByStatus: [], topProducts: [] },
     chartData: defaultChartData
@@ -540,9 +540,9 @@ export function SalesAnalyticsDashboard() {
   // Access control message for restricted users
   if (!canViewAllReports && activeTab !== 'overview') {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex justify-center items-center h-64">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+          <h3 className="mb-2 text-lg font-semibold">Access Restricted</h3>
           <p className="text-muted-foreground">
             You need admin, owner, or manager privileges to view detailed sales reports.
           </p>
@@ -554,26 +554,26 @@ export function SalesAnalyticsDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 bg-gray-300 rounded w-24"></div>
-                <div className="h-4 w-4 bg-gray-300 rounded"></div>
+              <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
+                <div className="w-24 h-4 bg-gray-300 rounded"></div>
+                <div className="w-4 h-4 bg-gray-300 rounded"></div>
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-gray-300 rounded w-20 mb-1"></div>
-                <div className="h-3 bg-gray-300 rounded w-32"></div>
+                <div className="mb-1 w-20 h-8 bg-gray-300 rounded"></div>
+                <div className="w-32 h-3 bg-gray-300 rounded"></div>
               </CardContent>
             </Card>
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader>
-                <div className="h-5 bg-gray-300 rounded w-32"></div>
-                <div className="h-4 bg-gray-300 rounded w-48"></div>
+                <div className="w-32 h-5 bg-gray-300 rounded"></div>
+                <div className="w-48 h-4 bg-gray-300 rounded"></div>
               </CardHeader>
               <CardContent>
                 <div className="h-64 bg-gray-300 rounded"></div>
@@ -588,14 +588,14 @@ export function SalesAnalyticsDashboard() {
   return (
     <div className="space-y-6">
       {/* Header with Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col gap-4 justify-between items-start sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Sales Analytics Dashboard</h2>
           <p className="text-muted-foreground">
             Comprehensive sales performance metrics and insights
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2 items-center">
           {canViewAllReports && (
             <Select value={selectedBranch?.toString() || 'all'} onValueChange={handleBranchChange}>
               <SelectTrigger className="w-[180px]">
@@ -612,7 +612,7 @@ export function SalesAnalyticsDashboard() {
             </Select>
           )}
           <Button onClick={handleRefresh} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="mr-2 w-4 h-4" />
             Refresh
           </Button>
         </div>
@@ -620,11 +620,11 @@ export function SalesAnalyticsDashboard() {
 
       {/* Custom Tabs with consistent styling */}
       <div className="space-y-4">
-        <div className="flex items-center px-10 overflow-x-auto border-b border-border/10">
+        <div className="flex overflow-x-auto items-center px-10 border-b border-border/10">
           {availableTabs?.map((tab) => (
             <div
               key={tab.id}
-              className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28"
+              className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
             >
               <div
                 className={`mb-3 font-body px-0 font-normal cursor-pointer ${
@@ -653,11 +653,11 @@ export function SalesAnalyticsDashboard() {
               {salesData?.summary && (
                 <>
                   {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -671,9 +671,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Quotations</CardTitle>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{salesData.summary.totalQuotations || 0}</div>
@@ -684,9 +684,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -699,9 +699,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Top Product</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{salesData.summary.topPerformingProduct || 'N/A'}</div>
@@ -714,7 +714,7 @@ export function SalesAnalyticsDashboard() {
 
                   {/* Charts */}
                   {salesData.chartData && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                       <Card>
                         <CardHeader>
                           <CardTitle>Revenue Trend</CardTitle>
@@ -905,11 +905,11 @@ export function SalesAnalyticsDashboard() {
             <div className="space-y-4">
               {quotationData?.summary && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Quotations</CardTitle>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{quotationData.summary.totalQuotations || 0}</div>
@@ -920,9 +920,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(quotationData.summary.conversionRate || 0).toFixed(1)}%</div>
@@ -933,9 +933,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Average Value</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -948,7 +948,7 @@ export function SalesAnalyticsDashboard() {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card className="flex flex-col">
                       <CardHeader className="items-center pb-0">
                         <CardTitle>Quotation Status Distribution</CardTitle>
@@ -1044,11 +1044,11 @@ export function SalesAnalyticsDashboard() {
             <div className="space-y-4">
               {revenueData?.summary && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -1062,9 +1062,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -1077,9 +1077,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Top Product</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <BarChart3 className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{revenueData.summary.topProduct || 'N/A'}</div>
@@ -1090,9 +1090,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
@@ -1105,7 +1105,7 @@ export function SalesAnalyticsDashboard() {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Revenue Trend</CardTitle>
@@ -1211,8 +1211,8 @@ export function SalesAnalyticsDashboard() {
                     <CardContent>
                       <div className="space-y-4">
                         {(revenueData.productBreakdown || defaultChartData.productBreakdown).map((entry: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                          <div key={index} className="flex justify-between items-center">
+                            <div className="flex gap-2 items-center">
                               <div
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: getChartColor(index) }}
@@ -1238,11 +1238,11 @@ export function SalesAnalyticsDashboard() {
             <div className="space-y-4">
               {performanceData?.summary && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Top Performer</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{performanceData.summary.topPerformer || 'N/A'}</div>
@@ -1253,9 +1253,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Team Performance</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <Users className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(performanceData.summary.teamPerformance || 0).toFixed(1)}%</div>
@@ -1266,9 +1266,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Target Achievement</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(performanceData.summary.targetAchievement || 0).toFixed(1)}%</div>
@@ -1279,7 +1279,7 @@ export function SalesAnalyticsDashboard() {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Sales Team Performance</CardTitle>
@@ -1320,7 +1320,7 @@ export function SalesAnalyticsDashboard() {
                                           <tspan
                                             x={viewBox.cx}
                                             y={viewBox.cy}
-                                            className="fill-foreground text-4xl font-bold"
+                                            className="text-4xl font-bold fill-foreground"
                                           >
                                             0
                                           </tspan>
@@ -1536,11 +1536,11 @@ export function SalesAnalyticsDashboard() {
             <div className="space-y-4">
               {customerData?.summary && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <Users className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{customerData.summary.totalCustomers || 0}</div>
@@ -1551,9 +1551,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">New Customers</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{customerData.summary.newCustomers || 0}</div>
@@ -1564,9 +1564,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Customer Retention</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(customerData.summary.retentionRate || 0).toFixed(1)}%</div>
@@ -1577,7 +1577,7 @@ export function SalesAnalyticsDashboard() {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card className="flex flex-col">
                       <CardHeader className="items-center pb-0">
                         <CardTitle>Customer Segments</CardTitle>
@@ -1618,7 +1618,7 @@ export function SalesAnalyticsDashboard() {
                                           <tspan
                                             x={viewBox.cx}
                                             y={viewBox.cy}
-                                            className="fill-foreground text-4xl font-bold"
+                                            className="text-4xl font-bold fill-foreground"
                                           >
                                             0
                                           </tspan>
@@ -1726,11 +1726,11 @@ export function SalesAnalyticsDashboard() {
             <div className="space-y-4">
               {blankQuotationData?.summary && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Total Blank Quotations</CardTitle>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{blankQuotationData.summary.totalBlankQuotations || 0}</div>
@@ -1741,9 +1741,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(blankQuotationData.summary.completionRate || 0).toFixed(1)}%</div>
@@ -1754,9 +1754,9 @@ export function SalesAnalyticsDashboard() {
                     </Card>
 
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium">Average Time</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <BarChart3 className="w-4 h-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{blankQuotationData.summary.averageCompletionTime || 0}h</div>
@@ -1767,7 +1767,7 @@ export function SalesAnalyticsDashboard() {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card>
                       <CardHeader>
                         <CardTitle>Blank Quotation Trends</CardTitle>
@@ -1856,7 +1856,7 @@ export function SalesAnalyticsDashboard() {
                                           <tspan
                                             x={viewBox.cx}
                                             y={viewBox.cy}
-                                            className="fill-foreground text-4xl font-bold"
+                                            className="text-4xl font-bold fill-foreground"
                                           >
                                             0
                                           </tspan>
@@ -1947,7 +1947,7 @@ export function SalesAnalyticsDashboard() {
                                       <tspan
                                         x={viewBox.cx}
                                         y={viewBox.cy}
-                                        className="fill-foreground text-4xl font-bold"
+                                        className="text-4xl font-bold fill-foreground"
                                       >
                                         {((blankQuotationData.summary.completionRate || 0)).toFixed(1)}%
                                       </tspan>

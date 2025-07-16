@@ -61,7 +61,6 @@ import {
     Line,
     PieChart,
     Pie,
-    ComposedChart,
     Cell,
     XAxis,
     YAxis,

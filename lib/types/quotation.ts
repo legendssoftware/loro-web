@@ -2,6 +2,7 @@ import { OrderStatus } from '@/lib/enums/status.enums';
 import { User } from './user';
 import { Product } from './product';
 import { Client } from './client';
+import { ProjectSummary } from './project';
 
 export interface StatusColorConfig {
     bg: string;
@@ -133,6 +134,7 @@ export interface Quotation {
         uid: number;
         name: string;
     };
+    project?: ProjectSummary;
     isDeleted?: boolean;
 }
 

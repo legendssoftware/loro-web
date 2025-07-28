@@ -5,19 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { 
     Users, 
     Clock, 
     TrendingUp, 
-    Calendar, 
     UserCheck, 
-    Timer, 
     Coffee,
     Target,
     AlertTriangle,
     CheckCircle2,
-    XCircle,
     Activity,
     BarChart3
 } from 'lucide-react';

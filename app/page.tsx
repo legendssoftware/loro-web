@@ -3,7 +3,6 @@
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState } from 'react';
-import { Users, TrendingUp, FileText, BarChart3, Calendar, Target } from 'lucide-react';
 import { HRReportsDashboard } from '@/components/hr/hr-reports-dashboard';
 import { PersonalReportsDashboard } from '@/components/reports/personal-reports-dashboard';
 

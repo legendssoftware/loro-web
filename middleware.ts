@@ -36,7 +36,7 @@ function isProtectedPath(path: string): boolean {
         return false;
     }
     // Check if it's one of the defined public paths
-    if (publicPaths.some(publicPath => path.startsWith(publicPath))) {
+    if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
         return false;
     }
     // Otherwise, it's considered protected
@@ -64,7 +64,8 @@ function validateToken(token: string): { isValid: boolean; reason?: string } {
         }
 
         // Check if token was issued in the future (clock skew protection)
-        if (decodedToken.iat && decodedToken.iat > currentTimestamp + 300) { // 5 minute buffer
+        if (decodedToken.iat && decodedToken.iat > currentTimestamp + 300) {
+            // 5 minute buffer
             return { isValid: false, reason: 'token-future' };
         }
 
@@ -80,7 +81,7 @@ function validateToken(token: string): { isValid: boolean; reason?: string } {
 function clearAuthCookies(response: NextResponse): void {
     const cookiesToClear = ['accessToken', 'refreshToken', 'auth', 'session'];
 
-    cookiesToClear.forEach(cookieName => {
+    cookiesToClear.forEach((cookieName) => {
         response.cookies.set(cookieName, '', {
             path: '/',
             expires: new Date(0),
@@ -92,7 +93,11 @@ function clearAuthCookies(response: NextResponse): void {
 /**
  * Checks if a user has permission to access a specific route based on their role and license features
  */
-function hasRoutePermission(path: string, userRole: string | null, licenseFeatures: string[] = []): boolean {
+function hasRoutePermission(
+    path: string,
+    userRole: string | null,
+    licenseFeatures: string[] = [],
+): boolean {
     if (!userRole) return false;
 
     // Super users (admin, manager, owner) have access to all routes
@@ -115,7 +120,9 @@ function hasRoutePermission(path: string, userRole: string | null, licenseFeatur
         if (allowedRoutes.includes('*')) return true;
 
         // Check if any allowed route matches the current path
-        const hasRouteAccess = allowedRoutes.some(route => path.startsWith(route));
+        const hasRouteAccess = allowedRoutes.some((route) =>
+            path.startsWith(route),
+        );
 
         // If user has route access, also check license features
         if (hasRouteAccess) {
@@ -147,18 +154,25 @@ const routeFeatureMap: Record<string, string[]> = {
 /**
  * Checks if the user's license features allow access to a specific route
  */
-function hasLicenseFeatureAccess(path: string, licenseFeatures: string[]): boolean {
+function hasLicenseFeatureAccess(
+    path: string,
+    licenseFeatures: string[],
+): boolean {
     // If no features specified or features is not an array, allow access (backward compatibility)
     if (!Array.isArray(licenseFeatures) || licenseFeatures.length === 0) {
         return true;
     }
 
     // Check if the path requires specific features
-    for (const [routePath, requiredFeatures] of Object.entries(routeFeatureMap)) {
+    for (const [routePath, requiredFeatures] of Object.entries(
+        routeFeatureMap,
+    )) {
         if (path.startsWith(routePath)) {
             // Check if user has at least one of the required features
-            return requiredFeatures.some(feature =>
-                typeof feature === 'string' && licenseFeatures.includes(feature)
+            return requiredFeatures.some(
+                (feature) =>
+                    typeof feature === 'string' &&
+                    licenseFeatures.includes(feature),
             );
         }
     }
@@ -171,7 +185,9 @@ function hasLicenseFeatureAccess(path: string, licenseFeatures: string[]): boole
  * Gets the required feature for a specific path (for error reporting)
  */
 function getRequiredFeatureForPath(path: string): string {
-    for (const [routePath, requiredFeatures] of Object.entries(routeFeatureMap)) {
+    for (const [routePath, requiredFeatures] of Object.entries(
+        routeFeatureMap,
+    )) {
         if (path.startsWith(routePath)) {
             return requiredFeatures[0] || 'unknown';
         }
@@ -229,7 +245,6 @@ function getSafeCallbackUrl(request: NextRequest): string {
 
         // Ensure callback URL is from the same origin
         if (parsedUrl.origin !== origin) {
-            console.warn(`Middleware: Invalid callback URL origin. Using current path instead.`);
             return pathname;
         }
 
@@ -241,7 +256,6 @@ function getSafeCallbackUrl(request: NextRequest): string {
             return callbackUrl;
         }
 
-        console.warn(`Middleware: Invalid callback URL format. Using current path instead.`);
         return pathname;
     }
 }
@@ -261,7 +275,7 @@ export function middleware(request: NextRequest) {
         const validationResult = validateToken(accessToken);
         if (validationResult.isValid) {
             isAuthenticated = true;
-                                    try {
+            try {
                 const decodedToken = jwtDecode<CustomJwtPayload>(accessToken);
                 userRole = decodedToken.role || null;
 
@@ -271,54 +285,58 @@ export function middleware(request: NextRequest) {
                 } else {
                     licenseFeatures = [];
                     if (decodedToken.features !== undefined) {
-                        console.warn('Middleware: Token features is not an array:', typeof decodedToken.features, decodedToken.features);
                     }
                 }
 
                 licensePlan = decodedToken.licensePlan || null;
-
-                console.log(`Middleware: User ${userRole} with license ${licensePlan} and features: ${licenseFeatures.join(', ')}`);
-            } catch (error) {
-                console.error('Error decoding token:', error);
-            }
+            } catch (error) {}
         } else {
-            console.warn(`Middleware: Token validation failed: ${validationResult.reason}`);
             // Optionally, clear invalid tokens
             clearAuthCookies(response);
         }
     }
 
-        // If user is authenticated and tries to access a public-only path
-    if (isAuthenticated && publicPaths.some(publicPath => pathname.startsWith(publicPath))) {
+    // If user is authenticated and tries to access a public-only path
+    if (
+        isAuthenticated &&
+        publicPaths.some((publicPath) => pathname.startsWith(publicPath))
+    ) {
         const targetUrl = getSafeCallbackUrl(request);
 
         // Ensure target URL is not a public path to avoid redirect loops
-        if (publicPaths.some(publicPath => targetUrl.startsWith(publicPath))) {
+        if (
+            publicPaths.some((publicPath) => targetUrl.startsWith(publicPath))
+        ) {
             const defaultPath = getDefaultRedirectPath(userRole || '');
-            console.log(`Middleware: Callback URL is public path. Redirecting to default: ${defaultPath}`);
 
             // Add notification parameters for authenticated user redirect
             const redirectUrl = new URL(defaultPath, request.url);
-            redirectUrl.searchParams.set('middleware_redirect', 'authenticated-user');
+            redirectUrl.searchParams.set(
+                'middleware_redirect',
+                'authenticated-user',
+            );
 
             return NextResponse.redirect(redirectUrl);
         }
 
-        console.log(`Middleware: Authenticated user on public path ${pathname}. Redirecting to ${targetUrl}.`);
-
         // Add notification parameters for authenticated user redirect
         const redirectUrl = new URL(targetUrl, request.url);
-        redirectUrl.searchParams.set('middleware_redirect', 'authenticated-user');
+        redirectUrl.searchParams.set(
+            'middleware_redirect',
+            'authenticated-user',
+        );
 
         const redirectResponse = NextResponse.redirect(redirectUrl);
-        redirectResponse.headers.set('x-middleware-redirect', 'authenticated-user');
+        redirectResponse.headers.set(
+            'x-middleware-redirect',
+            'authenticated-user',
+        );
         return redirectResponse;
     }
 
     // If path is protected and user is not authenticated
     if (isProtectedPath(pathname)) {
         if (!isAuthenticated) {
-            console.log(`Middleware: No valid token for protected path: ${pathname}. Redirecting to sign-in.`);
             const signInUrl = new URL('/sign-in', request.url);
 
             // Use the safe callback URL method
@@ -328,14 +346,23 @@ export function middleware(request: NextRequest) {
             if (accessToken) {
                 const validationResult = validateToken(accessToken);
                 if (validationResult.reason === 'token-expired') {
-                    signInUrl.searchParams.set('middleware_redirect', 'token-expired');
+                    signInUrl.searchParams.set(
+                        'middleware_redirect',
+                        'token-expired',
+                    );
                     signInUrl.searchParams.set('token_status', 'expired');
                 } else {
-                    signInUrl.searchParams.set('middleware_redirect', 'unauthenticated');
+                    signInUrl.searchParams.set(
+                        'middleware_redirect',
+                        'unauthenticated',
+                    );
                     signInUrl.searchParams.set('token_status', 'invalid');
                 }
             } else {
-                signInUrl.searchParams.set('middleware_redirect', 'unauthenticated');
+                signInUrl.searchParams.set(
+                    'middleware_redirect',
+                    'unauthenticated',
+                );
             }
 
             const redirectResponse = NextResponse.redirect(signInUrl);
@@ -344,25 +371,32 @@ export function middleware(request: NextRequest) {
             clearAuthCookies(redirectResponse);
 
             // Set header to indicate this is an unauthenticated redirect
-            redirectResponse.headers.set('x-middleware-redirect', 'unauthenticated');
+            redirectResponse.headers.set(
+                'x-middleware-redirect',
+                'unauthenticated',
+            );
 
             return redirectResponse;
         }
 
-                // Check if user has permission to access this route
+        // Check if user has permission to access this route
         if (!hasRoutePermission(pathname, userRole, licenseFeatures)) {
-            console.log(`Middleware: User role ${userRole} does not have permission for path: ${pathname} (License: ${licensePlan}, Features: ${licenseFeatures.join(', ')})`);
-
             const redirectPath = getDefaultRedirectPath(userRole || '');
             const redirectUrl = new URL(redirectPath, request.url);
 
             // Add notification parameters for unauthorized access
             redirectUrl.searchParams.set('middleware_redirect', 'unauthorized');
-            redirectUrl.searchParams.set('denied_feature', getRequiredFeatureForPath(pathname));
+            redirectUrl.searchParams.set(
+                'denied_feature',
+                getRequiredFeatureForPath(pathname),
+            );
 
             // Set header to indicate this is an unauthorized redirect
             const redirectResponse = NextResponse.redirect(redirectUrl);
-            redirectResponse.headers.set('x-middleware-redirect', 'unauthorized');
+            redirectResponse.headers.set(
+                'x-middleware-redirect',
+                'unauthorized',
+            );
 
             return redirectResponse;
         }

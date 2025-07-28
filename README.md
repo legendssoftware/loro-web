@@ -1,4 +1,4 @@
-# LORO 🚀
+# LORO App 🚀
 
 A modern Next.js 14 admin dashboard for managing location tracking, geofencing, workforce management, and business operations. Built with TypeScript, Tailwind CSS, and Shadcn UI.
 

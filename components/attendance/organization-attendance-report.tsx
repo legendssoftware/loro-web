@@ -122,21 +122,21 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
         if (change > 0) {
             return (
                 <span className="flex items-center text-green-600">
-                    <ArrowUp className="h-3 w-3 mr-1" />
+                    <ArrowUp className="mr-1 w-3 h-3" />
                     {change.toFixed(1)}%
                 </span>
             );
         } else if (change < 0) {
             return (
                 <span className="flex items-center text-red-600">
-                    <ArrowDown className="h-3 w-3 mr-1" />
+                    <ArrowDown className="mr-1 w-3 h-3" />
                     {Math.abs(change).toFixed(1)}%
                 </span>
             );
         }
         return (
             <span className="flex items-center text-gray-600">
-                <Minus className="h-3 w-3 mr-1" />
+                <Minus className="mr-1 w-3 h-3" />
                 0%
             </span>
         );
@@ -144,14 +144,14 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
     const renderOrganizationOverview = () => {
         const { summary, organization } = report;
-        
+
         return (
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                             <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Users className="w-4 h-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{organization.totalEmployees}</div>
@@ -162,9 +162,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                     </Card>
 
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                             <CardTitle className="text-sm font-medium">Avg Attendance</CardTitle>
-                            <UserCheck className="h-4 w-4 text-green-600" />
+                            <UserCheck className="w-4 h-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">
@@ -178,9 +178,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                     </Card>
 
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                             <CardTitle className="text-sm font-medium">Punctuality</CardTitle>
-                            <Clock className="h-4 w-4 text-blue-600" />
+                            <Clock className="w-4 h-4 text-blue-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-blue-600">
@@ -194,9 +194,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                     </Card>
 
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
                             <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
-                            <Zap className="h-4 w-4 text-purple-600" />
+                            <Zap className="w-4 h-4 text-purple-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-purple-600">
@@ -210,11 +210,11 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                     </Card>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <BarChart3 className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <BarChart3 className="w-5 h-5" />
                                 Branch Performance Comparison
                             </CardTitle>
                         </CardHeader>
@@ -240,8 +240,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <PieChart className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <PieChart className="w-5 h-5" />
                                 Status Distribution
                             </CardTitle>
                         </CardHeader>
@@ -279,10 +279,10 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
     const renderTrendsAnalysis = () => {
         const trendsData = report.trends[selectedPeriod];
-        
+
         return (
             <div className="space-y-6">
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2 items-center">
                     <Select value={selectedPeriod} onValueChange={(value) => setSelectedPeriod(value as 'daily' | 'weekly' | 'monthly')}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue />
@@ -297,19 +297,27 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <LineChart className="h-5 w-5" />
+                        <CardTitle className="flex gap-2 items-center">
+                            <LineChart className="w-5 h-5" />
                             Attendance & Punctuality Trends
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={400}>
-                            <RechartsLineChart data={trendsData.map(item => ({
-                                ...item,
-                                date: selectedPeriod === 'daily' ? formatDate(item.date || item.week || item.month) :
-                                      selectedPeriod === 'weekly' ? item.week :
-                                      formatMonth(item.month),
-                            }))}>
+                            <RechartsLineChart data={trendsData.map(item => {
+                                let dateLabel = '';
+                                if (selectedPeriod === 'daily' && 'date' in item) {
+                                    dateLabel = formatDate(item.date);
+                                } else if (selectedPeriod === 'weekly' && 'week' in item) {
+                                    dateLabel = item.week;
+                                } else if (selectedPeriod === 'monthly' && 'month' in item) {
+                                    dateLabel = formatMonth(item.month);
+                                }
+                                return {
+                                    ...item,
+                                    date: dateLabel,
+                                };
+                            })}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="date" />
                                 <YAxis />
@@ -323,22 +331,30 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                     </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Activity className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <Activity className="w-5 h-5" />
                                 Performance Metrics
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <ResponsiveContainer width="100%" height={300}>
-                                <AreaChart data={trendsData.map(item => ({
-                                    ...item,
-                                    date: selectedPeriod === 'daily' ? formatDate(item.date || item.week || item.month) :
-                                          selectedPeriod === 'weekly' ? item.week :
-                                          formatMonth(item.month),
-                                }))}>
+                                <AreaChart data={trendsData.map(item => {
+                                    let dateLabel = '';
+                                    if (selectedPeriod === 'daily' && 'date' in item) {
+                                        dateLabel = formatDate(item.date);
+                                    } else if (selectedPeriod === 'weekly' && 'week' in item) {
+                                        dateLabel = item.week;
+                                    } else if (selectedPeriod === 'monthly' && 'month' in item) {
+                                        dateLabel = formatMonth(item.month);
+                                    }
+                                    return {
+                                        ...item,
+                                        date: dateLabel,
+                                    };
+                                })}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="date" />
                                     <YAxis />
@@ -351,15 +367,15 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Target className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <Target className="w-5 h-5" />
                                 Key Performance Indicators
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                <div className="flex items-center gap-2">
-                                    <TrendingUpIcon className="h-4 w-4 text-green-600" />
+                            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                                <div className="flex gap-2 items-center">
+                                    <TrendingUpIcon className="w-4 h-4 text-green-600" />
                                     <span className="font-medium">Peak Attendance</span>
                                 </div>
                                 <div className="text-right">
@@ -372,9 +388,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                                <div className="flex items-center gap-2">
-                                    <TrendingDownIcon className="h-4 w-4 text-red-600" />
+                            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                                <div className="flex gap-2 items-center">
+                                    <TrendingDownIcon className="w-4 h-4 text-red-600" />
                                     <span className="font-medium">Lowest Attendance</span>
                                 </div>
                                 <div className="text-right">
@@ -387,9 +403,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                                <div className="flex items-center gap-2">
-                                    <Activity className="h-4 w-4 text-blue-600" />
+                            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <div className="flex gap-2 items-center">
+                                    <Activity className="w-4 h-4 text-blue-600" />
                                     <span className="font-medium">Avg Productivity</span>
                                 </div>
                                 <div className="text-right">
@@ -417,12 +433,12 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
         return (
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {branchData.map((branch, index) => (
                         <Card key={branch.uid} className="relative">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Building className="h-5 w-5" />
+                                <CardTitle className="flex gap-2 items-center">
+                                    <Building className="w-5 h-5" />
                                     {branch.name}
                                 </CardTitle>
                                 <div className="absolute top-4 right-4">
@@ -433,26 +449,26 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex justify-between items-center">
                                         <span className="text-sm font-medium">Attendance Rate</span>
                                         <span className="text-sm font-bold">{formatPercentage(branch.attendanceRate)}</span>
                                     </div>
                                     <Progress value={branch.attendanceRate} className="h-2" />
-                                    
-                                    <div className="flex items-center justify-between">
+
+                                    <div className="flex justify-between items-center">
                                         <span className="text-sm font-medium">Punctuality Rate</span>
                                         <span className="text-sm font-bold">{formatPercentage(branch.punctualityRate)}</span>
                                     </div>
                                     <Progress value={branch.punctualityRate} className="h-2" />
-                                    
-                                    <div className="flex items-center justify-between">
+
+                                    <div className="flex justify-between items-center">
                                         <span className="text-sm font-medium">Efficiency Score</span>
                                         <span className="text-sm font-bold">{formatPercentage(branch.efficiency)}</span>
                                     </div>
                                     <Progress value={branch.efficiency} className="h-2" />
-                                    
+
                                     <Separator />
-                                    
+
                                     <div className="grid grid-cols-3 gap-2 text-center">
                                         <div>
                                             <p className="text-lg font-bold text-green-600">{branch.presentEmployees}</p>
@@ -475,8 +491,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <BarChart2 className="h-5 w-5" />
+                        <CardTitle className="flex gap-2 items-center">
+                            <BarChart2 className="w-5 h-5" />
                             Branch Performance Comparison
                         </CardTitle>
                     </CardHeader>
@@ -502,14 +518,14 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
     const renderAnalyticsInsights = () => {
         const { analytics, insights } = report;
-        
+
         return (
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Trophy className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <Trophy className="w-5 h-5" />
                                 Top Performing Branches
                             </CardTitle>
                         </CardHeader>
@@ -520,9 +536,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                         .sort((a, b) => b.attendanceRate - a.attendanceRate)
                                         .slice(0, 5)
                                         .map((branch, index) => (
-                                            <div key={branch.uid} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
+                                            <div key={branch.uid} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                                                <div className="flex gap-3 items-center">
+                                                    <div className="flex justify-center items-center w-8 h-8 bg-green-100 rounded-full">
                                                         <span className="text-sm font-bold text-green-600">
                                                             {index + 1}
                                                         </span>
@@ -551,8 +567,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <AlertCircle className="h-5 w-5" />
+                            <CardTitle className="flex gap-2 items-center">
+                                <AlertCircle className="w-5 h-5" />
                                 Areas for Improvement
                             </CardTitle>
                         </CardHeader>
@@ -563,10 +579,10 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                         .sort((a, b) => a.attendanceRate - b.attendanceRate)
                                         .slice(0, 5)
                                         .map((branch, index) => (
-                                            <div key={branch.uid} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center justify-center w-8 h-8 bg-red-100 rounded-full">
-                                                        <AlertCircle className="h-4 w-4 text-red-600" />
+                                            <div key={branch.uid} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                                                <div className="flex gap-3 items-center">
+                                                    <div className="flex justify-center items-center w-8 h-8 bg-red-100 rounded-full">
+                                                        <AlertCircle className="w-4 h-4 text-red-600" />
                                                     </div>
                                                     <div>
                                                         <p className="font-medium">{branch.name}</p>
@@ -593,19 +609,19 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Info className="h-5 w-5" />
+                        <CardTitle className="flex gap-2 items-center">
+                            <Info className="w-5 h-5" />
                             Key Insights & Patterns
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <h4 className="font-semibold mb-3">Seasonal Patterns</h4>
+                                <h4 className="mb-3 font-semibold">Seasonal Patterns</h4>
                                 <div className="space-y-2">
                                     {analytics.seasonalPatterns.map((pattern, index) => (
-                                        <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded">
-                                            <Calendar className="h-4 w-4 text-blue-600" />
+                                        <div key={index} className="flex gap-2 items-center p-2 bg-blue-50 rounded">
+                                            <Calendar className="w-4 h-4 text-blue-600" />
                                             <span className="text-sm">{pattern}</span>
                                         </div>
                                     ))}
@@ -613,12 +629,12 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                             </div>
 
                             <div>
-                                <h4 className="font-semibold mb-3">Performance Insights</h4>
+                                <h4 className="mb-3 font-semibold">Performance Insights</h4>
                                 <div className="space-y-3">
                                     <div className="p-3 bg-green-50 rounded-lg">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <TrendingUpIcon className="h-4 w-4 text-green-600" />
-                                            <span className="font-medium text-sm">Peak Performance Days</span>
+                                        <div className="flex gap-2 items-center mb-1">
+                                            <TrendingUpIcon className="w-4 h-4 text-green-600" />
+                                            <span className="text-sm font-medium">Peak Performance Days</span>
                                         </div>
                                         <p className="text-sm text-muted-foreground">
                                             {analytics.peakAttendanceDays.join(', ')}
@@ -626,9 +642,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                     </div>
 
                                     <div className="p-3 bg-red-50 rounded-lg">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <TrendingDownIcon className="h-4 w-4 text-red-600" />
-                                            <span className="font-medium text-sm">Low Performance Days</span>
+                                        <div className="flex gap-2 items-center mb-1">
+                                            <TrendingDownIcon className="w-4 h-4 text-red-600" />
+                                            <span className="text-sm font-medium">Low Performance Days</span>
                                         </div>
                                         <p className="text-sm text-muted-foreground">
                                             {analytics.lowAttendanceDays.join(', ')}
@@ -636,9 +652,9 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                                     </div>
 
                                     <div className="p-3 bg-blue-50 rounded-lg">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Activity className="h-4 w-4 text-blue-600" />
-                                            <span className="font-medium text-sm">Productivity Correlation</span>
+                                        <div className="flex gap-2 items-center mb-1">
+                                            <Activity className="w-4 h-4 text-blue-600" />
+                                            <span className="text-sm font-medium">Productivity Correlation</span>
                                         </div>
                                         <p className="text-sm text-muted-foreground">
                                             {analytics.productivityCorrelation.toFixed(2)} correlation coefficient
@@ -652,8 +668,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="h-5 w-5" />
+                        <CardTitle className="flex gap-2 items-center">
+                            <Target className="w-5 h-5" />
                             Strategic Recommendations
                         </CardTitle>
                     </CardHeader>
@@ -661,8 +677,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                         <div className="space-y-4">
                             {report.recommendations.immediate.length > 0 && (
                                 <div>
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                    <h4 className="flex gap-2 items-center mb-2 text-sm font-semibold">
+                                        <AlertCircle className="w-4 h-4 text-red-500" />
                                         Immediate Actions Required
                                     </h4>
                                     <ul className="space-y-1">
@@ -677,8 +693,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                             {report.recommendations.longTerm.length > 0 && (
                                 <div>
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                                        <TrendingUpIcon className="h-4 w-4 text-green-500" />
+                                    <h4 className="flex gap-2 items-center mb-2 text-sm font-semibold">
+                                        <TrendingUpIcon className="w-4 h-4 text-green-500" />
                                         Long-term Strategic Initiatives
                                     </h4>
                                     <ul className="space-y-1">
@@ -693,8 +709,8 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
                             {report.recommendations.policies.length > 0 && (
                                 <div>
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-blue-500" />
+                                    <h4 className="flex gap-2 items-center mb-2 text-sm font-semibold">
+                                        <FileText className="w-4 h-4 text-blue-500" />
                                         Policy Recommendations
                                     </h4>
                                     <ul className="space-y-1">
@@ -715,27 +731,27 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
 
     return (
         <div className={`space-y-6 ${className}`}>
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Building className="h-6 w-6 text-blue-500" />
+                    <h2 className="flex gap-2 items-center text-xl font-bold">
+                        <Building className="w-6 h-6 text-blue-500" />
                         Organization Attendance Report
                     </h2>
                     <p className="text-sm text-muted-foreground">
                         {format(new Date(report.dateRange.start), 'MMM dd, yyyy')} - {format(new Date(report.dateRange.end), 'MMM dd, yyyy')}
                     </p>
                 </div>
-                
-                <div className="flex items-center gap-2">
+
+                <div className="flex gap-2 items-center">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setShowDetails(!showDetails)}
                     >
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="mr-2 w-4 h-4" />
                         {showDetails ? 'Hide' : 'Show'} Details
                     </Button>
-                    
+
                     <Button
                         variant="outline"
                         size="sm"
@@ -745,21 +761,21 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
                         <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
-                    
+
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onExport?.('csv')}
                         disabled={isLoading}
                     >
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="mr-2 w-4 h-4" />
                         Export
                     </Button>
                 </div>
             </div>
 
             <Tabs value={selectedView} onValueChange={(value) => setSelectedView(value as any)}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid grid-cols-4 w-full">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="trends">Trends</TabsTrigger>
                     <TabsTrigger value="branches">Branches</TabsTrigger>
@@ -786,4 +802,4 @@ export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttenda
     );
 };
 
-export default OrganizationAttendanceReportComponent; 
+export default OrganizationAttendanceReportComponent;

@@ -281,33 +281,65 @@ const PAYMENT_TERMS = [
     'Other',
 ];
 
-// Form schema definition with improved validation
+// Form schema definition with improved validation to match server DTOs
 export const clientFormSchema = z.object({
-    name: z.string().min(1, { message: 'A client name is required' }),
+    name: z.string()
+        .min(2, { message: 'Client name must be at least 2 characters' })
+        .max(100, { message: 'Client name must not exceed 100 characters' }),
     contactPerson: z
         .string()
-        .min(1, { message: 'A contact person is required' }),
-    email: z.string().email({ message: 'Invalid email address' }),
-    // Phone validation - allow international formats
-    phone: z.string().min(6, { message: 'A valid phone number is required' }),
-    alternativePhone: z.string().optional(),
-    // Add URL validation for website
-    website: z
-        .string()
-        .url({ message: 'Please enter a valid URL' })
+        .min(2, { message: 'Contact person name must be at least 2 characters' })
+        .max(100, { message: 'Contact person name must not exceed 100 characters' }),
+    email: z.string()
+        .email({ message: 'Please provide a valid email address' })
+        .transform(val => val.toLowerCase().trim()),
+    // Phone validation - South African phone numbers with +27 country code
+    phone: z.string()
+        .regex(/^\+27\s?\d{2}\s?\d{3}\s?\d{4}$/, {
+            message: 'Please provide a valid South African phone number with country code (+27)'
+        }),
+    alternativePhone: z.string()
+        .regex(/^\+27\s?\d{2}\s?\d{3}\s?\d{4}$/, {
+            message: 'Alternative phone number must be a valid South African phone number with country code (+27)'
+        })
         .optional()
         .or(z.literal('')),
-    logo: z.string().optional(),
-    description: z.string().optional(),
+    // Website validation - must include protocol
+    website: z
+        .string()
+        .url({ message: 'Website must be a valid URL with protocol (http/https)' })
+        .optional()
+        .or(z.literal('')),
+    logo: z.string()
+        .url({ message: 'Logo URL must be a valid URL with protocol (http/https)' })
+        .optional()
+        .or(z.literal('')),
+    description: z.string()
+        .max(1000, { message: 'Description must not exceed 1000 characters' })
+        .optional(),
     address: z.object({
-        street: z.string().min(1, { message: 'Street address is required' }),
-        suburb: z.string().min(1, { message: 'Suburb is required' }),
-        city: z.string().min(1, { message: 'City is required' }),
-        state: z.string().min(1, { message: 'State/Province is required' }),
-        country: z.string().min(1, { message: 'Country is required' }),
-        postalCode: z.string().min(1, { message: 'Postal code is required' }),
+        street: z.string()
+            .min(5, { message: 'Street address must be at least 5 characters' })
+            .max(200, { message: 'Street address must not exceed 200 characters' }),
+        suburb: z.string()
+            .min(2, { message: 'Suburb must be at least 2 characters' })
+            .max(100, { message: 'Suburb must not exceed 100 characters' }),
+        city: z.string()
+            .min(2, { message: 'City must be at least 2 characters' })
+            .max(100, { message: 'City must not exceed 100 characters' }),
+        state: z.string()
+            .min(2, { message: 'State/Province must be at least 2 characters' })
+            .max(100, { message: 'State/Province must not exceed 100 characters' }),
+        country: z.string()
+            .min(2, { message: 'Country must be at least 2 characters' })
+            .max(100, { message: 'Country must not exceed 100 characters' }),
+        postalCode: z.string()
+            .regex(/^[0-9]{4}$/, { message: 'South African postal code must be 4 digits' }),
     }),
-    category: z.nativeEnum(ClientType).default(ClientType.CONTRACT),
+    category: z.string()
+        .min(2, { message: 'Category must be at least 2 characters' })
+        .max(50, { message: 'Category must not exceed 50 characters' })
+        .optional(),
     type: z.nativeEnum(ClientType).default(ClientType.STANDARD),
     // Using ClientStatus from the frontend which maps to the backend enum names correctly
     status: z.nativeEnum(ClientStatus).default(ClientStatus.ACTIVE),
@@ -317,9 +349,15 @@ export const clientFormSchema = z.object({
             uid: z.number(),
         })
         .optional(),
-    // Financial Information - all optional
-    creditLimit: z.union([z.number(), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
-    outstandingBalance: z.union([z.number(), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
+    // Financial Information - all optional with proper validation
+    creditLimit: z.union([
+        z.number().positive({ message: 'Credit limit must be a positive number' }),
+        z.literal('')
+    ]).transform(v => v === '' ? undefined : v).optional(),
+    outstandingBalance: z.union([
+        z.number().min(0, { message: 'Outstanding balance cannot be negative' }),
+        z.literal('')
+    ]).transform(v => v === '' ? undefined : v).optional(),
     priceTier: z.nativeEnum(PriceTier).optional(),
     discountPercentage: z.union([z.number().min(0).max(100), z.literal('')]).transform(v => v === '' ? undefined : v).optional(),
     paymentTerms: z.string().optional(),
@@ -353,20 +391,41 @@ export const clientFormSchema = z.object({
     customFields: z.record(z.string(), z.any()).optional(),
     socialProfiles: z
         .object({
-            linkedin: z.string().optional(),
-            twitter: z.string().optional(),
-            facebook: z.string().optional(),
-            instagram: z.string().optional(),
+            linkedin: z.string()
+                .url({ message: 'LinkedIn URL must be a valid URL with protocol (http/https)' })
+                .optional()
+                .or(z.literal('')),
+            twitter: z.string()
+                .url({ message: 'Twitter URL must be a valid URL with protocol (http/https)' })
+                .optional()
+                .or(z.literal('')),
+            facebook: z.string()
+                .url({ message: 'Facebook URL must be a valid URL with protocol (http/https)' })
+                .optional()
+                .or(z.literal('')),
+            instagram: z.string()
+                .url({ message: 'Instagram URL must be a valid URL with protocol (http/https)' })
+                .optional()
+                .or(z.literal('')),
         })
         .optional(),
     geofenceType: z
         .nativeEnum(GeofenceType)
         .optional()
         .catch(undefined),
-    geofenceRadius: z.any().optional(),
+    geofenceRadius: z.union([
+        z.number().min(100).max(5000),
+        z.literal('')
+    ]).transform(v => v === '' ? undefined : v).optional(),
     enableGeofence: z.boolean().optional(),
-    latitude: z.any().optional(),
-    longitude: z.any().optional(),
+    latitude: z.union([
+        z.number().min(-90).max(90),
+        z.literal('')
+    ]).transform(v => v === '' ? undefined : v).optional(),
+    longitude: z.union([
+        z.number().min(-180).max(180),
+        z.literal('')
+    ]).transform(v => v === '' ? undefined : v).optional(),
     // Communication preferences - simplified structure
     communicationSchedules: z
         .array(
@@ -428,7 +487,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
         name: '',
         contactPerson: '',
         email: '',
-        phone: '',
+        phone: '+27 ',
         alternativePhone: '',
         website: '',
         logo: '',
@@ -437,7 +496,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             street: '',
             suburb: '',
             city: '',
-            state: '',
+            state: 'Gauteng',
             country: 'South Africa', // Default country
             postalCode: '',
         },
@@ -680,7 +739,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Logo Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Image className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Client Logo
@@ -701,7 +760,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Avatar>
                                 <label
                                     htmlFor="client-logo-upload"
-                                    className="absolute bottom-0 right-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
+                                    className="absolute right-0 bottom-0 p-1 rounded-full cursor-pointer bg-primary hover:bg-primary/80"
                                 >
                                     <Image
                                         className="w-4 h-4 text-white"
@@ -729,7 +788,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Basic Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Building2 className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Client Information
@@ -774,7 +833,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <User
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -806,7 +865,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Mail
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -838,7 +897,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Globe
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -869,7 +928,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Phone
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -904,7 +963,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </Label>
                                 <div className="relative">
                                     <Phone
-                                        className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground"
+                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                                         strokeWidth={1.5}
                                     />
                                     <Input
@@ -951,7 +1010,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Address Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <MapPin className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Address Information
@@ -1092,7 +1151,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         : 'border-border'
                                                 }`}
                                             >
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex gap-2 items-center">
                                                     <Globe
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1103,7 +1162,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1176,7 +1235,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Additional Information Section */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <FileText className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Additional Information
@@ -1197,8 +1256,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="category"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <LayoutGrid
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1213,7 +1272,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1231,7 +1290,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={type}
                                                             value={type}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <LayoutGrid
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -1271,8 +1330,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="assignedSalesRep"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Users
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1291,7 +1350,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1319,7 +1378,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 key={user.uid}
                                                                 value={user.uid.toString()}
                                                             >
-                                                                <div className="flex items-center gap-2">
+                                                                <div className="flex gap-2 items-center">
                                                                     <Avatar className="w-6 h-6">
                                                                         <AvatarImage
                                                                             src={
@@ -1379,8 +1438,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="type"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Tag
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1395,7 +1454,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1413,7 +1472,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={type}
                                                             value={type}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Tag
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -1448,8 +1507,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="status"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <ToggleLeft
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1464,7 +1523,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1482,7 +1541,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={status}
                                                             value={status}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <ToggleLeft
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -1611,8 +1670,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="paymentTerms"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <CreditCard
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1623,7 +1682,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1700,8 +1759,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="preferredPaymentMethod"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <CreditCard
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1716,7 +1775,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1734,7 +1793,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={method}
                                                             value={method}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <CreditCard
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -1769,8 +1828,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="priceTier"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Tag
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -1785,7 +1844,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -1803,7 +1862,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={tier}
                                                             value={tier}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Tag
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -1832,7 +1891,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Tags & Categories */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Tag className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Tags & Categories
@@ -1875,7 +1934,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 newTags,
                                                             );
                                                         }}
-                                                        className="h-auto p-0 ml-1 bg-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
+                                                        className="p-0 ml-1 h-auto bg-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
                                                         variant="ghost"
                                                         size="sm"
                                                     >
@@ -1888,7 +1947,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                             <Input
                                                 id="tag-input"
                                                 placeholder="Add tag and press Enter"
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body h-9"
+                                                className="h-9 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
@@ -2006,7 +2065,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                             <Input
                                                 id="category-input"
                                                 placeholder="Add product category and press Enter"
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body h-9"
+                                                className="h-9 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
@@ -2083,7 +2142,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Customer Insights */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Users className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Customer Insights
@@ -2160,8 +2219,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="acquisitionChannel"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Users
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -2176,7 +2235,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -2194,7 +2253,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={channel}
                                                             value={channel}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Users
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -2256,8 +2315,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                             <div className="relative">
                                                 <div className="flex space-x-2">
                                                     <div className="relative w-3/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <CalendarIcon
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2276,7 +2335,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2284,7 +2343,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-0">
+                                                            <PopoverContent className="p-0 w-auto">
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={
@@ -2317,8 +2376,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </div>
 
                                                     <div className="relative w-2/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Clock
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2337,7 +2396,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2345,14 +2404,14 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-3">
+                                                            <PopoverContent className="p-3 w-auto">
                                                                 <div className="space-y-2">
                                                                     <div className="text-[10px] font-thin uppercase font-body">
                                                                         Time
                                                                     </div>
                                                                     <input
                                                                         type="time"
-                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        className="px-3 w-full h-10 text-sm rounded border bg-card border-border"
                                                                         value={
                                                                             selectedTime
                                                                         }
@@ -2412,8 +2471,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="riskLevel"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <AlertTriangle
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -2428,7 +2487,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -2446,7 +2505,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={level}
                                                             value={level}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <AlertTriangle
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -2527,7 +2586,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Contact Preferences & Dates */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <CalendarIcon
                                 className="w-4 h-4"
                                 strokeWidth={1.5}
@@ -2551,8 +2610,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="preferredContactMethod"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Mail
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -2567,7 +2626,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -2585,7 +2644,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={method}
                                                             value={method}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Mail
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -2620,8 +2679,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="preferredLanguage"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Globe
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -2636,7 +2695,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -2654,7 +2713,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={language}
                                                             value={language}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Globe
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -2716,8 +2775,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                             <div className="relative">
                                                 <div className="flex space-x-2">
                                                     <div className="relative w-3/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <CalendarIcon
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2736,7 +2795,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2744,7 +2803,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-0">
+                                                            <PopoverContent className="p-0 w-auto">
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={
@@ -2777,8 +2836,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </div>
 
                                                     <div className="relative w-2/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Clock
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2797,7 +2856,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2805,14 +2864,14 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-3">
+                                                            <PopoverContent className="p-3 w-auto">
                                                                 <div className="space-y-2">
                                                                     <div className="text-[10px] font-thin uppercase font-body">
                                                                         Time
                                                                     </div>
                                                                     <input
                                                                         type="time"
-                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        className="px-3 w-full h-10 text-sm rounded border bg-card border-border"
                                                                         value={
                                                                             selectedTime
                                                                         }
@@ -2893,8 +2952,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                             <div className="relative">
                                                 <div className="flex space-x-2">
                                                     <div className="relative w-3/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <CalendarIcon
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2913,7 +2972,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2921,7 +2980,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-0">
+                                                            <PopoverContent className="p-0 w-auto">
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={
@@ -2954,8 +3013,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </div>
 
                                                     <div className="relative w-2/5">
-                                                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                            <div className="flex items-center gap-2">
+                                                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                            <div className="flex gap-2 items-center">
                                                                 <Clock
                                                                     className="w-4 h-4 text-muted-foreground"
                                                                     strokeWidth={
@@ -2974,7 +3033,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                                 </span>
                                                             </div>
                                                             <ChevronDown
-                                                                className="w-4 h-4 ml-2 opacity-50"
+                                                                className="ml-2 w-4 h-4 opacity-50"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -2982,14 +3041,14 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                         </div>
                                                         <Popover>
                                                             <PopoverTrigger className="absolute top-0 left-0 w-full h-10 opacity-0 cursor-pointer" />
-                                                            <PopoverContent className="w-auto p-3">
+                                                            <PopoverContent className="p-3 w-auto">
                                                                 <div className="space-y-2">
                                                                     <div className="text-[10px] font-thin uppercase font-body">
                                                                         Time
                                                                     </div>
                                                                     <input
                                                                         type="time"
-                                                                        className="w-full h-10 px-3 text-sm border rounded bg-card border-border"
+                                                                        className="px-3 w-full h-10 text-sm rounded border bg-card border-border"
                                                                         value={
                                                                             selectedTime
                                                                         }
@@ -3040,7 +3099,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Social Media Profiles */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Globe className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Social Media Profiles
@@ -3147,7 +3206,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Communication Preferences */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <Clock className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Communication Preferences
@@ -3168,8 +3227,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="communicationSchedules.0.communicationType"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Mail
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -3181,7 +3240,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -3232,8 +3291,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="communicationSchedules.0.frequency"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <Clock
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -3245,7 +3304,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -3336,7 +3395,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                 {/* Geofencing */}
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
                             <MapPin className="w-4 h-4" strokeWidth={1.5} />
                             <span className="font-light uppercase font-body">
                                 Geofencing Settings
@@ -3346,7 +3405,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-1">
-                                <div className="flex items-center justify-between">
+                                <div className="flex justify-between items-center">
                                     <Label
                                         htmlFor="enableGeofence"
                                         className="text-xs font-light uppercase font-body"
@@ -3383,8 +3442,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="geofenceType"
                                     render={({ field }) => (
                                         <div className="relative">
-                                            <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                                                <div className="flex gap-2 items-center">
                                                     <MapPin
                                                         className="w-4 h-4 text-muted-foreground"
                                                         strokeWidth={1.5}
@@ -3399,7 +3458,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                     </span>
                                                 </div>
                                                 <ChevronDown
-                                                    className="w-4 h-4 ml-2 opacity-50"
+                                                    className="ml-2 w-4 h-4 opacity-50"
                                                     strokeWidth={1.5}
                                                 />
                                             </div>
@@ -3417,7 +3476,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                                             key={type}
                                                             value={type}
                                                         >
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex gap-2 items-center">
                                                                 <MapPin
                                                                     className="w-4 h-4"
                                                                     strokeWidth={
@@ -3528,7 +3587,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
             <div className="pt-4 mt-6 border-t border-border">
                 {Object.keys(errors).length > 0 && (
                     <div className="p-3 mb-4 text-xs text-red-800 bg-red-100 rounded-md">
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                             <AlertTriangle className="w-4 h-4" />
                             <p className="text-xs font-semibold uppercase font-body">
                                 Please fix the following errors:
@@ -3566,7 +3625,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                         </ul>
                     </div>
                 )}
-                <div className="flex justify-end gap-2">
+                <div className="flex gap-2 justify-end">
                     <Button
                         type="button"
                         variant="outline"
@@ -3592,8 +3651,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                         className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                     >
                         {isSubmitting ? (
-                            <div className="flex items-center gap-2">
-                                <span className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></span>
+                            <div className="flex gap-2 items-center">
+                                <span className="inline-block w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></span>
                                 <span>Creating...</span>
                             </div>
                         ) : isLoading ? (

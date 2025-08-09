@@ -14,8 +14,6 @@ import { StaggerItem } from '@/components/animations/stagger-item';
 import { FadeIn } from '@/components/animations/fade-in';
 import { ScrollToTop } from '@/components/animations/scroll-to-top';
 import { SmoothScroll } from '@/components/smooth-scroll';
-import { UserCarousel } from '@/components/animations/user-carousel';
-import { StatsDisplay } from '@/components/animations/stats-display';
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { mockDataStore } from '@/lib/mock-data';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
@@ -377,9 +375,9 @@ export default function Home() {
             <div className="flex flex-col min-h-screen">
                 <SmoothScroll />
                 <FadeIn duration={0.8}>
-                    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-                        <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-                            <div className="flex items-center gap-2">
+                    <header className="sticky top-0 z-50 border-b backdrop-blur-sm bg-background/80">
+                        <div className="container flex justify-between items-center px-4 mx-auto h-16">
+                            <div className="flex gap-2 items-center">
                                 <motion.span
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -392,9 +390,9 @@ export default function Home() {
                             </div>
 
                             {/* Desktop Navigation */}
-                            <nav className="items-center hidden gap-6 md:flex">
+                            <nav className="hidden gap-6 items-center md:flex">
                                 <motion.div
-                                    className="flex items-center gap-6"
+                                    className="flex gap-6 items-center"
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: 0.3 }}
@@ -447,7 +445,7 @@ export default function Home() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={retryDemoCall}
-                                            className="text-xs font-normal uppercase transition-colors cursor-pointer text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                            className="text-xs font-normal text-amber-500 uppercase transition-colors cursor-pointer font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
                                         >
                                             <span>RETRY CALL</span>
                                         </Button>
@@ -469,7 +467,7 @@ export default function Home() {
 
                             {/* Desktop Right Side */}
                             <motion.div
-                                className="items-center hidden gap-4 md:flex"
+                                className="hidden gap-4 items-center md:flex"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -496,7 +494,7 @@ export default function Home() {
                             </motion.div>
 
                             {/* Mobile Right Side */}
-                            <div className="flex items-center gap-2 md:hidden">
+                            <div className="flex gap-2 items-center md:hidden">
                                 <ThemeToggler />
                                 <motion.button
                                     onClick={(e) => {
@@ -535,7 +533,7 @@ export default function Home() {
                                         >
                                             <div className="flex flex-col h-full">
                                                 {/* Mobile Menu Header */}
-                                                <div className="flex items-center justify-between p-4 border-b bg-background/80">
+                                                <div className="flex justify-between items-center p-4 border-b bg-background/80">
                                                     <span className="text-lg font-normal uppercase font-body">
                                                         LORO CRM
                                                     </span>
@@ -554,35 +552,35 @@ export default function Home() {
                                                     <Link
                                                         href="#features"
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         Features
                                                     </Link>
                                                     <Link
                                                         href="#benefits"
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         Benefits
                                                     </Link>
                                                     <Link
                                                         href="#pricing"
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         Pricing
                                                     </Link>
                                                     <Link
                                                         href="#testimonials"
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         Testimonials
                                                     </Link>
                                                     <Link
                                                         href="#faq"
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         FAQ
                                                     </Link>
@@ -591,7 +589,7 @@ export default function Home() {
                                                         <Link
                                                             href="/sign-in"
                                                             onClick={() => setIsMobileMenuOpen(false)}
-                                                            className="block p-3 text-sm font-normal uppercase transition-colors rounded-lg font-body hover:bg-muted hover:text-primary"
+                                                            className="block p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                         >
                                                             Sign In
                                                         </Link>
@@ -615,9 +613,9 @@ export default function Home() {
                                                             <Button
                                                                 variant="outline"
                                                                 onClick={retryDemoCall}
-                                                                className="w-full text-xs font-normal uppercase text-amber-500 font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                                                                className="w-full text-xs font-normal text-amber-500 uppercase font-body hover:bg-amber-100 dark:hover:bg-amber-900/20"
                                                             >
-                                                                <PhoneCall className="w-4 h-4 mr-2" />
+                                                                <PhoneCall className="mr-2 w-4 h-4" />
                                                                 <span>RETRY CALL</span>
                                                             </Button>
                                                         ) : (
@@ -626,7 +624,7 @@ export default function Home() {
                                                                 disabled={isCallInitializing}
                                                                 className="w-full text-xs font-normal uppercase font-body"
                                                             >
-                                                                <PhoneCall className="w-4 h-4 mr-2" />
+                                                                <PhoneCall className="mr-2 w-4 h-4" />
                                                                 <span>
                                                                     {isCallInitializing ? 'CONNECTING...' : 'DEMO CALL'}
                                                                 </span>
@@ -662,13 +660,27 @@ export default function Home() {
                     {/* Hero Section */}
                     <MotionSection className="py-8 md:py-16 lg:py-24" duration={0.8}>
                         <div className="container px-4 mx-auto md:px-6">
-                            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
+                            <div className="flex flex-col gap-2 justify-center items-center w-full text-center">
                                 <StaggerContainer
-                                    className="flex flex-col justify-center space-y-4"
+                                    className="flex flex-col justify-center items-center space-y-4"
                                     staggerChildren={0.2}
                                 >
-                                    <StaggerItem className="space-y-2">
-                                        <div className="relative h-32 p-1 overflow-hidden sm:h-40 md:h-48">
+                                        <StaggerItem
+                                        className="space-y-3"
+                                        direction="right"
+                                    >
+                                        <div className="flex justify-center items-center w-full">
+                                            <Image src='/images/covers/hero.png' height={800} width={800} alt='Loro Dashboard'/>
+                                        </div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                                <StaggerContainer
+                                    className="flex flex-col gap-3 items-center justify-center lg:gap-4 -mt-5 max-h-[600px] lg:max-h-none overflow-hidden w-full"
+                                    delay={0.3}
+                                    staggerChildren={0.15}
+                                >
+                                    <StaggerItem className="flex flex-col items-center space-y-2 w-full">
+                                        <div className="overflow-hidden relative p-1 w-full h-32 sm:h-40 md:h-48">
                                             <AnimatePresence mode="wait">
                                                 <motion.h1
                                                     key={currentPhraseIndex}
@@ -676,17 +688,17 @@ export default function Home() {
                                                     animate={{ y: 0, opacity: 1 }}
                                                     exit={{ y: -50, opacity: 0 }}
                                                     transition={{ duration: 0.5, ease: "easeInOut" }}
-                                                    className="absolute inset-0 flex items-center text-2xl font-normal tracking-tighter uppercase sm:text-3xl md:text-5xl xl:text-6xl/none font-body"
+                                                    className="flex absolute inset-0 justify-center items-center text-2xl font-normal tracking-tighter text-center uppercase sm:text-3xl md:text-5xl xl:text-6xl/none font-body"
                                                 >
                                                     {heroPhrases[currentPhraseIndex]}
                                                 </motion.h1>
                                             </AnimatePresence>
                                         </div>
-                                        <p className="max-w-[600px] text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        <p className="max-w-[600px] text-xs uppercase text-muted-foreground font-body md:text-xs text-center mx-auto">
                                             Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform.
                                         </p>
                                     </StaggerItem>
-                                    <StaggerItem className="flex flex-col gap-2 min-[400px]:flex-row">
+                                    <StaggerItem className="flex flex-col gap-2 min-[400px]:flex-row justify-center items-center">
                                         <motion.div
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
@@ -722,135 +734,6 @@ export default function Home() {
                                         </motion.div>
                                     </StaggerItem>
                                 </StaggerContainer>
-
-                                <StaggerContainer
-                                    className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-4 max-h-[600px] lg:max-h-none overflow-hidden"
-                                    delay={0.3}
-                                    staggerChildren={0.15}
-                                >
-                                    <StaggerItem
-                                        className="space-y-3"
-                                        direction="left"
-                                    >
-                                        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-                                            <div className="text-xs font-normal uppercase text-muted-foreground font-body">
-                                                Live Activity
-                                            </div>
-                                            <div className="px-2 py-1 ml-auto text-xs font-normal text-green-700 uppercase bg-green-100 rounded-full animate-LORO font-body">
-                                                LIVE
-                                            </div>
-                                        </div>
-
-                                        {/* Animated User Carousel */}
-                                        <div className="overflow-hidden max-h-32">
-                                            <UserCarousel
-                                                users={diverseUsers}
-                                                interval={3500}
-                                            />
-                                        </div>
-                                    </StaggerItem>
-
-                                    <StaggerItem
-                                        className="space-y-3"
-                                        direction="right"
-                                    >
-                                        {/* Live Analytics Dashboard Widget */}
-                                        <div className="overflow-hidden max-h-24">
-                                            <StatsDisplay
-                                                data={liveStats}
-                                                className="mb-3"
-                                            />
-                                        </div>
-
-                                        <div className="relative aspect-square max-h-32 lg:max-h-48">
-                                            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
-                                                <motion.div
-                                                    className="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg"
-                                                    animate={{
-                                                        scale: [1, 1.05, 1],
-                                                        rotate: [
-                                                            0, 5, 0, -5, 0,
-                                                        ],
-                                                    }}
-                                                    transition={{
-                                                        duration: 5,
-                                                        repeat: Number.POSITIVE_INFINITY,
-                                                        repeatType: 'reverse',
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="20"
-                                                        height="20"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="text-primary"
-                                                    >
-                                                        <rect
-                                                            x="3"
-                                                            y="3"
-                                                            width="18"
-                                                            height="18"
-                                                            rx="2"
-                                                            ry="2"
-                                                        ></rect>
-                                                        <rect
-                                                            x="7"
-                                                            y="7"
-                                                            width="3"
-                                                            height="3"
-                                                        ></rect>
-                                                        <rect
-                                                            x="14"
-                                                            y="7"
-                                                            width="3"
-                                                            height="3"
-                                                        ></rect>
-                                                        <rect
-                                                            x="7"
-                                                            y="14"
-                                                            width="3"
-                                                            height="3"
-                                                        ></rect>
-                                                        <rect
-                                                            x="14"
-                                                            y="14"
-                                                            width="3"
-                                                            height="3"
-                                                        ></rect>
-                                                    </svg>
-                                                </motion.div>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-3 border rounded-lg shadow-sm bg-card">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="text-[10px] font-normal uppercase font-body">
-                                                    Scan Stats
-                                                </div>
-                                                <div className="text-xs font-normal uppercase text-primary font-body">
-                                                    +12%
-                                                </div>
-                                            </div>
-                                            <div className="h-6 overflow-hidden rounded-md bg-muted">
-                                                <motion.div
-                                                    className="h-full rounded-md bg-gradient-to-r from-primary to-primary/70"
-                                                    initial={{ width: '0%' }}
-                                                    animate={{ width: '75%' }}
-                                                    transition={{
-                                                        duration: 1.5,
-                                                        delay: 0.5,
-                                                        ease: 'easeOut',
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </StaggerItem>
-                                </StaggerContainer>
                             </div>
                         </div>
                     </MotionSection>
@@ -859,12 +742,12 @@ export default function Home() {
                     <MotionSection className="py-8 border-y" direction="none">
                         <div className="container px-4 mx-auto md:px-6">
                             <StaggerContainer
-                                className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-70"
+                                className="flex flex-wrap gap-8 justify-center items-center opacity-70 md:gap-12"
                                 staggerChildren={0.1}
                             >
                                 {[1, 2, 3, 4, 5].map((i) => (
                                     <StaggerItem key={i} direction="up">
-                                        <div className="flex items-center justify-center w-24 h-8">
+                                        <div className="flex justify-center items-center w-24 h-8">
                                             <svg
                                                 viewBox="0 0 75 24"
                                                 fill="currentColor"
@@ -886,7 +769,7 @@ export default function Home() {
                     {/* Video Player Section */}
                     <MotionSection className="py-12 md:py-16" direction="up">
                         <div className="container px-4 mx-auto md:px-6">
-                            <div className="max-w-4xl mx-auto text-center">
+                            <div className="mx-auto max-w-4xl text-center">
                                 <motion.h2
                                     className="mb-8 text-2xl font-normal tracking-tighter uppercase sm:text-3xl md:text-4xl font-body"
                                     initial={{ opacity: 0, y: 20 }}
@@ -903,9 +786,9 @@ export default function Home() {
                                     transition={{ duration: 0.8, delay: 0.2 }}
                                     viewport={{ once: true }}
                                 >
-                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/50 border border-border">
+                                    <div className="overflow-hidden relative rounded-lg border aspect-video bg-muted/50 border-border">
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
-                                        <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="flex absolute inset-0 justify-center items-center">
                                             <Dialog>
                                                 <DialogTrigger asChild>
                                                     <motion.div
@@ -914,7 +797,7 @@ export default function Home() {
                                                         className="inline-block"
                                                     >
                                                         <button
-                                                            className="flex items-center justify-center w-20 h-20 bg-white/90 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                                                            className="flex justify-center items-center w-20 h-20 rounded-full shadow-lg transition-all duration-300 cursor-pointer bg-white/90 hover:bg-white hover:shadow-xl group"
                                                             type="button"
                                                             aria-label="Play video"
                                                         >
@@ -924,7 +807,7 @@ export default function Home() {
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full sm:max-w-[80vw] sm:max-h-[80vh] p-0">
                                                     <div className="relative w-full h-full">
-                                                        <div className="aspect-video w-full h-full bg-black rounded-lg overflow-hidden">
+                                                        <div className="overflow-hidden w-full h-full bg-black rounded-lg aspect-video">
                                                             <iframe
                                                                 src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&modestbranding=1"
                                                                 title="Discover Loro - Complete Business Management Platform"
@@ -937,8 +820,8 @@ export default function Home() {
                                                 </DialogContent>
                                             </Dialog>
                                         </div>
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                                        <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent from-black/30" />
+                                        <div className="absolute right-4 bottom-4 left-4 text-white">
                                             <p className="text-xs uppercase text-white/80 font-body">
                                                 Watch how Loro transforms your business operations
                                             </p>
@@ -966,7 +849,7 @@ export default function Home() {
                                     </h2>
                                 </StaggerItem>
                                 <StaggerItem>
-                                    <p className="max-w-3xl mx-auto mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                    <p className="mx-auto mt-4 max-w-3xl text-xs uppercase text-muted-foreground font-body md:text-xs">
                                         Loro isn't just another CRM. It's your complete business command center that connects every aspect of your operations - from Johannesburg's bustling business district to Cape Town's growing tech sector.
                                     </p>
                                 </StaggerItem>
@@ -978,7 +861,7 @@ export default function Home() {
                             >
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -986,7 +869,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-blue-600 transition-transform duration-300 bg-blue-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-blue-600 bg-blue-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 🎯
                                             </span>
@@ -999,15 +882,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                                                 Automated lead assignment
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                                                 Lead scoring & qualification
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                                                 Follow-up reminders
                                             </div>
                                         </div>
@@ -1016,7 +899,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1024,7 +907,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-green-600 transition-transform duration-300 bg-green-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-green-600 bg-green-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 💰
                                             </span>
@@ -1037,15 +920,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
                                                 Visual pipeline management
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
                                                 Revenue forecasting
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
                                                 Deal probability tracking
                                             </div>
                                         </div>
@@ -1054,7 +937,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1062,7 +945,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-purple-600 transition-transform duration-300 bg-purple-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-purple-600 bg-purple-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 ✅
                                             </span>
@@ -1075,15 +958,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-purple-500 rounded-full"></div>
                                                 Smart task assignment
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-purple-500 rounded-full"></div>
                                                 Priority & deadline tracking
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-purple-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-purple-500 rounded-full"></div>
                                                 Team collaboration tools
                                             </div>
                                         </div>
@@ -1092,7 +975,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1100,7 +983,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-orange-600 transition-transform duration-300 bg-orange-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-orange-600 bg-orange-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 ⚡
                                             </span>
@@ -1113,15 +996,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-orange-500 rounded-full"></div>
                                                 Custom workflow builder
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-orange-500 rounded-full"></div>
                                                 Trigger-based automation
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-orange-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-orange-500 rounded-full"></div>
                                                 Email & SMS automation
                                             </div>
                                         </div>
@@ -1130,7 +1013,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1138,7 +1021,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-indigo-600 transition-transform duration-300 bg-indigo-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-indigo-600 bg-indigo-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 📊
                                             </span>
@@ -1151,15 +1034,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-indigo-500 rounded-full"></div>
                                                 Custom dashboards
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-indigo-500 rounded-full"></div>
                                                 Automated reporting
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-indigo-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-indigo-500 rounded-full"></div>
                                                 Performance insights
                                             </div>
                                         </div>
@@ -1168,7 +1051,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1176,7 +1059,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-teal-600 transition-transform duration-300 bg-teal-100 rounded-full group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-teal-600 bg-teal-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 📱
                                             </span>
@@ -1189,15 +1072,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
                                                 Offline functionality
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
                                                 Real-time GPS tracking
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 bg-teal-500 rounded-full"></div>
+                                                <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
                                                 Native mobile apps
                                             </div>
                                         </div>
@@ -1206,7 +1089,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1214,7 +1097,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 transition-transform duration-300 rounded-full text-rose-600 bg-rose-100 group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-rose-600 bg-rose-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 📄
                                             </span>
@@ -1227,15 +1110,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
                                                 Automated pricing
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
                                                 Custom templates
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-rose-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
                                                 E-signature integration
                                             </div>
                                         </div>
@@ -1244,7 +1127,7 @@ export default function Home() {
 
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border group"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border group"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1252,7 +1135,7 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 transition-transform duration-300 rounded-full text-amber-600 bg-amber-100 group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-amber-600 bg-amber-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
                                                 📦
                                             </span>
@@ -1265,15 +1148,15 @@ export default function Home() {
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
                                                 Real-time stock tracking
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
                                                 Automated reordering
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="w-2 h-2 mr-2 rounded-full bg-amber-500"></div>
+                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
                                                 Supplier management
                                             </div>
                                         </div>
@@ -1308,7 +1191,7 @@ export default function Home() {
                             >
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1320,15 +1203,15 @@ export default function Home() {
                                             Slash Operational Costs
                                         </h3>
                                         <div className="mb-4 space-y-2">
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Admin overhead</span>
                                                 <span className="font-medium text-green-600 font-body uppercase text-[9px]">35% ↓</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Fuel expenses</span>
                                                 <span className="font-medium text-green-600 font-body uppercase text-[9px]">25% ↓</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                 <span className="text-muted-foreground font-body uppercase text-[10px]">Manual reporting</span>
                                                 <span className="font-medium text-green-600 font-body uppercase text-[9px]">15 hrs/week saved</span>
                                             </div>
@@ -1340,7 +1223,7 @@ export default function Home() {
                                 </StaggerItem>
                                 <StaggerItem direction="up" className="mt-4 md:mt-8">
                                             <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1352,15 +1235,15 @@ export default function Home() {
                                             Boost Sales Performance
                                         </h3>
                                         <div className="mb-4 space-y-2">
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Lead conversion</span>
                                                 <span className="font-medium text-blue-600 font-body uppercase text-[9px]">45% ↑</span>
                                                 </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Quote speed</span>
                                                 <span className="font-medium text-blue-600 font-body uppercase text-[9px]">3x faster</span>
                                         </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Repeat business</span>
                                                 <span className="font-medium text-blue-600 font-body uppercase text-[9px]">30% ↑</span>
                                             </div>
@@ -1372,7 +1255,7 @@ export default function Home() {
                                 </StaggerItem>
                                 <StaggerItem direction="up" className="mt-8 md:mt-16">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1384,15 +1267,15 @@ export default function Home() {
                                             Supercharge Team Productivity
                                         </h3>
                                         <div className="mb-4 space-y-2">
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Travel time</span>
                                                 <span className="font-medium text-purple-600 font-body uppercase text-[9px]">40% ↓</span>
                                         </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Quote generation</span>
                                               <span className="font-medium text-purple-600 font-body uppercase text-[9px]">60% faster</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">First-call resolution</span>
                                               <span className="font-medium text-purple-600 font-body uppercase text-[9px]">35% ↑</span>
                                             </div>
@@ -1404,7 +1287,7 @@ export default function Home() {
                                 </StaggerItem>
                                 <StaggerItem direction="up" className="mt-12 md:mt-24">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -1416,15 +1299,15 @@ export default function Home() {
                                             Elevate Customer Satisfaction
                                         </h3>
                                         <div className="mb-4 space-y-2">
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">On-time delivery</span>
                                                 <span className="font-medium text-orange-600 font-body uppercase text-[9px]">95%+</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Response time</span>
                                                 <span className="font-medium text-orange-600 font-body uppercase text-[9px]">&lt;2 hours</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-xs">
+                                            <div className="flex justify-between items-center text-xs">
                                                  <span className="text-muted-foreground font-body uppercase text-[10px]">Customer retention</span>
                                                 <span className="font-medium text-orange-600 font-body uppercase text-[9px]">40% ↑</span>
                                             </div>
@@ -1459,7 +1342,7 @@ export default function Home() {
 
                             {/* Automate What Matters Section */}
                             <div className="mb-16">
-                            <div className="grid items-center gap-8 md:grid-cols-2">
+                            <div className="grid gap-8 items-center md:grid-cols-2">
                                 <motion.div
                                     className="overflow-hidden rounded-xl"
                                     initial={{ opacity: 0, x: -50 }}
@@ -1491,9 +1374,9 @@ export default function Home() {
                                             </h3>
                                         </StaggerItem>
                                     <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex gap-4 items-start">
                                             <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                                 whileHover={{
                                                     scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1513,9 +1396,9 @@ export default function Home() {
                                         </div>
                                     </StaggerItem>
                                     <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex gap-4 items-start">
                                             <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                                 whileHover={{
                                                     scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1535,9 +1418,9 @@ export default function Home() {
                                         </div>
                                     </StaggerItem>
                                     <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex gap-4 items-start">
                                             <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                                 whileHover={{
                                                     scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1562,7 +1445,7 @@ export default function Home() {
 
                             {/* CRM Management Section */}
                             <div className="mb-16">
-                                <div className="grid items-center gap-8 md:grid-cols-2">
+                                <div className="grid gap-8 items-center md:grid-cols-2">
                             <StaggerContainer
                                         className="space-y-6 md:order-2"
                                 staggerChildren={0.15}
@@ -1574,9 +1457,9 @@ export default function Home() {
                                         </h3>
                                 </StaggerItem>
                                         <StaggerItem direction="right">
-                                            <div className="flex items-start gap-4">
+                                            <div className="flex gap-4 items-start">
                                     <motion.div
-                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                    className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                         whileHover={{
                                                 scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1596,9 +1479,9 @@ export default function Home() {
                                             </div>
                                 </StaggerItem>
                                         <StaggerItem direction="right">
-                                            <div className="flex items-start gap-4">
+                                            <div className="flex gap-4 items-start">
                                     <motion.div
-                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                    className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                         whileHover={{
                                                 scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1618,9 +1501,9 @@ export default function Home() {
                                             </div>
                                 </StaggerItem>
                                         <StaggerItem direction="right">
-                                            <div className="flex items-start gap-4">
+                                            <div className="flex gap-4 items-start">
                                         <motion.div
-                                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                    className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
                                             whileHover={{
                                                     scale: 1.1,
                                                         backgroundColor: 'rgba(42, 111, 71, 0.2)',
@@ -1746,7 +1629,7 @@ export default function Home() {
                                 ].map((testimonial, index) => (
                                     <StaggerItem key={index} direction="up">
                                         <motion.div
-                                            className="h-full p-6 shadow-sm bg-card rounded-xl"
+                                            className="p-6 h-full rounded-xl shadow-sm bg-card"
                                             whileHover={{
                                                 y: -10,
                                                 boxShadow:
@@ -1754,9 +1637,9 @@ export default function Home() {
                                             }}
                                             transition={{ duration: 0.3 }}
                                         >
-                                            <div className="flex items-center gap-4 mb-4">
+                                            <div className="flex gap-4 items-center mb-4">
                                                 <motion.div
-                                                    className="flex items-center justify-center w-12 h-12 text-xl font-normal uppercase rounded-full font-body bg-primary/10 text-primary"
+                                                    className="flex justify-center items-center w-12 h-12 text-xl font-normal uppercase rounded-full font-body bg-primary/10 text-primary"
                                                     whileHover={{ scale: 1.1 }}
                                                     transition={{
                                                         duration: 0.3,
@@ -1876,7 +1759,7 @@ export default function Home() {
                                 ].map((customization, index) => (
                                     <StaggerItem key={index} direction="up">
                                         <motion.div
-                                            className="h-full overflow-hidden shadow-sm bg-background rounded-xl"
+                                            className="overflow-hidden h-full rounded-xl shadow-sm bg-background"
                                             whileHover={{
                                                 y: -10,
                                                 boxShadow:
@@ -1891,7 +1774,7 @@ export default function Home() {
                                             >
                                                 {/* Icon */}
                                                 <motion.div
-                                                    className="absolute flex items-center justify-center w-16 h-16 top-4 left-4 rounded-xl bg-white/20 backdrop-blur-sm"
+                                                    className="flex absolute top-4 left-4 justify-center items-center w-16 h-16 rounded-xl backdrop-blur-sm bg-white/20"
                                                     whileHover={{
                                                         scale: 1.1,
                                                         rotate: 5,
@@ -1907,10 +1790,10 @@ export default function Home() {
 
                                                 {/* Demo interface */}
                                                 <div className="w-full max-w-[280px] bg-white dark:bg-black rounded-lg p-4 shadow-lg border border-black/10 dark:border-white/10">
-                                                    <div className="flex items-center gap-3 mb-4">
+                                                    <div className="flex gap-3 items-center mb-4">
                                                         <div className="w-8 h-8 rounded-full bg-primary/20"></div>
                                                         <div className="flex-1">
-                                                            <div className="w-full h-3 mb-1 rounded bg-primary/10"></div>
+                                                            <div className="mb-1 w-full h-3 rounded bg-primary/10"></div>
                                                             <div className="w-2/3 h-2 rounded bg-primary/5"></div>
                                                         </div>
                                                     </div>
@@ -1919,7 +1802,7 @@ export default function Home() {
                                                         <div className="w-4/5 h-2 rounded bg-primary/10"></div>
                                                         <div className="w-3/4 h-2 rounded bg-primary/10"></div>
                                                     </div>
-                                                    <div className="flex items-center justify-between">
+                                                    <div className="flex justify-between items-center">
                                                         <div className="flex gap-1">
                                                             <div className="w-4 h-4 rounded bg-primary/20"></div>
                                                             <div className="w-4 h-4 rounded bg-primary/20"></div>
@@ -1930,9 +1813,9 @@ export default function Home() {
                                                 </div>
                                             </motion.div>
                                             <div className="p-6">
-                                                <div className="flex items-center gap-3 mb-3">
+                                                <div className="flex gap-3 items-center mb-3">
                                                     <motion.div
-                                                        className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10"
+                                                        className="flex justify-center items-center w-10 h-10 rounded-lg bg-primary/10"
                                                         whileHover={{
                                                             scale: 1.1,
                                                             rotate: 5,
@@ -1955,7 +1838,7 @@ export default function Home() {
                                                 <ul className="mb-4 space-y-1">
                                                     {customization.features.map((feature, i) => (
                                                         <li key={i} className="flex items-center text-[10px] uppercase text-muted-foreground font-body">
-                                                            <div className="w-1 h-1 mr-2 rounded-full bg-primary"></div>
+                                                            <div className="mr-2 w-1 h-1 rounded-full bg-primary"></div>
                                                             {feature}
                                                         </li>
                                                     ))}
@@ -1999,264 +1882,6 @@ export default function Home() {
                         </div>
                     </MotionSection>
 
-                    {/* APK Download Section */}
-                    <MotionSection
-                        id="mobile-app"
-                        className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10"
-                        direction="up"
-                    >
-                        <div className="container px-4 mx-auto md:px-6">
-                            <StaggerContainer
-                                className="mb-12 text-center"
-                                staggerChildren={0.2}
-                            >
-                                <StaggerItem>
-                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
-                                        Take LORO Mobile With You
-                                    </h2>
-                                </StaggerItem>
-                                <StaggerItem>
-                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
-                                        Download the LORO Android app and manage your business operations on the go. 100% offline capability with real-time sync when connected.
-                                    </p>
-                                </StaggerItem>
-                            </StaggerContainer>
-
-                            <div className="grid items-center gap-8 md:grid-cols-2">
-                                <StaggerContainer
-                                    className="space-y-6"
-                                    staggerChildren={0.15}
-                                >
-                                    <StaggerItem>
-                                        <h3 className="text-2xl font-normal uppercase font-body">
-                                            Everything You Need in Your Pocket
-                                        </h3>
-                                    </StaggerItem>
-                                    <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
-                                            <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-lg">📱</span>
-                                            </motion.div>
-                                            <div>
-                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
-                                                    Native Android Experience
-                                                </h4>
-                                                <p className="text-xs uppercase text-muted-foreground font-body">
-                                                    Optimized for Android devices with intuitive navigation and smooth performance.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </StaggerItem>
-                                    <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
-                                            <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-lg">🔄</span>
-                                            </motion.div>
-                                            <div>
-                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
-                                                    Offline-First Design
-                                                </h4>
-                                                <p className="text-xs uppercase text-muted-foreground font-body">
-                                                    Work seamlessly without internet connection. Data syncs automatically when you're back online.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </StaggerItem>
-                                    <StaggerItem direction="left">
-                                        <div className="flex items-start gap-4">
-                                            <motion.div
-                                                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-lg">📍</span>
-                                            </motion.div>
-                                            <div>
-                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
-                                                    GPS & Location Tracking
-                                                </h4>
-                                                <p className="text-xs uppercase text-muted-foreground font-body">
-                                                    Real-time GPS tracking for field teams with route optimization and check-in capabilities.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </StaggerItem>
-
-                                    <StaggerItem>
-                                        <motion.div
-                                            className="flex gap-4 pt-6"
-                                            whileHover={{ scale: 1.02 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <motion.div
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="flex-1"
-                                            >
-                                                <Button
-                                                    asChild
-                                                    size="lg"
-                                                    className="w-full text-xs font-normal uppercase font-body bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                                                >
-                                                    <a
-                                                        href="https://storage.googleapis.com/crmapplications/resources/apk.apk"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center justify-center gap-2"
-                                                    >
-                                                        <span>📱</span>
-                                                        <span>Download Android APK</span>
-                                                    </a>
-                                                </Button>
-                                            </motion.div>
-                                        </motion.div>
-                                    </StaggerItem>
-                                </StaggerContainer>
-
-                                <StaggerItem direction="right">
-                                    <motion.div
-                                        className="relative flex items-center justify-center"
-                                        initial={{ opacity: 0, x: 50 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        transition={{ duration: 0.8 }}
-                                        viewport={{ once: true }}
-                                    >
-                                        {/* Phone mockup */}
-                                        <div className="relative">
-                                            <motion.div
-                                                className="relative z-10"
-                                                whileHover={{ scale: 1.02, rotate: 1 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <Image
-                                                    src="/images/covers/mobile.png"
-                                                    alt="LORO Mobile App on Android"
-                                                    width={300}
-                                                    height={600}
-                                                    className="shadow-2xl rounded-3xl"
-                                                />
-                                            </motion.div>
-
-                                            {/* Floating app icons */}
-                                            <motion.div
-                                                className="absolute flex items-center justify-center w-16 h-16 bg-green-500 shadow-lg -top-4 -left-4 rounded-xl"
-                                                animate={{
-                                                    y: [0, -10, 0],
-                                                    rotate: [0, 5, 0],
-                                                }}
-                                                transition={{
-                                                    duration: 3,
-                                                    repeat: Number.POSITIVE_INFINITY,
-                                                    repeatType: 'reverse',
-                                                }}
-                                            >
-                                                <span className="text-2xl text-white">📊</span>
-                                            </motion.div>
-
-                                            <motion.div
-                                                className="absolute flex items-center justify-center w-16 h-16 bg-blue-500 shadow-lg -bottom-6 -right-6 rounded-xl"
-                                                animate={{
-                                                    y: [0, 10, 0],
-                                                    rotate: [0, -5, 0],
-                                                }}
-                                                transition={{
-                                                    duration: 4,
-                                                    repeat: Number.POSITIVE_INFINITY,
-                                                    repeatType: 'reverse',
-                                                    delay: 1,
-                                                }}
-                                            >
-                                                <span className="text-2xl text-white">🎯</span>
-                                            </motion.div>
-
-                                            <motion.div
-                                                className="absolute flex items-center justify-center bg-purple-500 rounded-full shadow-lg top-1/3 -right-8 w-14 h-14"
-                                                animate={{
-                                                    x: [0, 10, 0],
-                                                    scale: [1, 1.1, 1],
-                                                }}
-                                                transition={{
-                                                    duration: 2.5,
-                                                    repeat: Number.POSITIVE_INFINITY,
-                                                    repeatType: 'reverse',
-                                                    delay: 0.5,
-                                                }}
-                                            >
-                                                <span className="text-xl text-white">📱</span>
-                                            </motion.div>
-                                        </div>
-                                    </motion.div>
-                                </StaggerItem>
-                            </div>
-
-                            {/* App features grid */}
-                            <StaggerContainer
-                                className="grid gap-6 mt-16 md:grid-cols-3"
-                                staggerChildren={0.1}
-                            >
-                                {[
-                                    {
-                                        icon: '⚡',
-                                        title: 'Lightning Fast',
-                                        description: 'Optimized performance with instant app loading and smooth transitions.'
-                                    },
-                                    {
-                                        icon: '🔒',
-                                        title: 'Secure & Private',
-                                        description: 'End-to-end encryption with biometric authentication support.'
-                                    },
-                                    {
-                                        icon: '🌐',
-                                        title: 'Works Everywhere',
-                                        description: 'Full functionality even in areas with poor or no internet connectivity.'
-                                    }
-                                ].map((feature, index) => (
-                                    <StaggerItem key={index} direction="up">
-                                        <motion.div
-                                            className="p-6 text-center border shadow-sm bg-card/50 backdrop-blur-sm rounded-xl border-border"
-                                            whileHover={{
-                                                y: -5,
-                                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                            }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <motion.div
-                                                className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10"
-                                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-3xl">{feature.icon}</span>
-                                            </motion.div>
-                                            <h3 className="mb-2 text-lg font-normal uppercase font-body">
-                                                {feature.title}
-                                            </h3>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                {feature.description}
-                                            </p>
-                                        </motion.div>
-                                    </StaggerItem>
-                                ))}
-                            </StaggerContainer>
-                        </div>
-                    </MotionSection>
-
                     <MotionSection
                         id="pricing"
                         className="py-20"
@@ -2284,7 +1909,7 @@ export default function Home() {
                             >
                                 <StaggerItem direction="up">
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -2294,7 +1919,7 @@ export default function Home() {
                                     >
                                         <div className="mb-6">
                                             <motion.div
-                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
                                                 whileHover={{
                                                     scale: 1.1,
                                                     rotate: 5,
@@ -2382,7 +2007,7 @@ export default function Home() {
                                     className="mt-4 md:mt-0"
                                 >
                                     <motion.div
-                                        className="relative h-full p-6 border-2 shadow-lg bg-card rounded-xl border-primary"
+                                        className="relative p-6 h-full rounded-xl border-2 shadow-lg bg-card border-primary"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -2391,7 +2016,7 @@ export default function Home() {
                                         transition={{ duration: 0.3 }}
                                     >
                                         <motion.div
-                                            className="absolute px-4 py-1 text-xs font-normal uppercase transform -translate-x-1/2 rounded-full -top-4 left-1/2 bg-primary text-primary-foreground font-body"
+                                            className="absolute -top-4 left-1/2 px-4 py-1 text-xs font-normal uppercase rounded-full transform -translate-x-1/2 bg-primary text-primary-foreground font-body"
                                             initial={{ y: -10, opacity: 0 }}
                                             whileInView={{ y: 0, opacity: 1 }}
                                             transition={{
@@ -2404,7 +2029,7 @@ export default function Home() {
                                         </motion.div>
                                         <div className="mb-6">
                                             <motion.div
-                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
                                                 whileHover={{
                                                     scale: 1.1,
                                                     rotate: 5,
@@ -2490,7 +2115,7 @@ export default function Home() {
                                     className="mt-8 md:mt-0"
                                 >
                                     <motion.div
-                                        className="h-full p-6 border shadow-sm bg-card rounded-xl border-border"
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
                                         whileHover={{
                                             y: -10,
                                             boxShadow:
@@ -2500,7 +2125,7 @@ export default function Home() {
                                     >
                                         <div className="mb-6">
                                             <motion.div
-                                                className="flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-primary/10"
+                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
                                                 whileHover={{
                                                     scale: 1.1,
                                                     rotate: 5,
@@ -2630,7 +2255,7 @@ export default function Home() {
                         </StaggerContainer>
 
                         {/* FAQ Categories */}
-                        <div className="max-w-4xl mx-auto space-y-12">
+                        <div className="mx-auto space-y-12 max-w-4xl">
                             {/* General FAQs */}
                             <div>
                                 <h3 className="mb-6 text-2xl font-normal text-center uppercase font-body">General</h3>
@@ -2670,9 +2295,9 @@ export default function Home() {
                                                 }}
                                                 transition={{ duration: 0.3 }}
                                             >
-                                                <div className="flex items-start gap-4">
+                                                <div className="flex gap-4 items-start">
                                                     <motion.div
-                                                        className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                        className="flex justify-center items-center mt-1 w-12 h-12 rounded-xl bg-primary/10 shrink-0"
                                                         whileHover={{
                                                             scale: 1.1,
                                                             rotate: 5,
@@ -2737,9 +2362,9 @@ export default function Home() {
                                                 }}
                                                 transition={{ duration: 0.3 }}
                                             >
-                                                <div className="flex items-start gap-4">
+                                                <div className="flex gap-4 items-start">
                                                     <motion.div
-                                                        className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                        className="flex justify-center items-center mt-1 w-12 h-12 rounded-xl bg-primary/10 shrink-0"
                                                         whileHover={{
                                                             scale: 1.1,
                                                             rotate: 5,
@@ -2804,9 +2429,9 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex gap-4 items-start">
                                             <motion.div
-                                                className="flex items-center justify-center w-12 h-12 mt-1 rounded-xl bg-primary/10 shrink-0"
+                                                className="flex justify-center items-center mt-1 w-12 h-12 rounded-xl bg-primary/10 shrink-0"
                                                 whileHover={{
                                                     scale: 1.1,
                                                     rotate: 5,
@@ -2876,7 +2501,7 @@ export default function Home() {
                                 </h2>
                             </StaggerItem>
                             <StaggerItem>
-                                <p className="max-w-2xl mx-auto mt-4 text-xs text-white uppercase font-body">
+                                <p className="mx-auto mt-4 max-w-2xl text-xs text-white uppercase font-body">
                                     Level up your networking with our premium
                                     membership. Get access to exclusive
                                     templates, advanced analytics, and
@@ -2885,7 +2510,7 @@ export default function Home() {
                             </StaggerItem>
                         </StaggerContainer>
                         <motion.div
-                            className="max-w-md mx-auto"
+                            className="mx-auto max-w-md"
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
@@ -2928,7 +2553,7 @@ export default function Home() {
                                 staggerChildren={0.1}
                             >
                                 <StaggerItem>
-                                    <div className="flex items-center gap-2 mb-4">
+                                    <div className="flex gap-2 items-center mb-4">
                                         <span className="text-xl font-normal uppercase font-body">
                                             LORO CRM
                                         </span>

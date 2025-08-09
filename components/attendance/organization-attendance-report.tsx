@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,13 +16,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
-    Loader2,
     RefreshCw,
     Download,
     Users,
     Clock,
-    TrendingUp,
-    TrendingDown,
     Building,
     Calendar,
     BarChart3,
@@ -30,31 +27,16 @@ import {
     PieChart,
     Activity,
     Target,
-    Award,
-    Star,
     Eye,
-    Filter,
     ArrowUp,
     ArrowDown,
     Minus,
     Zap,
-    Timer,
-    CheckCircle,
     AlertCircle,
     Info,
-    MapPin,
-    Briefcase,
     Trophy,
-    ClipboardCheck,
-    Calendar as CalendarIcon,
     FileText,
-    Settings,
-    Coffee,
-    Sunrise,
-    Sunset,
     UserCheck,
-    UserX,
-    Gauge,
     BarChart2,
     TrendingUp as TrendingUpIcon,
     TrendingDown as TrendingDownIcon,
@@ -77,19 +59,11 @@ import {
     Area,
     ComposedChart,
     ReferenceLine,
-    ScatterChart,
-    Scatter,
-    RadialBarChart,
-    RadialBar,
 } from 'recharts';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import {
     OrganizationAttendanceReport,
-    AttendanceReportUser,
-    AttendanceReportBranch,
 } from '@/types/attendance-reports';
-
-const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
 interface OrganizationAttendanceReportProps {
     report: OrganizationAttendanceReport;

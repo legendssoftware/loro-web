@@ -187,7 +187,7 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
                             username: e.target.value,
                         }))
                     }
-                    placeholder="theguy@loro.co.za"
+                    placeholder="theguy@example.co.za"
                     disabled={isLoading}
                     className={cn(
                         'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
@@ -281,12 +281,12 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
                 aria-label="Sign In"
             >
                 {isLoading ? (
-                    <div className="flex items-center justify-center space-x-1">
+                    <div className="flex justify-center items-center space-x-1">
                         <p className="font-normal text-white uppercase">
                             Signing In
                         </p>
                         <Loader2
-                            className="w-4 h-4 mr-2 text-white animate-spin"
+                            className="mr-2 w-4 h-4 text-white animate-spin"
                             size={16}
                             strokeWidth={1.5}
                         />
@@ -501,12 +501,12 @@ const ClientSignInForm = ({ callbackUrl }: ClientSignInFormProps) => {
                 aria-label="Sign In"
             >
                 {isLoading ? (
-                    <div className="flex items-center justify-center space-x-1">
+                    <div className="flex justify-center items-center space-x-1">
                         <p className="font-normal text-white uppercase">
                             Signing In
                         </p>
                         <Loader2
-                            className="w-4 h-4 mr-2 text-white animate-spin"
+                            className="mr-2 w-4 h-4 text-white animate-spin"
                             size={16}
                             strokeWidth={1.5}
                         />
@@ -544,7 +544,7 @@ const SignInForm = () => {
         >
             <PageTransition type="fade">
                 <div
-                    className="relative flex items-center justify-center min-h-screen p-4"
+                    className="flex relative justify-center items-center p-4 min-h-screen"
                     style={{
                         backgroundImage:
                             'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
@@ -555,7 +555,7 @@ const SignInForm = () => {
                 >
                     <div className="absolute inset-0 bg-black/50" />
                     <motion.div
-                        className="relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl"
+                        className="relative p-6 space-y-4 w-full max-w-md rounded-xl shadow-lg backdrop-blur-lg sm:p-8 sm:space-y-6 bg-white/10"
                         variants={itemVariants}
                     >
                         <div className="absolute top-4 left-4">
@@ -582,7 +582,7 @@ const SignInForm = () => {
 
                         <div className="w-full">
                             <div className="flex items-center mb-6">
-                                <div className="relative flex items-center justify-center flex-1 gap-1 mr-4 cursor-pointer">
+                                <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
                                     <div
                                         className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
                                             activeTab === 'employee'
@@ -593,7 +593,7 @@ const SignInForm = () => {
                                             handleTabChange('employee')
                                         }
                                     >
-                                        <Building2 className="w-4 h-4 mr-2" />
+                                        <Building2 className="mr-2 w-4 h-4" />
                                         <span className="text-xs font-thin uppercase font-body">
                                             Employee Portal
                                         </span>
@@ -602,7 +602,7 @@ const SignInForm = () => {
                                         <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                                     )}
                                 </div>
-                                <div className="relative flex items-center justify-center flex-1 gap-1 mr-4 cursor-pointer">
+                                <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
                                     <div
                                         className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
                                             activeTab === 'client'
@@ -613,7 +613,7 @@ const SignInForm = () => {
                                             handleTabChange('client')
                                         }
                                     >
-                                        <Briefcase className="w-4 h-4 mr-2" />
+                                        <Briefcase className="mr-2 w-4 h-4" />
                                         <span className="text-xs font-thin uppercase font-body">
                                             Client Portal
                                         </span>
@@ -667,9 +667,9 @@ const SignInForm = () => {
 // Loading fallback for suspense
 const SignInFallback = () => {
     return (
-        <div className="flex items-center justify-center min-h-screen p-4 bg-gray-900">
+        <div className="flex justify-center items-center p-4 min-h-screen bg-gray-900">
             <div className="flex flex-col items-center space-y-4">
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
                 <p className="text-sm text-white">Loading...</p>
             </div>
         </div>

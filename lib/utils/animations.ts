@@ -144,7 +144,7 @@ export const scaleVariants: Variants = {
         opacity: 1,
         scale: 1,
         transition: {
-            type: 'spring',
+            type: 'timing',
             stiffness: isMobileDevice() ? 400 : 300, // Stiffer spring on mobile for faster animations
             damping: isMobileDevice() ? 25 : 20
         }

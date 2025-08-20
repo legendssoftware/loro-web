@@ -20,14 +20,13 @@ import {
     Zap,
     Play,
     Square,
-    Pause,
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 interface PersonalReportsDashboardProps {
     className?: string;
@@ -106,6 +105,8 @@ interface UserAttendanceStatus {
     message: string;
     startTime: string;
     endTime: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
     nextAction: string;
     isLatestCheckIn: boolean;
     checkedIn: boolean;
@@ -234,31 +235,72 @@ const ShiftManagementCard: React.FC<{
     checkOutLoading: boolean;
     startBreakLoading: boolean;
     endBreakLoading: boolean;
-}> = ({ userStatus, userMetrics, onShiftAction, checkInLoading, checkOutLoading, startBreakLoading, endBreakLoading }) => {
-    const isCheckedIn = userStatus?.checkedIn || false;
-    const isOnBreak = userStatus?.attendance?.status === 'ON_BREAK';
+}> = ({ userStatus, onShiftAction, checkInLoading, checkOutLoading, startBreakLoading, endBreakLoading }) => {
+    // Use the same logic as mobile attendance-button.tsx for determining status
+    const hasBreakStartTime = !!userStatus?.breakStartTime;
+    const hasBreakEndTime = !!userStatus?.breakEndTime;
+    const hasStartTime = !!userStatus?.startTime && userStatus.startTime !== 'null';
+    const hasEndTime = !!userStatus?.endTime && userStatus.endTime !== 'null';
+
+    // Directly use the nextAction field from server if available
+    const serverNextAction = userStatus?.nextAction || '';
+
+    // Determine actual state more accurately - matching mobile logic
+    const isOnBreak =
+        (hasBreakStartTime && !hasBreakEndTime) ||
+        serverNextAction === 'End Break' ||
+        serverNextAction === 'Resume Work';
+
+    // User is checked in if server explicitly says so OR if they have a startTime without endTime
+    // OR if nextAction indicates they should end shift or take break
+    // OR if on break, definitely checked in
+    const isCheckedIn =
+        userStatus?.checkedIn === true ||
+        (hasStartTime && !hasEndTime) ||
+        serverNextAction === 'End Shift' ||
+        serverNextAction === 'Take Break' ||
+        isOnBreak; // If on break, definitely checked in
+
+    // Critical check: If we have both breakStartTime and breakEndTime, and nextAction is End Shift,
+    // then user has ENDED their break and is now working
+    const hasEndedBreakAndIsWorking =
+        hasBreakStartTime &&
+        hasBreakEndTime &&
+        (serverNextAction === 'End Shift' || userStatus?.checkedIn === true);
+
+    // Final break status - handle ended breaks
+    const finalIsOnBreak = isOnBreak && !hasEndedBreakAndIsWorking;
+
+    // Determine available actions based on current state
     const canStartShift = !isCheckedIn;
-    const canEndShift = isCheckedIn && !isOnBreak;
-    const canStartBreak = isCheckedIn && !isOnBreak;
-    const canEndBreak = isOnBreak;
+    const canEndShift = isCheckedIn && !finalIsOnBreak;
+    const canStartBreak = isCheckedIn && !finalIsOnBreak;
+    const canEndBreak = finalIsOnBreak;
 
     const getStatusText = () => {
-        if (isOnBreak) return "On Break";
+        if (finalIsOnBreak) return "On Break";
         if (isCheckedIn) return "Shift Active";
         return "Not Checked In";
     };
 
     const getStatusColor = () => {
-        if (isOnBreak) return "text-orange-600";
+        if (finalIsOnBreak) return "text-orange-600";
         if (isCheckedIn) return "text-green-600";
         return "text-gray-600";
     };
 
     const getNextAction = () => {
-        if (isOnBreak) return "End Break";
+        if (finalIsOnBreak) return "End Break";
         if (isCheckedIn) return "End Shift";
         return "Start Shift";
     };
+
+    const nextAction = getNextAction();
+
+    console.log('Next Action:', nextAction);
+    console.log('Server Next Action:', serverNextAction);
+    console.log('Is Checked In:', isCheckedIn);
+    console.log('Is On Break:', finalIsOnBreak);
 
     return (
         <Card>
@@ -282,61 +324,70 @@ const ShiftManagementCard: React.FC<{
                     </div>
                 </div>
 
-                {/* Shift Controls */}
-                <div className="grid grid-cols-2 gap-3">
-                    {/* Start/End Shift */}
+                {/* Shift Controls - Matching mobile attendance button layout */}
+                <div className="space-y-4">
+                    {/* Single Start Shift Button - Only when not checked in */}
+                    {!isCheckedIn && (
                     <div className="space-y-2">
                         <div className="text-sm font-medium">Shift Control</div>
-                        <div className="flex gap-2">
                             <Button
                                 onClick={() => onShiftAction('start')}
                                 disabled={!canStartShift || checkInLoading}
-                                variant={canStartShift ? "default" : "outline"}
+                                variant="default"
                                 size="sm"
-                                className="flex-1 gap-2"
+                                className="gap-2 w-full bg-green-500 hover:bg-green-600"
                             >
                                 <Play className="w-4 h-4" />
-                                {checkInLoading ? 'Starting...' : 'Start'}
-                            </Button>
-                            <Button
-                                onClick={() => onShiftAction('end')}
-                                disabled={!canEndShift || checkOutLoading}
-                                variant={canEndShift ? "destructive" : "outline"}
-                                size="sm"
-                                className="flex-1 gap-2"
-                            >
-                                <Square className="w-4 h-4" />
-                                {checkOutLoading ? 'Ending...' : 'End'}
+                                {checkInLoading ? 'Starting...' : 'Start Shift'}
                             </Button>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Break Control */}
-                    <div className="space-y-2">
-                        <div className="text-sm font-medium">Break Control</div>
-                        <div className="flex gap-2">
-                            <Button
-                                onClick={() => onShiftAction('startBreak')}
-                                disabled={!canStartBreak || startBreakLoading}
-                                variant={canStartBreak ? "outline" : "outline"}
-                                size="sm"
-                                className="flex-1 gap-2"
-                            >
-                                <Coffee className="w-4 h-4" />
-                                {startBreakLoading ? 'Starting...' : 'Break'}
-                            </Button>
+                    {/* End Break Button - Only when on break */}
+                    {finalIsOnBreak && (
+                        <div className="space-y-2">
+                            <div className="text-sm font-medium">Break Control</div>
                             <Button
                                 onClick={() => onShiftAction('endBreak')}
                                 disabled={!canEndBreak || endBreakLoading}
-                                variant={canEndBreak ? "outline" : "outline"}
+                                variant="destructive"
                                 size="sm"
-                                className="flex-1 gap-2"
+                                className="gap-2 w-full"
                             >
-                                <Play className="w-4 h-4" />
-                                {endBreakLoading ? 'Ending...' : 'Resume'}
+                                <Square className="w-4 h-4" />
+                                {endBreakLoading ? 'Ending...' : 'End My Break'}
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Take Break and End Shift Buttons - Only when checked in and not on break */}
+                    {isCheckedIn && !finalIsOnBreak && (
+                    <div className="space-y-2">
+                            <div className="text-sm font-medium">Shift Control</div>
+                            <div className="grid grid-cols-2 gap-2">
+                            <Button
+                                onClick={() => onShiftAction('startBreak')}
+                                disabled={!canStartBreak || startBreakLoading}
+                                    variant="outline"
+                                size="sm"
+                                    className="gap-2 text-orange-600 border-orange-500 hover:bg-orange-50"
+                            >
+                                <Coffee className="w-4 h-4" />
+                                    {startBreakLoading ? 'Starting...' : 'Take A Break'}
+                            </Button>
+                            <Button
+                                    onClick={() => onShiftAction('end')}
+                                    disabled={!canEndShift || checkOutLoading}
+                                    variant="destructive"
+                                size="sm"
+                                    className="gap-2"
+                            >
+                                    <Square className="w-4 h-4" />
+                                    {checkOutLoading ? 'Ending...' : 'End My Shift'}
                             </Button>
                         </div>
                     </div>
+                    )}
                 </div>
 
                 {/* Status Info */}
@@ -422,7 +473,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
             return response.data;
         },
         onSuccess: (data) => {
-            showSuccessToast('Shift Started!', toast); // Match mobile message
+            showSuccessToast('Shift Started!', toast);
             queryClient.invalidateQueries({ queryKey: ['userAttendanceStatus'] });
             refetchMetrics();
             refetchDaily();
@@ -568,9 +619,9 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                             <p className="text-sm text-muted-foreground">
                                 Failed to load personal reports. Please try again.
                             </p>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={handleRefresh}
                                 className="mt-2"
                             >
@@ -620,8 +671,8 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                             />
                         </PopoverContent>
                     </Popover>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={handleRefresh}
                         className="gap-2"
                     >
@@ -854,4 +905,4 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
             </Card>
         </div>
     );
-}; 
+};

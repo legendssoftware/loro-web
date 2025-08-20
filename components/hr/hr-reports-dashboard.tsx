@@ -750,7 +750,7 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
                 <Button
                     variant="outline"
                     onClick={handleRefresh}
-                    className="hidden gap-2 md:block"
+                    className="hidden gap-2 justify-center items-center md:flex"
                 >
                     <Activity className="w-4 h-4" />
                     Refresh

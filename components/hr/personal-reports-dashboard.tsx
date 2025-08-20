@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-    User, 
-    Clock, 
-    Calendar as CalendarIcon, 
-    TrendingUp, 
-    Coffee, 
+import {
+    User,
+    Clock,
+    Calendar as CalendarIcon,
+    Coffee,
     Target,
     Timer,
     Award,
@@ -21,12 +20,16 @@ import {
     CheckCircle2,
     AlertTriangle,
     Zap,
-    MapPin
+    Play,
+    Square,
+    UserCheck
 } from 'lucide-react';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface PersonalReportsDashboardProps {
     className?: string;
@@ -224,36 +227,16 @@ const PersonalStatsCard: React.FC<{
     </Card>
 );
 
-// Current status component
+// Current status component - Simplified to match mobile version logic
 const CurrentStatusCard: React.FC<{
     status: UserAttendanceStatus;
 }> = ({ status }) => {
-    const getStatusColor = (nextAction: string) => {
-        switch (nextAction) {
-            case 'Start Shift': return 'text-green-600';
-            case 'End Shift': return 'text-blue-600';
-            case 'Take Break': return 'text-orange-600';
-            case 'End Break': return 'text-purple-600';
-            default: return 'text-gray-600';
-        }
-    };
-
-    const getStatusIcon = (nextAction: string) => {
-        switch (nextAction) {
-            case 'Start Shift': return <Activity className="w-4 h-4" />;
-            case 'End Shift': return <CheckCircle2 className="w-4 h-4" />;
-            case 'Take Break': return <Coffee className="w-4 h-4" />;
-            case 'End Break': return <Timer className="w-4 h-4" />;
-            default: return <Clock className="w-4 h-4" />;
-        }
-    };
-
     const formatTime = (timeString: string) => {
         if (!timeString) return 'N/A';
         try {
-            return new Date(timeString).toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            return new Date(timeString).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
         } catch {
             return timeString;
@@ -272,9 +255,9 @@ const CurrentStatusCard: React.FC<{
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Status indicator */}
+                {/* Status indicator - Simplified like mobile version */}
                 <div className="p-4 text-center rounded-lg bg-primary/5">
-                    <div className={`text-lg font-bold ${getStatusColor(status.nextAction)}`}>
+                    <div className={`text-lg font-bold ${status.checkedIn ? 'text-green-600' : 'text-gray-600'}`}>
                         {status.checkedIn ? 'CHECKED IN' : 'AVAILABLE'}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -282,20 +265,7 @@ const CurrentStatusCard: React.FC<{
                     </div>
                 </div>
 
-                {/* Next action */}
-                <div className="flex justify-between items-center p-3 rounded-lg border">
-                    <div className="flex gap-2 items-center">
-                        <div className={getStatusColor(status.nextAction)}>
-                            {getStatusIcon(status.nextAction)}
-                        </div>
-                        <span className="font-medium">Next Action</span>
-                    </div>
-                    <Badge variant="outline" className={getStatusColor(status.nextAction)}>
-                        {status.nextAction}
-                    </Badge>
-                </div>
-
-                {/* Timing details */}
+                {/* Timing details - Show only when checked in */}
                 {status.checkedIn && (
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                         <div>
@@ -317,30 +287,179 @@ const CurrentStatusCard: React.FC<{
     );
 };
 
+// Shift Management Component - Exact mobile version logic
+const ShiftManagement: React.FunctionComponent<{
+    userStatus: any;
+    onShiftAction: (action: 'start' | 'end' | 'startBreak' | 'endBreak') => void;
+    isLoading: boolean;
+}> = ({ userStatus, onShiftAction, isLoading }) => {
+    // Exact mobile version logic - use checkedIn boolean only
+    const isCheckedIn = userStatus?.checkedIn || false;
+    const currentStatus = userStatus?.attendance?.status || 'Not Available';
+    const isOnBreak = currentStatus === 'ON_BREAK';
+
+    const formatTime = (timeString: string) => {
+        if (!timeString) return 'N/A';
+        try {
+            return new Date(timeString).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch {
+            return timeString;
+        }
+    };
+
+    // Exact mobile logic implementation
+    const getLeftButton = () => {
+        if (!isCheckedIn) {
+            // NO SHIFT OR NO BREAK -> SHOW START SHIFT
+            return (
+                <Button
+                    onClick={() => onShiftAction('start')}
+                    disabled={isLoading}
+                    className="gap-2 text-white bg-green-600 hover:bg-green-700"
+                >
+                    <Play className="w-4 h-4" />
+                    Start Shift
+                </Button>
+            );
+        } else if (isCheckedIn && !isOnBreak) {
+            // ON SHIFT & NO BREAK -> SHOW TAKE BREAK
+            return (
+                <Button
+                    onClick={() => onShiftAction('startBreak')}
+                    disabled={isLoading}
+                    className="gap-2 text-white bg-orange-600 hover:bg-orange-700"
+                >
+                    <Coffee className="w-4 h-4" />
+                    Take Break
+                </Button>
+            );
+        } else {
+            // ON BREAK & ON SHIFT -> END BREAK
+            return (
+                <Button
+                    onClick={() => onShiftAction('endBreak')}
+                    disabled={isLoading}
+                    className="gap-2 text-white bg-purple-600 hover:bg-purple-700"
+                >
+                    <Timer className="w-4 h-4" />
+                    End Break
+                </Button>
+            );
+        }
+    };
+
+    const getRightButton = () => {
+        // Always show End Shift button (matches mobile)
+        return (
+            <Button
+                onClick={() => onShiftAction('end')}
+                disabled={isLoading || !isCheckedIn}
+                className={cn("gap-2", isCheckedIn && "bg-red-600 hover:bg-red-700 text-white")}
+                variant={!isCheckedIn ? "outline" : "default"}
+            >
+                <Square className="w-4 h-4" />
+                End Shift
+            </Button>
+        );
+    };
+
+    const getStatusColor = () => {
+        if (isOnBreak) {
+            return 'text-orange-600 bg-orange-100';
+        }
+        return isCheckedIn ? 'text-green-600 bg-green-100' : 'text-gray-600 bg-gray-100';
+    };
+
+    const getStatusText = () => {
+        if (isOnBreak) {
+            return 'On Break';
+        }
+        return isCheckedIn ? 'Currently Working' : 'Not Available';
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex gap-2 items-center">
+                    <UserCheck className="w-5 h-5" />
+                    My Shift Status
+                </CardTitle>
+                <CardDescription>
+                    Manage your work shifts and track attendance
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {/* Current Status */}
+                <div className="p-4 text-center rounded-lg bg-primary/5">
+                    <div className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${getStatusColor()}`}>
+                        <Activity className="mr-2 w-4 h-4" />
+                        {getStatusText()}
+                    </div>
+                </div>
+
+                {/* Action Buttons - Exact mobile logic */}
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Left Button - Dynamic based on exact mobile logic */}
+                    {getLeftButton()}
+
+                    {/* Right Button - Always End Shift */}
+                    {getRightButton()}
+                </div>
+
+                {/* Status Details */}
+                {userStatus && isCheckedIn && (
+                    <div className="pt-4 space-y-2 border-t">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Status:</span>
+                            <span className="font-medium">{currentStatus}</span>
+                        </div>
+                        {userStatus?.startTime && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Started:</span>
+                                <span className="font-medium">{formatTime(userStatus.startTime)}</span>
+                            </div>
+                        )}
+                        {isOnBreak && userStatus?.attendance?.breakStartTime && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Break Started:</span>
+                                <span className="font-medium">{formatTime(userStatus.attendance.breakStartTime)}</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
 export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> = ({
     className = '',
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const queryClient = useQueryClient();
 
     // Fetch personal data
-    const { 
-        data: userMetrics, 
-        isLoading: metricsLoading, 
+    const {
+        data: userMetrics,
+        isLoading: metricsLoading,
         error: metricsError,
-        refetch: refetchMetrics 
+        refetch: refetchMetrics
     } = useUserAttendanceMetrics();
 
-    const { 
-        data: dailyStats, 
+    const {
+        data: dailyStats,
         isLoading: dailyLoading,
-        refetch: refetchDaily 
+        refetch: refetchDaily
     } = useDailyStats(selectedDate);
 
-    const { 
-        data: userStatus, 
+    const {
+        data: userStatus,
         isLoading: statusLoading,
-        refetch: refetchStatus 
+        refetch: refetchStatus
     } = useUserAttendanceStatus();
 
     // Manual refresh function
@@ -348,6 +467,130 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
         refetchMetrics();
         refetchDaily();
         refetchStatus();
+    };
+
+    // Shift management mutations - Updated to match mobile version
+    const checkInMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+
+            if (!profileData) throw new Error('User not found');
+
+            const checkInData = {
+                status: 'present', // Match mobile version (lowercase)
+                checkIn: `${new Date()}`, // Match mobile format
+                checkInLatitude: null, // For web version, set to null (no GPS)
+                checkInLongitude: null, // For web version, set to null (no GPS)
+                checkInNotes: '',
+                branch: { uid: Number(profileData.branch?.uid) },
+                owner: { uid: Number(profileData.uid) }
+            };
+
+            const response = await axiosInstance.post('/att/in', checkInData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Shift started successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['userAttendanceStatus'] });
+            refetchMetrics();
+            refetchDaily();
+            refetchStatus();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to start shift', toast);
+        },
+    });
+
+    const checkOutMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+            if (!profileData) throw new Error('profileData not found');
+
+            const checkOutData = {
+                checkOut: `${new Date()}`, // Match mobile format
+                checkOutNotes: '',
+                checkOutLatitude: null, // For web version, set to null (no GPS)
+                checkOutLongitude: null, // For web version, set to null (no GPS)
+                owner: { uid: Number(profileData.uid) }
+            };
+
+            const response = await axiosInstance.post('/att/out', checkOutData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Shift ended successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['userAttendanceStatus'] });
+            refetchMetrics();
+            refetchDaily();
+            refetchStatus();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to end shift', toast);
+        },
+    });
+
+    // Break management mutations
+    const startBreakMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+
+            if (!profileData) throw new Error('User not found');
+
+            const breakData = {
+                isStartingBreak: true,
+                breakNotes: 'Starting break',
+                owner: { uid: profileData.uid },
+            };
+
+            const response = await axiosInstance.post('/att/break', breakData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Break started successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['userAttendanceStatus'] });
+            refetchStatus();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to start break', toast);
+        },
+    });
+
+    const endBreakMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+
+            if (!profileData) throw new Error('User not found');
+
+            const breakData = {
+                isStartingBreak: false,
+                breakNotes: 'Ending break',
+                owner: { uid: profileData.uid },
+            };
+
+            const response = await axiosInstance.post('/att/break', breakData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Break ended successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['userAttendanceStatus'] });
+            refetchStatus();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to end break', toast);
+        },
+    });
+
+    // Handle shift actions
+    const handleShiftAction = async (action: 'start' | 'end' | 'startBreak' | 'endBreak') => {
+        if (action === 'start') {
+            await checkInMutation.mutateAsync();
+        } else if (action === 'end') {
+            await checkOutMutation.mutateAsync();
+        } else if (action === 'startBreak') {
+            await startBreakMutation.mutateAsync();
+        } else if (action === 'endBreak') {
+            await endBreakMutation.mutateAsync();
+        }
     };
 
     // Loading state
@@ -417,12 +660,12 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
             {/* Header with date selector */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">My Reports</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">Personal Dashboard</h2>
                     <p className="text-muted-foreground">
-                        Personal attendance analytics and performance insights
+                        Attendance analytics and performance insights
                     </p>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="hidden gap-2 items-center md:flex">
                     <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="gap-2">
@@ -457,7 +700,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
             </div>
 
             {/* Key Personal Metrics */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <PersonalStatsCard
                     title="Today's Hours"
                     value={`${dailyWorkHours.toFixed(1)}h`}
@@ -488,11 +731,15 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                 />
             </div>
 
-            {/* Detailed Reports */}
+            {/* Shift Management and Performance */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Current Status */}
+                {/* Shift Management */}
                 {userStatus && (
-                    <CurrentStatusCard status={userStatus} />
+                    <ShiftManagement
+                        userStatus={userStatus}
+                        onShiftAction={handleShiftAction}
+                        isLoading={checkInMutation.isPending || checkOutMutation.isPending || startBreakMutation.isPending || endBreakMutation.isPending}
+                    />
                 )}
 
                 {/* Performance Overview */}
@@ -558,7 +805,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="p-3 text-center rounded-lg border">
                                 <div className="text-lg font-bold text-orange-600">
                                     {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.today || 0)}
@@ -579,7 +826,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                                 {metrics?.breakAnalytics.breakFrequency.toFixed(1) || 0} breaks/shift
                             </div>
                             <div className="text-xs text-muted-foreground">
-                                Longest: {metrics?.breakAnalytics.longestBreak || 0}m • 
+                                Longest: {metrics?.breakAnalytics.longestBreak || 0}m •
                                 Shortest: {metrics?.breakAnalytics.shortestBreak || 0}m
                             </div>
                         </div>
@@ -598,7 +845,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <div className="text-sm font-medium">Avg Check-in</div>
                                 <div className="text-lg font-semibold text-green-600">
@@ -643,7 +890,7 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="p-4 text-center rounded-lg border">
                             <div className="text-2xl font-bold text-primary">
                                 {metrics?.totalHours.allTime.toFixed(1) || 0}h

@@ -4,14 +4,14 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { PageTransition } from '@/components/animations/page-transition';
 import { useState } from 'react';
 import { HRReportsDashboard } from '@/components/hr/hr-reports-dashboard';
-import { PersonalReportsDashboard } from '@/components/reports/personal-reports-dashboard';
+import { PersonalReportsDashboard } from '@/components/hr/personal-reports-dashboard';
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState<string>('hr');
 
     const tabs = [
-        { id: 'hr', label: 'HR' },
-        { id: 'my-reports', label: 'My Reports' },
+        { id: 'hr', label: 'Main Dashboard' },
+        { id: 'my-reports', label: 'Personal' },
     ];
 
     // Handle tab change

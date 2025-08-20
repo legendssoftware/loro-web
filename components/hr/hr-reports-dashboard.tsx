@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { 
-    Users, 
-    Clock, 
-    TrendingUp, 
-    UserCheck, 
+import {
+    Users,
+    Clock,
+    TrendingUp,
+    UserCheck,
     Coffee,
     Target,
     AlertTriangle,
     CheckCircle2,
     Activity,
-    BarChart3
+    BarChart3,
+    Play,
+    Square,
+    UserPlus
 } from 'lucide-react';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 interface HRReportsDashboardProps {
     className?: string;
@@ -99,7 +104,7 @@ interface OrganizationReportData {
 
 // Utility function to format date
 const formatDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    return date?.toISOString()?.split('T')[0];
 };
 
 // Utility function to format time
@@ -107,10 +112,10 @@ const formatTime = (timeString: string): string => {
     if (!timeString || timeString === 'N/A') return 'N/A';
     try {
         const time = new Date(`2000-01-01T${timeString}`);
-        return time.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
+        return time.toLocaleTimeString('en-US', {
+            hour: '2-digit',
             minute: '2-digit',
-            hour12: false 
+            hour12: false
         });
     } catch {
         return timeString;
@@ -120,7 +125,7 @@ const formatTime = (timeString: string): string => {
 // Utility function to parse duration string to hours
 const parseDurationToHours = (duration?: string): number => {
     if (!duration) return 0;
-    const match = duration.match(/(\d+)h\s*(\d+)m/);
+    const match = duration?.match(/(\d+)h\s*(\d+)m/);
     if (match) {
         const hours = parseInt(match[1]);
         const minutes = parseInt(match[2]);
@@ -156,11 +161,65 @@ const useOrganizationTodayReport = () => {
         queryKey: ['organizationTodayReport', today],
         queryFn: async () => {
             const response = await axiosInstance.get(`/att/report?dateFrom=${today}&dateTo=${today}&includeUserDetails=false`);
-            return response.data;
+            return response?.data;
         },
         enabled: !!accessToken,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchInterval: 10 * 60 * 1000, // Auto-refresh every 10 minutes
+        retry: 2,
+    });
+};
+
+// Custom hook for current user status
+const useCurrentUserStatus = () => {
+    const { accessToken, profileData } = useAuthStore();
+
+    return useQuery({
+        queryKey: ['currentUserStatus', profileData?.uid],
+        queryFn: async () => {
+            if (!profileData?.uid) throw new Error('User not found');
+            const response = await axiosInstance.get(`/att/status/${profileData.uid}`);
+            return response.data;
+        },
+        enabled: !!accessToken && !!profileData?.uid,
+        staleTime: 30 * 1000, // 30 seconds
+        refetchInterval: 60 * 1000, // Auto-refresh every minute
+        retry: 2,
+    });
+};
+
+// Custom hook for current user metrics
+const useCurrentUserMetrics = () => {
+    const { accessToken, profileData } = useAuthStore();
+
+    return useQuery({
+        queryKey: ['currentUserMetrics', profileData?.uid],
+        queryFn: async () => {
+            if (!profileData?.uid) throw new Error('User not found');
+            const response = await axiosInstance.get(`/att/metrics/${profileData.uid}`);
+            return response.data;
+        },
+        enabled: !!accessToken && !!profileData?.uid,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchInterval: 10 * 60 * 1000, // Auto-refresh every 10 minutes
+        retry: 2,
+    });
+};
+
+// Custom hook for daily stats
+const useDailyStats = () => {
+    const { accessToken, profileData } = useAuthStore();
+
+    return useQuery({
+        queryKey: ['dailyStats', profileData?.uid],
+        queryFn: async () => {
+            if (!profileData?.uid) throw new Error('User not found');
+            const response = await axiosInstance.get(`/att/daily-stats/${profileData.uid}`);
+            return response.data;
+        },
+        enabled: !!accessToken && !!profileData?.uid,
+        staleTime: 2 * 60 * 1000, // 2 minutes
+        refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
         retry: 2,
     });
 };
@@ -208,19 +267,19 @@ const WorkHoursBreakdown: React.FC<{
     data: TodayAttendanceData;
     orgReport?: OrganizationReportData;
 }> = ({ data, orgReport }) => {
-    const totalHoursWorked = data.checkIns?.reduce((total, record) => {
-        return total + parseDurationToHours(record.duration);
+    const totalHoursWorked = data?.checkIns?.reduce((total, record) => {
+        return total + parseDurationToHours(record?.duration);
     }, 0) || 0;
 
     const totalBreakHours = data.checkIns?.reduce((total, record) => {
-        return total + parseDurationToHours(record.totalBreakTime);
+        return total + parseDurationToHours(record?.totalBreakTime);
     }, 0) || 0;
 
-    const averageHoursPerEmployee = data.checkIns?.length > 0 
-        ? totalHoursWorked / data.checkIns.length 
+    const averageHoursPerEmployee = data.checkIns?.length > 0
+        ? totalHoursWorked / data?.checkIns?.length
         : 0;
 
-    const progressPercentage = Math.min((totalHoursWorked / (data.checkIns?.length * 8 || 1)) * 100, 100);
+    const progressPercentage = Math.min((totalHoursWorked / (data?.checkIns?.length * 8 || 1)) * 100, 100);
 
     return (
         <Card>
@@ -264,23 +323,23 @@ const WorkHoursBreakdown: React.FC<{
                     </div>
                     <Progress value={progressPercentage} className="w-full" />
                     <div className="text-xs text-muted-foreground">
-                        Based on {data.checkIns?.length || 0} employees working today
+                        Based on {data?.checkIns?.length || 0} employees working today
                     </div>
                 </div>
 
                 {/* Timing insights */}
-                {orgReport?.report.organizationMetrics.averageTimes && (
+                {orgReport?.report?.organizationMetrics?.averageTimes && (
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                         <div>
                             <div className="text-sm font-medium">Average Start Time</div>
                             <div className="text-lg font-semibold text-green-600">
-                                {formatTime(orgReport.report.organizationMetrics.averageTimes.startTime)}
+                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.startTime)}
                             </div>
                         </div>
                         <div>
                             <div className="text-sm font-medium">Average End Time</div>
                             <div className="text-lg font-semibold text-blue-600">
-                                {formatTime(orgReport.report.organizationMetrics.averageTimes.endTime)}
+                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.endTime)}
                             </div>
                         </div>
                     </div>
@@ -291,7 +350,7 @@ const WorkHoursBreakdown: React.FC<{
 };
 
 // Employee status overview component
-const EmployeeStatusOverview: React.FC<{
+const EmployeeStatusOverview: React.FunctionComponent<{
     data: TodayAttendanceData;
     orgReport?: OrganizationReportData;
 }> = ({ data, orgReport }) => {
@@ -374,24 +433,152 @@ const EmployeeStatusOverview: React.FC<{
     );
 };
 
+// Personal Metrics Component
+const PersonalMetrics: React.FC<{
+    userMetrics: any;
+    dailyStats: any;
+}> = ({ userMetrics, dailyStats }) => {
+    if (!userMetrics?.metrics) return null;
+
+    const metrics = userMetrics.metrics;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex gap-2 items-center">
+                    <UserPlus className="w-5 h-5" />
+                    My Attendance Metrics
+                </CardTitle>
+                <CardDescription>
+                    Your personal attendance statistics and insights
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {/* Current Streak */}
+                <div className="p-4 text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg dark:from-purple-900/20 dark:to-pink-900/20">
+                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {metrics.attendanceStreak || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Day Streak</div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <div className="p-3 text-center rounded-lg border">
+                        <div className="text-lg font-bold text-blue-600">
+                            {metrics.totalHours?.today || 0}h
+                        </div>
+                        <div className="text-xs text-muted-foreground">Today</div>
+                    </div>
+                    <div className="p-3 text-center rounded-lg border">
+                        <div className="text-lg font-bold text-green-600">
+                            {metrics.totalHours?.thisWeek || 0}h
+                        </div>
+                        <div className="text-xs text-muted-foreground">This Week</div>
+                    </div>
+                    <div className="p-3 text-center rounded-lg border">
+                        <div className="text-lg font-bold text-orange-600">
+                            {metrics.totalHours?.thisMonth || 0}h
+                        </div>
+                        <div className="text-xs text-muted-foreground">This Month</div>
+                    </div>
+                    <div className="p-3 text-center rounded-lg border">
+                        <div className="text-lg font-bold text-purple-600">
+                            {metrics.totalHours?.allTime || 0}h
+                        </div>
+                        <div className="text-xs text-muted-foreground">All Time</div>
+                    </div>
+                </div>
+
+                {/* Average Hours Per Day */}
+                <div className="pt-2 border-t">
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Average Hours/Day</span>
+                        <span className="text-lg font-bold text-primary">
+                            {metrics.averageHoursPerDay?.toFixed(1) || 0}h
+                        </span>
+                    </div>
+                </div>
+
+                {/* Break Analytics */}
+                {metrics.breakAnalytics && (
+                    <div className="pt-2 border-t">
+                        <div className="mb-2 text-sm font-medium">Break Analytics</div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="p-2 text-center bg-blue-50 rounded dark:bg-blue-900/20">
+                                <div className="text-sm font-bold text-blue-600">
+                                    {metrics.breakAnalytics.totalBreakTime?.today || 0}m
+                                </div>
+                                <div className="text-xs text-muted-foreground">Today</div>
+                            </div>
+                            <div className="p-2 text-center bg-green-50 rounded dark:bg-green-900/20">
+                                <div className="text-sm font-bold text-green-600">
+                                    {metrics.breakAnalytics.averageBreakDuration || 0}m
+                                </div>
+                                <div className="text-xs text-muted-foreground">Average</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Daily Stats */}
+                {dailyStats && (
+                    <div className="pt-2 border-t">
+                        <div className="mb-2 text-sm font-medium">Today's Progress</div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Work Time</span>
+                                <span className="font-medium">{dailyStats.dailyWorkTime || 0}h</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span>Break Time</span>
+                                <span className="font-medium">{dailyStats.dailyBreakTime || 0}h</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
 export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
     className = '',
 }) => {
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+    const queryClient = useQueryClient();
 
     // Fetch today's data
-    const { 
-        data: todayAttendance, 
-        isLoading: todayLoading, 
+    const {
+        data: todayAttendance,
+        isLoading: todayLoading,
         error: todayError,
-        refetch: refetchToday 
+        refetch: refetchToday
     } = useTodayAttendance();
 
-    const { 
-        data: orgReport, 
+    const {
+        data: orgReport,
         isLoading: orgLoading,
-        refetch: refetchOrg 
+        refetch: refetchOrg
     } = useOrganizationTodayReport();
+
+    const {
+        data: userStatus,
+        isLoading: userStatusLoading,
+        refetch: refetchUserStatus
+    } = useCurrentUserStatus();
+
+    const {
+        data: userMetrics,
+        isLoading: userMetricsLoading,
+        refetch: refetchUserMetrics
+    } = useCurrentUserMetrics();
+
+    const {
+        data: dailyStats,
+        isLoading: dailyStatsLoading,
+        refetch: refetchDailyStats
+    } = useDailyStats();
 
     // Auto-refresh tracker
     useEffect(() => {
@@ -399,10 +586,79 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
             setLastRefresh(new Date());
             refetchToday();
             refetchOrg();
+            refetchUserStatus();
+            refetchUserMetrics();
+            refetchDailyStats();
         }, 5 * 60 * 1000); // Refresh every 5 minutes
 
         return () => clearInterval(interval);
-    }, [refetchToday, refetchOrg]);
+    }, [refetchToday, refetchOrg, refetchUserStatus, refetchUserMetrics, refetchDailyStats]);
+
+    // Shift management mutations
+    const checkInMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+
+
+            if (!profileData) throw new Error('User not found');
+
+            const checkInData = {
+                userId: profileData.uid,
+                checkIn: new Date(),
+                status: 'PRESENT',
+                branch: { uid: profileData.branch?.uid || 1 }, // Default branch if none
+                owner: { uid: profileData.uid }
+            };
+
+            const response = await axiosInstance.post('/att/in', checkInData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Shift started successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['currentUserStatus'] });
+            queryClient.invalidateQueries({ queryKey: ['todayAttendance'] });
+            refetchToday();
+            refetchOrg();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to start shift', toast);
+        },
+    });
+
+    const checkOutMutation = useMutation({
+        mutationFn: async () => {
+            const { profileData } = useAuthStore.getState();
+            if (!profileData) throw new Error('profileData not found');
+
+            const checkOutData = {
+                profileDataId: profileData.uid,
+                checkOut: new Date(),
+                owner: { uid: profileData.uid }
+            };
+
+            const response = await axiosInstance.post('/att/out', checkOutData);
+            return response.data;
+        },
+        onSuccess: () => {
+            showSuccessToast('Shift ended successfully!', toast);
+            queryClient.invalidateQueries({ queryKey: ['currentUserStatus'] });
+            queryClient.invalidateQueries({ queryKey: ['todayAttendance'] });
+            refetchToday();
+            refetchOrg();
+        },
+        onError: (error: any) => {
+            showErrorToast(error?.response?.data?.message || 'Failed to end shift', toast);
+        },
+    });
+
+    // Handle shift actions
+    const handleShiftAction = async (action: 'start' | 'end') => {
+        if (action === 'start') {
+            await checkInMutation.mutateAsync();
+        } else {
+            await checkOutMutation.mutateAsync();
+        }
+    };
 
     // Manual refresh function
     const handleRefresh = () => {
@@ -454,9 +710,9 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
                             <p className="text-sm text-muted-foreground">
                                 Failed to load HR reports. Please try again.
                             </p>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={handleRefresh}
                                 className="mt-2"
                             >
@@ -472,7 +728,7 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
     // Calculate summary metrics
     const totalEmployees = orgReport?.report.organizationMetrics?.summary?.totalEmployees || 0;
     const activeToday = todayAttendance?.checkIns?.length || 0;
-    const totalWorkHours = todayAttendance?.analytics?.totalWorkHours || 
+    const totalWorkHours = todayAttendance?.analytics?.totalWorkHours ||
                           todayAttendance?.checkIns?.reduce((total, record) => {
                               return total + parseDurationToHours(record?.duration);
                           }, 0) || 0;
@@ -483,15 +739,15 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">HR Reports Dashboard</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">Main Dashboard</h2>
                     <p className="text-muted-foreground">
                         Today's attendance overview and workforce analytics • Last updated: {lastRefresh.toLocaleTimeString()}
                     </p>
                 </div>
-                <Button 
-                    variant="outline" 
+                <Button
+                    variant="outline"
                     onClick={handleRefresh}
-                    className="gap-2"
+                    className="hidden gap-2 md:block"
                 >
                     <Activity className="w-4 h-4" />
                     Refresh
@@ -499,7 +755,7 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
             </div>
 
             {/* Key Metrics Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatsCard
                     title="Total Employees"
                     value={totalEmployees}
@@ -526,20 +782,22 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
                 />
             </div>
 
-            {/* Detailed Reports */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Employee Status Overview */}
-                <EmployeeStatusOverview 
-                    data={todayAttendance!} 
-                    orgReport={orgReport} 
-                />
-
-                {/* Work Hours Breakdown */}
-                <WorkHoursBreakdown 
-                    data={todayAttendance!} 
-                    orgReport={orgReport} 
-                />
+            {/* Shift Management and Detailed Reports */}
+            <div className="space-y-6">
+                {/* Employee Status and Work Hours - Stack on mobile, 2 columns on larger screens */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <EmployeeStatusOverview
+                        data={todayAttendance!}
+                        orgReport={orgReport}
+                    />
+                    <WorkHoursBreakdown
+                        data={todayAttendance!}
+                        orgReport={orgReport}
+                    />
+                </div>
             </div>
+
+
 
             {/* Additional Insights */}
             {orgReport?.report.organizationMetrics.insights && (
@@ -585,4 +843,4 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
             )}
         </div>
     );
-}; 
+};

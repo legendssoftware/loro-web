@@ -88,34 +88,10 @@ export function TopNav() {
         setHelpDropdownOpen(false);
     };
 
-    // Check if navigation should be hidden on this route
+    // Check route conditions first (before any hooks)
     const hideNav = shouldHideNav(pathname);
-
-    // Check if this is the landing page
-    const isLanding = isLandingPage(pathname);
-
-    // Check if this is the dashboard page
+    const showNav = shouldShowNav(pathname);
     const isDashboard = isDashboardPage(pathname);
-
-    // Only show nav on dashboard and other authenticated routes
-    if (hideNav && !isDashboard) {
-        return null;
-    }
-
-    // Show loading state while auth is initializing
-    if (isLoading && isDashboard) {
-        return (
-            <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-transparent mb-5">
-                <div className="flex justify-between items-center px-2 h-16">
-                    <div className="flex gap-2 justify-between items-center w-full md:w-auto">
-                        <span className="text-sm font-normal uppercase font-body text-foreground">
-                            Loading navigation...
-                        </span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     // Check if user is a client by examining profileData or JWT token
     const isClient =
@@ -168,6 +144,30 @@ export function TopNav() {
             return 'U';
         }
     }, [profileData, isClient]);
+
+    // Determine if we should show the nav (all hooks called first)
+    const shouldShow = !hideNav || isDashboard || showNav;
+    const showLoading = isLoading && isDashboard;
+
+    // Conditional rendering after all hooks are called
+    if (!shouldShow) {
+        return null;
+    }
+
+    // Show loading state while auth is initializing on dashboard
+    if (showLoading) {
+        return (
+            <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-transparent mb-5">
+                <div className="flex justify-between items-center px-2 h-16">
+                    <div className="flex gap-2 justify-between items-center w-full md:w-auto">
+                        <span className="text-sm font-normal uppercase font-body text-foreground">
+                            Loading navigation...
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const handleSignOut = async () => {
         try {

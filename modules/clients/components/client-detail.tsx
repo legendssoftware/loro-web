@@ -347,38 +347,38 @@ export function ClientDetail({
         {
             id: 'reports',
             label: 'Reports',
-            icon: <BarChart2 className="w-4 h-4 mr-1" />,
+            icon: <BarChart2 className="mr-1 w-4 h-4" />,
         },
 
         {
             id: 'details',
             label: 'Details',
-            icon: <FileText className="w-4 h-4 mr-1" />,
+            icon: <FileText className="mr-1 w-4 h-4" />,
         },
         {
             id: 'organisation',
             label: 'Organisation',
-            icon: <Building className="w-4 h-4 mr-1" />,
+            icon: <Building className="mr-1 w-4 h-4" />,
         },
         {
             id: 'quotes',
             label: 'Quotations',
-            icon: <FileText className="w-4 h-4 mr-1" />,
+            icon: <FileText className="mr-1 w-4 h-4" />,
         },
         {
             id: 'checkins',
             label: 'Check-ins',
-            icon: <MapPin className="w-4 h-4 mr-1" />,
+            icon: <MapPin className="mr-1 w-4 h-4" />,
         },
         {
             id: 'tasks',
             label: 'Job History',
-            icon: <CheckCircle className="w-4 h-4 mr-1" />,
+            icon: <CheckCircle className="mr-1 w-4 h-4" />,
         },
         {
             id: 'assignees',
             label: 'Assignees',
-            icon: <Users className="w-4 h-4 mr-1" />,
+            icon: <Users className="mr-1 w-4 h-4" />,
         },
     ];
 
@@ -588,7 +588,7 @@ export function ClientDetail({
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 {client.preferredContactMethod && (
                                     <div className="flex items-center">
-                                        <MessageCircle className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <MessageCircle className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.preferredContactMethod}
@@ -602,7 +602,7 @@ export function ClientDetail({
 
                                 {client.preferredLanguage && (
                                     <div className="flex items-center">
-                                        <Languages className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Languages className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.preferredLanguage}
@@ -616,7 +616,7 @@ export function ClientDetail({
 
                                 {client.lastVisitDate && (
                                     <div className="flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Calendar className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(
@@ -632,7 +632,7 @@ export function ClientDetail({
 
                                 {client.nextContactDate && (
                                     <div className="flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Calendar className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(
@@ -648,7 +648,7 @@ export function ClientDetail({
 
                                 {client.birthday && (
                                     <div className="flex items-center">
-                                        <Cake className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Cake className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(client.birthday)}
@@ -662,7 +662,7 @@ export function ClientDetail({
 
                                 {client.anniversaryDate && (
                                     <div className="flex items-center">
-                                        <Award className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Award className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(
@@ -678,7 +678,7 @@ export function ClientDetail({
 
                                 {client.createdAt && (
                                     <div className="flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Calendar className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(client.createdAt)}
@@ -692,7 +692,7 @@ export function ClientDetail({
 
                                 {client.updatedAt && (
                                     <div className="flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Calendar className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(client.updatedAt)}
@@ -714,7 +714,7 @@ export function ClientDetail({
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 {client.creditLimit !== undefined && (
                                     <div className="flex items-center">
-                                        <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <CreditCard className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 R
@@ -736,7 +736,7 @@ export function ClientDetail({
 
                                 {client.outstandingBalance !== undefined && (
                                     <div className="flex items-center">
-                                        <DollarSign className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <DollarSign className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 R
@@ -758,7 +758,7 @@ export function ClientDetail({
 
                                 {client.lifetimeValue !== undefined && (
                                     <div className="flex items-center">
-                                        <TrendingUp className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <TrendingUp className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 R
@@ -780,7 +780,7 @@ export function ClientDetail({
 
                                 {client.discountPercentage !== undefined && (
                                     <div className="flex items-center">
-                                        <Percent className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Percent className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {typeof client.discountPercentage ===
@@ -802,7 +802,7 @@ export function ClientDetail({
 
                                 {client.preferredPaymentMethod && (
                                     <div className="flex items-center">
-                                        <CreditCardIcon className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <CreditCardIcon className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.preferredPaymentMethod.replace(
@@ -819,7 +819,7 @@ export function ClientDetail({
 
                                 {client.paymentTerms && (
                                     <div className="flex items-center">
-                                        <FileText className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <FileText className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.paymentTerms}
@@ -834,7 +834,7 @@ export function ClientDetail({
                                 {client.annualRevenue !== undefined &&
                                     client.annualRevenue !== null && (
                                         <div className="flex items-center">
-                                            <BarChart2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                                            <BarChart2 className="mr-2 w-4 h-4 text-muted-foreground" />
                                             <div>
                                                 <p className="text-xs font-body">
                                                     R
@@ -864,7 +864,7 @@ export function ClientDetail({
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 {client.satisfactionScore !== undefined && (
                                     <div className="flex items-center">
-                                        <Heart className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Heart className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.satisfactionScore} / 10
@@ -878,7 +878,7 @@ export function ClientDetail({
 
                                 {client.npsScore !== undefined && (
                                     <div className="flex items-center">
-                                        <BarChart2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <BarChart2 className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.npsScore}
@@ -892,7 +892,7 @@ export function ClientDetail({
 
                                 {client.acquisitionChannel && (
                                     <div className="flex items-center">
-                                        <ShoppingBag className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <ShoppingBag className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {client.acquisitionChannel.replace(
@@ -909,7 +909,7 @@ export function ClientDetail({
 
                                 {client?.acquisitionDate && (
                                     <div className="flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2 text-muted-foreground" />
+                                        <Calendar className="mr-2 w-4 h-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-xs font-body">
                                                 {formatDate(
@@ -926,7 +926,7 @@ export function ClientDetail({
                                 {client?.geofenceType &&
                                     client?.geofenceType !== 'none' && (
                                         <div className="flex items-center">
-                                            <Map className="w-4 h-4 mr-2 text-muted-foreground" />
+                                            <Map className="mr-2 w-4 h-4 text-muted-foreground" />
                                             <div>
                                                 <p className="text-xs font-body">
                                                     {client?.geofenceType?.toUpperCase()}
@@ -985,9 +985,9 @@ export function ClientDetail({
                                                     key={
                                                         quotation?.uid || index
                                                     }
-                                                    className="p-3 border rounded-md border-border/80"
+                                                    className="p-3 rounded-md border border-border/80"
                                                 >
-                                                    <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex justify-between items-center mb-3">
                                                         <h4 className="text-sm font-medium font-body">
                                                             {quotation.quotationNumber ||
                                                                 `#${quotation.uid || index + 1}`}
@@ -1015,7 +1015,7 @@ export function ClientDetail({
                                                     <div className="grid grid-cols-2 gap-1 mb-2">
                                                         <div className="flex items-center">
                                                             <Calendar
-                                                                className="w-3 h-3 mr-1 text-muted-foreground"
+                                                                className="mr-1 w-3 h-3 text-muted-foreground"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -1032,7 +1032,7 @@ export function ClientDetail({
                                                         </div>
                                                         <div className="flex items-center">
                                                             <Calendar
-                                                                className="w-3 h-3 mr-1 text-muted-foreground"
+                                                                className="mr-1 w-3 h-3 text-muted-foreground"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -1052,7 +1052,7 @@ export function ClientDetail({
                                                     <div className="grid grid-cols-2 gap-1 mb-2">
                                                         <div className="flex items-center">
                                                             <Tag
-                                                                className="w-3 h-3 mr-1 text-muted-foreground"
+                                                                className="mr-1 w-3 h-3 text-muted-foreground"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -1070,7 +1070,7 @@ export function ClientDetail({
                                                         </div>
                                                         <div className="flex items-center">
                                                             <ShoppingBag
-                                                                className="w-3 h-3 mr-1 text-muted-foreground"
+                                                                className="mr-1 w-3 h-3 text-muted-foreground"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -1087,7 +1087,7 @@ export function ClientDetail({
                                                     {quotation.placedBy && (
                                                         <div className="flex items-center mb-2">
                                                             <Users
-                                                                className="w-3 h-3 mr-1 text-muted-foreground"
+                                                                className="mr-1 w-3 h-3 text-muted-foreground"
                                                                 strokeWidth={
                                                                     1.5
                                                                 }
@@ -1108,7 +1108,7 @@ export function ClientDetail({
                                                             </div>
                                                         </div>
                                                     )}
-                                                    <div className="flex items-center justify-between mt-3">
+                                                    <div className="flex justify-between items-center mt-3">
                                                         <div className="text-sm font-medium font-body">
                                                             R{' '}
                                                             {typeof quotation.totalAmount ===
@@ -1144,7 +1144,7 @@ export function ClientDetail({
                                 </div>
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-40 gap-1">
+                            <div className="flex flex-col gap-1 justify-center items-center h-40">
                                 <div className="p-4 text-center rounded-full bg-muted/20">
                                     <FileText
                                         className="w-8 h-8 text-muted-foreground"
@@ -1177,9 +1177,9 @@ export function ClientDetail({
                                             (checkIn: any, index: number) => (
                                                 <div
                                                     key={checkIn?.uid || index}
-                                                    className="p-3 border rounded-md border-border/30"
+                                                    className="p-3 rounded-md border border-border/30"
                                                 >
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex justify-between items-center mb-2">
                                                         <h4 className="text-sm font-medium font-body">
                                                             Check-in #
                                                             {checkIn.uid ||
@@ -1196,7 +1196,7 @@ export function ClientDetail({
                                                     </div>
                                                     <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-2">
                                                         <div className="flex items-center text-xs text-muted-foreground">
-                                                            <Calendar className="w-3 h-3 mr-1" />
+                                                            <Calendar className="mr-1 w-3 h-3" />
                                                             <span>
                                                                 {checkIn.checkInTime &&
                                                                     formatDate(
@@ -1218,7 +1218,7 @@ export function ClientDetail({
                                                         </div>
                                                         {checkIn.owner && (
                                                             <div className="flex items-center text-xs text-muted-foreground">
-                                                                <Users className="w-3 h-3 mr-1" />
+                                                                <Users className="mr-1 w-3 h-3" />
                                                                 <span>
                                                                     By:{' '}
                                                                     {checkIn
@@ -1241,7 +1241,7 @@ export function ClientDetail({
                                                     )}
                                                     {checkIn.location && (
                                                         <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                                                            <MapPin className="w-3 h-3 mr-1" />
+                                                            <MapPin className="mr-1 w-3 h-3" />
                                                             <span className="truncate">
                                                                 {
                                                                     checkIn.location
@@ -1256,7 +1256,7 @@ export function ClientDetail({
                                 </div>
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-40 gap-1">
+                            <div className="flex flex-col gap-1 justify-center items-center h-40">
                                 <div className="p-4 text-center rounded-full bg-muted/20">
                                     <MapPin
                                         className="w-8 h-8 text-muted-foreground"
@@ -1285,7 +1285,7 @@ export function ClientDetail({
                             </h3>
                             {client.organisation ? (
                                 <div className="space-y-4">
-                                    <div className="flex items-start gap-4">
+                                    <div className="flex gap-4 items-start">
                                         <Avatar className="w-16 h-16 border-2 border-primary">
                                             <AvatarImage
                                                 src={client.organisation.logo}
@@ -1322,7 +1322,7 @@ export function ClientDetail({
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         {client.organisation.email && (
                                             <div className="flex items-center">
-                                                <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Mail className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {
@@ -1339,7 +1339,7 @@ export function ClientDetail({
 
                                         {client.organisation.phone && (
                                             <div className="flex items-center">
-                                                <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Phone className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {
@@ -1356,7 +1356,7 @@ export function ClientDetail({
 
                                         {client.organisation.website && (
                                             <div className="flex items-center">
-                                                <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Globe className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {
@@ -1373,7 +1373,7 @@ export function ClientDetail({
 
                                         {client.branch && (
                                             <div className="flex items-center">
-                                                <Building className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Building className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {client.branch.name}
@@ -1432,7 +1432,7 @@ export function ClientDetail({
                                         {client.branch &&
                                             client.branch.email && (
                                                 <div className="flex items-center">
-                                                    <Mail className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                    <Mail className="mr-2 w-4 h-4 text-muted-foreground" />
                                                     <div>
                                                         <p className="text-xs font-body">
                                                             {
@@ -1450,7 +1450,7 @@ export function ClientDetail({
                                         {client.branch &&
                                             client.branch.phone && (
                                                 <div className="flex items-center">
-                                                    <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                    <Phone className="mr-2 w-4 h-4 text-muted-foreground" />
                                                     <div>
                                                         <p className="text-xs font-body">
                                                             {
@@ -1467,7 +1467,7 @@ export function ClientDetail({
 
                                         {client.assignedSalesRep ? (
                                             <div className="flex items-center">
-                                                <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Users className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body">
                                                         {client.assignedSalesRep
@@ -1498,7 +1498,7 @@ export function ClientDetail({
                                             </div>
                                         ) : (
                                             <div className="flex items-center">
-                                                <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                                                <Users className="mr-2 w-4 h-4 text-muted-foreground" />
                                                 <div>
                                                     <p className="text-xs font-body text-muted-foreground">
                                                         No sales rep assigned
@@ -1512,7 +1512,7 @@ export function ClientDetail({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-40 gap-1">
+                                <div className="flex flex-col gap-1 justify-center items-center h-40">
                                     <div className="p-4 text-center rounded-full bg-muted/20">
                                         <Building
                                             className="w-8 h-8 text-muted-foreground"
@@ -1557,7 +1557,7 @@ export function ClientDetail({
                         color: "hsl(var(--chart-5))",
                     },
                     revenueSecondary: {
-                        label: "Revenue Secondary",
+                        label: "Revenue",
                         color: "hsl(var(--chart-1))",
                     },
                 } satisfies ChartConfig;
@@ -1569,7 +1569,7 @@ export function ClientDetail({
                                 <>
                                     {/* Charts Section */}
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div className="p-6 border rounded border-border/80 bg-card">
+                                        <div className="p-6 rounded border border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
                                                 Revenue Trend
                                             </h3>
@@ -1679,7 +1679,7 @@ export function ClientDetail({
                                                     </ChartContainer>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                     <p className="text-xs">
                                                         No quotation data
                                                         available
@@ -1687,7 +1687,7 @@ export function ClientDetail({
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-6 border rounded border-border/80 bg-card">
+                                        <div className="p-6 rounded border border-border/80 bg-card">
                                             <h3 className="text-sm font-normal uppercase font-body">
                                                 Quotation Status Distribution
                                             </h3>
@@ -1810,13 +1810,13 @@ export function ClientDetail({
                                                                             payload[0]
                                                                                 .payload;
                                                                         return (
-                                                                            <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                            <div className="p-3 rounded border shadow-md bg-card dark:bg-background dark:border-border/50">
                                                                                 <p className="text-xs font-normal uppercase font-body">
                                                                                     {
                                                                                         data.name
                                                                                     }
                                                                                 </p>
-                                                                                <div className="flex items-center gap-2">
+                                                                                <div className="flex gap-2 items-center">
                                                                                     <div
                                                                                         className="w-2 h-2 rounded-full"
                                                                                         style={{
@@ -1853,7 +1853,7 @@ export function ClientDetail({
                                                     </ResponsiveContainer>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                                <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                     <p className="text-xs">
                                                         No quotation data
                                                         available
@@ -1867,7 +1867,7 @@ export function ClientDetail({
                         case 'quotations':
                             return (
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                    <div className="p-6 rounded border border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Monthly Quotation Trends
                                         </h3>
@@ -1977,7 +1977,7 @@ export function ClientDetail({
                                                 </ChartContainer>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                            <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                 <p className="text-xs">
                                                     No timeline data available
                                                 </p>
@@ -1985,7 +1985,7 @@ export function ClientDetail({
                                         )}
                                     </div>
 
-                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                    <div className="p-6 rounded border border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Product Performance
                                         </h3>
@@ -2095,7 +2095,7 @@ export function ClientDetail({
                                                 </ChartContainer>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                            <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                 <p className="text-xs">
                                                     No comparison data available
                                                 </p>
@@ -2103,7 +2103,7 @@ export function ClientDetail({
                                         )}
                                     </div>
 
-                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                    <div className="p-6 rounded border border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Quotation Distribution
                                         </h3>
@@ -2173,11 +2173,11 @@ export function ClientDetail({
                                                                         payload[0]
                                                                             .payload;
                                                                     return (
-                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                        <div className="p-3 rounded border shadow-md bg-card dark:bg-background dark:border-border/50">
                                                                             <p className="text-xs font-normal uppercase font-body">
                                                                                 {data.name}
                                                                             </p>
-                                                                            <div className="flex items-center gap-2">
+                                                                            <div className="flex gap-2 items-center">
                                                                                 <div
                                                                                     className="w-2 h-2 rounded-full"
                                                                                     style={{
@@ -2210,7 +2210,7 @@ export function ClientDetail({
                                                 </ResponsiveContainer>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                            <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                 <p className="text-xs">
                                                     No quotation data available
                                                 </p>
@@ -2218,7 +2218,7 @@ export function ClientDetail({
                                         )}
                                     </div>
 
-                                    <div className="p-6 border rounded border-border/80 bg-card">
+                                    <div className="p-6 rounded border border-border/80 bg-card">
                                         <h3 className="text-sm font-normal uppercase font-body">
                                             Customer Segments
                                         </h3>
@@ -2288,11 +2288,11 @@ export function ClientDetail({
                                                                         payload[0]
                                                                             .payload;
                                                                     return (
-                                                                        <div className="p-3 border rounded shadow-md bg-card dark:bg-background dark:border-border/50">
+                                                                        <div className="p-3 rounded border shadow-md bg-card dark:bg-background dark:border-border/50">
                                                                             <p className="text-xs font-normal uppercase font-body">
                                                                                 {data.name}
                                                                             </p>
-                                                                            <div className="flex items-center gap-2">
+                                                                            <div className="flex gap-2 items-center">
                                                                                 <div
                                                                                     className="w-2 h-2 rounded-full"
                                                                                     style={{
@@ -2325,7 +2325,7 @@ export function ClientDetail({
                                                 </ResponsiveContainer>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center justify-center h-64 text-muted-foreground">
+                                            <div className="flex justify-center items-center h-64 text-muted-foreground">
                                                 <p className="text-xs">
                                                     No customer segment data available
                                                 </p>
@@ -2340,14 +2340,14 @@ export function ClientDetail({
                 };
 
                 return (
-                    <div className="flex flex-col justify-start gap-4">
+                    <div className="flex flex-col gap-4 justify-start">
                         {/* Overview Cards */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 rounded border cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Quotation Value
                                 </h3>
-                                <div className="flex flex-row items-center justify-between">
+                                <div className="flex flex-row justify-between items-center">
                                     <div>
                                         <p className="text-2xl font-semibold font-body">
                                             R{' '}
@@ -2372,11 +2372,11 @@ export function ClientDetail({
                                     <DollarSign size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 rounded border cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Total Items
                                 </h3>
-                                <div className="flex items-center justify-between">
+                                <div className="flex justify-between items-center">
                                     <div>
                                         <p className="text-2xl font-semibold font-body">
                                             {client.quotations?.reduce(
@@ -2408,11 +2408,11 @@ export function ClientDetail({
                                     <ShoppingBag size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 rounded border cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Latest Quotation
                                 </h3>
-                                <div className="flex items-center justify-between">
+                                <div className="flex justify-between items-center">
                                     <div>
                                         <p className="text-2xl font-semibold font-body">
                                             R{' '}
@@ -2430,11 +2430,11 @@ export function ClientDetail({
                                     <FileText size={30} strokeWidth={1.5} />
                                 </div>
                             </div>
-                            <div className="flex flex-col justify-center p-4 border rounded cursor-pointer bg-card/50 border-border/80">
+                            <div className="flex flex-col justify-center p-4 rounded border cursor-pointer bg-card/50 border-border/80">
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Average Quotation Value
                                 </h3>
-                                <div className="flex items-end justify-between">
+                                <div className="flex justify-between items-end">
                                     <div>
                                         <p className="text-2xl font-semibold font-body">
                                             R{' '}
@@ -2467,7 +2467,7 @@ export function ClientDetail({
                         </div>
 
                         {/* Tab Navigation */}
-                        <div className="flex w-full overflow-hidden border-b border-border/10">
+                        <div className="flex overflow-hidden w-full border-b border-border/10">
                             <button
                                 className={`px-8 py-3 text-xs font-normal uppercase border-b-2 font-body ${activeReportTab === 'overview' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}
                                 onClick={() => setActiveReportTab('overview')}
@@ -2488,7 +2488,7 @@ export function ClientDetail({
                 );
             case 'tasks':
                 return (
-                    <div className="flex flex-col items-center justify-center h-40 gap-1">
+                    <div className="flex flex-col gap-1 justify-center items-center h-40">
                         <div className="p-4 text-center rounded-full bg-muted/20">
                             <CheckCircle
                                 className="w-8 h-8 text-muted-foreground"
@@ -2510,13 +2510,13 @@ export function ClientDetail({
                 return (
                     <div className="space-y-6">
                         {client.assignedSalesRep ? (
-                            <div className="p-4 border rounded-lg bg-card/50 border-border/80">
+                            <div className="p-4 rounded-lg border bg-card/50 border-border/80">
                                 <h3 className="mb-4 text-xs font-normal uppercase font-body">
                                     Assigned Team Members
                                 </h3>
                                 <div className="space-y-4">
-                                    <div className="p-3 border rounded-md border-border/30">
-                                        <div className="flex items-start gap-3">
+                                    <div className="p-3 rounded-md border border-border/30">
+                                        <div className="flex gap-3 items-start">
                                             <Avatar className="w-10 h-10 border border-primary">
                                                 <AvatarImage
                                                     src={
@@ -2538,7 +2538,7 @@ export function ClientDetail({
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex justify-between items-center">
                                                     <h4 className="text-sm font-medium uppercase font-body">
                                                         {client.assignedSalesRep
                                                             .name ||
@@ -2557,7 +2557,7 @@ export function ClientDetail({
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-2 mt-2">
                                                     <div className="flex items-center text-xs text-muted-foreground">
-                                                        <Mail className="w-3 h-3 mr-1" />
+                                                        <Mail className="mr-1 w-3 h-3" />
                                                         <span className="text-[10px] font-normal uppercase font-body">
                                                             {
                                                                 client
@@ -2567,7 +2567,7 @@ export function ClientDetail({
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center text-xs text-muted-foreground">
-                                                        <Phone className="w-3 h-3 mr-1" />
+                                                        <Phone className="mr-1 w-3 h-3" />
                                                         <span className="text-[10px] font-normal uppercase font-body">
                                                             {
                                                                 client
@@ -2577,7 +2577,7 @@ export function ClientDetail({
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center text-xs text-muted-foreground">
-                                                        <Users className="w-3 h-3 mr-1" />
+                                                        <Users className="mr-1 w-3 h-3" />
                                                         <span className="text-[10px] font-normal uppercase font-body">
                                                             Access Level:{' '}
                                                             {
@@ -2594,7 +2594,7 @@ export function ClientDetail({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-40 gap-1">
+                            <div className="flex flex-col gap-1 justify-center items-center h-40">
                                 <div className="p-4 text-center rounded-full bg-muted/20">
                                     <Users
                                         className="w-8 h-8 text-muted-foreground"
@@ -2626,7 +2626,7 @@ export function ClientDetail({
                 <DialogContent className="min-w-[100vw] h-[100vh] overflow-hidden bg-card sm:rounded-none p-4 flex flex-col justify-between gap-4 bg-card">
                     <div className="flex flex-col justify-start gap-4 h-[90vh] overflow-hidden">
                         <DialogHeader className="flex flex-row items-start justify-between h-[7vh]">
-                            <div className="flex flex-row items-center gap-3">
+                            <div className="flex flex-row gap-3 items-center">
                                 <Avatar className="w-16 h-16 border-2 border-primary">
                                     <AvatarImage
                                         src={client.logo}
@@ -2641,7 +2641,7 @@ export function ClientDetail({
                                     <DialogTitle className="text-xl font-semibold uppercase font-body">
                                         {client?.name}
                                     </DialogTitle>
-                                    <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex gap-2 items-center mt-1">
                                         {renderBranchInfo()}
                                         <Badge
                                             variant="outline"
@@ -2665,7 +2665,7 @@ export function ClientDetail({
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex gap-2 items-center">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -2683,7 +2683,7 @@ export function ClientDetail({
                                 {tabs.map((tab) => (
                                     <div
                                         key={tab?.id}
-                                        className="relative flex items-center justify-center gap-1 mr-8 cursor-pointer w-28 md:w-36"
+                                        className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer md:w-36"
                                     >
                                         <div
                                             className={`mb-3 font-body px-0 font-normal flex items-center ${
@@ -2713,12 +2713,12 @@ export function ClientDetail({
                     </div>
                     {/* Action Buttons */}
                     <DialogFooter className="flex flex-col flex-wrap gap-4 h-[10vh] border-t dark:border-gray-700 p-2">
-                        <div className="flex flex-col items-center justify-center w-full">
+                        <div className="flex flex-col justify-center items-center w-full">
                             <p className="text-xs font-normal uppercase text-muted-foreground font-body">
                                 Quick Actions
                             </p>
                         </div>
-                        <div className="flex flex-wrap justify-center w-full gap-3">
+                        <div className="flex flex-wrap gap-3 justify-center w-full">
                             {/* Warning/Pending Button */}
                             {onUpdateStatus && (
                                 <Button
@@ -2734,7 +2734,7 @@ export function ClientDetail({
                                 >
                                     <AlertCircle
                                         strokeWidth={1.2}
-                                        className="text-yellow-600 w-7 h-7 dark:text-yellow-400"
+                                        className="w-7 h-7 text-yellow-600 dark:text-yellow-400"
                                     />
                                 </Button>
                             )}
@@ -2754,7 +2754,7 @@ export function ClientDetail({
                                 >
                                     <CheckCircle
                                         strokeWidth={1.2}
-                                        className="text-green-600 w-7 h-7 dark:text-green-400"
+                                        className="w-7 h-7 text-green-600 dark:text-green-400"
                                     />
                                 </Button>
                             )}
@@ -2774,7 +2774,7 @@ export function ClientDetail({
                                 >
                                     <Ban
                                         strokeWidth={1.2}
-                                        className="text-red-600 w-7 h-7 dark:text-red-400"
+                                        className="w-7 h-7 text-red-600 dark:text-red-400"
                                     />
                                 </Button>
                             )}
@@ -2783,13 +2783,13 @@ export function ClientDetail({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="text-purple-800 border-purple-200 rounded-full w-14 h-14 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
+                                className="w-14 h-14 text-purple-800 rounded-full border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-300 dark:hover:bg-purple-900/20 dark:border-purple-900/30"
                                 onClick={handleCalendarAction}
                                 title="Schedule"
                             >
                                 <Calendar
                                     strokeWidth={1.2}
-                                    className="text-purple-600 w-7 h-7 dark:text-purple-400"
+                                    className="w-7 h-7 text-purple-600 dark:text-purple-400"
                                 />
                             </Button>
 
@@ -2797,13 +2797,13 @@ export function ClientDetail({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="text-blue-800 border-blue-200 rounded-full w-14 h-14 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
+                                className="w-14 h-14 text-blue-800 rounded-full border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:border-blue-900/30"
                                 onClick={handleEditClick}
                                 title="Edit Client"
                             >
                                 <Edit
                                     strokeWidth={1.2}
-                                    className="text-blue-600 w-7 h-7 dark:text-blue-400"
+                                    className="w-7 h-7 text-blue-600 dark:text-blue-400"
                                 />
                             </Button>
 
@@ -2812,13 +2812,13 @@ export function ClientDetail({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="text-red-800 border-red-200 rounded-full w-14 h-14 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
+                                    className="w-14 h-14 text-red-800 rounded-full border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-300 dark:hover:bg-red-900/20 dark:border-red-900/30"
                                     onClick={handleInitiateDelete}
                                     title="Delete Client"
                                 >
                                     <Trash
                                         strokeWidth={1.2}
-                                        className="text-red-600 w-7 h-7 dark:text-red-400"
+                                        className="w-7 h-7 text-red-600 dark:text-red-400"
                                     />
                                 </Button>
                             )}
@@ -2843,7 +2843,7 @@ export function ClientDetail({
                     open={showStatusChangeConfirmation}
                     onOpenChange={() => setShowStatusChangeConfirmation(false)}
                 >
-                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                    <DialogContent className="p-6 max-w-md text-white border-0 bg-black/90">
                         <DialogTitle className="sr-only">
                             Confirm Status Change
                         </DialogTitle>
@@ -2862,7 +2862,7 @@ export function ClientDetail({
                                 </span>
                                 ?
                             </p>
-                            <div className="flex justify-center gap-4">
+                            <div className="flex gap-4 justify-center">
                                 <Button
                                     variant="outline"
                                     className="w-32 h-10 text-xs text-white uppercase bg-red-600 border-0 font-body hover:bg-red-700"
@@ -2889,7 +2889,7 @@ export function ClientDetail({
                     open={showDeleteConfirmation}
                     onOpenChange={() => setShowDeleteConfirmation(false)}
                 >
-                    <DialogContent className="max-w-md p-6 text-white border-0 bg-black/90">
+                    <DialogContent className="p-6 max-w-md text-white border-0 bg-black/90">
                         <DialogTitle className="sr-only">
                             Confirm Delete Client
                         </DialogTitle>
@@ -2901,7 +2901,7 @@ export function ClientDetail({
                                 ARE YOU SURE YOU WANT TO DELETE THIS CLIENT?
                                 THIS ACTION CANNOT BE UNDONE.
                             </p>
-                            <div className="flex justify-center gap-4">
+                            <div className="flex gap-4 justify-center">
                                 <Button
                                     variant="outline"
                                     className="w-32 h-10 text-xs text-white uppercase bg-red-600 border-0 font-body hover:bg-red-700"
@@ -2926,7 +2926,7 @@ export function ClientDetail({
 
             {errors && Object.keys(errors).length > 0 && (
                 <div className="p-3 mb-4 rounded-md bg-red-100/10">
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                         <AlertTriangle className="w-4 h-4 text-red-500" />
                         <p className="text-[8px] font-normal uppercase text-red-500 font-body">
                             Please fix the following errors:

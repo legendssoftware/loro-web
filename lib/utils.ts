@@ -105,7 +105,7 @@ export const shouldHideNav = (pathname: string) => {
 
 export const shouldShowNav = (pathname: string) => {
     // Show nav on dashboard and other protected routes
-    return navRoutes.some(route => pathname.startsWith(route));
+    return navRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
 };
 
 export const isLandingPage = (pathname: string) => {
@@ -113,5 +113,5 @@ export const isLandingPage = (pathname: string) => {
 };
 
 export const isDashboardPage = (pathname: string) => {
-    return pathname === '/dashboard' || pathname.startsWith('/dashboard');
+    return pathname === '/dashboard' || pathname.startsWith('/dashboard/');
 };

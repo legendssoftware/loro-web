@@ -148,39 +148,6 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const isLanding = isLandingPage(pathname);
     const isDashboard = isDashboardPage(pathname);
 
-    // Don't render if navigation should be hidden and we're not on dashboard
-    if (hideNav && !isDashboard && !showNav) {
-        return null;
-    }
-
-    // Show loading state while auth is initializing on dashboard
-    if (isLoading && isDashboard) {
-        return (
-            <Sheet open={isOpen} onOpenChange={onClose}>
-                <SheetContent
-                    side="left"
-                    className={cn(
-                        'flex flex-col mx-4 my-auto rounded w-[80px] h-[95vh] md:h-[98vh] md:my-[1vh]',
-                        'gap-0 p-0 border shadow-lg',
-                    )}
-                >
-                    <SheetHeader className="flex justify-between items-center p-6 border-b border-border/10">
-                        <SheetTitle asChild>
-                            <span className="text-sm font-bold uppercase font-body text-card-foreground">
-                                Loading...
-                            </span>
-                        </SheetTitle>
-                    </SheetHeader>
-                    <div className="flex-1 p-2">
-                        <div className="flex flex-col space-y-1">
-                            <span className="text-xs text-muted-foreground">Loading navigation...</span>
-                        </div>
-                    </div>
-                </SheetContent>
-            </Sheet>
-        );
-    }
-
     // Check if user is a client by examining profileData or JWT token
     const isClient =
         profileData?.accessLevel === 'client' ||
@@ -212,6 +179,43 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             return false;
         })();
 
+    // Conditional rendering logic - always call all hooks before any returns
+    const shouldRender = !hideNav || isDashboard || showNav;
+    const showLoading = isLoading && isDashboard;
+
+    // Main render logic - all hooks called first
+    if (!shouldRender) {
+        return null;
+    }
+
+    // Loading state
+    if (showLoading) {
+        return (
+            <Sheet open={isOpen} onOpenChange={onClose}>
+                <SheetContent
+                    side="left"
+                    className={cn(
+                        'flex flex-col mx-4 my-auto rounded w-[80px] h-[95vh] md:h-[98vh] md:my-[1vh]',
+                        'gap-0 p-0 border shadow-lg',
+                    )}
+                >
+                    <SheetHeader className="flex justify-between items-center p-6 border-b border-border/10">
+                        <SheetTitle asChild>
+                            <span className="text-sm font-bold uppercase font-body text-card-foreground">
+                                Loading...
+                            </span>
+                        </SheetTitle>
+                    </SheetHeader>
+                    <div className="flex-1 p-2">
+                        <div className="flex flex-col space-y-1">
+                            <span className="text-xs text-muted-foreground">Loading navigation...</span>
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+        );
+    }
+
     const handleSignOut = async () => {
         try {
             signOut();
@@ -233,7 +237,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
             toast.remove(toastId);
-            window.location.href = '/'; 
+            window.location.href = '/';
         } catch {
             toast.error('Failed to sign out', {
                 style: {
@@ -355,7 +359,6 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                     item.allowedRoles &&
                                     !hasRole(item.allowedRoles)
                                 ) {
-                                    console.log('stopped here');
                                     return null;
                                 }
 
@@ -364,7 +367,6 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                     item.feature &&
                                     !hasPermission(item.feature)
                                 ) {
-                                    console.log('stopped here 2');
                                     return null;
                                 }
 

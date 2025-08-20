@@ -5,14 +5,36 @@ import { PageTransition } from '@/components/animations/page-transition';
 import { useState } from 'react';
 import { HRReportsDashboard } from '@/components/hr/hr-reports-dashboard';
 import { PersonalReportsDashboard } from '@/components/hr/personal-reports-dashboard';
+import { useAuthStore } from '@/store/auth-store';
+import { AccessLevel } from '@/types/auth';
 
 export default function Home() {
-    const [activeTab, setActiveTab] = useState<string>('hr');
+    const { profileData } = useAuthStore();
 
-    const tabs = [
-        { id: 'hr', label: 'Main Dashboard' },
-        { id: 'my-reports', label: 'Personal' },
+    // Define all possible tabs
+    const allTabs = [
+        { id: 'hr', label: 'Main Dashboard', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR] },
+        { id: 'my-reports', label: 'Personal', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER] },
     ];
+
+    // Filter tabs based on user access level
+    const tabs = allTabs.filter(tab =>
+        tab.allowedRoles.includes(profileData?.accessLevel as AccessLevel)
+    );
+
+    // Set default active tab based on user permissions
+    const getDefaultTab = () => {
+        if (profileData?.accessLevel === AccessLevel.USER ||
+            profileData?.accessLevel === AccessLevel.OWNER ||
+            profileData?.accessLevel === AccessLevel.TECHNICIAN ||
+            profileData?.accessLevel === AccessLevel.SUPPORT ||
+            profileData?.accessLevel === AccessLevel.DEVELOPER) {
+            return 'my-reports'; // Default to Personal for regular users
+        }
+        return 'hr'; // Default to Main Dashboard for admins/managers
+    };
+
+    const [activeTab, setActiveTab] = useState<string>(getDefaultTab);
 
     // Handle tab change
     const handleTabChange = (tabId: string) => {
@@ -22,6 +44,15 @@ export default function Home() {
     };
 
     const renderTabContent = () => {
+        // Check if user has access to the active tab
+        const hasAccessToTab = tabs.some(tab => tab.id === activeTab);
+
+        // If user doesn't have access to current tab, switch to first available tab
+        if (!hasAccessToTab && tabs.length > 0) {
+            setActiveTab(tabs[0].id);
+            return null; // Re-render will happen with correct tab
+        }
+
         switch (activeTab) {
             case 'hr':
                 return <HRReportsDashboard />;
@@ -50,30 +81,32 @@ export default function Home() {
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
-                        {tabs.map((tab) => (
-                            <div
-                                key={tab?.id}
-                                className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
-                            >
+                    {tabs.length > 0 && (
+                        <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
+                            {tabs.map((tab) => (
                                 <div
-                                    className={`mb-3 font-body px-0 font-normal ${
-                                        activeTab === tab.id
-                                            ? 'text-primary dark:text-primary'
-                                            : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
-                                    }`}
-                                    onClick={() => handleTabChange(tab?.id)}
+                                    key={tab.id}
+                                    className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
                                 >
-                                    <span className="text-xs font-thin uppercase font-body">
-                                        {tab?.label}
-                                    </span>
+                                    <div
+                                        className={`mb-3 font-body px-0 font-normal ${
+                                            activeTab === tab.id
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
+                                        }`}
+                                        onClick={() => handleTabChange(tab.id)}
+                                    >
+                                        <span className="text-xs font-thin uppercase font-body">
+                                            {tab.label}
+                                        </span>
+                                    </div>
+                                    {activeTab === tab.id && (
+                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary" />
+                                    )}
                                 </div>
-                                {activeTab === tab?.id && (
-                                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary" />
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                     {/* Tab Content */}
                     {renderTabContent()}
                 </div>

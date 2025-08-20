@@ -19,11 +19,10 @@ import { signInSchema } from '@/lib/schema/auth';
 import { useAuthStore } from '@/store/auth-store';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { PublicOnlyRoute } from '@/components/auth/public-only-route';
+
 import { PageTransition } from '@/components/animations/page-transition';
 import { itemVariants } from '@/lib/utils/animations';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
@@ -43,7 +42,6 @@ interface UserSignInFormProps {
 
 const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
-    const router = useRouter();
 
     const { signIn, isLoading, error, clearAuthError, profileData } = useAuthStore();
 
@@ -535,132 +533,128 @@ const SignInForm = () => {
     const handleGoBack = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent default navigation behavior
         // Force navigation to the landing page without preserving any query parameters
-        window.location.replace('/landing-page');
+        router.push('/');
     };
 
     return (
-        <PublicOnlyRoute
-            redirectTo={callbackUrl.startsWith('/') ? callbackUrl : '/'}
-        >
-            <PageTransition type="fade">
-                <div
-                    className="flex relative justify-center items-center p-4 min-h-screen"
-                    style={{
-                        backgroundImage:
-                            'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'bottom center',
-                        backgroundRepeat: 'no-repeat',
-                    }}
+        <PageTransition type="fade">
+            <div
+                className="flex relative justify-center items-center p-4 min-h-screen"
+                style={{
+                    backgroundImage:
+                        'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'bottom center',
+                    backgroundRepeat: 'no-repeat',
+                }}
+            >
+                <div className="absolute inset-0 bg-black/50" />
+                <motion.div
+                    className="relative p-6 space-y-4 w-full max-w-md rounded-xl shadow-lg backdrop-blur-lg sm:p-8 sm:space-y-6 bg-white/10"
+                    variants={itemVariants}
                 >
-                    <div className="absolute inset-0 bg-black/50" />
-                    <motion.div
-                        className="relative p-6 space-y-4 w-full max-w-md rounded-xl shadow-lg backdrop-blur-lg sm:p-8 sm:space-y-6 bg-white/10"
-                        variants={itemVariants}
-                    >
-                        <div className="absolute top-4 left-4">
-                            <a
-                                href="/landing"
-                                onClick={handleGoBack}
-                                className="block"
+                    <div className="absolute top-4 left-4">
+                        <a
+                            href="/landing"
+                            onClick={handleGoBack}
+                            className="block"
+                        >
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                type="button"
+                                className="rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                                aria-label="Go back to landing page"
                             >
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    type="button"
-                                    className="rounded-full text-white/70 hover:text-white hover:bg-white/10"
-                                    aria-label="Go back to landing page"
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                        </a>
+                    </div>
+
+                    <h1 className="text-2xl font-normal text-center text-white sm:text-3xl font-heading">
+                        LORO CRM
+                    </h1>
+
+                    <div className="w-full">
+                        <div className="flex items-center mb-6">
+                            <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
+                                <div
+                                    className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
+                                        activeTab === 'employee'
+                                            ? 'text-primary'
+                                            : 'text-white/70 hover:text-white'
+                                    }`}
+                                    onClick={() =>
+                                        handleTabChange('employee')
+                                    }
                                 >
-                                    <ArrowLeft className="w-5 h-5" />
-                                </Button>
-                            </a>
-                        </div>
-
-                        <h1 className="text-2xl font-normal text-center text-white sm:text-3xl font-heading">
-                            LORO CRM
-                        </h1>
-
-                        <div className="w-full">
-                            <div className="flex items-center mb-6">
-                                <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
-                                    <div
-                                        className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
-                                            activeTab === 'employee'
-                                                ? 'text-primary'
-                                                : 'text-white/70 hover:text-white'
-                                        }`}
-                                        onClick={() =>
-                                            handleTabChange('employee')
-                                        }
-                                    >
-                                        <Building2 className="mr-2 w-4 h-4" />
-                                        <span className="text-xs font-thin uppercase font-body">
-                                            Employee Portal
-                                        </span>
-                                    </div>
-                                    {activeTab === 'employee' && (
-                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
-                                    )}
+                                    <Building2 className="mr-2 w-4 h-4" />
+                                    <span className="text-xs font-thin uppercase font-body">
+                                        Employee Portal
+                                    </span>
                                 </div>
-                                <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
-                                    <div
-                                        className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
-                                            activeTab === 'client'
-                                                ? 'text-primary'
-                                                : 'text-white/70 hover:text-white'
-                                        }`}
-                                        onClick={() =>
-                                            handleTabChange('client')
-                                        }
-                                    >
-                                        <Briefcase className="mr-2 w-4 h-4" />
-                                        <span className="text-xs font-thin uppercase font-body">
-                                            Client Portal
-                                        </span>
-                                    </div>
-                                    {activeTab === 'client' && (
-                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="mt-4">
                                 {activeTab === 'employee' && (
-                                    <UserSignInForm
-                                        callbackUrl={callbackUrl}
-                                        reason={reason}
-                                    />
+                                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                                 )}
+                            </div>
+                            <div className="flex relative flex-1 gap-1 justify-center items-center mr-4 cursor-pointer">
+                                <div
+                                    className={`mb-3 font-body px-0 font-normal flex justify-center items-center w-full ${
+                                        activeTab === 'client'
+                                            ? 'text-primary'
+                                            : 'text-white/70 hover:text-white'
+                                    }`}
+                                    onClick={() =>
+                                        handleTabChange('client')
+                                    }
+                                >
+                                    <Briefcase className="mr-2 w-4 h-4" />
+                                    <span className="text-xs font-thin uppercase font-body">
+                                        Client Portal
+                                    </span>
+                                </div>
                                 {activeTab === 'client' && (
-                                    <ClientSignInForm
-                                        callbackUrl={callbackUrl}
-                                    />
+                                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                                 )}
                             </div>
                         </div>
 
-                        <div className="pt-4 space-y-2 text-center">
-                            <div className="text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center">
-                                <p className="font-body uppercase text-[10px] text-white">
-                                    Don&apos;t have an account?
-                                </p>
-                                <Link
-                                    href="/sign-up"
-                                    className={cn(
-                                        'text-white hover:text-white/80 font-normal uppercase font-body text-[10px]',
-                                        isLoading &&
-                                            'pointer-events-none opacity-50',
-                                    )}
-                                    tabIndex={isLoading ? -1 : 0}
-                                >
-                                    Create one
-                                </Link>
-                            </div>
+                        <div className="mt-4">
+                            {activeTab === 'employee' && (
+                                <UserSignInForm
+                                    callbackUrl={callbackUrl}
+                                    reason={reason}
+                                />
+                            )}
+                            {activeTab === 'client' && (
+                                <ClientSignInForm
+                                    callbackUrl={callbackUrl}
+                                />
+                            )}
                         </div>
-                    </motion.div>
-                </div>
-            </PageTransition>
-        </PublicOnlyRoute>
+                    </div>
+
+                    <div className="pt-4 space-y-2 text-center">
+                        <div className="text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center">
+                            <p className="font-body uppercase text-[10px] text-white">
+                                Don&apos;t have an account?
+                            </p>
+                            <Link
+                                href="/sign-up"
+                                className={cn(
+                                    'text-white hover:text-white/80 font-normal uppercase font-body text-[10px]',
+                                    isLoading &&
+                                        'pointer-events-none opacity-50',
+                                )}
+                                tabIndex={isLoading ? -1 : 0}
+                            >
+                                Create one
+                            </Link>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </PageTransition>
     );
 };
 

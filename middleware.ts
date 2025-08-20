@@ -4,6 +4,16 @@ import { jwtDecode } from 'jwt-decode';
 import { CustomJwtPayload } from './lib/services/auth-service';
 import { AccessLevel, rolePermissions } from './types/auth';
 
+// Performance optimization: Cache for token validation results
+interface TokenCacheEntry {
+    isValid: boolean;
+    reason?: string;
+    timestamp: number;
+}
+
+const tokenCache = new Map<string, TokenCacheEntry>();
+const TOKEN_CACHE_TTL = 30000; // 30 seconds cache for token validation
+
 // Define public paths that don't require authentication
 const publicPaths = [
     '/sign-in',
@@ -12,71 +22,110 @@ const publicPaths = [
     '/new-password',
     '/verify-email',
     '/verify-otp',
-    '/landing-page',
+    '/',
     '/feedback',
     '/feedback/thank-you',
     '/review-quotation',
     '/review-quotation/thank-you',
 ];
 
-// Define path patterns that should be protected
-// Simplified to check if NOT a public path and NOT an asset/API path
-// const protectedPathPatterns = [ ... ]; // Removed for simplicity below
+// Define auth-only paths that should redirect authenticated users to dashboard
+const authOnlyPaths = [
+    '/sign-in',
+    '/sign-up',
+    '/forgot-password',
+    '/new-password',
+    '/verify-email',
+    '/verify-otp',
+];
+
+// Define public informational paths that authenticated users can still access
+const publicInfoPaths = [
+    '/feedback',
+    '/feedback/thank-you',
+    '/review-quotation',
+    '/review-quotation/thank-you',
+];
 
 /**
- * Checks if a path requires authentication (i.e., not public and not static/API)
+ * Check if a path is public (auth pages, informational pages, or landing page)
  */
-function isProtectedPath(path: string): boolean {
-    // Check if it's a static asset or API route first
+function isPublicPath(path: string): boolean {
+    // Quick checks for static assets and API routes
     if (
         path.startsWith('/_next') ||
         path.startsWith('/api') ||
-        path.includes('.') // Basic check for files like images, css
+        path.includes('.') ||
+        path.startsWith('/favicon')
     ) {
-        return false;
+        return true;
     }
-    // Check if it's one of the defined public paths
-    if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
-        return false;
-    }
-    // Otherwise, it's considered protected
-    return true;
+
+    // Check if it's in any of the public path categories
+    return publicPaths.some((publicPath) => path.startsWith(publicPath));
 }
 
 /**
- * Enhanced token validation with session cleanup
+ * Fast path check for protected routes
+ */
+function isProtectedPath(path: string): boolean {
+    // If it's not a public path and not a static asset, it's protected
+    return !isPublicPath(path);
+}
+
+/**
+ * Enhanced token validation with caching and session cleanup
  */
 function validateToken(token: string): { isValid: boolean; reason?: string } {
     try {
         if (!token) return { isValid: false, reason: 'no-token' };
 
+        // Check cache first
+        const cached = tokenCache.get(token);
+        if (cached && Date.now() - cached.timestamp < TOKEN_CACHE_TTL) {
+            return { isValid: cached.isValid, reason: cached.reason };
+        }
+
         const decodedToken = jwtDecode<CustomJwtPayload>(token);
 
         // Check token structure
         if (!decodedToken || typeof decodedToken !== 'object') {
-            return { isValid: false, reason: 'malformed-token' };
+            const result = { isValid: false, reason: 'malformed-token' };
+            tokenCache.set(token, { ...result, timestamp: Date.now() });
+            return result;
         }
 
         // Check expiration
         const currentTimestamp = Math.floor(Date.now() / 1000);
         if (!decodedToken.exp || decodedToken.exp <= currentTimestamp) {
-            return { isValid: false, reason: 'token-expired' };
+            const result = { isValid: false, reason: 'token-expired' };
+            tokenCache.set(token, { ...result, timestamp: Date.now() });
+
+            // Clear expired token from cache and session storage
+            tokenCache.delete(token);
+            return result;
         }
 
         // Check if token was issued in the future (clock skew protection)
         if (decodedToken.iat && decodedToken.iat > currentTimestamp + 300) {
             // 5 minute buffer
-            return { isValid: false, reason: 'token-future' };
+            const result = { isValid: false, reason: 'token-future' };
+            tokenCache.set(token, { ...result, timestamp: Date.now() });
+            return result;
         }
 
-        return { isValid: true };
+        const result = { isValid: true };
+        tokenCache.set(token, { ...result, timestamp: Date.now() });
+        return result;
     } catch (error) {
-        return { isValid: false, reason: 'decode-error' };
+        const result = { isValid: false, reason: 'decode-error' };
+        tokenCache.set(token, { ...result, timestamp: Date.now() });
+        return result;
     }
 }
 
 /**
- * Clears all authentication cookies
+ * Clears all authentication cookies and session storage
  */
 function clearAuthCookies(response: NextResponse): void {
     const cookiesToClear = ['accessToken', 'refreshToken', 'auth', 'session'];
@@ -88,6 +137,9 @@ function clearAuthCookies(response: NextResponse): void {
             sameSite: 'strict',
         });
     });
+
+    // Also clear session storage by setting a response header that client can use
+    response.headers.set('x-clear-session-storage', 'true');
 }
 
 /**
@@ -99,6 +151,11 @@ function hasRoutePermission(
     licenseFeatures: string[] = [],
 ): boolean {
     if (!userRole) return false;
+
+    // Dashboard should be accessible to all authenticated users
+    if (path === '/dashboard' || path.startsWith('/dashboard')) {
+        return true;
+    }
 
     // Super users (admin, manager, owner) have access to all routes
     if (
@@ -207,22 +264,22 @@ function getDefaultRedirectPath(userRole: string): string {
 
         // If user has access to all routes, redirect to dashboard
         if (allowedRoutes.includes('*')) {
-            return '/';
+            return '/dashboard';
         }
 
         // Otherwise, redirect to the first allowed route
         const firstAllowedRoute = allowedRoutes[0];
-        return firstAllowedRoute === '/' ? '/' : firstAllowedRoute;
+        return firstAllowedRoute === '/' ? '/dashboard' : firstAllowedRoute;
     }
 
-    // Fallback redirects
+    // Fallback redirects - prioritize dashboard for authenticated users
     switch (role) {
         case AccessLevel.CLIENT:
             return '/quotations';
         case AccessLevel.USER:
             return '/tasks';
         default:
-            return '/';
+            return '/dashboard';
     }
 }
 
@@ -265,6 +322,16 @@ export function middleware(request: NextRequest) {
     const response = NextResponse.next();
     const accessToken = request.cookies.get('accessToken')?.value;
 
+    // Skip middleware for static assets and API routes
+    if (
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api') ||
+        pathname.includes('.') ||
+        pathname.startsWith('/favicon')
+    ) {
+        return response;
+    }
+
     // Validate the token and extract information
     let isAuthenticated = false;
     let userRole: string | null = null;
@@ -284,128 +351,111 @@ export function middleware(request: NextRequest) {
                     licenseFeatures = decodedToken.features;
                 } else {
                     licenseFeatures = [];
-                    if (decodedToken.features !== undefined) {
-                    }
                 }
 
                 licensePlan = decodedToken.licensePlan || null;
-            } catch (error) {}
+            } catch (error) {
+                // If token decoding fails, treat as unauthenticated
+                isAuthenticated = false;
+            }
         } else {
-            // Optionally, clear invalid tokens
+            // Clear invalid tokens
             clearAuthCookies(response);
         }
     }
 
-    // If user is authenticated and tries to access a public-only path
-    if (
-        isAuthenticated &&
-        publicPaths.some((publicPath) => pathname.startsWith(publicPath))
-    ) {
-        const targetUrl = getSafeCallbackUrl(request);
-
-        // Ensure target URL is not a public path to avoid redirect loops
-        if (
-            publicPaths.some((publicPath) => targetUrl.startsWith(publicPath))
-        ) {
+        // Handle root path (/) - redirect authenticated users to dashboard
+    if (pathname === '/') {
+        if (isAuthenticated) {
             const defaultPath = getDefaultRedirectPath(userRole || '');
-
-            // Add notification parameters for authenticated user redirect
             const redirectUrl = new URL(defaultPath, request.url);
-            redirectUrl.searchParams.set(
-                'middleware_redirect',
-                'authenticated-user',
-            );
 
-            return NextResponse.redirect(redirectUrl);
-        }
-
-        // Add notification parameters for authenticated user redirect
-        const redirectUrl = new URL(targetUrl, request.url);
-        redirectUrl.searchParams.set(
-            'middleware_redirect',
-            'authenticated-user',
-        );
-
-        const redirectResponse = NextResponse.redirect(redirectUrl);
-        redirectResponse.headers.set(
-            'x-middleware-redirect',
-            'authenticated-user',
-        );
-        return redirectResponse;
-    }
-
-    // If path is protected and user is not authenticated
-    if (isProtectedPath(pathname)) {
-        if (!isAuthenticated) {
-            const signInUrl = new URL('/sign-in', request.url);
-
-            // Use the safe callback URL method
-            signInUrl.searchParams.set('callbackUrl', pathname);
-
-            // Add notification parameters based on validation result
-            if (accessToken) {
-                const validationResult = validateToken(accessToken);
-                if (validationResult.reason === 'token-expired') {
-                    signInUrl.searchParams.set(
-                        'middleware_redirect',
-                        'token-expired',
-                    );
-                    signInUrl.searchParams.set('token_status', 'expired');
-                } else {
-                    signInUrl.searchParams.set(
-                        'middleware_redirect',
-                        'unauthenticated',
-                    );
-                    signInUrl.searchParams.set('token_status', 'invalid');
-                }
-            } else {
-                signInUrl.searchParams.set(
-                    'middleware_redirect',
-                    'unauthenticated',
-                );
+            // Only add redirect parameter if we're not redirecting to dashboard
+            if (defaultPath !== '/dashboard') {
+                redirectUrl.searchParams.set('middleware_redirect', 'authenticated-user');
             }
 
-            const redirectResponse = NextResponse.redirect(signInUrl);
-
-            // Clear invalid/expired tokens
-            clearAuthCookies(redirectResponse);
-
-            // Set header to indicate this is an unauthenticated redirect
-            redirectResponse.headers.set(
-                'x-middleware-redirect',
-                'unauthenticated',
-            );
-
-            return redirectResponse;
+            // Prevent redirect loops by checking if we're already going to the target path
+            if (defaultPath !== pathname) {
+                return NextResponse.redirect(redirectUrl);
+            }
         }
-
-        // Check if user has permission to access this route
-        if (!hasRoutePermission(pathname, userRole, licenseFeatures)) {
-            const redirectPath = getDefaultRedirectPath(userRole || '');
-            const redirectUrl = new URL(redirectPath, request.url);
-
-            // Add notification parameters for unauthorized access
-            redirectUrl.searchParams.set('middleware_redirect', 'unauthorized');
-            redirectUrl.searchParams.set(
-                'denied_feature',
-                getRequiredFeatureForPath(pathname),
-            );
-
-            // Set header to indicate this is an unauthorized redirect
-            const redirectResponse = NextResponse.redirect(redirectUrl);
-            redirectResponse.headers.set(
-                'x-middleware-redirect',
-                'unauthorized',
-            );
-
-            return redirectResponse;
-        }
-
-        // If token is valid and user has permission, proceed
+        // If not authenticated, allow access to landing page
         return response;
     }
 
-    // For public paths or static assets
+    // Handle auth-only paths - redirect authenticated users to dashboard
+    const isAuthOnlyPath = authOnlyPaths.some((authPath) => pathname.startsWith(authPath));
+    if (isAuthOnlyPath) {
+        if (isAuthenticated) {
+            // Redirect authenticated users away from auth pages to their dashboard
+            const defaultPath = getDefaultRedirectPath(userRole || '');
+            const redirectUrl = new URL(defaultPath, request.url);
+            redirectUrl.searchParams.set('middleware_redirect', 'authenticated-user');
+
+            // Prevent redirect loops
+            if (defaultPath !== pathname) {
+                return NextResponse.redirect(redirectUrl);
+            }
+        }
+        // If not authenticated, allow access to auth pages
+        return response;
+    }
+
+    // Handle public informational paths - allow access to everyone
+    const isPublicInfoPath = publicInfoPaths.some((infoPath) => pathname.startsWith(infoPath));
+    if (isPublicInfoPath) {
+        // Allow access to everyone (authenticated and unauthenticated users)
+        return response;
+    }
+
+    // Handle protected paths
+    if (isProtectedPath(pathname)) {
+        if (!isAuthenticated) {
+            // Redirect to landing page for unauthenticated users
+            const landingUrl = new URL('/', request.url);
+            landingUrl.searchParams.set('callbackUrl', pathname);
+
+            if (accessToken) {
+                const validationResult = validateToken(accessToken);
+                if (validationResult.reason === 'token-expired') {
+                    landingUrl.searchParams.set('middleware_redirect', 'token-expired');
+                    landingUrl.searchParams.set('token_status', 'expired');
+                } else {
+                    landingUrl.searchParams.set('middleware_redirect', 'unauthenticated');
+                    landingUrl.searchParams.set('token_status', 'invalid');
+                }
+            } else {
+                landingUrl.searchParams.set('middleware_redirect', 'unauthenticated');
+            }
+
+            const redirectResponse = NextResponse.redirect(landingUrl);
+            clearAuthCookies(redirectResponse);
+            redirectResponse.headers.set('x-middleware-redirect', 'unauthenticated');
+
+            return redirectResponse;
+        }
+
+        // User is authenticated, check permissions
+        if (!hasRoutePermission(pathname, userRole, licenseFeatures)) {
+            // For unauthorized access, redirect to dashboard with error message
+            const redirectPath = getDefaultRedirectPath(userRole || '');
+            const redirectUrl = new URL(redirectPath, request.url);
+
+            redirectUrl.searchParams.set('middleware_redirect', 'unauthorized');
+            redirectUrl.searchParams.set('denied_feature', getRequiredFeatureForPath(pathname));
+
+            const redirectResponse = NextResponse.redirect(redirectUrl);
+            redirectResponse.headers.set('x-middleware-redirect', 'unauthorized');
+
+            return redirectResponse;
+        }
+
+        // User is authenticated and has permission - allow access
+        return response;
+    }
+
+    // For all other paths (public paths), allow access
     return response;
 }
 

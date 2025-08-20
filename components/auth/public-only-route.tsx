@@ -56,7 +56,7 @@ export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteP
     // Reduce loading time by not showing loader for too long
     if (isLoading) {
         return (
-            <div className='flex items-center justify-center w-full h-screen'>
+            <div className='flex justify-center items-center w-full h-screen'>
                 <AppLoader />
             </div>
         );
@@ -69,7 +69,7 @@ export function PublicOnlyRoute({ children, redirectTo = '/' }: PublicOnlyRouteP
 
     // Return minimal loading state for authenticated users being redirected
     return (
-        <div className='flex items-center justify-center w-full h-screen'>
+        <div className='flex justify-center items-center w-full h-screen'>
             <AppLoader />
         </div>
     );

@@ -11,12 +11,12 @@ export default function NotFound() {
     const { isAuthenticated } = useAuthStore();
 
     const handleReturn = () => {
-        router.push(isAuthenticated ? '/' : '/landing-page');
+        router.push(isAuthenticated ? '/dashboard' : '/');
     };
 
     return (
         <PageTransition type="fade">
-            <div className='flex flex-col items-center justify-center w-full h-screen p-4 bg-background'>
+            <div className='flex flex-col justify-center items-center p-4 w-full h-screen bg-background'>
                 <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -24,13 +24,13 @@ export default function NotFound() {
                         duration: 0.5,
                         ease: 'easeOut',
                     }}
-                    className='flex flex-col items-center justify-center max-w-md gap-6 text-center'
+                    className='flex flex-col gap-6 justify-center items-center max-w-md text-center'
                 >
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className='font-bold text-9xl font-heading text-primary'
+                        className='text-9xl font-bold font-heading text-primary'
                     >
                         oops!
                     </motion.h1>

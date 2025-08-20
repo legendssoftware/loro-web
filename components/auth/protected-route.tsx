@@ -75,7 +75,7 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
             // For client role, check if current path is in allowed routes
             const allowedRoutes = rolePermissions[AccessLevel.CLIENT]?.routes || [];
             const hasRouteAccess = allowedRoutes.includes(pathname) ||
-                                  (pathname === '/' && allowedRoutes.some(route => route !== '/'));
+                                  (pathname === '/dashboard' && allowedRoutes.some(route => route !== '/'));
 
             if (!hasRouteAccess) {
                 // Redirect clients to quotations page if they don't have access
@@ -96,7 +96,7 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
                         router.push('/quotations');
                     } else {
                         // Redirect to dashboard if no fallback is provided
-                        router.push('/');
+                        router.push('/dashboard');
                     }
                 }
             }
@@ -106,7 +106,7 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
     // Show loader while checking authentication
     if (isLoading) {
         return (
-            <div className='flex items-center justify-center w-full h-screen'>
+            <div className='flex justify-center items-center w-full h-screen'>
                 <AppLoader />
             </div>
         );
@@ -130,7 +130,7 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
 
     // Otherwise, render nothing (will be redirected by the useEffect)
     return (
-        <div className='flex items-center justify-center w-full h-screen'>
+        <div className='flex justify-center items-center w-full h-screen'>
             <AppLoader />
         </div>
     );

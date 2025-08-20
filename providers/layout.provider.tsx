@@ -36,11 +36,10 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
                         <LicenseProvider>
                             <AnimatePresence mode="wait">
                                 {/* Add key based on pathname to ensure proper AnimatePresence behavior */}
-                                <div key={pathname} className="w-full h-full">
+                                <div key={pathname} className="w-full h-full" id="layout-provider">
                                     {children}
                                 </div>
                             </AnimatePresence>
-                            <Toaster />
                         </LicenseProvider>
                     </RouteGuard>
                 </AuthProvider>

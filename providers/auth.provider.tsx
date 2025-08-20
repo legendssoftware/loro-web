@@ -44,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             useAuthStore.getState().signOut();
                         }
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.error('Token refresh failed:', error);
                         // Refresh failed, clear auth state
                         useAuthStore.getState().signOut();
                     });

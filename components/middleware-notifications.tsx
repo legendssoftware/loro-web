@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
-import { toastConfig, showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { toastConfig } from '@/lib/utils/toast-config';
 
 /**
  * Component that handles middleware notifications and provides user feedback
  * for authentication redirects, session expiry, and access control
  */
 export function MiddlewareNotifications() {
-    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { isAuthenticated, profileData } = useAuthStore();

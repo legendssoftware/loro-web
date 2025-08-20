@@ -297,11 +297,6 @@ const ShiftManagementCard: React.FC<{
 
     const nextAction = getNextAction();
 
-    console.log('Next Action:', nextAction);
-    console.log('Server Next Action:', serverNextAction);
-    console.log('Is Checked In:', isCheckedIn);
-    console.log('Is On Break:', finalIsOnBreak);
-
     return (
         <Card>
             <CardHeader>

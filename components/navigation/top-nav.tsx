@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { SideDrawer } from './side-drawer';
-import { isAuthRoute } from '@/lib/utils';
+import { shouldHideNav, shouldShowNav, isLandingPage, isDashboardPage } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/use-app-store';
@@ -14,8 +14,6 @@ import {
     PhoneCall,
     HelpCircle,
     PlayCircle,
-    Users,
-    User,
 } from 'lucide-react';
 import { ThemeToggler } from '@/modules/navigation/theme.toggler';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,9 +31,9 @@ import { useState, useMemo } from 'react';
 
 export function TopNav() {
     const pathname = usePathname();
-    const { signOut, profileData, accessToken, isAuthenticated } =
+    const { signOut, profileData, accessToken, isAuthenticated, isLoading } =
         useAuthStore();
-    const { isDrawerOpen, setDrawerOpen, reportMode, setReportMode } =
+    const { isDrawerOpen, setDrawerOpen } =
         useAppStore();
     const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
     const { startTour } = useInteractiveTour();
@@ -90,6 +88,35 @@ export function TopNav() {
         setHelpDropdownOpen(false);
     };
 
+    // Check if navigation should be hidden on this route
+    const hideNav = shouldHideNav(pathname);
+
+    // Check if this is the landing page
+    const isLanding = isLandingPage(pathname);
+
+    // Check if this is the dashboard page
+    const isDashboard = isDashboardPage(pathname);
+
+    // Only show nav on dashboard and other authenticated routes
+    if (hideNav && !isDashboard) {
+        return null;
+    }
+
+    // Show loading state while auth is initializing
+    if (isLoading && isDashboard) {
+        return (
+            <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-transparent mb-5">
+                <div className="flex justify-between items-center px-2 h-16">
+                    <div className="flex gap-2 justify-between items-center w-full md:w-auto">
+                        <span className="text-sm font-normal uppercase font-body text-foreground">
+                            Loading navigation...
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // Check if user is a client by examining profileData or JWT token
     const isClient =
         profileData?.accessLevel === 'client' ||
@@ -142,46 +169,6 @@ export function TopNav() {
         }
     }, [profileData, isClient]);
 
-    // Get display names for the toggle
-    const getUserDisplayName = () => {
-        if (profileData?.name) {
-            return profileData.name;
-        }
-        return 'User';
-    };
-
-    const getOrganizationDisplayName = () => {
-        if (profileData?.branch?.name) {
-            return profileData.branch.name;
-        }
-        return 'Organization';
-    };
-
-    const handleReportModeToggle = (checked: boolean) => {
-        const newMode = checked ? 'organization' : 'user';
-        setReportMode(newMode);
-
-        // Show notification
-        toast.success(
-            `Switched to ${newMode === 'organization' ? getOrganizationDisplayName() : getUserDisplayName()} Reports`,
-            {
-                style: {
-                    borderRadius: '5px',
-                    background: '#333',
-                    color: '#fff',
-                    fontFamily: 'var(--font-unbounded)',
-                    fontSize: '12px',
-                    textTransform: 'uppercase',
-                    fontWeight: '300',
-                    padding: '16px',
-                },
-                duration: 2000,
-                position: 'bottom-center',
-                icon: newMode === 'organization' ? '🏢' : '👤',
-            },
-        );
-    };
-
     const handleSignOut = async () => {
         try {
             signOut();
@@ -205,7 +192,7 @@ export function TopNav() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
             toast.remove(toastId);
 
-            window.location.href = '/landing-page';
+            window.location.href = '/';
         } catch {
             toast.error('Failed to sign out', {
                 style: {
@@ -225,15 +212,11 @@ export function TopNav() {
         }
     };
 
-    if (isAuthRoute(pathname)) {
-        return null;
-    }
-
     return (
         <>
             <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-transparent mb-5">
-                <div className="flex items-center justify-between h-16 px-2">
-                    <div className="flex items-center justify-between w-full gap-2 md:w-auto">
+                <div className="flex justify-between items-center px-2 h-16">
+                    <div className="flex gap-2 justify-between items-center w-full md:w-auto">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -247,7 +230,7 @@ export function TopNav() {
                             />
                         </Button>
                         <div
-                            className="flex items-center gap-3"
+                            className="flex gap-3 items-center"
                             id="tour-step-report-toggle"
                         >
                             {isClient ? (
@@ -261,7 +244,7 @@ export function TopNav() {
                             )}
                         </div>
                     </div>
-                    <div className="items-center hidden gap-4 md:flex">
+                    <div className="hidden gap-4 items-center md:flex">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -301,7 +284,7 @@ export function TopNav() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="end"
-                                className="w-56 mt-2"
+                                className="mt-2 w-56"
                             >
                                 <DropdownMenuLabel>
                                     Help & Support
@@ -312,7 +295,7 @@ export function TopNav() {
                                         onClick={endCall}
                                         className="p-3 cursor-pointer"
                                     >
-                                        <PhoneCall className="w-4 h-4 mr-2 animate-LORO" />
+                                        <PhoneCall className="mr-2 w-4 h-4 animate-LORO" />
                                         <span>
                                             End Call{' '}
                                             {formattedTimeRemaining &&
@@ -325,7 +308,7 @@ export function TopNav() {
                                         disabled={isCallInitializing}
                                         className="p-3 cursor-pointer"
                                     >
-                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                        <PhoneCall className="mr-2 w-4 h-4" />
                                         <span>Retry Call</span>
                                     </DropdownMenuItem>
                                 ) : (
@@ -334,10 +317,10 @@ export function TopNav() {
                                         disabled={isCallInitializing}
                                         className="p-3 cursor-pointer"
                                     >
-                                        <PhoneCall className="w-4 h-4 mr-2" />
+                                        <PhoneCall className="mr-2 w-4 h-4" />
                                         <span>Call for Assistance</span>
                                         {isCallInitializing && (
-                                            <span className="w-2 h-2 ml-2 rounded-full bg-amber-500 animate-LORO" />
+                                            <span className="ml-2 w-2 h-2 bg-amber-500 rounded-full animate-LORO" />
                                         )}
                                     </DropdownMenuItem>
                                 )}
@@ -346,7 +329,7 @@ export function TopNav() {
                                     className="p-3 cursor-pointer"
                                 >
                                     <PlayCircle
-                                        className="w-4 h-4 mr-2"
+                                        className="mr-2 w-4 h-4"
                                         id="tour-step-start-tour"
                                     />
                                     <span>Start Interactive Tour</span>
@@ -378,7 +361,7 @@ export function TopNav() {
                                     {userInitials}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white" />
+                            <div className="absolute right-0 bottom-0 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white" />
                         </div>
                     </div>
                 </div>

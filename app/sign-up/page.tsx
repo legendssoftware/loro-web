@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/utils/animations';
 import { PageTransition } from '@/components/animations/page-transition';
-import { PublicOnlyRoute } from '@/components/auth/public-only-route';
+
 import axios from 'axios';
 
 type SignUpSchema = z.infer<typeof signUpSchema>;
@@ -88,87 +88,85 @@ const SignUpPage = () => {
 
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <PublicOnlyRoute>
-                <PageTransition type="fade">
-                    <div
-                        className='relative flex items-center justify-center min-h-screen p-4'
-                        style={{
-                            backgroundImage:
-                                'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'bottom center',
-                            backgroundRepeat: 'no-repeat',
-                        }}
+            <PageTransition type="fade">
+                <div
+                    className='flex relative justify-center items-center p-4 min-h-screen'
+                    style={{
+                        backgroundImage:
+                            'url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rcRWmJ3wUamu61uy3uz2BHS5rxJP3t.png)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'bottom center',
+                        backgroundRepeat: 'no-repeat',
+                    }}
+                >
+                    <div className='absolute inset-0 bg-black/50' />
+                    <motion.div
+                        variants={itemVariants}
+                        className='relative p-6 space-y-4 w-full max-w-md rounded-xl shadow-lg backdrop-blur-lg sm:p-8 sm:space-y-6 bg-white/10'
                     >
-                        <div className='absolute inset-0 bg-black/50' />
-                        <motion.div
-                            variants={itemVariants}
-                            className='relative w-full max-w-md p-6 space-y-4 shadow-lg sm:p-8 sm:space-y-6 bg-white/10 backdrop-blur-lg rounded-xl'
-                        >
-                            <h1 className='text-2xl font-normal text-center text-white uppercase sm:text-3xl font-heading'>
-                                Claim Account
-                            </h1>
-                            <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
-                                <div className='space-y-1'>
-                                    <label htmlFor='email' className='block text-xs font-light text-white uppercase font-body'>
-                                        Email Address
-                                    </label>
-                                    <Input
-                                        id='email'
-                                        type='email'
-                                        value={form.email}
-                                        onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
-                                        placeholder='jdoe@gmail.com'
-                                        disabled={isLoading}
-                                        className={cn(
-                                            'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
-                                            errors.email && 'border-red-500 focus-visible:ring-red-500',
-                                            isLoading && 'opacity-50',
-                                        )}
-                                        aria-label='Email'
-                                    />
-                                    {errors.email && <p className='mt-1 text-xs text-red-500'>{errors.email}</p>}
-                                </div>
-
-                                <Button
-                                    type='submit'
+                        <h1 className='text-2xl font-normal text-center text-white uppercase sm:text-3xl font-heading'>
+                            Claim Account
+                        </h1>
+                        <form onSubmit={handleSubmit} className='mt-4 space-y-4 sm:mt-6'>
+                            <div className='space-y-1'>
+                                <label htmlFor='email' className='block text-xs font-light text-white uppercase font-body'>
+                                    Email Address
+                                </label>
+                                <Input
+                                    id='email'
+                                    type='email'
+                                    value={form.email}
+                                    onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
+                                    placeholder='jdoe@gmail.com'
                                     disabled={isLoading}
                                     className={cn(
-                                        'w-full p-5 text-xs font-normal uppercase bg-primary hover:bg-primary/90 font-body',
+                                        'bg-white/10 border-white/20 text-white placeholder:text-white/50 font-light',
+                                        errors.email && 'border-red-500 focus-visible:ring-red-500',
                                         isLoading && 'opacity-50',
                                     )}
-                                    aria-label='Claim Account'
-                                >
-                                    {isLoading ? (
-                                        <div className='flex items-center justify-center space-x-1'>
-                                            <p className='font-normal text-white uppercase'>Sending Verification</p>
-                                            <Loader2 className='w-4 h-4 mr-2 text-white animate-spin' size={16} strokeWidth={1.5} />
-                                        </div>
-                                    ) : (
-                                        <span className='font-normal text-white'>Claim Account</span>
-                                    )}
-                                </Button>
-                            </form>
-
-                            <div className='text-center'>
-                                <div className='text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center'>
-                                    <p className='font-body uppercase text-[10px] text-white'>Already have an account?</p>
-                                    <Link
-                                        href='/sign-in'
-                                        className={cn(
-                                            'text-white hover:text-white/80 font-normal uppercase font-body text-[10px]',
-                                            isLoading && 'pointer-events-none opacity-50',
-                                        )}
-                                        tabIndex={isLoading ? -1 : 0}
-                                    >
-                                        Sign In
-                                    </Link>
-                                </div>
+                                    aria-label='Email'
+                                />
+                                {errors.email && <p className='mt-1 text-xs text-red-500'>{errors.email}</p>}
                             </div>
-                        </motion.div>
-                    </div>
-                </PageTransition>
-            </PublicOnlyRoute>
+
+                            <Button
+                                type='submit'
+                                disabled={isLoading}
+                                className={cn(
+                                    'w-full p-5 text-xs font-normal uppercase bg-primary hover:bg-primary/90 font-body',
+                                    isLoading && 'opacity-50',
+                                )}
+                                aria-label='Claim Account'
+                            >
+                                {isLoading ? (
+                                    <div className='flex justify-center items-center space-x-1'>
+                                        <p className='font-normal text-white uppercase'>Sending Verification</p>
+                                        <Loader2 className='mr-2 w-4 h-4 text-white animate-spin' size={16} strokeWidth={1.5} />
+                                    </div>
+                                ) : (
+                                    <span className='font-normal text-white'>Claim Account</span>
+                                )}
+                            </Button>
+                        </form>
+
+                        <div className='text-center'>
+                            <div className='text-[10px] text-white font-light flex flex-row items-center space-x-1 justify-center'>
+                                <p className='font-body uppercase text-[10px] text-white'>Already have an account?</p>
+                                <Link
+                                    href='/sign-in'
+                                    className={cn(
+                                        'text-white hover:text-white/80 font-normal uppercase font-body text-[10px]',
+                                        isLoading && 'pointer-events-none opacity-50',
+                                    )}
+                                    tabIndex={isLoading ? -1 : 0}
+                                >
+                                    Sign In
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </PageTransition>
         </Suspense>
     );
 };

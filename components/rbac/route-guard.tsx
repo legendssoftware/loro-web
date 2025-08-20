@@ -25,7 +25,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
             pathname === '/forgot-password' ||
             pathname === '/verify-email' ||
             pathname === '/verify-otp' ||
-            pathname === '/landing-page' ||
+            pathname === '/' ||
             pathname === '/new-password' ||
             pathname === '/feedback' ||
             pathname === '/feedback/thank-you' ||

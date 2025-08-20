@@ -58,6 +58,7 @@ interface SessionActions {
     clearSession: () => void;
     setAccessToken: (token: string | null) => void;
     setUser: (user: User | null) => void;
+    clearSessionStorage: () => void;
 }
 
 const initialState: SessionState = {
@@ -121,6 +122,16 @@ export const useSessionStore = create<SessionState & SessionActions>()(
             signOut: () => {
                 // Remove token from axios headers
                 delete api.defaults.headers.common['Authorization'];
+                // Clear session storage
+                const store = useSessionStore.getState();
+                store.clearSessionStorage();
+                // Clear any auth cookies by setting them to expire
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                }
                 set(initialState);
             },
 
@@ -137,12 +148,48 @@ export const useSessionStore = create<SessionState & SessionActions>()(
             clearSession: () => {
                 // Remove token from axios headers
                 delete api.defaults.headers.common['Authorization'];
+                // Clear session storage
+                const store = useSessionStore.getState();
+                store.clearSessionStorage();
+                // Clear any auth cookies by setting them to expire
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                }
                 set(initialState);
             },
 
             setAccessToken: token => set({ accessToken: token }),
 
             setUser: user => set({ user }),
+
+            clearSessionStorage: () => {
+                // Clear all session storage items related to authentication
+                const sessionKeys = [
+                    'session-storage',
+                    'auth-store',
+                    'auth-storage',
+                    'auth-store-persist',
+                ];
+
+                sessionKeys.forEach(key => {
+                    try {
+                        sessionStorage.removeItem(key);
+                    } catch (error) {
+                        console.warn(`Failed to remove session storage key: ${key}`, error);
+                    }
+                });
+
+                // Also clear localStorage if any auth data is stored there
+                try {
+                    localStorage.removeItem('auth-store');
+                    localStorage.removeItem('auth-storage');
+                } catch (error) {
+                    console.warn('Failed to clear localStorage auth data', error);
+                }
+            },
         }),
         {
             name: 'session-storage',
@@ -228,3 +275,26 @@ api.interceptors.response.use(
         return Promise.reject(error);
     },
 );
+
+// Client-side effect to handle session storage clearing from middleware
+if (typeof window !== 'undefined') {
+    // Check for the header from middleware on page load
+    const clearSessionStorage = () => {
+        const store = useSessionStore.getState();
+        store.clearSessionStorage();
+        store.clearSession();
+    };
+
+    // Listen for custom events from middleware
+    window.addEventListener('clear-session-storage', clearSessionStorage);
+
+    // Also check document for the header on load (in case middleware set it)
+    if (typeof document !== 'undefined') {
+        const hasClearHeader = document.querySelector('meta[name="x-clear-session-storage"]') ||
+                              document.head.querySelector('[data-clear-session-storage]');
+
+        if (hasClearHeader) {
+            clearSessionStorage();
+        }
+    }
+}

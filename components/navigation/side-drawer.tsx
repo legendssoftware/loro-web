@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, shouldHideNav, shouldShowNav, isLandingPage, isDashboardPage } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     ChartSpline,
@@ -16,7 +16,6 @@ import {
     MapPin,
     Warehouse,
     Settings,
-    Building,
 } from 'lucide-react';
 import {
     Sheet,
@@ -140,8 +139,47 @@ const navigationItems = [
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     const pathname = usePathname();
-    const { profileData, signOut, accessToken } = useAuthStore();
+    const { profileData, signOut, accessToken, isAuthenticated, isLoading } = useAuthStore();
     const { hasRole, hasPermission } = useRBAC();
+
+    // Check if navigation should be hidden on this route
+    const hideNav = shouldHideNav(pathname);
+    const showNav = shouldShowNav(pathname);
+    const isLanding = isLandingPage(pathname);
+    const isDashboard = isDashboardPage(pathname);
+
+    // Don't render if navigation should be hidden and we're not on dashboard
+    if (hideNav && !isDashboard && !showNav) {
+        return null;
+    }
+
+    // Show loading state while auth is initializing on dashboard
+    if (isLoading && isDashboard) {
+        return (
+            <Sheet open={isOpen} onOpenChange={onClose}>
+                <SheetContent
+                    side="left"
+                    className={cn(
+                        'flex flex-col mx-4 my-auto rounded w-[80px] h-[95vh] md:h-[98vh] md:my-[1vh]',
+                        'gap-0 p-0 border shadow-lg',
+                    )}
+                >
+                    <SheetHeader className="flex justify-between items-center p-6 border-b border-border/10">
+                        <SheetTitle asChild>
+                            <span className="text-sm font-bold uppercase font-body text-card-foreground">
+                                Loading...
+                            </span>
+                        </SheetTitle>
+                    </SheetHeader>
+                    <div className="flex-1 p-2">
+                        <div className="flex flex-col space-y-1">
+                            <span className="text-xs text-muted-foreground">Loading navigation...</span>
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+        );
+    }
 
     // Check if user is a client by examining profileData or JWT token
     const isClient =
@@ -195,7 +233,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
             toast.remove(toastId);
-            window.location.href = '/landing-page';
+            window.location.href = '/'; 
         } catch {
             toast.error('Failed to sign out', {
                 style: {
@@ -226,7 +264,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
         return (
             <div className="px-2 py-4 border-t border-border/10">
                 <div className="relative group">
-                    <div className="flex items-center justify-center p-3 rounded bg-accent/30">
+                    <div className="flex justify-center items-center p-3 rounded bg-accent/30">
                         <KeySquare
                             size={18}
                             className={cn(
@@ -265,11 +303,11 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             <SheetContent
                 side="left"
                 className={cn(
-                    'flex flex-col w-[80px] h-[95vh] my-auto md:h-[98vh] md:my-[1vh] mx-4 rounded',
-                    'border shadow-lg p-0 gap-0',
+                    'flex flex-col mx-4 my-auto rounded w-[80px] h-[95vh] md:h-[98vh] md:my-[1vh]',
+                    'gap-0 p-0 border shadow-lg',
                 )}
             >
-                <SheetHeader className="flex items-center justify-between p-6 border-b border-border/10">
+                <SheetHeader className="flex justify-between items-center p-6 border-b border-border/10">
                     <SheetTitle asChild>
                         <span className="text-sm font-bold uppercase font-body text-card-foreground">
                             {isClient ? 'CLIENT' : 'LORO'}
@@ -317,6 +355,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                     item.allowedRoles &&
                                     !hasRole(item.allowedRoles)
                                 ) {
+                                    console.log('stopped here');
                                     return null;
                                 }
 
@@ -325,6 +364,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                                     item.feature &&
                                     !hasPermission(item.feature)
                                 ) {
+                                    console.log('stopped here 2');
                                     return null;
                                 }
 
@@ -377,7 +417,7 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
                             variant="ghost"
                             size="icon"
                             onClick={handleSignOut}
-                            className="flex items-center justify-center w-full h-12 text-red-500 bg-red-500/10 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl"
+                            className="flex justify-center items-center w-full h-12 text-red-500 rounded-xl bg-red-500/10 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
                         >
                             <Power className="w-5 h-5" />
                         </Button>

@@ -594,34 +594,35 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
         return () => clearInterval(interval);
     }, [refetchToday, refetchOrg, refetchUserStatus, refetchUserMetrics, refetchDailyStats]);
 
-    // Shift management mutations
+    // Shift management mutations - Matching mobile version exactly
     const checkInMutation = useMutation({
         mutationFn: async () => {
             const { profileData } = useAuthStore.getState();
 
-
             if (!profileData) throw new Error('User not found');
 
             const checkInData = {
-                userId: profileData.uid,
-                checkIn: new Date(),
-                status: 'PRESENT',
-                branch: { uid: profileData.branch?.uid || 1 }, // Default branch if none
-                owner: { uid: profileData.uid }
+                status: 'present', // Match mobile version exactly
+                checkIn: `${new Date()}`, // Match mobile format
+                checkInLatitude: null, // For web version, set to null (no GPS)
+                checkInLongitude: null, // For web version, set to null (no GPS)
+                checkInNotes: '', // Match mobile
+                branch: { uid: Number(profileData.branch?.uid) },
+                owner: { uid: Number(profileData.uid) }
             };
 
             const response = await axiosInstance.post('/att/in', checkInData);
             return response.data;
         },
-        onSuccess: () => {
-            showSuccessToast('Shift started successfully!', toast);
+        onSuccess: (data) => {
+            showSuccessToast('Shift Started!', toast); // Match mobile message
             queryClient.invalidateQueries({ queryKey: ['currentUserStatus'] });
             queryClient.invalidateQueries({ queryKey: ['todayAttendance'] });
             refetchToday();
             refetchOrg();
         },
-        onError: (error: any) => {
-            showErrorToast(error?.response?.data?.message || 'Failed to start shift', toast);
+        onError: (error) => {
+            showErrorToast(`${error?.message}`, toast); // Match mobile error handling
         },
     });
 
@@ -631,23 +632,25 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
             if (!profileData) throw new Error('profileData not found');
 
             const checkOutData = {
-                profileDataId: profileData.uid,
-                checkOut: new Date(),
-                owner: { uid: profileData.uid }
+                checkOut: `${new Date()}`, // Match mobile format
+                checkOutNotes: '', // Match mobile
+                checkOutLatitude: null, // Match mobile
+                checkOutLongitude: null, // Match mobile
+                owner: { uid: Number(profileData.uid) }
             };
 
             const response = await axiosInstance.post('/att/out', checkOutData);
             return response.data;
         },
-        onSuccess: () => {
-            showSuccessToast('Shift ended successfully!', toast);
+        onSuccess: (data) => {
+            showSuccessToast('Shift Ended!', toast); // Match mobile message
             queryClient.invalidateQueries({ queryKey: ['currentUserStatus'] });
             queryClient.invalidateQueries({ queryKey: ['todayAttendance'] });
             refetchToday();
             refetchOrg();
         },
-        onError: (error: any) => {
-            showErrorToast(error?.response?.data?.message || 'Failed to end shift', toast);
+        onError: (error) => {
+            showErrorToast(`${error?.message}`, toast); // Match mobile error handling
         },
     });
 

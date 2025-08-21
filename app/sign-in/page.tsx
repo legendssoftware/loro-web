@@ -132,27 +132,9 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
                     toast,
                 );
 
-                // Validate and use callbackUrl for redirection
-                let redirectTarget = '/';
-                if (callbackUrl) {
-                    try {
-                        const parsedCallback = callbackUrl.startsWith('/')
-                            ? new URL(callbackUrl, window.location.origin)
-                            : new URL(callbackUrl);
-
-                        if (parsedCallback.origin === window.location.origin && parsedCallback.pathname.startsWith('/')) {
-                            redirectTarget = parsedCallback.pathname + parsedCallback.search + parsedCallback.hash;
-                        } else {
-                            console.warn('UserSignInForm: Invalid callbackUrl origin. Defaulting to /.');
-                        }
-                    } catch (e) {
-                        console.warn('UserSignInForm: Invalid callbackUrl format. Defaulting to /.');
-                    }
-                }
-
-                // Use window.location.href for a hard navigation instead of router.push
-                // This ensures the middleware can properly handle the authentication
-                window.location.href = redirectTarget;
+                // Always redirect to dashboard after successful sign in
+                // The middleware will handle role-based redirects from dashboard
+                window.location.href = '/dashboard';
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);

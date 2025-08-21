@@ -11,7 +11,7 @@ import { AccessLevel } from '@/types/auth';
 export default function Home() {
     const { profileData } = useAuthStore();
 
-    // Define all possible tabs
+    // Define all possible tabs - USER role only gets personal dashboard
     const allTabs = [
         { id: 'hr', label: 'Main Dashboard', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR] },
         { id: 'my-reports', label: 'Personal', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER] },
@@ -24,12 +24,14 @@ export default function Home() {
 
     // Set default active tab based on user permissions
     const getDefaultTab = () => {
-        if (profileData?.accessLevel === AccessLevel.USER ||
-            profileData?.accessLevel === AccessLevel.OWNER ||
+        if (profileData?.accessLevel === AccessLevel.USER) {
+            return 'my-reports'; // USER role only sees personal dashboard
+        }
+        if (profileData?.accessLevel === AccessLevel.OWNER ||
             profileData?.accessLevel === AccessLevel.TECHNICIAN ||
             profileData?.accessLevel === AccessLevel.SUPPORT ||
             profileData?.accessLevel === AccessLevel.DEVELOPER) {
-            return 'my-reports'; // Default to Personal for regular users
+            return 'my-reports'; // Default to Personal for other regular users
         }
         return 'hr'; // Default to Main Dashboard for admins/managers
     };
@@ -72,16 +74,21 @@ export default function Home() {
                 >
                     <div className="mb-8">
                         <h1 className="mb-2 text-2xl font-semibold font-body">
-                            Reports Dashboard
+                            {profileData?.accessLevel === AccessLevel.USER
+                                ? 'Personal Dashboard'
+                                : 'Reports Dashboard'
+                            }
                         </h1>
                         <p className="text-sm text-muted-foreground font-body">
-                            Access comprehensive reports and analytics across
-                            different departments
+                            {profileData?.accessLevel === AccessLevel.USER
+                                ? 'Your personal attendance analytics and performance insights'
+                                : 'Access comprehensive reports and analytics across different departments'
+                            }
                         </p>
                     </div>
 
-                    {/* Tab Navigation */}
-                    {tabs.length > 0 && (
+                    {/* Tab Navigation - Hidden for USER role */}
+                    {tabs.length > 1 && profileData?.accessLevel !== AccessLevel.USER && (
                         <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
                             {tabs.map((tab) => (
                                 <div

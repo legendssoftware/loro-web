@@ -157,6 +157,9 @@ function hasRoutePermission(
         return true;
     }
 
+    // Debug: Log the user role and path for troubleshooting
+    console.log('Middleware check:', { path, userRole, hasAccess: true });
+
     // Super users (admin, manager, owner) have access to all routes
     if (
         userRole === AccessLevel.ADMIN ||
@@ -256,23 +259,31 @@ function getRequiredFeatureForPath(path: string): string {
  * Gets the default redirect path for a user role
  */
 function getDefaultRedirectPath(userRole: string): string {
+    console.log('getDefaultRedirectPath called with:', userRole);
+
     const role = userRole as AccessLevel;
+    console.log('Role as AccessLevel:', role);
 
     // Use centralized role permissions to determine redirect
     if (rolePermissions[role]?.routes) {
         const allowedRoutes = rolePermissions[role].routes;
+        console.log('Allowed routes for role:', allowedRoutes);
 
         // If user has access to all routes, redirect to dashboard
         if (allowedRoutes.includes('*')) {
+            console.log('Role has wildcard access, redirecting to dashboard');
             return '/dashboard';
         }
 
         // Otherwise, redirect to the first allowed route
         const firstAllowedRoute = allowedRoutes[0];
-        return firstAllowedRoute === '/' ? '/dashboard' : firstAllowedRoute;
+        const result = firstAllowedRoute === '/' ? '/dashboard' : firstAllowedRoute;
+        console.log('First allowed route:', firstAllowedRoute, 'Final result:', result);
+        return result;
     }
 
     // Fallback redirects - prioritize dashboard for authenticated users
+    console.log('Using fallback redirect logic');
     switch (role) {
         case AccessLevel.CLIENT:
             return '/quotations';
@@ -346,6 +357,10 @@ export function middleware(request: NextRequest) {
                 const decodedToken = jwtDecode<CustomJwtPayload>(accessToken);
                 userRole = decodedToken.role || null;
 
+                // Debug: Log the extracted role and features
+                console.log('JWT Token Role:', userRole);
+                console.log('JWT Token Features count:', decodedToken.features?.length || 0);
+
                 // Ensure licenseFeatures is always an array
                 if (Array.isArray(decodedToken.features)) {
                     licenseFeatures = decodedToken.features;
@@ -357,10 +372,12 @@ export function middleware(request: NextRequest) {
             } catch (error) {
                 // If token decoding fails, treat as unauthenticated
                 isAuthenticated = false;
+                console.log('Token decoding error:', error);
             }
         } else {
             // Clear invalid tokens
             clearAuthCookies(response);
+            console.log('Token validation failed:', validationResult.reason);
         }
     }
 
@@ -368,6 +385,8 @@ export function middleware(request: NextRequest) {
     if (pathname === '/') {
         if (isAuthenticated) {
             const defaultPath = getDefaultRedirectPath(userRole || '');
+            console.log('Root path redirect:', { userRole, defaultPath });
+
             const redirectUrl = new URL(defaultPath, request.url);
 
             // Only add redirect parameter if we're not redirecting to dashboard
@@ -377,6 +396,7 @@ export function middleware(request: NextRequest) {
 
             // Prevent redirect loops by checking if we're already going to the target path
             if (defaultPath !== pathname) {
+                console.log('Redirecting to:', redirectUrl.toString());
                 return NextResponse.redirect(redirectUrl);
             }
         }

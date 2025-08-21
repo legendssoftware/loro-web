@@ -96,8 +96,8 @@ const navigationItems = [
         icon: <MapPin size={18} strokeWidth={1.5} />,
         href: '/map',
         description: 'Visual map showing team locations, check-ins, and field activities',
-        // All authenticated users can access the map
-        feature: 'dashboard',
+        // Map access restricted to roles with tracking features (not USER role)
+        featureCheck: ['tracking.mapping', 'tracking.unlimited', 'tracking.enterprise', 'map'],
     },
     {
         title: 'Quotations',

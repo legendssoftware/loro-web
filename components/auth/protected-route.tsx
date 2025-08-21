@@ -18,8 +18,38 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
     const pathname = usePathname();
     const { isAuthenticated, profileData, isLoading } = useAuthStore();
 
-    // Get user role from profile data
-    const userRole = profileData?.accessLevel || null;
+    // Get user role - prioritize JWT token role over profile accessLevel for consistency with middleware
+    const getUserRole = () => {
+        // First, try to get role from JWT token (same as middleware)
+        try {
+            const token = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('accessToken='))
+                ?.split('=')[1];
+
+            if (token) {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                if (payload.role) {
+                    return payload.role;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to extract role from token:", e);
+        }
+
+        // Fallback to profile data accessLevel
+        return profileData?.accessLevel || null;
+    };
+
+    const userRole = getUserRole();
 
     useEffect(() => {
         // Skip if still loading
@@ -36,27 +66,26 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
         // Special case: Allow CLIENT direct access to quotations page
         // Extract role from JWT token if not available in profileData
         const getClientRoleFromToken = () => {
-            const token = sessionStorage.getItem('auth-storage');
-            if (token) {
-                try {
-                    const authData = JSON.parse(token);
-                    const accessToken = authData?.state?.accessToken;
+            try {
+                const token = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith('accessToken='))
+                    ?.split('=')[1];
 
-                    if (accessToken) {
-                        const base64Url = accessToken.split('.')[1];
-                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                        const jsonPayload = decodeURIComponent(
-                            atob(base64)
-                                .split('')
-                                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                                .join('')
-                        );
-                        const payload = JSON.parse(jsonPayload);
-                        return payload.role;
-                    }
-                } catch (e) {
-                    console.error("Failed to extract role from token:", e);
+                if (token) {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(
+                        atob(base64)
+                            .split('')
+                            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                            .join('')
+                    );
+                    const payload = JSON.parse(jsonPayload);
+                    return payload.role;
                 }
+            } catch (e) {
+                console.error("Failed to extract role from token:", e);
             }
             return null;
         };

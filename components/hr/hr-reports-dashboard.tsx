@@ -16,10 +16,17 @@ import {
     CheckCircle2,
     Activity,
     BarChart3,
-    Play,
-    Square,
-    UserPlus
+    UserX,
+    UserPlus,
+    Download,
+    Phone,
+    Mail
 } from 'lucide-react';
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from '@/components/ui/avatar';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
@@ -63,6 +70,51 @@ interface TodayAttendanceData {
         totalWorkHours: number;
         totalBreakTime: number;
         attendanceRate: number;
+    };
+}
+
+interface DailyAttendanceOverview {
+    message: string;
+    data: {
+        date: string;
+        totalEmployees: number;
+        presentEmployees: number;
+        absentEmployees: number;
+        attendanceRate: number;
+        presentUsers: Array<{
+            uid: number;
+            name: string;
+            surname: string;
+            fullName: string;
+            email: string;
+            phoneNumber: string;
+            profileImage: string | null;
+            branchId: number | null;
+            branchName: string;
+            accessLevel: string;
+            checkInTime: string;
+            checkOutTime: string | null;
+            status: string;
+            workingHours: string | null;
+            isOnBreak: boolean;
+            shiftDuration: string;
+        }>;
+        absentUsers: Array<{
+            uid: number;
+            name: string;
+            surname: string;
+            fullName: string;
+            email: string;
+            phoneNumber: string;
+            profileImage: string | null;
+            branchId: number | null;
+            branchName: string;
+            accessLevel: string;
+            lastSeenDate: string | null;
+            employeeSince: string;
+            isActive: boolean;
+            role: string;
+        }>;
     };
 }
 
@@ -120,6 +172,89 @@ const formatTime = (timeString: string): string => {
     } catch {
         return timeString;
     }
+};
+
+// CSV Export utility functions
+const downloadCSV = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+};
+
+const exportPresentUsersToCSV = (users: DailyAttendanceOverview['data']['presentUsers'], date: string) => {
+    const headers = [
+        'Employee ID',
+        'Full Name',
+        'Email',
+        'Phone Number',
+        'Branch',
+        'Access Level',
+        'Check In Time',
+        'Check Out Time',
+        'Status',
+        'Working Hours',
+        'Shift Duration',
+        'Is On Break'
+    ];
+
+    const csvContent = [
+        headers.join(','),
+        ...users.map(user => [
+            user.uid,
+            `"${user.fullName}"`,
+            `"${user.email}"`,
+            `"${user.phoneNumber || 'N/A'}"`,
+            `"${user.branchName}"`,
+            user.accessLevel,
+            `"${new Date(user.checkInTime).toLocaleTimeString()}"`,
+            `"${user.checkOutTime ? new Date(user.checkOutTime).toLocaleTimeString() : 'Still Working'}"`,
+            user.status,
+            user.workingHours || 'N/A',
+            `"${user.shiftDuration}"`,
+            user.isOnBreak ? 'Yes' : 'No'
+        ].join(','))
+    ].join('\n');
+
+    downloadCSV(csvContent, `present-employees-${date}.csv`);
+};
+
+const exportAbsentUsersToCSV = (users: DailyAttendanceOverview['data']['absentUsers'], date: string) => {
+    const headers = [
+        'Employee ID',
+        'Full Name',
+        'Email',
+        'Phone Number',
+        'Branch',
+        'Access Level',
+        'Role',
+        'Employee Since',
+        'Status'
+    ];
+
+    const csvContent = [
+        headers.join(','),
+        ...users.map(user => [
+            user.uid,
+            `"${user.fullName}"`,
+            `"${user.email}"`,
+            `"${user.phoneNumber || 'N/A'}"`,
+            `"${user.branchName}"`,
+            user.accessLevel,
+            user.role,
+            user.employeeSince,
+            user.isActive ? 'Active' : 'Inactive'
+        ].join(','))
+    ].join('\n');
+
+    downloadCSV(csvContent, `absent-employees-${date}.csv`);
 };
 
 // Utility function to parse duration string to hours
@@ -218,6 +353,23 @@ const useDailyStats = () => {
             return response.data;
         },
         enabled: !!accessToken && !!profileData?.uid,
+        staleTime: 2 * 60 * 1000, // 2 minutes
+        refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+        retry: 2,
+    });
+};
+
+// Custom hook for daily attendance overview
+const useDailyAttendanceOverview = () => {
+    const { accessToken } = useAuthStore();
+
+    return useQuery({
+        queryKey: ['dailyAttendanceOverview'],
+        queryFn: async () => {
+            const response = await axiosInstance.get('/att/daily-overview');
+            return response.data;
+        },
+        enabled: !!accessToken,
         staleTime: 2 * 60 * 1000, // 2 minutes
         refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
         retry: 2,
@@ -542,6 +694,288 @@ const PersonalMetrics: React.FC<{
     );
 };
 
+// Daily Attendance Table Component
+const DailyAttendanceTable: React.FC = () => {
+    const { data: attendanceOverview, isLoading, error } = useDailyAttendanceOverview();
+
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                {/* Summary Stats Skeleton */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex gap-2 items-center">
+                            <Users className="w-5 h-5" />
+                            Daily Attendance Overview
+                        </CardTitle>
+                        <CardDescription>Today's attendance details</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
+                            {[...Array(4)].map((_, i) => (
+                                <Skeleton key={i} className="h-16 rounded-lg" />
+                            ))}
+                        </div>
+                        <Skeleton className="mb-6 w-full h-2" />
+                    </CardContent>
+                </Card>
+
+                {/* Cards Skeleton */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <Skeleton className="h-64 rounded-lg" />
+                    <Skeleton className="h-64 rounded-lg" />
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !attendanceOverview?.data) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex gap-2 items-center">
+                        <Users className="w-5 h-5" />
+                        Daily Attendance Overview
+                    </CardTitle>
+                    <CardDescription>Today's attendance details</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="py-6 text-center text-muted-foreground">
+                        Failed to load attendance data
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    const { data } = attendanceOverview;
+
+    return (
+        <div className="space-y-6">
+            {/* Summary Stats */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex gap-2 items-center">
+                        <Users className="w-5 h-5" />
+                        Daily Attendance Overview
+                    </CardTitle>
+                    <CardDescription>
+                        Attendance details for {new Date(data.date).toLocaleDateString()}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
+                        <div className="p-3 text-center rounded-lg border">
+                            <div className="text-2xl font-bold text-blue-600">{data.totalEmployees}</div>
+                            <div className="text-sm text-muted-foreground">Total Employees</div>
+                        </div>
+                        <div className="p-3 text-center rounded-lg border">
+                            <div className="text-2xl font-bold text-green-600">{data.presentEmployees}</div>
+                            <div className="text-sm text-muted-foreground">Present</div>
+                        </div>
+                        <div className="p-3 text-center rounded-lg border">
+                            <div className="text-2xl font-bold text-red-600">{data.absentEmployees}</div>
+                            <div className="text-sm text-muted-foreground">Absent</div>
+                        </div>
+                        <div className="p-3 text-center rounded-lg border">
+                            <div className="text-2xl font-bold text-purple-600">{data.attendanceRate}%</div>
+                            <div className="text-sm text-muted-foreground">Attendance Rate</div>
+                        </div>
+                    </div>
+
+                    {/* Attendance Progress */}
+                    <div className="mb-4">
+                        <div className="flex justify-between mb-2 text-sm">
+                            <span>Attendance Progress</span>
+                            <span>{data.attendanceRate}%</span>
+                        </div>
+                        <Progress value={data.attendanceRate} className="h-2" />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Employee Cards - Responsive Grid */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                {/* Present Employees Card */}
+                <Card className="transition-shadow hover:shadow-md">
+                    <CardHeader>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                            <CardTitle className="flex gap-2 items-center text-lg">
+                                <UserCheck className="w-5 h-5 text-green-600" />
+                                Present Employees ({data.presentUsers.length})
+                            </CardTitle>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => exportPresentUsersToCSV(data.presentUsers, data.date)}
+                                className="flex gap-2 items-center self-start sm:self-center"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span className="hidden sm:inline">Export CSV</span>
+                                <span className="sm:hidden">Export</span>
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6">
+                        <div className="overflow-y-auto rounded border" style={{ maxHeight: 'min(400px, 70vh)' }}>
+                            {data.presentUsers.length > 0 ? (
+                                <div className="divide-y">
+                                    {data.presentUsers?.map((user: any) => (
+                                        <div key={user?.uid} className="flex flex-col gap-3 p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
+                                           <div className="flex gap-3 items-center md:w-1/2">
+                                                <Avatar className="flex-shrink-0 w-10 h-10">
+                                                    <AvatarImage
+                                                        src={user?.profileImage || undefined}
+                                                        alt={user?.fullName}
+                                                    />
+                                                    <AvatarFallback>
+                                                        {user?.name?.charAt(0)}{user?.surname?.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium truncate sm:text-base">
+                                                        {user?.fullName}
+                                                    </div>
+                                                    <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:gap-4">
+                                                        <span className="flex gap-1 items-center truncate">
+                                                            <Mail className="flex-shrink-0 w-3 h-3" />
+                                                            <span className="truncate">{user?.email}</span>
+                                                        </span>
+                                                        {user?.phoneNumber && (
+                                                            <span className="flex gap-1 items-center">
+                                                                <Phone className="flex-shrink-0 w-3 h-3" />
+                                                                {user?.phoneNumber}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2 md:w-1/2 sm:items-end">
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {user?.branchName}
+                                                    </Badge>
+                                                    <Badge
+                                                        variant={user?.isOnBreak ? 'secondary' : 'success'}
+                                                        className="text-xs text-white"
+                                                    >
+                                                        {user?.isOnBreak ? 'On Break' : user?.status}
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-sm font-medium">
+                                                        {new Date(user?.checkInTime).toLocaleTimeString([], {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {user?.shiftDuration}
+                                                    </div>
+                                                    {user?.workingHours && (
+                                                        <div className="text-xs text-green-600">
+                                                            {user?.workingHours}h worked
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-muted-foreground">
+                                    <UserCheck className="mx-auto mb-3 w-12 h-12 text-muted-foreground/50" />
+                                    <p className="text-sm sm:text-base">No employees present today</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Absent Employees Card */}
+                <Card className="transition-shadow hover:shadow-md">
+                    <CardHeader>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                            <CardTitle className="flex gap-2 items-center text-lg">
+                                <UserX className="w-5 h-5 text-red-600" />
+                                Absent Employees ({data.absentUsers.length})
+                            </CardTitle>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => exportAbsentUsersToCSV(data.absentUsers, data.date)}
+                                className="flex gap-2 items-center self-start sm:self-center"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span className="hidden sm:inline">Export CSV</span>
+                                <span className="sm:hidden">Export</span>
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6">
+                        <div className="overflow-y-auto p-2 rounded-lg border" style={{ maxHeight: 'min(400px, 70vh)' }}>
+                            {data.absentUsers.length > 0 ? (
+                                <div className="flex flex-col gap-2">
+                                    {data.absentUsers?.map((user: any) => (
+                                        <div key={user?.uid} className="flex flex-col gap-3 p-4 rounded-md border transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
+                                            <div className="flex gap-3 items-center md:w-1/2">
+                                                <Avatar className="flex-shrink-0 w-10 h-10">
+                                                    <AvatarImage
+                                                        src={user?.profileImage || undefined}
+                                                        alt={user?.fullName}
+                                                    />
+                                                    <AvatarFallback>
+                                                        {user?.name?.charAt(0)}{user?.surname?.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium truncate sm:text-base">
+                                                        {user?.fullName}
+                                                    </div>
+                                                    <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:gap-4">
+                                                        <span className="flex gap-1 items-center truncate">
+                                                            <Mail className="flex-shrink-0 w-3 h-3" />
+                                                            <span className="truncate">{user?.email}</span>
+                                                        </span>
+                                                        {user?.phoneNumber && (
+                                                            <span className="flex gap-1 items-center">
+                                                                <Phone className="flex-shrink-0 w-3 h-3" />
+                                                                {user?.phoneNumber}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center md:w-1/2 md:gap-3">
+                                                <div className="flex flex-wrap gap-2 justify-end items-center">
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {user?.branchName}
+                                                    </Badge>
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {user?.role}
+                                                    </Badge>
+                                                    <Badge variant="destructive" className="mb-1 text-white">
+                                                        Absent
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-muted-foreground">
+                                    <CheckCircle2 className="mx-auto mb-3 w-12 h-12 text-green-500" />
+                                    <p className="text-sm sm:text-base">All employees are present today!</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
 export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
     className = '',
 }) => {
@@ -562,37 +996,16 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
         refetch: refetchOrg
     } = useOrganizationTodayReport();
 
-    const {
-        data: userStatus,
-        isLoading: userStatusLoading,
-        refetch: refetchUserStatus
-    } = useCurrentUserStatus();
-
-    const {
-        data: userMetrics,
-        isLoading: userMetricsLoading,
-        refetch: refetchUserMetrics
-    } = useCurrentUserMetrics();
-
-    const {
-        data: dailyStats,
-        isLoading: dailyStatsLoading,
-        refetch: refetchDailyStats
-    } = useDailyStats();
-
     // Auto-refresh tracker
     useEffect(() => {
         const interval = setInterval(() => {
             setLastRefresh(new Date());
             refetchToday();
             refetchOrg();
-            refetchUserStatus();
-            refetchUserMetrics();
-            refetchDailyStats();
         }, 5 * 60 * 1000); // Refresh every 5 minutes
 
         return () => clearInterval(interval);
-    }, [refetchToday, refetchOrg, refetchUserStatus, refetchUserMetrics, refetchDailyStats]);
+    }, [refetchToday, refetchOrg]);
 
     // Shift management mutations - Matching mobile version exactly
     const checkInMutation = useMutation({
@@ -844,6 +1257,9 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
                     </CardContent>
                 </Card>
             )}
+
+            {/* Daily Attendance Table */}
+            <DailyAttendanceTable />
         </div>
     );
 };

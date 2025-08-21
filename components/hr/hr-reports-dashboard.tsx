@@ -817,11 +817,11 @@ const DailyAttendanceTable: React.FC = () => {
                         </div>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
-                        <div className="overflow-y-auto rounded border" style={{ maxHeight: 'min(400px, 70vh)' }}>
-                            {data.presentUsers.length > 0 ? (
+                    <div className="overflow-y-auto p-2 rounded-lg border" style={{ maxHeight: 'min(400px, 70vh)' }}>
+                    {data.presentUsers.length > 0 ? (
                                 <div className="divide-y">
                                     {data.presentUsers?.map((user: any) => (
-                                        <div key={user?.uid} className="flex flex-col gap-3 p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
+                                        <div key={user?.uid} className="flex flex-col gap-3 p-4 rounded-md border transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
                                            <div className="flex gap-3 items-center md:w-1/2">
                                                 <Avatar className="flex-shrink-0 w-10 h-10">
                                                     <AvatarImage
@@ -863,20 +863,15 @@ const DailyAttendanceTable: React.FC = () => {
                                                     </Badge>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-sm font-medium">
-                                                        {new Date(user?.checkInTime).toLocaleTimeString([], {
+                                                    <div className="flex flex-row gap-1 items-center text-sm font-medium">
+                                                        <p>  
+                                                            {new Date(user?.checkInTime).toLocaleTimeString([], {
                                                             hour: '2-digit',
                                                             minute: '2-digit'
-                                                        })}
+                                                        })} - 
+                                                        </p>
+                                                        <p>{user?.shiftDuration} Worked</p>
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {user?.shiftDuration}
-                                                    </div>
-                                                    {user?.workingHours && (
-                                                        <div className="text-xs text-green-600">
-                                                            {user?.workingHours}h worked
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -946,7 +941,7 @@ const DailyAttendanceTable: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center md:w-1/2 md:gap-3">
+                                            <div className="flex items-center md:w-1/2 md:gap-3 md:justify-end">
                                                 <div className="flex flex-wrap gap-2 justify-end items-center">
                                                     <Badge variant="outline" className="text-xs">
                                                         {user?.branchName}

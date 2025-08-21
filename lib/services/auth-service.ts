@@ -10,14 +10,14 @@ export interface CustomJwtPayload extends JwtPayload {
   organisationRef: string;
   licenseId: string;
   licensePlan: string;
-  features: string[];
+  features: string[] | Record<string, boolean>;
 }
 
 export interface LicenseInfo {
   licenseId: string;
   plan: string;
   status: string;
-  features: string[];
+  features: string[] | Record<string, boolean>;
 }
 
 export interface ProfileData {

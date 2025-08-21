@@ -49,7 +49,31 @@ export const useRBAC = () => {
         return profileData?.accessLevel;
     };
 
+    // Get license features in a consistent format
+    const getLicenseFeatures = () => {
+        if (profileData?.licenseInfo?.features) {
+            const features = profileData.licenseInfo.features;
+            
+            // If it's already an object, return it
+            if (typeof features === 'object' && !Array.isArray(features)) {
+                return features;
+            }
+            
+            // If it's an array, convert to object format
+            if (Array.isArray(features)) {
+                const featuresObj: Record<string, boolean> = {};
+                features.forEach(feature => {
+                    featuresObj[feature] = true;
+                });
+                return featuresObj;
+            }
+        }
+        
+        return {};
+    };
+
     const userRole = getUserRole();
+    const licenseFeatures = getLicenseFeatures();
 
     /**
      * Check if the user has at least one of the required roles
@@ -60,17 +84,20 @@ export const useRBAC = () => {
         // If no user role, deny access
         if (!userRole) return false;
 
+        // Normalize role name for comparison
+        const normalizedRole = userRole.toLowerCase() as AccessLevel;
+
         // Admin and Manager have access to everything
         if (
-            userRole === AccessLevel.ADMIN ||
-            userRole === AccessLevel.MANAGER ||
-            userRole === AccessLevel.OWNER
+            normalizedRole === AccessLevel.ADMIN ||
+            normalizedRole === AccessLevel.MANAGER ||
+            normalizedRole === AccessLevel.OWNER
         ) {
             return true;
         }
 
         // Check if the user's role is in the allowed roles
-        return allowedRoles.includes(userRole as AccessLevel);
+        return allowedRoles.includes(normalizedRole);
     };
 
     /**
@@ -79,7 +106,7 @@ export const useRBAC = () => {
      * @returns Boolean indicating if user has permission
      */
     const hasPermission = (
-        feature: 'claims' | 'tasks' | 'leads' | 'quotations' | string,
+        feature: 'claims' | 'tasks' | 'leads' | 'quotations' | 'dashboard' | string,
     ): boolean => {
         // Import role permissions
         const { rolePermissions } = require('@/types/auth');
@@ -87,78 +114,70 @@ export const useRBAC = () => {
         // If no user role, deny access
         if (!userRole) return false;
 
+        // Normalize role name for comparison
+        const normalizedRole = userRole.toLowerCase() as AccessLevel;
+
         // Admin, Manager, and Owner have access to everything
         if (
-            userRole === AccessLevel.ADMIN ||
-            userRole === AccessLevel.MANAGER ||
-            userRole === AccessLevel.OWNER
+            normalizedRole === AccessLevel.ADMIN ||
+            normalizedRole === AccessLevel.MANAGER ||
+            normalizedRole === AccessLevel.OWNER
         ) {
             return true;
         }
 
         // Get the role permissions from auth.ts
-        const role = userRole as AccessLevel;
-        const permissions = rolePermissions[role];
+        const permissions = rolePermissions[normalizedRole];
 
         if (!permissions) return false;
 
         // Check if the feature is in the role's features array
         const hasFeatureAccess = permissions.features.includes(feature);
 
-        // Special handling for CLIENT role - only allow quotations
-        if (userRole === AccessLevel.CLIENT) {
-            // For clients, also check license features if available
-            if (profileData?.licenseInfo?.features) {
-                const features = profileData.licenseInfo.features as any;
+        // Check license features for additional validation
+        const hasLicenseFeature = checkLicenseFeature(feature);
 
-                // Check for exact match or dotted permissions
-                if (features && features[feature] === true) {
-                    return true;
-                }
-
-                if (
-                    features &&
-                    Object.keys(features).some(
-                        (key) =>
-                            key.startsWith(`${feature}.`) && features[key] === true,
-                    )
-                ) {
-                    return true;
-                }
+        // Special handling for CLIENT role - only allow quotations and journal
+        if (normalizedRole === AccessLevel.CLIENT) {
+            // For clients, check both role permissions and license features
+            if (hasFeatureAccess && hasLicenseFeature) {
+                return true;
             }
-
-            // Only allow quotations for clients by default
-            return feature === 'quotations';
+            // Only allow quotations for clients by default if no license features
+            return feature === 'quotations' || feature === 'journal';
         }
 
-        // For other roles, check license features if available (additional restrictions)
-        if (profileData?.licenseInfo?.features) {
-            const features = profileData.licenseInfo.features as any;
+        // For other roles, both role and license must allow the feature
+        return hasFeatureAccess && hasLicenseFeature;
+    };
 
-            // Check for exact match
-            if (features && features[feature] === true) {
-                return hasFeatureAccess; // Only grant if role also allows it
-            }
-
-            // Check for dotted permissions
-            if (
-                features &&
-                Object.keys(features).some(
-                    (key) =>
-                        key.startsWith(`${feature}.`) && features[key] === true,
-                )
-            ) {
-                return hasFeatureAccess; // Only grant if role also allows it
-            }
+    /**
+     * Helper function to check if a feature is allowed by license
+     */
+    const checkLicenseFeature = (feature: string): boolean => {
+        // If no license features, allow access (backward compatibility)
+        if (!licenseFeatures || Object.keys(licenseFeatures).length === 0) {
+            return true;
         }
 
-        // Return the role-based permission
-        return hasFeatureAccess;
+        // Check for exact match
+        if (licenseFeatures[feature] === true) {
+            return true;
+        }
+
+        // Check for dotted notation (e.g., "dashboard.access", "dashboard.premium")
+        const hasRelatedFeature = Object.keys(licenseFeatures).some(
+            (key) => key.startsWith(`${feature}.`) && licenseFeatures[key] === true
+        );
+
+        return hasRelatedFeature;
     };
 
     return {
         hasRole,
         hasPermission,
+        checkLicenseFeature,
         userRole,
+        licenseFeatures,
     };
 };

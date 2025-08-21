@@ -148,36 +148,41 @@ function clearAuthCookies(response: NextResponse): void {
 function hasRoutePermission(
     path: string,
     userRole: string | null,
-    licenseFeatures: string[] = [],
+    licenseFeatures: string[] | Record<string, boolean> = [],
 ): boolean {
     if (!userRole) return false;
 
-    // Dashboard should be accessible to all authenticated users
+    // Dashboard should be accessible to all authenticated users with valid licenses
     if (path === '/dashboard' || path.startsWith('/dashboard')) {
-        return true;
+        // Check if user has dashboard access in their license features
+        return hasLicenseFeatureAccess(path, licenseFeatures);
     }
 
     // Debug: Log the user role and path for troubleshooting
-    console.log('Middleware check:', { path, userRole, hasAccess: true });
+    console.log('Middleware check:', { path, userRole, licenseFeatures: licenseFeatures.length });
+
+    // Normalize role names to handle different formats
+    const normalizedRole = userRole.toLowerCase() as AccessLevel;
 
     // Super users (admin, manager, owner) have access to all routes
     if (
-        userRole === AccessLevel.ADMIN ||
-        userRole === AccessLevel.MANAGER ||
-        userRole === AccessLevel.OWNER ||
-        userRole === AccessLevel.DEVELOPER ||
-        userRole === AccessLevel.EXECUTIVE
+        normalizedRole === AccessLevel.ADMIN ||
+        normalizedRole === AccessLevel.MANAGER ||
+        normalizedRole === AccessLevel.OWNER ||
+        normalizedRole === AccessLevel.DEVELOPER ||
+        normalizedRole === AccessLevel.EXECUTIVE
     ) {
-        return true;
+        return hasLicenseFeatureAccess(path, licenseFeatures);
     }
 
     // For other roles, check specific permissions
-    const role = userRole as AccessLevel;
-    if (rolePermissions[role]) {
-        const allowedRoutes = rolePermissions[role].routes;
+    if (rolePermissions[normalizedRole]) {
+        const allowedRoutes = rolePermissions[normalizedRole].routes;
 
         // Check for wildcard or exact path match
-        if (allowedRoutes.includes('*')) return true;
+        if (allowedRoutes.includes('*')) {
+            return hasLicenseFeatureAccess(path, licenseFeatures);
+        }
 
         // Check if any allowed route matches the current path
         const hasRouteAccess = allowedRoutes.some((route) =>
@@ -197,6 +202,7 @@ function hasRoutePermission(
  * Map routes to required features
  */
 const routeFeatureMap: Record<string, string[]> = {
+    '/dashboard': ['dashboard'],
     '/claims': ['claims'],
     '/tasks': ['tasks'],
     '/leads': ['leads'],
@@ -216,28 +222,64 @@ const routeFeatureMap: Record<string, string[]> = {
  */
 function hasLicenseFeatureAccess(
     path: string,
-    licenseFeatures: string[],
+    licenseFeatures: string[] | Record<string, boolean>,
 ): boolean {
-    // If no features specified or features is not an array, allow access (backward compatibility)
-    if (!Array.isArray(licenseFeatures) || licenseFeatures.length === 0) {
-        return true;
+    console.log('Checking license features for path:', path, 'Features type:', typeof licenseFeatures);
+
+    // If no features specified, deny access for security
+    if (!licenseFeatures) {
+        console.log('No license features provided, denying access');
+        return false;
+    }
+
+    // Handle both array format and object format
+    let featuresObject: Record<string, boolean> = {};
+    
+    if (Array.isArray(licenseFeatures)) {
+        // Convert array to object for consistent handling
+        licenseFeatures.forEach(feature => {
+            featuresObject[feature] = true;
+        });
+    } else if (typeof licenseFeatures === 'object') {
+        featuresObject = licenseFeatures;
+    } else {
+        console.log('Invalid license features format');
+        return false;
     }
 
     // Check if the path requires specific features
-    for (const [routePath, requiredFeatures] of Object.entries(
-        routeFeatureMap,
-    )) {
+    for (const [routePath, requiredFeatures] of Object.entries(routeFeatureMap)) {
         if (path.startsWith(routePath)) {
+            console.log(`Checking access for route ${routePath}, required features:`, requiredFeatures);
+            
             // Check if user has at least one of the required features
-            return requiredFeatures.some(
-                (feature) =>
-                    typeof feature === 'string' &&
-                    licenseFeatures.includes(feature),
-            );
+            const hasAccess = requiredFeatures.some(feature => {
+                // Check for exact match (e.g., "dashboard")
+                if (featuresObject[feature]) {
+                    console.log(`Found exact feature match: ${feature}`);
+                    return true;
+                }
+                
+                // Check for dotted notation (e.g., "dashboard.access", "dashboard.premium")
+                const dottedFeatures = Object.keys(featuresObject).filter(key => 
+                    key.startsWith(`${feature}.`) && featuresObject[key] === true
+                );
+                
+                if (dottedFeatures.length > 0) {
+                    console.log(`Found dotted feature matches for ${feature}:`, dottedFeatures);
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            console.log(`Access result for ${routePath}: ${hasAccess}`);
+            return hasAccess;
         }
     }
 
     // If no specific feature requirements found, allow access
+    console.log('No specific feature requirements found, allowing access');
     return true;
 }
 
@@ -261,37 +303,10 @@ function getRequiredFeatureForPath(path: string): string {
 function getDefaultRedirectPath(userRole: string): string {
     console.log('getDefaultRedirectPath called with:', userRole);
 
-    const role = userRole as AccessLevel;
-    console.log('Role as AccessLevel:', role);
-
-    // Use centralized role permissions to determine redirect
-    if (rolePermissions[role]?.routes) {
-        const allowedRoutes = rolePermissions[role].routes;
-        console.log('Allowed routes for role:', allowedRoutes);
-
-        // If user has access to all routes, redirect to dashboard
-        if (allowedRoutes.includes('*')) {
-            console.log('Role has wildcard access, redirecting to dashboard');
+    // ALWAYS redirect to dashboard after successful sign-in
+    // This ensures consistent behavior regardless of role
+    // The client-side route guards will handle role-based access control
             return '/dashboard';
-        }
-
-        // Otherwise, redirect to the first allowed route
-        const firstAllowedRoute = allowedRoutes[0];
-        const result = firstAllowedRoute === '/' ? '/dashboard' : firstAllowedRoute;
-        console.log('First allowed route:', firstAllowedRoute, 'Final result:', result);
-        return result;
-    }
-
-    // Fallback redirects - prioritize dashboard for authenticated users
-    console.log('Using fallback redirect logic');
-    switch (role) {
-        case AccessLevel.CLIENT:
-            return '/quotations';
-        case AccessLevel.USER:
-            return '/tasks';
-        default:
-            return '/dashboard';
-    }
 }
 
 /**
@@ -346,7 +361,7 @@ export function middleware(request: NextRequest) {
     // Validate the token and extract information
     let isAuthenticated = false;
     let userRole: string | null = null;
-    let licenseFeatures: string[] = [];
+    let licenseFeatures: string[] | Record<string, boolean> = [];
     let licensePlan: string | null = null;
 
     if (accessToken) {
@@ -359,13 +374,18 @@ export function middleware(request: NextRequest) {
 
                 // Debug: Log the extracted role and features
                 console.log('JWT Token Role:', userRole);
-                console.log('JWT Token Features count:', decodedToken.features?.length || 0);
+                console.log('JWT Token Features type:', typeof decodedToken.features);
 
-                // Ensure licenseFeatures is always an array
+                // Handle both array and object formats for license features
                 if (Array.isArray(decodedToken.features)) {
                     licenseFeatures = decodedToken.features;
+                    console.log('JWT Token Features array length:', decodedToken.features.length);
+                } else if (typeof decodedToken.features === 'object' && decodedToken.features !== null) {
+                    licenseFeatures = decodedToken.features;
+                    console.log('JWT Token Features object keys:', Object.keys(decodedToken.features).length);
                 } else {
                     licenseFeatures = [];
+                    console.log('No valid license features found in token');
                 }
 
                 licensePlan = decodedToken.licensePlan || null;

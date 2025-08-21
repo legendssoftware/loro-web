@@ -6,34 +6,49 @@ import { useState } from 'react';
 import { HRReportsDashboard } from '@/components/hr/hr-reports-dashboard';
 import { PersonalReportsDashboard } from '@/components/hr/personal-reports-dashboard';
 import { useAuthStore } from '@/store/auth-store';
+import { useRBAC } from '@/hooks/use-rbac';
 import { AccessLevel } from '@/types/auth';
 
 export default function Home() {
     const { profileData } = useAuthStore();
+    const { hasRole, userRole } = useRBAC();
 
-    // Define all possible tabs - USER role only gets personal dashboard
+    // Define all possible tabs with role-based access
     const allTabs = [
-        { id: 'hr', label: 'Main Dashboard', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR] },
-        { id: 'my-reports', label: 'Personal', allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER] },
+        { 
+            id: 'hr', 
+            label: 'Main Dashboard', 
+            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE] 
+        },
+        { 
+            id: 'my-reports', 
+            label: 'Personal', 
+            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER, AccessLevel.EXECUTIVE] 
+        },
     ];
 
-    // Filter tabs based on user access level
-    const tabs = allTabs.filter(tab =>
-        tab.allowedRoles.includes(profileData?.accessLevel as AccessLevel)
-    );
+    // Filter tabs based on user role using RBAC
+    const tabs = allTabs.filter(tab => hasRole(tab.allowedRoles));
 
     // Set default active tab based on user permissions
     const getDefaultTab = () => {
-        if (profileData?.accessLevel === AccessLevel.USER) {
-            return 'my-reports'; // USER role only sees personal dashboard
+        const normalizedRole = userRole?.toLowerCase() as AccessLevel;
+        
+        // USER role and similar roles only get personal dashboard
+        if (normalizedRole === AccessLevel.USER ||
+            normalizedRole === AccessLevel.TECHNICIAN ||
+            normalizedRole === AccessLevel.SUPPORT ||
+            normalizedRole === AccessLevel.DEVELOPER) {
+            return 'my-reports';
         }
-        if (profileData?.accessLevel === AccessLevel.OWNER ||
-            profileData?.accessLevel === AccessLevel.TECHNICIAN ||
-            profileData?.accessLevel === AccessLevel.SUPPORT ||
-            profileData?.accessLevel === AccessLevel.DEVELOPER) {
-            return 'my-reports'; // Default to Personal for other regular users
+        
+        // Admin and higher roles default to main dashboard if available
+        if (hasRole([AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE])) {
+            return 'hr';
         }
-        return 'hr'; // Default to Main Dashboard for admins/managers
+        
+        // Fallback to personal reports
+        return 'my-reports';
     };
 
     const [activeTab, setActiveTab] = useState<string>(getDefaultTab);
@@ -74,21 +89,21 @@ export default function Home() {
                 >
                     <div className="mb-8">
                         <h1 className="mb-2 text-2xl font-semibold font-body">
-                            {profileData?.accessLevel === AccessLevel.USER
+                            {userRole?.toLowerCase() === AccessLevel.USER
                                 ? 'Personal Dashboard'
                                 : 'Reports Dashboard'
                             }
                         </h1>
                         <p className="text-sm text-muted-foreground font-body">
-                            {profileData?.accessLevel === AccessLevel.USER
+                            {userRole?.toLowerCase() === AccessLevel.USER
                                 ? 'Your personal attendance analytics and performance insights'
                                 : 'Access comprehensive reports and analytics across different departments'
                             }
                         </p>
                     </div>
 
-                    {/* Tab Navigation - Hidden for USER role */}
-                    {tabs.length > 1 && profileData?.accessLevel !== AccessLevel.USER && (
+                    {/* Tab Navigation - Show when user has access to multiple tabs */}
+                    {tabs.length > 1 && (
                         <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
                             {tabs.map((tab) => (
                                 <div

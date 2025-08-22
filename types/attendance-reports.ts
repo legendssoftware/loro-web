@@ -87,6 +87,8 @@ export interface MorningAttendanceReport {
     reportDate: string;
     generatedAt: string;
     reportType: 'morning';
+    organizationName: string;
+    organizationStartTime: string;
     organization: {
         uid: number;
         name: string;
@@ -95,8 +97,54 @@ export interface MorningAttendanceReport {
             end: string;
         };
     };
-    summary: AttendanceSummaryMetrics;
+    summary: AttendanceSummaryMetrics & {
+        totalActualHours: number;
+        totalExpectedHours: number;
+        productivityRate: number;
+        hoursDeficit: number;
+    };
     comparisons: AttendanceComparisons;
+    punctuality: {
+        earlyArrivals: AttendanceReportUser[];
+        onTimeArrivals: AttendanceReportUser[];
+        lateArrivals: AttendanceReportUser[];
+        veryLateArrivals: AttendanceReportUser[];
+        earlyPercentage: number;
+        onTimePercentage: number;
+        latePercentage: number;
+        veryLatePercentage: number;
+        averageLateMinutes: number;
+        totalLateMinutes: number;
+        byBranch: Array<{
+            branchId: number;
+            branchName: string;
+            earlyArrivals: AttendanceReportUser[];
+            onTimeArrivals: AttendanceReportUser[];
+            lateArrivals: AttendanceReportUser[];
+            veryLateArrivals: AttendanceReportUser[];
+            earlyPercentage: number;
+            onTimePercentage: number;
+            latePercentage: number;
+            veryLatePercentage: number;
+            averageLateMinutes: number;
+            totalLateMinutes: number;
+            totalEmployees: number;
+        }>;
+    };
+    presentEmployees: AttendanceReportUser[];
+    absentEmployees: AttendanceReportUser[];
+    currentlyWorkingEmployees: AttendanceReportUser[];
+    completedShiftEmployees: AttendanceReportUser[];
+    overtimeEmployees: AttendanceReportUser[];
+    branchBreakdown: AttendanceReportBranch[];
+    targetPerformance: {
+        expectedDailyHours: number;
+        actualHoursToDate: number;
+        projectedEndOfDayHours: number;
+        onTrackToMeetTargets: boolean;
+        targetAchievementRate: number;
+        hoursGapAnalysis: string;
+    };
     branches: AttendanceReportBranch[];
     insights: AttendanceInsights;
     recommendations: AttendanceRecommendations;
@@ -105,12 +153,55 @@ export interface MorningAttendanceReport {
         warning: string[];
         info: string[];
     };
+    hasEmployees: boolean;
+    latenessSummary: {
+        totalLateEmployees: number;
+        totalLateMinutes: number;
+        averageLateMinutes: number;
+        worstLateArrival?: {
+            employee: string;
+            minutes: number;
+        };
+    };
+    dashboardUrl: string;
+    socialLinks?: any;
+    enhancedAnalytics: {
+        performance: any;
+        productivity: any;
+        wellness: any;
+    };
+}
+
+export interface EmployeeMetric {
+    uid: number;
+    name: string;
+    surname: string;
+    email: string;
+    role: string;
+    branch?: {
+        uid: number;
+        name: string;
+    };
+    checkInTime?: string;
+    checkOutTime?: string;
+    hoursWorked: number;
+    isLate: boolean;
+    lateMinutes: number;
+    status: 'Absent' | 'Late' | 'On Time' | 'Completed' | 'Currently Working';
+    yesterdayComparison: {
+        hoursChange: number;
+        punctualityChange: string;
+    };
+    avatar?: string;
 }
 
 export interface EveningAttendanceReport {
     reportDate: string;
     generatedAt: string;
     reportType: 'evening';
+    organizationName: string;
+    organizationStartTime: string;
+    organizationCloseTime: string;
     organization: {
         uid: number;
         name: string;
@@ -132,13 +223,72 @@ export interface EveningAttendanceReport {
         projectsAdvanced: number;
         completionRate: number;
     };
-    branches: AttendanceReportBranch[];
+    // Individual Performance Summary data
+    employeeMetrics: EmployeeMetric[];
+    presentEmployees: AttendanceReportUser[];
+    absentEmployees: AttendanceReportUser[];
+    currentlyWorkingEmployees: AttendanceReportUser[];
+    completedShiftEmployees: AttendanceReportUser[];
+    overtimeEmployees: AttendanceReportUser[];
+    branchBreakdown: AttendanceReportBranch[];
+    targetPerformance: {
+        expectedDailyHours: number;
+        actualTotalHours: number;
+        targetAchievementRate: number;
+        hoursOverTarget: number;
+        hoursUnderTarget: number;
+        teamEfficiencyRating: string;
+        individualTargetsMet: number;
+        individualTargetsMissed: number;
+    };
     insights: AttendanceInsights;
     recommendations: AttendanceRecommendations;
     nextDayPlanning: {
         expectedAttendance: number;
         plannedTasks: number;
         resourceAllocation: string[];
+    };
+    // Additional fields for comprehensive reporting
+    hasEmployees: boolean;
+    latenessSummary: {
+        totalLateEmployees: number;
+        totalLateMinutes: number;
+        averageLateMinutes: number;
+        punctualityTrend: string;
+    };
+    totalEmployees: number;
+    workedTodayCount: number;
+    totalHoursWorked: number;
+    averageHoursWorked: number;
+    attendanceChange: number;
+    hoursChange: number;
+    punctualityChange: number;
+    performanceTrend: string;
+    attendanceRate: number;
+    yesterdayAttendanceRate: number;
+    punctualityRate: number;
+    overallPerformance: {
+        description: string;
+    };
+    topPerformers?: Array<{
+        name: string;
+        surname: string;
+        hoursWorked: number;
+        achievement: string;
+        metric: string;
+    }>;
+    improvementAreas?: Array<{
+        area: string;
+        description: string;
+        count: number;
+    }>;
+    tomorrowActions: string[];
+    dashboardUrl: string;
+    socialLinks?: any;
+    enhancedAnalytics: {
+        performance: any;
+        productivity: any;
+        wellness: any;
     };
 }
 

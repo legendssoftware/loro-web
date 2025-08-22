@@ -21,7 +21,7 @@ export interface MapQueryParams {
 }
 
 /**
- * Interface for map data
+ * Interface for map data - Enhanced with comprehensive marker types
  */
 export interface MapData {
     workers: WorkerType[];
@@ -30,6 +30,16 @@ export interface MapData {
     competitors?: CompetitorType[];
     clients?: ClientType[];
     quotations?: QuotationType[];
+    // New comprehensive data arrays
+    leads?: any[];
+    journals?: any[];
+    tasks?: any[];
+    checkIns?: any[];
+    shiftStarts?: any[];
+    shiftEnds?: any[];
+    breakStarts?: any[];
+    breakEnds?: any[];
+    allMarkers?: any[];
 }
 
 /**
@@ -62,6 +72,17 @@ export function useMapQuery(params: MapQueryParams = {}) {
     const clients = data?.data?.clients || [];
     const quotations = data?.data?.quotations || [];
 
+    // Extract new comprehensive data arrays
+    const leads = data?.data?.leads || [];
+    const journals = data?.data?.journals || [];
+    const tasks = data?.data?.tasks || [];
+    const checkIns = data?.data?.checkIns || [];
+    const shiftStarts = data?.data?.shiftStarts || [];
+    const shiftEnds = data?.data?.shiftEnds || [];
+    const breakStarts = data?.data?.breakStarts || [];
+    const breakEnds = data?.data?.breakEnds || [];
+    const allMarkers = data?.data?.allMarkers || [];
+
     return {
         workers,
         events,
@@ -69,6 +90,16 @@ export function useMapQuery(params: MapQueryParams = {}) {
         competitors,
         clients,
         quotations,
+        // New comprehensive data arrays
+        leads,
+        journals,
+        tasks,
+        checkIns,
+        shiftStarts,
+        shiftEnds,
+        breakStarts,
+        breakEnds,
+        allMarkers,
         isLoading,
         isRefetching,
         isError,

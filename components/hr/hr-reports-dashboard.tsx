@@ -377,7 +377,7 @@ const useDailyAttendanceOverview = () => {
 };
 
 // Stats card component
-const StatsCard: React.FC<{
+const StatsCard: React.FunctionComponent<{
     title: string;
     value: string | number;
     subtitle?: string;
@@ -415,7 +415,7 @@ const StatsCard: React.FC<{
 );
 
 // Work hours breakdown component
-const WorkHoursBreakdown: React.FC<{
+const WorkHoursBreakdown: React.FunctionComponent<{
     data: TodayAttendanceData;
     orgReport?: OrganizationReportData;
 }> = ({ data, orgReport }) => {
@@ -586,7 +586,7 @@ const EmployeeStatusOverview: React.FunctionComponent<{
 };
 
 // Personal Metrics Component
-const PersonalMetrics: React.FC<{
+const PersonalMetrics: React.FunctionComponent<{
     userMetrics: any;
     dailyStats: any;
 }> = ({ userMetrics, dailyStats }) => {
@@ -695,7 +695,7 @@ const PersonalMetrics: React.FC<{
 };
 
 // Daily Attendance Table Component
-const DailyAttendanceTable: React.FC = () => {
+const DailyAttendanceTable: React.FunctionComponent = () => {
     const { data: attendanceOverview, isLoading, error } = useDailyAttendanceOverview();
 
     if (isLoading) {
@@ -712,7 +712,7 @@ const DailyAttendanceTable: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
-                            {[...Array(4)].map((_, i) => (
+                            {[...Array(4)]?.map((_, i) => (
                                 <Skeleton key={i} className="h-16 rounded-lg" />
                             ))}
                         </div>
@@ -766,19 +766,19 @@ const DailyAttendanceTable: React.FC = () => {
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-blue-600">{data.totalEmployees}</div>
+                            <div className="text-2xl font-bold text-blue-600">{data?.totalEmployees}</div>
                             <div className="text-sm text-muted-foreground">Total Employees</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-green-600">{data.presentEmployees}</div>
+                            <div className="text-2xl font-bold text-green-600">{data?.presentEmployees}</div>
                             <div className="text-sm text-muted-foreground">Present</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-red-600">{data.absentEmployees}</div>
+                            <div className="text-2xl font-bold text-red-600">{data?.absentEmployees}</div>
                             <div className="text-sm text-muted-foreground">Absent</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-purple-600">{data.attendanceRate}%</div>
+                            <div className="text-2xl font-bold text-purple-600">{data?.attendanceRate}%</div>
                             <div className="text-sm text-muted-foreground">Attendance Rate</div>
                         </div>
                     </div>
@@ -787,9 +787,9 @@ const DailyAttendanceTable: React.FC = () => {
                     <div className="mb-4">
                         <div className="flex justify-between mb-2 text-sm">
                             <span>Attendance Progress</span>
-                            <span>{data.attendanceRate}%</span>
+                            <span>{data?.attendanceRate}%</span>
                         </div>
-                        <Progress value={data.attendanceRate} className="h-2" />
+                        <Progress value={data?.attendanceRate} className="h-2" />
                     </div>
                 </CardContent>
             </Card>
@@ -819,7 +819,7 @@ const DailyAttendanceTable: React.FC = () => {
                     <CardContent className="p-4 sm:p-6">
                     <div className="overflow-y-auto p-2 rounded-lg border" style={{ maxHeight: 'min(400px, 70vh)' }}>
                     {data.presentUsers.length > 0 ? (
-                                <div className="divide-y">
+                              <div className="flex flex-col gap-2">
                                     {data.presentUsers?.map((user: any) => (
                                         <div key={user?.uid} className="flex flex-col gap-3 p-4 rounded-md border transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
                                            <div className="flex gap-3 items-center md:w-1/2">
@@ -864,13 +864,13 @@ const DailyAttendanceTable: React.FC = () => {
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="flex flex-row gap-1 items-center text-sm font-medium">
-                                                        <p>  
+                                                        <p>
                                                             {new Date(user?.checkInTime).toLocaleTimeString([], {
                                                             hour: '2-digit',
                                                             minute: '2-digit'
-                                                        })} - 
+                                                        })} -
                                                         </p>
-                                                        <p>{user?.shiftDuration} Worked</p>
+                                                        <p>{user?.shiftDuration}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -971,7 +971,7 @@ const DailyAttendanceTable: React.FC = () => {
     );
 };
 
-export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
+export const HRReportsDashboard: React.FunctionComponent<HRReportsDashboardProps> = ({
     className = '',
 }) => {
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());

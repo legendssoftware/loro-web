@@ -24,6 +24,16 @@ export interface MapDataResponse {
         competitors?: CompetitorType[];
         clients?: ClientType[];
         quotations?: QuotationType[];
+        // New comprehensive data arrays
+        leads?: any[];
+        journals?: any[];
+        tasks?: any[];
+        checkIns?: any[];
+        shiftStarts?: any[];
+        shiftEnds?: any[];
+        breakStarts?: any[];
+        breakEnds?: any[];
+        allMarkers?: any[];
     };
 }
 
@@ -62,7 +72,7 @@ export class MapApi {
             if (options?.userId) params.append('userId', options.userId);
 
             const queryString = params.toString();
-            const endpoint = `/reports/map-data${queryString ? `?${queryString}` : ''}`;
+            const endpoint = `/reports/map${queryString ? `?${queryString}` : ''}`;
 
             const { data } = await axiosInstance.get<MapDataResponse>(endpoint);
             return data;

@@ -15,15 +15,15 @@ export default function Home() {
 
     // Define all possible tabs with role-based access
     const allTabs = [
-        { 
-            id: 'hr', 
-            label: 'Main Dashboard', 
-            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE] 
+        {
+            id: 'hr',
+            label: 'Main Dashboard',
+            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE]
         },
-        { 
-            id: 'my-reports', 
-            label: 'Personal', 
-            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER, AccessLevel.EXECUTIVE] 
+        {
+            id: 'my-reports',
+            label: 'Personal',
+            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER, AccessLevel.EXECUTIVE]
         },
     ];
 
@@ -33,7 +33,7 @@ export default function Home() {
     // Set default active tab based on user permissions
     const getDefaultTab = () => {
         const normalizedRole = userRole?.toLowerCase() as AccessLevel;
-        
+
         // USER role and similar roles only get personal dashboard
         if (normalizedRole === AccessLevel.USER ||
             normalizedRole === AccessLevel.TECHNICIAN ||
@@ -41,12 +41,12 @@ export default function Home() {
             normalizedRole === AccessLevel.DEVELOPER) {
             return 'my-reports';
         }
-        
+
         // Admin and higher roles default to main dashboard if available
         if (hasRole([AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE])) {
             return 'hr';
         }
-        
+
         // Fallback to personal reports
         return 'my-reports';
     };

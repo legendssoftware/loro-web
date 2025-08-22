@@ -224,7 +224,7 @@ export const EveningAttendanceReportComponent: React.FC<EveningAttendanceReportP
     };
 
     const renderProductivityChart = () => {
-        const productivityData = report.branches.map(branch => ({
+        const productivityData = report.branchBreakdown.map(branch => ({
             name: branch.name,
             productivity: branch.averageWorkingHours,
             efficiency: (branch.averageWorkingHours / 8) * 100,
@@ -626,7 +626,7 @@ export const EveningAttendanceReportComponent: React.FC<EveningAttendanceReportP
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {report.branches.map((branch) => (
+                            {report.branchBreakdown.map((branch) => (
                                 <div key={branch.uid} className="p-4 rounded-lg border">
                                     <div className="flex justify-between items-center mb-3">
                                         <h4 className="font-semibold">{branch.name}</h4>

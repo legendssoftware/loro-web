@@ -27,25 +27,25 @@ const isValidPosition = (position: any): position is [number, number] => {
 };
 
 interface MapComponentProps {
-    filteredWorkers: (
-        | WorkerType
-        | ClientType
-        | CompetitorType
-        | QuotationType
-    )[];
+    filteredWorkers: any[]; // Extended to support all marker types
     clients?: ClientType[];
     competitors?: CompetitorType[];
     quotations?: QuotationType[];
-    selectedMarker:
-        | WorkerType
-        | ClientType
-        | CompetitorType
-        | QuotationType
-        | null;
+    // New comprehensive data arrays
+    leads?: any[];
+    journals?: any[];
+    tasks?: any[];
+    checkIns?: any[];
+    shiftStarts?: any[];
+    shiftEnds?: any[];
+    breakStarts?: any[];
+    breakEnds?: any[];
+    allMarkers?: any[];
+    filteredEntities?: any[];
+    activeFilter?: string;
+    selectedMarker: any | null; // Extended to support all marker types
     highlightedMarkerId: string | null;
-    handleMarkerClick: (
-        marker: WorkerType | ClientType | CompetitorType | QuotationType,
-    ) => void;
+    handleMarkerClick: (marker: any) => void; // Extended to support all marker types
     mapRef: RefObject<L.Map>;
     mapConfig?: {
         defaultCenter: { lat: number; lng: number };
@@ -62,6 +62,17 @@ export default function MapComponent({
     clients = [],
     competitors = [],
     quotations = [],
+    leads = [],
+    journals = [],
+    tasks = [],
+    checkIns = [],
+    shiftStarts = [],
+    shiftEnds = [],
+    breakStarts = [],
+    breakEnds = [],
+    allMarkers = [],
+    filteredEntities = [],
+    activeFilter,
     selectedMarker,
     highlightedMarkerId,
     handleMarkerClick,
@@ -143,13 +154,39 @@ export default function MapComponent({
     }, [selectedMarker, mapRef]);
 
     // Process all markers to display
-    const allMarkers = useMemo(() => {
-        // Create an array of all entities we want to show on the map
+    const allMarkersToDisplay = useMemo(() => {
+        // If filteredEntities is provided (when using filtering), use that
+        if (filteredEntities && filteredEntities.length > 0) {
+            return filteredEntities.filter(
+                (entity) =>
+                    entity &&
+                    entity.id &&
+                    (isValidPosition(entity.position) ||
+                        // Check if it's an entity with location.lat and location.lng (like an event)
+                        ('location' in entity &&
+                            typeof entity.location === 'object' &&
+                            entity.location !== null &&
+                            'lat' in entity.location &&
+                            'lng' in entity.location &&
+                            typeof entity.location.lat === 'number' &&
+                            typeof entity.location.lng === 'number')),
+            );
+        }
+
+        // Otherwise, combine all available entities
         const entities = [
             ...filteredWorkers, // Already filtered by the parent component
             ...(clients || []),
             ...(competitors || []),
             ...(quotations || []),
+            ...(leads || []),
+            ...(journals || []),
+            ...(tasks || []),
+            ...(checkIns || []),
+            ...(shiftStarts || []),
+            ...(shiftEnds || []),
+            ...(breakStarts || []),
+            ...(breakEnds || []),
         ].filter(Boolean); // Remove any undefined or null entries
 
         // Filter out any invalid entities and ensure they have valid positions
@@ -167,7 +204,7 @@ export default function MapComponent({
                         typeof entity.location.lat === 'number' &&
                         typeof entity.location.lng === 'number')),
         );
-    }, [filteredWorkers, clients, competitors, quotations]);
+    }, [filteredWorkers, clients, competitors, quotations, leads, journals, tasks, checkIns, shiftStarts, shiftEnds, breakStarts, breakEnds, filteredEntities]);
 
     // Now handle the markers differently for rendering
     return (
@@ -194,9 +231,9 @@ export default function MapComponent({
             <MapCenter />
 
             {/* Render all markers in a single layer */}
-            {isMapReady && allMarkers.length > 0 && (
+            {isMapReady && allMarkersToDisplay.length > 0 && (
                 <MarkersLayer
-                    filteredWorkers={allMarkers}
+                    filteredWorkers={allMarkersToDisplay}
                     selectedMarker={selectedMarker}
                     highlightedMarkerId={highlightedMarkerId}
                     handleMarkerClick={handleMarkerClick}

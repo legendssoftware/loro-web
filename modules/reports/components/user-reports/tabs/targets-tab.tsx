@@ -587,159 +587,188 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </Card>
             )}
 
-            {/* Client & Lead Targets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* New Clients */}
-                {(targetsData.targetNewClients || targetsData.currentNewClients) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                New Clients
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+            {/* General Metrics */}
+            <Card>
+                <CardHeader>
+                    <div className="flex gap-2 items-center">
+                        <Target className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                        <CardTitle className="text-sm font-normal uppercase font-body">
+                            General Metrics
+                        </CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+                        {/* Work Hours */}
+                        {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
+                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentHoursWorked || 0}/{targetsData.targetHoursWorked || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-body">
-                                    {targetsData.currentNewClients || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Hours Worked</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentHoursWorked, targetsData.targetHoursWorked).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetNewClients || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                        )}
 
-                {/* New Leads */}
-                {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                New Leads
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        {/* New Clients */}
+                        {(targetsData.targetNewClients || targetsData.currentNewClients) && (
+                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentNewClients || 0}/{targetsData.targetNewClients || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-body">
-                                    {targetsData.currentNewLeads || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">New Clients</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetNewLeads || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                        )}
 
-            {/* Activity Targets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Check-ins */}
-                {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Check-ins
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        {/* New Leads */}
+                        {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
+                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentNewLeads || 0}/{targetsData.targetNewLeads || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-body">
-                                    {targetsData.currentCheckIns || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">New Leads</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetCheckIns || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                        )}
 
-                {/* Calls */}
-                {(targetsData.targetCalls || targetsData.currentCalls) && (
-                    <Card className="relative">
-                        <CardHeader>
+                        {/* Check-ins/Visits */}
+                        {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
+                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentCheckIns || 0}/{targetsData.targetCheckIns || 0}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Visits</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns).toFixed(0)}%
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Calls */}
+                        {(targetsData.targetCalls || targetsData.currentCalls) && (
+                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentCalls || 0}/{targetsData.targetCalls || 0}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Calls</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls).toFixed(0)}%
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Cost Breakdown */}
+            {(targetsData.baseSalary || targetsData.carInstalment || targetsData.totalCost) && (
+                <Card>
+                    <CardHeader>
+                        <div className="flex gap-2 items-center">
+                            <Settings className="w-5 h-5 text-orange-500 dark:text-orange-400" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
-                                Calls
+                                Monthly Cost Breakdown
                             </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+                            {targetsData.baseSalary && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.baseSalary, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Base Salary</div>
                                 </div>
                             )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 font-body">
-                                    {targetsData.currentCalls || 0}
+                            
+                            {targetsData.carInstalment && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.carInstalment, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Car Instalment</div>
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetCalls || 0} target
+                            )}
+
+                            {targetsData.carInsurance && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.carInsurance, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Car Insurance</div>
                                 </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls).toFixed(1)}%
-                                </Badge>
-                            </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                            )}
+
+                            {targetsData.fuel && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.fuel, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Fuel</div>
+                                </div>
+                            )}
+
+                            {targetsData.cellPhoneAllowance && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.cellPhoneAllowance, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Cell Phone</div>
+                                </div>
+                            )}
+
+                            {targetsData.carMaintenance && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.carMaintenance, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Car Maintenance</div>
+                                </div>
+                            )}
+
+                            {targetsData.cgicCosts && (
+                                <div className="p-3 text-center rounded-lg bg-muted/50">
+                                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                        {formatCurrency(targetsData.cgicCosts, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">CGIC Costs</div>
+                                </div>
+                            )}
+
+                            {targetsData.totalCost && (
+                                <div className="p-3 text-center rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+                                    <div className="text-lg font-bold text-red-600 dark:text-red-400 font-body">
+                                        {formatCurrency(targetsData.totalCost, targetsData.targetCurrency)}
+                                    </div>
+                                    <div className="text-[10px] text-red-600 dark:text-red-400 font-body uppercase">Total Cost</div>
+                                </div>
+                            )}
+
+                            {/* Net Value Calculation */}
+                            {targetsData.totalCost && (targetsData.currentSalesAmount || targetsData.currentQuotationsAmount) && (
+                                <div className="p-3 text-center rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20">
+                                    <div className="text-lg font-bold text-green-600 dark:text-green-400 font-body">
+                                        {formatCurrency(
+                                            ((targetsData.currentSalesAmount || 0) + (targetsData.currentQuotationsAmount || 0)) - (targetsData.totalCost || 0),
+                                            targetsData.targetCurrency
+                                        )}
+                                    </div>
+                                    <div className="text-[10px] text-green-600 dark:text-green-400 font-body uppercase">Net Value</div>
+                                    <div className="text-[8px] text-muted-foreground font-body mt-1">Revenue - Costs</div>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* AI Insights Section */}
             <Card>
@@ -852,7 +881,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                             </h4>
                                         </div>
                                         <div className="p-4 bg-white rounded-lg border dark:bg-gray-800">
-                                            <pre className="font-mono text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
+                                            <pre className="text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
                                                 {emailTemplate}
                                             </pre>
                                         </div>

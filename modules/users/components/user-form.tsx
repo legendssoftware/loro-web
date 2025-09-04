@@ -78,7 +78,7 @@ const userFormSchema = z.object({
     country: z.string().optional(),
     postalCode: z.string().optional(),
 
-    // Target Information (basic targets only)
+    // Target Information (comprehensive targets)
     targetSalesAmount: z.string().optional(),
     targetQuotationsAmount: z.string().optional(),
     targetCurrency: z.string().optional(),
@@ -88,6 +88,20 @@ const userFormSchema = z.object({
     targetCheckIns: z.number().optional(),
     targetCalls: z.number().optional(),
     targetPeriod: z.string().optional(),
+
+    // Current Tracking Fields (only fields available in DTO)
+    currentQuotationsAmount: z.string().optional(),
+    currentOrdersAmount: z.string().optional(),
+
+    // Cost Breakdown Fields (Monthly) - All in ZAR
+    baseSalary: z.string().optional(),
+    carInstalment: z.string().optional(),
+    carInsurance: z.string().optional(),
+    fuel: z.string().optional(),
+    cellPhoneAllowance: z.string().optional(),
+    carMaintenance: z.string().optional(),
+    coicCosts: z.string().optional(),
+    totalCost: z.string().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -221,13 +235,27 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         postalCode: '',
         targetSalesAmount: '0',
         targetQuotationsAmount: '0',
-        targetCurrency: 'USD',
+        targetCurrency: 'ZAR',
         targetHoursWorked: 40,
         targetNewClients: 0,
         targetNewLeads: 0,
         targetCheckIns: 0,
         targetCalls: 0,
         targetPeriod: 'monthly',
+
+        // Current Tracking Fields (only fields available in DTO)
+        currentQuotationsAmount: '0',
+        currentOrdersAmount: '0',
+
+        // Cost Breakdown Fields
+        baseSalary: '0',
+        carInstalment: '0',
+        carInsurance: '0',
+        fuel: '0',
+        cellPhoneAllowance: '0',
+        carMaintenance: '0',
+        coicCosts: '0',
+        totalCost: '0',
         assignedClients: [],
         ...initialData,
     };
@@ -871,18 +899,19 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Target Sales Fields */}
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="targetSalesAmount"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Sales Amount
+                                        Target Sales Amount (Monthly)
                                 </Label>
                                 <Input
                                     id="targetSalesAmount"
                                     {...register('targetSalesAmount')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="100000"
+                                    placeholder="e.g. 150000 (Monthly revenue goal in ZAR)"
                                 />
                             </div>
 
@@ -891,13 +920,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetQuotationsAmount"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Quotations Amount
+                                        Target Quotations Amount (Monthly)
                                 </Label>
                                 <Input
                                     id="targetQuotationsAmount"
                                     {...register('targetQuotationsAmount')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="50000"
+                                    placeholder="e.g. 75000 (Monthly quotations goal in ZAR)"
                                 />
                             </div>
 
@@ -912,16 +941,17 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     id="targetCurrency"
                                     {...register('targetCurrency')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="USD"
+                                    placeholder="ZAR"
                                 />
                             </div>
 
+                                {/* Target Activity Fields */}
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="targetHoursWorked"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Hours Worked
+                                        Target Hours Worked (Monthly)
                                 </Label>
                                 <Input
                                     id="targetHoursWorked"
@@ -930,7 +960,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="40"
+                                    placeholder="160 (Standard: 40 hours/week × 4 weeks)"
                                 />
                             </div>
 
@@ -939,7 +969,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetNewClients"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target New Clients
+                                        Target New Clients (Monthly)
                                 </Label>
                                 <Input
                                     id="targetNewClients"
@@ -948,7 +978,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="10"
+                                    placeholder="5 (New clients to acquire per month)"
                                 />
                             </div>
 
@@ -957,7 +987,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetNewLeads"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target New Leads
+                                        Target New Leads (Monthly)
                                 </Label>
                                 <Input
                                     id="targetNewLeads"
@@ -966,7 +996,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="20"
+                                    placeholder="25 (New leads to generate per month)"
                                 />
                             </div>
 
@@ -975,7 +1005,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetCheckIns"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Check-ins
+                                        Target Check-ins (Monthly)
                                 </Label>
                                 <Input
                                     id="targetCheckIns"
@@ -984,7 +1014,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="22"
+                                    placeholder="30 (Client visits/check-ins per month)"
                                 />
                             </div>
 
@@ -993,7 +1023,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetCalls"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Calls
+                                        Target Calls (Monthly)
                                 </Label>
                                 <Input
                                     id="targetCalls"
@@ -1002,7 +1032,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="50"
+                                    placeholder="80 (Phone calls/outreach per month)"
                                 />
                             </div>
 
@@ -1045,6 +1075,172 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     )}
                                 />
                             </div>
+
+                                {/* Current Performance Tracking */}
+                                <div className="col-span-2 pt-4 border-t border-border">
+                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                        Current Performance Tracking
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="currentQuotationsAmount"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Current Quotations Amount
+                                            </Label>
+                                            <Input
+                                                id="currentQuotationsAmount"
+                                                {...register('currentQuotationsAmount')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="Current quotations amount"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="currentOrdersAmount"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Current Orders Amount
+                                            </Label>
+                                            <Input
+                                                id="currentOrdersAmount"
+                                                {...register('currentOrdersAmount')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="Current orders amount"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Cost Breakdown Section */}
+                                <div className="col-span-2 pt-4 border-t border-border">
+                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                        Monthly Cost Breakdown (ZAR)
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="baseSalary"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Base Salary
+                                            </Label>
+                                            <Input
+                                                id="baseSalary"
+                                                {...register('baseSalary')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 25000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carInstalment"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Instalment
+                                            </Label>
+                                            <Input
+                                                id="carInstalment"
+                                                {...register('carInstalment')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 8000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carInsurance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Insurance
+                                            </Label>
+                                            <Input
+                                                id="carInsurance"
+                                                {...register('carInsurance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 1500"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="fuel"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Fuel Allowance
+                                            </Label>
+                                            <Input
+                                                id="fuel"
+                                                {...register('fuel')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 3000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="cellPhoneAllowance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Cell Phone Allowance
+                                            </Label>
+                                            <Input
+                                                id="cellPhoneAllowance"
+                                                {...register('cellPhoneAllowance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 800"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carMaintenance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Maintenance
+                                            </Label>
+                                            <Input
+                                                id="carMaintenance"
+                                                {...register('carMaintenance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 2000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="coicCosts"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                COIC Costs
+                                            </Label>
+                                            <Input
+                                                id="coicCosts"
+                                                {...register('coicCosts')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 1200"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="totalCost"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Total Cost
+                                            </Label>
+                                            <Input
+                                                id="totalCost"
+                                                {...register('totalCost')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 41500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
                     </CardContent>
                 </Card>

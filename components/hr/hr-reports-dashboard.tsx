@@ -164,7 +164,7 @@ const formatTime = (timeString: string): string => {
     if (!timeString || timeString === 'N/A') return 'N/A';
     try {
         const time = new Date(`2000-01-01T${timeString}`);
-        return time.toLocaleTimeString('en-US', {
+        return time.toLocaleTimeString('en-ZA', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false

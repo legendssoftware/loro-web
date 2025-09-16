@@ -24,6 +24,7 @@ export interface UserTarget {
     targetPeriod?: string;
     periodStartDate?: string;
     periodEndDate?: string;
+    workingDaysRemaining?: number; // Number of working days remaining based on organization schedule
     createdAt: string;
     updatedAt: string;
 }

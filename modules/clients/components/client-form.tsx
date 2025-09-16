@@ -31,6 +31,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import {
     Popover,
@@ -62,7 +63,11 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+// DatePicker functionality handled by existing UI components
+// import DatePicker from 'react-datepicker';
+// import 'react-datepicker/dist/react-datepicker.css';
 
 // List of countries for dropdown
 const COUNTRIES = [
@@ -445,7 +450,7 @@ export const clientFormSchema = z.object({
         )
         .optional()
         .default([{}]), // Default with one empty object
-    
+
     // User Target Fields - optional section for managing user targets and costs
     userTargets: z.object({
         // Target amounts
@@ -469,7 +474,7 @@ export const clientFormSchema = z.object({
             z.number().min(0, { message: 'Current orders amount must be positive' }),
             z.literal('')
         ]).transform(v => v === '' ? undefined : v).optional(),
-        
+
         // Target counts
         targetHoursWorked: z.union([
             z.number().min(0, { message: 'Target hours worked must be positive' }),
@@ -863,10 +868,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
     }, [logoImage]);
 
     return (
-        <form
-            onSubmit={handleSubmit(onFormSubmit)}
-            className="space-y-6 bg-card"
-        >
+        <div className="space-y-6 bg-card">
             <p className="mb-2 text-xs text-muted-foreground">
                 <span className="text-red-500">*</span> indicates required
                 fields
@@ -3528,6 +3530,161 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </p>
                             </div>
                         </div>
+
+                        {/* Custom Frequency Days - Show only when frequency is CUSTOM */}
+                        {watch('communicationSchedules.0.frequency') === CommunicationFrequency.CUSTOM && (
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="customFrequencyDays"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Custom Frequency (Days)
+                                </Label>
+                                <Input
+                                    id="customFrequencyDays"
+                                    type="number"
+                                    min="1"
+                                    max="365"
+                                    {...register('communicationSchedules.0.customFrequencyDays')}
+                                    placeholder="e.g. 14 for every 14 days"
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Number of days between communications
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Preferred Days of the Week */}
+                        <div className="space-y-1">
+                            <Label className="block text-xs font-light uppercase font-body">
+                                Preferred Days of the Week
+                            </Label>
+                            <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
+                                {[
+                                    { value: 0, label: 'Sun' },
+                                    { value: 1, label: 'Mon' },
+                                    { value: 2, label: 'Tue' },
+                                    { value: 3, label: 'Wed' },
+                                    { value: 4, label: 'Thu' },
+                                    { value: 5, label: 'Fri' },
+                                    { value: 6, label: 'Sat' },
+                                ].map((day) => (
+                                    <div key={day.value} className="flex items-center space-x-1">
+                                        <Controller
+                                            control={control}
+                                            name="communicationSchedules.0.preferredDays"
+                                            render={({ field }) => (
+                                                <Checkbox
+                                                    id={`day-${day.value}`}
+                                                    checked={field.value?.includes(day.value) || false}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentDays = field.value || [];
+                                                        if (checked) {
+                                                            field.onChange([...currentDays, day.value]);
+                                                        } else {
+                                                            field.onChange(currentDays.filter((d: number) => d !== day.value));
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                        <Label
+                                            htmlFor={`day-${day.value}`}
+                                            className="text-[10px] font-light cursor-pointer"
+                                        >
+                                            {day.label}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                                Select preferred days for communication
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Next Scheduled Date */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="nextScheduledDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Next Scheduled Contact
+                                </Label>
+                                <Input
+                                    id="nextScheduledDate"
+                                    type="datetime-local"
+                                    {...register('communicationSchedules.0.nextScheduledDate')}
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    When to schedule the next communication
+                                </p>
+                            </div>
+
+                            {/* Assigned User */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="assignedUser"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Assigned Team Member
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.assignedToUserId"
+                                    render={({ field }) => (
+                                        <Select
+                                            onValueChange={(value) => field.onChange(Number(value))}
+                                            value={field.value?.toString()}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select team member" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {users?.map((user: any) => (
+                                                    <SelectItem key={user.uid} value={user.uid.toString()}>
+                                                        <span className="text-[10px] font-thin font-body">
+                                                            {user.name} {user.surname}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Who will handle this communication
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Active Toggle */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <Label
+                                    htmlFor="isActive"
+                                    className="text-xs font-light uppercase font-body"
+                                >
+                                    Schedule Active
+                                </Label>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Enable automatic task generation for this schedule
+                                </p>
+                            </div>
+                            <Controller
+                                control={control}
+                                name="communicationSchedules.0.isActive"
+                                render={({ field }) => (
+                                    <Switch
+                                        id="isActive"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                )}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -3742,8 +3899,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="userTargets.targetPeriod"
                                     control={control}
                                     render={({ field }) => (
-                                        <Select 
-                                            value={field.value || 'Monthly'} 
+                                        <Select
+                                            value={field.value || 'Monthly'}
                                             onValueChange={field.onChange}
                                         >
                                             <SelectTrigger className="font-light bg-card border-border">
@@ -3770,8 +3927,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     name="userTargets.targetCurrency"
                                     control={control}
                                     render={({ field }) => (
-                                        <Select 
-                                            value={field.value || 'ZAR'} 
+                                        <Select
+                                            value={field.value || 'ZAR'}
                                             onValueChange={field.onChange}
                                         >
                                             <SelectTrigger className="font-light bg-card border-border">
@@ -4410,7 +4567,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                     <p className="mt-2 font-medium text-primary">
                                         Basket Total: R {
                                             (
-                                                (watch('userTargets.currentSalesAmount') || 0) - 
+                                                (watch('userTargets.currentSalesAmount') || 0) -
                                                 (watch('userTargets.totalCost') || 0)
                                             ).toLocaleString()
                                         }
@@ -4485,7 +4642,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                         Reset Form
                     </Button>
                     <Button
-                        type="submit"
+                        type="button"
+                        onClick={handleSubmit(onFormSubmit)}
                         disabled={isLoading || isSubmitting}
                         className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                     >
@@ -4502,6 +4660,6 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                     </Button>
                 </div>
             </div>
-        </form>
+        </div>
     );
 };

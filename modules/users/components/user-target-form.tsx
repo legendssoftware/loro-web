@@ -725,8 +725,8 @@ export default function UserTargetForm({
                         </div>
                     </div>
 
-                    {/* Cost Breakdown Section */}
-                    <div className="space-y-2">
+                    {/* Cost Breakdown Section - Hidden for now per request */}
+                    {false && <div className="space-y-2">
                         <h3 className="text-sm font-thin uppercase font-body">
                             MONTHLY COST BREAKDOWN (ZAR)
                         </h3>
@@ -916,7 +916,7 @@ export default function UserTargetForm({
                                 )}
                             />
                         </div>
-                    </div>
+                    </div>}
 
                     {/* Target Period Settings */}
                     <div className="space-y-2">

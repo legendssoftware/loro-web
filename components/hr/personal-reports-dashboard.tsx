@@ -20,13 +20,24 @@ import {
     Zap,
     Play,
     Square,
+    CheckCircle,
+    XCircle,
+    Pause,
+    MapPin,
+    User,
+    Building,
+    FileText,
+    ChevronRight,
+    Eye,
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO, isToday, isYesterday, isThisWeek } from 'date-fns';
 import toast from 'react-hot-toast';
+import { useUserAttendance, AttendanceRecord } from '@/hooks/use-attendance-records';
+import { AttendanceDetailsModal } from '@/components/attendance/attendance-details-modal';
 
 interface PersonalReportsDashboardProps {
     className?: string;
@@ -413,11 +424,67 @@ const ShiftManagementCard: React.FC<{
     );
 };
 
+// Utility functions for attendance records
+const getAttendanceStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+        case 'present':
+        case 'completed':
+            return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+        case 'on_break':
+            return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
+        case 'absent':
+            return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+        case 'late':
+            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+        default:
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+};
+
+const getAttendanceStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+        case 'present':
+            return <Play className="w-4 h-4" />;
+        case 'completed':
+            return <CheckCircle className="w-4 h-4" />;
+        case 'on_break':
+            return <Pause className="w-4 h-4" />;
+        case 'absent':
+            return <XCircle className="w-4 h-4" />;
+        default:
+            return <Activity className="w-4 h-4" />;
+    }
+};
+
+const getDateLabel = (dateString: string) => {
+    const date = parseISO(dateString);
+    if (isToday(date)) return 'Today';
+    if (isYesterday(date)) return 'Yesterday';
+    if (isThisWeek(date)) return format(date, 'EEEE');
+    
+    // Format with ordinal dates like "3rd September 2025"
+    const day = date.getDate();
+    const ordinal = getOrdinalSuffix(day);
+    return format(date, `'${day}${ordinal}' MMMM yyyy`);
+};
+
+const getOrdinalSuffix = (day: number): string => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+    }
+};
+
 export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> = ({
     className = '',
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [selectedAttendanceRecord, setSelectedAttendanceRecord] = useState<AttendanceRecord | null>(null);
+    const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
     const queryClient = useQueryClient();
 
     // Fetch personal data
@@ -440,11 +507,32 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
         refetch: refetchStatus
     } = useUserAttendanceStatus();
 
+    // Fetch attendance records using the same approach as mobile
+    const {
+        data: attendanceResponse,
+        isLoading: attendanceLoading,
+        error: attendanceError,
+        refetch: refetchAttendance
+    } = useUserAttendance();
+
     // Manual refresh function
     const handleRefresh = () => {
         refetchMetrics();
         refetchDaily();
         refetchStatus();
+        refetchAttendance();
+    };
+
+    // Handle attendance record click
+    const handleAttendanceRecordClick = (record: AttendanceRecord) => {
+        setSelectedAttendanceRecord(record);
+        setIsAttendanceModalOpen(true);
+    };
+
+    // Handle modal close
+    const handleModalClose = () => {
+        setIsAttendanceModalOpen(false);
+        setSelectedAttendanceRecord(null);
     };
 
     // Shift management mutations - Matching mobile version exactly
@@ -898,6 +986,155 @@ export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> =
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Attendance Records Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex gap-2 items-center">
+                        <FileText className="w-5 h-5" />
+                        Recent Attendance Records
+                    </CardTitle>
+                    <CardDescription>
+                        Your recent attendance history and shift details
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {attendanceLoading ? (
+                        <div className="space-y-3">
+                            {Array.from({ length: 5 }, (_, i) => (
+                                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <Skeleton className="w-10 h-10 rounded-full" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="w-32 h-4" />
+                                            <Skeleton className="w-24 h-3" />
+                                        </div>
+                                    </div>
+                                    <Skeleton className="w-16 h-6" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : attendanceError ? (
+                        <div className="text-center py-8">
+                            <AlertTriangle className="mx-auto mb-2 w-8 h-8 text-red-500" />
+                            <p className="text-sm text-muted-foreground">
+                                Failed to load attendance records. Please try again.
+                            </p>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => refetchAttendance()}
+                                className="mt-2"
+                            >
+                                Retry
+                            </Button>
+                        </div>
+                    ) : !attendanceResponse?.checkIns || attendanceResponse.checkIns.length === 0 ? (
+                        <div className="text-center py-8">
+                            <FileText className="mx-auto mb-2 w-8 h-8 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                                No attendance records found.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {attendanceResponse.checkIns.map((record: AttendanceRecord) => (
+                                <div
+                                    key={record.uid}
+                                    onClick={() => handleAttendanceRecordClick(record)}
+                                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        {/* Status Icon */}
+                                        <div className="flex-shrink-0">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-full flex items-center justify-center",
+                                                getAttendanceStatusColor(record.status)
+                                            )}>
+                                                {getAttendanceStatusIcon(record.status)}
+                                            </div>
+                                        </div>
+
+                                        {/* Record Info */}
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="font-medium text-sm">
+                                                    {getDateLabel(record.checkIn)}
+                                                </h4>
+                                                <Badge className={cn("text-xs", getAttendanceStatusColor(record.status))}>
+                                                    {record.status.replace('_', ' ').toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+                                                    <span>
+                                                        {format(parseISO(record.checkIn), 'HH:mm')}
+                                                        {record.checkOut && ` - ${format(parseISO(record.checkOut), 'HH:mm')}`}
+                                                    </span>
+                                                </div>
+                                                {record.duration && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Timer className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+                                                        <span>{record.duration}</span>
+                                                    </div>
+                                                )}
+                                                {record.breakCount && record.breakCount > 0 && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Coffee className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+                                                        <span>{record.breakCount} break{record.breakCount > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                )}
+                                                {record.branch && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Building className="w-3 h-3 text-gray-700 dark:text-gray-300" />
+                                                        <span>{record.branch.name}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Indicators */}
+                                    <div className="flex items-center gap-2">
+                                        {record.checkInLatitude && record.checkInLongitude && (
+                                            <MapPin className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                                        )}
+                                        {record.overtime && record.overtime !== '0h 0m' && (
+                                            <Zap className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="opacity-100 transition-opacity"
+                                        >
+                                            <Eye className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                                        </Button>
+                                        <ChevronRight className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                                    </div>
+                                </div>
+                            ))}
+
+                            {/* View More Button */}
+                            {attendanceResponse.checkIns && attendanceResponse.checkIns.length >= 10 && (
+                                <div className="text-center pt-4">
+                                    <Button variant="outline" className="text-xs">
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        View All Records ({attendanceResponse.checkIns.length}+)
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Attendance Details Modal */}
+            <AttendanceDetailsModal
+                open={isAttendanceModalOpen}
+                onOpenChange={handleModalClose}
+                record={selectedAttendanceRecord}
+            />
         </div>
     );
 };

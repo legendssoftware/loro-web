@@ -30,6 +30,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import {
     Popover,
@@ -39,6 +40,9 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import {
     Building2,
     User,
@@ -231,7 +235,7 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
             latitude: clientData?.latitude || undefined,
             longitude: clientData?.longitude || undefined,
                         // Communication schedules - extract from client data if available
-            communicationSchedules: clientData?.communicationSchedules && clientData.communicationSchedules.length > 0 
+            communicationSchedules: clientData?.communicationSchedules && clientData.communicationSchedules.length > 0
                 ? clientData.communicationSchedules.map(schedule => ({
                     uid: schedule.uid,
                     communicationType: schedule.communicationType as CommunicationType,
@@ -2104,6 +2108,171 @@ export const EditClientForm: React.FunctionComponent<EditClientFormProps> = ({
                                     Any special notes about communicating with this client
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Custom Frequency Days - Show only when frequency is CUSTOM */}
+                        {watch('communicationSchedules.0.frequency') === CommunicationFrequency.CUSTOM && (
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="customFrequencyDays"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Custom Frequency (Days)
+                                </Label>
+                                <Input
+                                    id="customFrequencyDays"
+                                    type="number"
+                                    min="1"
+                                    max="365"
+                                    {...register('communicationSchedules.0.customFrequencyDays')}
+                                    placeholder="e.g. 14 for every 14 days"
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Number of days between communications
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Preferred Days of the Week */}
+                        <div className="space-y-1">
+                            <Label className="block text-xs font-light uppercase font-body">
+                                Preferred Days of the Week
+                            </Label>
+                            <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
+                                {[
+                                    { value: 0, label: 'Sun' },
+                                    { value: 1, label: 'Mon' },
+                                    { value: 2, label: 'Tue' },
+                                    { value: 3, label: 'Wed' },
+                                    { value: 4, label: 'Thu' },
+                                    { value: 5, label: 'Fri' },
+                                    { value: 6, label: 'Sat' },
+                                ].map((day) => (
+                                    <div key={day.value} className="flex items-center space-x-1">
+                                        <Controller
+                                            control={control}
+                                            name="communicationSchedules.0.preferredDays"
+                                            render={({ field }) => (
+                                                <Checkbox
+                                                    id={`day-${day.value}`}
+                                                    checked={field.value?.includes(day.value) || false}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentDays = field.value || [];
+                                                        if (checked) {
+                                                            field.onChange([...currentDays, day.value]);
+                                                        } else {
+                                                            field.onChange(currentDays.filter((d: number) => d !== day.value));
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                        <Label
+                                            htmlFor={`day-${day.value}`}
+                                            className="text-[10px] font-light cursor-pointer"
+                                        >
+                                            {day.label}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                                Select preferred days for communication
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Next Scheduled Date */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="nextScheduledDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Next Scheduled Contact
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.nextScheduledDate"
+                                    render={({ field }) => (
+                                        <DatePicker
+                                            selected={field.value}
+                                            onChange={(date: Date | null) => field.onChange(date)}
+                                            showTimeSelect
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            dateFormat="dd/MM/yyyy HH:mm"
+                                            className="w-full px-3 py-2 text-sm border rounded font-light bg-card border-border"
+                                            placeholderText="Select date and time"
+                                        />
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    When to schedule the next communication
+                                </p>
+                            </div>
+
+                            {/* Assigned User */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="assignedUser"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Assigned Team Member
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.assignedToUserId"
+                                    render={({ field }) => (
+                                        <Select
+                                            onValueChange={(value) => field.onChange(Number(value))}
+                                            value={field.value?.toString()}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select team member" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {users?.map((user: any) => (
+                                                    <SelectItem key={user.uid} value={user.uid.toString()}>
+                                                        <span className="text-[10px] font-thin font-body">
+                                                            {user.name} {user.surname}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Who will handle this communication
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Active Toggle */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <Label
+                                    htmlFor="isActive"
+                                    className="text-xs font-light uppercase font-body"
+                                >
+                                    Schedule Active
+                                </Label>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Enable automatic task generation for this schedule
+                                </p>
+                            </div>
+                            <Controller
+                                control={control}
+                                name="communicationSchedules.0.isActive"
+                                render={({ field }) => (
+                                    <Switch
+                                        id="isActive"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                )}
+                            />
                         </div>
                     </CardContent>
                 </Card>

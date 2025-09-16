@@ -1587,7 +1587,7 @@ export function ClientDetail({
                                                             data={client.quotations.map(
                                                                 (quote, index) => ({
                                                                     date: quote.quotationDate
-                                                                        ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                        ? new Date(quote.quotationDate).toLocaleDateString("en-ZA", {
                                                                             month: "short",
                                                                             day: "numeric",
                                                                         })
@@ -1885,7 +1885,7 @@ export function ClientDetail({
                                                         data={client.quotations.map(
                                                             (quote, index) => ({
                                                                 date: quote.quotationDate
-                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-ZA", {
                                                                         month: "short",
                                                                         day: "numeric",
                                                                     })
@@ -2003,7 +2003,7 @@ export function ClientDetail({
                                                         data={client.quotations.map(
                                                             (quote, index) => ({
                                                                 date: quote.quotationDate
-                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-US", {
+                                                                    ? new Date(quote.quotationDate).toLocaleDateString("en-ZA", {
                                                                         month: "short",
                                                                         day: "numeric",
                                                                     })

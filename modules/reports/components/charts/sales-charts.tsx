@@ -69,7 +69,7 @@ const dummyWeeklyRevenueData: WeeklyRevenueData[] = Array.from(
         const date = new Date();
         date.setDate(date.getDate() - 6 + i);
         return {
-            date: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            date: date.toLocaleDateString('en-ZA', { weekday: 'short' }),
             revenue: Math.floor(Math.random() * 4000) + 500, // Values between 500-4500
         };
     },

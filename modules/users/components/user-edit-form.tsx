@@ -43,6 +43,7 @@ import {
     ClientStatus,
     Client,
 } from '@/hooks/use-clients-query';
+import { useUsersQuery } from '@/hooks/use-users-query';
 
 // Enhanced form schema definition - comprehensive editing with all user entity fields
 const userEditFormSchema = z.object({
@@ -92,16 +93,40 @@ const userEditFormSchema = z.object({
     country: z.string().optional(),
     postalCode: z.string().optional(),
 
-    // Target Information
+    // Target Information (comprehensive targets)
     targetSalesAmount: z.string().optional(),
+    currentSalesAmount: z.string().optional(),
     targetQuotationsAmount: z.string().optional(),
+    currentQuotationsAmount: z.string().optional(),
+    currentOrdersAmount: z.string().optional(),
     targetCurrency: z.string().optional(),
     targetHoursWorked: z.number().optional(),
+    currentHoursWorked: z.number().optional(),
     targetNewClients: z.number().optional(),
+    currentNewClients: z.number().optional(),
     targetNewLeads: z.number().optional(),
+    currentNewLeads: z.number().optional(),
     targetCheckIns: z.number().optional(),
+    currentCheckIns: z.number().optional(),
     targetCalls: z.number().optional(),
+    currentCalls: z.number().optional(),
     targetPeriod: z.string().optional(),
+    periodStartDate: z.string().optional(),
+    periodEndDate: z.string().optional(),
+
+    // Cost Breakdown Fields (Monthly) - All in ZAR
+    baseSalary: z.string().optional(),
+    carInstalment: z.string().optional(),
+    carInsurance: z.string().optional(),
+    fuel: z.string().optional(),
+    cellPhoneAllowance: z.string().optional(),
+    carMaintenance: z.string().optional(),
+    cgicCosts: z.string().optional(),
+    totalCost: z.string().optional(),
+
+    // Management Fields
+    managedBranches: z.array(z.number()).optional(),
+    managedStaff: z.array(z.number()).optional(),
 
     // Device Information
     expoPushToken: z.string().optional(),
@@ -138,6 +163,8 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [selectedClients, setSelectedClients] = useState<number[]>([]);
+    const [selectedManagedBranches, setSelectedManagedBranches] = useState<number[]>([]);
+    const [selectedManagedStaff, setSelectedManagedStaff] = useState<number[]>([]);
 
     // Use the global branch query hook
     const {
@@ -157,6 +184,16 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     } = useAdminClientsQuery({
         limit: 500, // Get all available clients for assignment
         status: ClientStatus.ACTIVE, // Only fetch active clients for assignment
+    });
+
+    // Use the users query hook to get all users for managed staff assignment
+    const {
+        users,
+        isLoading: isLoadingUsers,
+        error: usersError,
+        refetch: refetchUsers,
+    } = useUsersQuery({
+        limit: 500, // Get all available users for staff management
     });
 
     // Position options
@@ -269,21 +306,66 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         targetSalesAmount:
             (initialData as any).userTarget?.targetSalesAmount?.toString() ||
             '0',
+        currentSalesAmount:
+            (initialData as any).userTarget?.currentSalesAmount?.toString() || '0',
         targetQuotationsAmount:
             (
                 initialData as any
             ).userTarget?.targetQuotationsAmount?.toString() || '0',
+        currentQuotationsAmount:
+            (initialData as any).userTarget?.currentQuotationsAmount?.toString() || '0',
+        currentOrdersAmount:
+            (initialData as any).userTarget?.currentOrdersAmount?.toString() || '0',
         targetCurrency:
-            (initialData as any).userTarget?.targetCurrency || 'USD',
+            (initialData as any).userTarget?.targetCurrency || 'ZAR',
         targetHoursWorked:
             (initialData as any).userTarget?.targetHoursWorked || 40,
+        currentHoursWorked:
+            (initialData as any).userTarget?.currentHoursWorked || 0,
         targetNewClients:
             (initialData as any).userTarget?.targetNewClients || 0,
+        currentNewClients:
+            (initialData as any).userTarget?.currentNewClients || 0,
         targetNewLeads: (initialData as any).userTarget?.targetNewLeads || 0,
+        currentNewLeads: (initialData as any).userTarget?.currentNewLeads || 0,
         targetCheckIns: (initialData as any).userTarget?.targetCheckIns || 0,
+        currentCheckIns: (initialData as any).userTarget?.currentCheckIns || 0,
         targetCalls: (initialData as any).userTarget?.targetCalls || 0,
+        currentCalls: (initialData as any).userTarget?.currentCalls || 0,
         targetPeriod:
             (initialData as any).userTarget?.targetPeriod || 'monthly',
+        periodStartDate: (initialData as any).userTarget?.periodStartDate
+            ? new Date((initialData as any).userTarget.periodStartDate)
+                  .toISOString()
+                  .split('T')[0]
+            : '',
+        periodEndDate: (initialData as any).userTarget?.periodEndDate
+            ? new Date((initialData as any).userTarget.periodEndDate)
+                  .toISOString()
+                  .split('T')[0]
+            : '',
+
+        // Cost Breakdown Fields
+        baseSalary:
+            (initialData as any).userTarget?.baseSalary?.toString() || '0',
+        carInstalment:
+            (initialData as any).userTarget?.carInstalment?.toString() || '0',
+        carInsurance:
+            (initialData as any).userTarget?.carInsurance?.toString() || '0',
+        fuel:
+            (initialData as any).userTarget?.fuel?.toString() || '0',
+        cellPhoneAllowance:
+            (initialData as any).userTarget?.cellPhoneAllowance?.toString() || '0',
+        carMaintenance:
+            (initialData as any).userTarget?.carMaintenance?.toString() || '0',
+        cgicCosts:
+            (initialData as any).userTarget?.cgicCosts?.toString() || '0',
+        totalCost:
+            (initialData as any).userTarget?.totalCost?.toString() || '0',
+
+        // Management Fields
+        managedBranches: (initialData as any).managedBranches || [],
+        managedStaff: (initialData as any).managedStaff || [],
 
         // Device Information
         expoPushToken: (initialData as any).expoPushToken || '',
@@ -313,12 +395,36 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
             label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`,
         })) || [];
 
-    // Initialize selected clients from initial data
+    // Prepare branch options for MultiSelect
+    const branchOptions: MultiSelectOption[] =
+        branches?.map((branch) => ({
+            value: branch.uid,
+            label: branch.name,
+        })) || [];
+
+    // Prepare user options for MultiSelect with better labeling
+    const userOptions: MultiSelectOption[] =
+        users?.map((user) => ({
+            value: user.uid,
+            label: `${user.name} ${user.surname}${user.email ? ` - ${user.email}` : ''}`,
+        })) || [];
+
+    // Initialize selected clients and management fields from initial data
     useEffect(() => {
         if ((initialData as any)?.assignedClients) {
             setSelectedClients((initialData as any).assignedClients);
         }
-    }, [(initialData as any)?.assignedClients]);
+        if ((initialData as any)?.managedBranches) {
+            setSelectedManagedBranches((initialData as any).managedBranches);
+        }
+        if ((initialData as any)?.managedStaff) {
+            setSelectedManagedStaff((initialData as any).managedStaff);
+        }
+    }, [
+        (initialData as any)?.assignedClients,
+        (initialData as any)?.managedBranches,
+        (initialData as any)?.managedStaff,
+    ]);
 
     // Handle image selection
     const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -388,12 +494,26 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 }
             });
 
-            // Always include assigned clients if they've been changed
+            // Always include assigned clients and management fields if they've been changed
             if (
                 JSON.stringify(selectedClients) !==
                 JSON.stringify((initialData as any)?.assignedClients || [])
             ) {
                 changedData.assignedClients = selectedClients;
+            }
+
+            if (
+                JSON.stringify(selectedManagedBranches) !==
+                JSON.stringify((initialData as any)?.managedBranches || [])
+            ) {
+                changedData.managedBranches = selectedManagedBranches;
+            }
+
+            if (
+                JSON.stringify(selectedManagedStaff) !==
+                JSON.stringify((initialData as any)?.managedStaff || [])
+            ) {
+                changedData.managedStaff = selectedManagedStaff;
             }
 
             // Special handling for photo upload
@@ -1602,6 +1722,172 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         </Select>
                                     )}
                                 />
+                            </div>
+
+                            {/* Current Performance Tracking */}
+                            <div className="col-span-2 pt-4 border-t border-border">
+                                <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                    Current Performance Tracking
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="currentQuotationsAmount"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Current Quotations Amount
+                                        </Label>
+                                        <Input
+                                            id="currentQuotationsAmount"
+                                            {...register('currentQuotationsAmount')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="Current quotations amount"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="currentOrdersAmount"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Current Orders Amount
+                                        </Label>
+                                        <Input
+                                            id="currentOrdersAmount"
+                                            {...register('currentOrdersAmount')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="Current orders amount"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Cost Breakdown Section */}
+                            <div className="col-span-2 pt-4 border-t border-border">
+                                <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                    Monthly Cost Breakdown (ZAR)
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="baseSalary"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Base Salary
+                                        </Label>
+                                        <Input
+                                            id="baseSalary"
+                                            {...register('baseSalary')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 25000"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="carInstalment"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Car Instalment
+                                        </Label>
+                                        <Input
+                                            id="carInstalment"
+                                            {...register('carInstalment')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 8000"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="carInsurance"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Car Insurance
+                                        </Label>
+                                        <Input
+                                            id="carInsurance"
+                                            {...register('carInsurance')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 1500"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="fuel"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Fuel Allowance
+                                        </Label>
+                                        <Input
+                                            id="fuel"
+                                            {...register('fuel')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 3000"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="cellPhoneAllowance"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Cell Phone Allowance
+                                        </Label>
+                                        <Input
+                                            id="cellPhoneAllowance"
+                                            {...register('cellPhoneAllowance')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 800"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="carMaintenance"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Car Maintenance
+                                        </Label>
+                                        <Input
+                                            id="carMaintenance"
+                                            {...register('carMaintenance')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 2000"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="cgicCosts"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            COIC Costs
+                                        </Label>
+                                        <Input
+                                            id="cgicCosts"
+                                            {...register('cgicCosts')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 1200"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="totalCost"
+                                            className="block text-xs font-light uppercase font-body"
+                                        >
+                                            Total Cost
+                                        </Label>
+                                        <Input
+                                            id="totalCost"
+                                            {...register('totalCost')}
+                                            className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                            placeholder="e.g. 41500"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

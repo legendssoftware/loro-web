@@ -24,6 +24,209 @@ export interface AttendanceReportUser {
     totalWorkingMinutes?: number;
     totalBreakMinutes?: number;
     efficiency?: number;
+    status?: string;
+
+    // Daily report GPS data
+    dailyReport?: {
+        gpsData?: {
+            tripSummary?: {
+                totalDistanceKm?: number;
+            };
+        };
+    };
+
+    // Enhanced comprehensive metrics from user daily reports
+    dailyMetrics?: {
+        // Location and Travel Data
+        location?: {
+            totalLocations?: number;
+            totalDistance?: string | number;
+            totalDistanceKm?: number;
+            trackingData?: {
+                averageTimePerLocation?: string;
+            };
+        };
+
+        // Visits Data (alternative structure)
+        visits?: {
+            totalVisits?: number;
+            totalDistance?: string;
+            averageTimePerLocation?: string;
+            visitDetails?: Array<{
+                location?: string;
+                duration?: string;
+                timestamp?: string;
+            }>;
+        };
+
+        // Leads and Sales
+        leads?: {
+            newLeads?: number;
+            newLeadsCount?: number;
+            convertedLeads?: number;
+            convertedCount?: number;
+            conversionRate?: number;
+            totalValue?: string;
+        };
+
+        // Clients and Interactions
+        clients?: {
+            totalInteractions?: number;
+            newClients?: number;
+            clientInteractions?: number;
+        };
+
+        // Claims Data
+        claims?: {
+            count?: number;
+            totalClaims?: number;
+            totalClaimsValue?: string;
+            claimTypes?: string[];
+            hasClaims?: boolean;
+        };
+
+        // Tasks and Productivity
+        tasks?: {
+            completed?: number;
+            completedCount?: number;
+            overdue?: number;
+            overdueCount?: number;
+            completionRate?: number;
+            createdCount?: number;
+            dueTomorrowCount?: number;
+            priorityBreakdown?: {
+                urgent?: number;
+                high?: number;
+                medium?: number;
+                low?: number;
+            };
+        };
+
+        // Quotations and Revenue
+        quotations?: {
+            totalRevenue?: string;
+            totalRevenueFormatted?: string;
+            totalQuotations?: number;
+            clientInteractions?: number;
+            revenuePerHour?: number;
+        };
+
+        // Sales and Revenue (alternative structure)
+        sales?: {
+            totalRevenue?: string;
+            quotations?: number;
+            clientInteractions?: number;
+            revenuePerHour?: number;
+        };
+
+        // Rewards and Gamification
+        rewards?: {
+            dailyXPEarned?: number;
+            currentXP?: number;
+            currentLevel?: number;
+            currentRank?: string;
+            leaderboardPosition?: string | number;
+        };
+
+        // Wellness Metrics
+        wellness?: {
+            stressLevel?: 'low' | 'medium' | 'high';
+            wellnessScore?: number;
+            breaksTaken?: number;
+            workLifeBalance?: {
+                score?: number;
+                overtimeDays?: number;
+                averageHoursPerDay?: number;
+            };
+            leaveStatus?: {
+                type?: string;
+                remainingDays?: number;
+            };
+        };
+
+        // Performance Analytics
+        performance?: {
+            efficiencyScore?: number;
+            productivityRank?: number;
+            xpEarned?: number;
+            overallScore?: number;
+            revenuePerHour?: number;
+            improvementAreas?: string[];
+        };
+
+        // Targets and Goals
+        targets?: {
+            salesProgress?: number;
+            leadsProgress?: number;
+            hoursProgress?: number;
+            overallTargetScore?: number;
+            hoursTarget?: {
+                target?: number;
+                current?: number;
+            };
+            leadsTarget?: {
+                target?: number;
+                current?: number;
+            };
+            salesTarget?: {
+                targetFormatted?: string;
+                formatted?: string;
+            };
+            callsTarget?: {
+                target?: number;
+                current?: number;
+            };
+            targetProgress?: {
+                hours?: {
+                    progress?: number;
+                };
+                leads?: {
+                    progress?: number;
+                };
+                sales?: {
+                    progress?: number;
+                };
+                calls?: {
+                    progress?: number;
+                };
+            };
+        };
+
+        // Productivity Insights
+        productivity?: {
+            productivityScore?: number;
+            peakProductivityHour?: number;
+            averageFocusTime?: string;
+            workPatterns?: {
+                consistencyScore?: number;
+                preferredStartTime?: number;
+                preferredEndTime?: number;
+            };
+        };
+
+        // Weekly Comparison
+        weeklyComparison?: {
+            trend?: string;
+            changes?: {
+                hoursWorked?: string;
+                leads?: string;
+                revenue?: string;
+                tasksCompleted?: string;
+            };
+        };
+
+        // Journal Entries
+        journal?: {
+            count?: number;
+            hasEntries?: boolean;
+        };
+
+        // Predictions and Insights
+        predictions?: {
+            targetAchievementProbability?: number;
+            riskFactors?: string[];
+        };
+    };
 }
 
 export interface AttendanceReportBranch {
@@ -193,7 +396,7 @@ export interface EmployeeMetric {
         punctualityChange: string;
     };
     avatar?: string;
-    
+
     // Enhanced comprehensive metrics from user daily reports
     dailyMetrics?: {
         // Visits and Location Data
@@ -207,7 +410,7 @@ export interface EmployeeMetric {
                 timestamp: string;
             }>;
         };
-        
+
         // Leads and Sales
         leads: {
             newLeads: number;
@@ -215,14 +418,14 @@ export interface EmployeeMetric {
             conversionRate: number;
             totalValue?: string; // Formatted currency value
         };
-        
+
         // Claims Data
         claims: {
             totalClaims: number;
             totalClaimsValue: string; // Formatted currency
             claimTypes: string[]; // Types of claims made
         };
-        
+
         // Tasks and Productivity
         tasks: {
             completed: number;
@@ -235,7 +438,7 @@ export interface EmployeeMetric {
                 low: number;
             };
         };
-        
+
         // Sales and Revenue
         sales: {
             totalRevenue: string; // Formatted currency
@@ -243,7 +446,7 @@ export interface EmployeeMetric {
             clientInteractions: number;
             revenuePerHour: number;
         };
-        
+
         // Targets and Performance
         targets: {
             salesProgress: number; // Percentage
@@ -251,7 +454,7 @@ export interface EmployeeMetric {
             hoursProgress: number;
             overallTargetScore: number;
         };
-        
+
         // Wellness and Leave
         wellness: {
             stressLevel: 'low' | 'medium' | 'high';
@@ -262,7 +465,7 @@ export interface EmployeeMetric {
                 remainingDays: number;
             };
         };
-        
+
         // Performance Analytics
         performance: {
             efficiencyScore: number;
@@ -384,14 +587,14 @@ export interface EveningAttendanceReport {
         productivity: any;
         wellness: any;
     };
-    
+
     // CSV export data for comprehensive reporting
     csvExportData?: {
         filename: string;
         headers: string[];
         data: Array<Record<string, any>>;
     };
-    
+
     // Comprehensive organizational metrics
     organizationMetrics?: {
         totalVisits: number;

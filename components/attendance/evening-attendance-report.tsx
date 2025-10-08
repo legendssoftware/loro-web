@@ -222,7 +222,7 @@ export const EveningAttendanceReportComponent: React.FunctionComponent<EveningAt
             'Improvement Areas Count'
         ];
 
-        const csvData = [];
+        const csvData: Array<Record<string, string | number>> = [];
         report.branchBreakdown.forEach(branch => {
             branch.users.forEach(user => {
                 const metrics = user.dailyMetrics;

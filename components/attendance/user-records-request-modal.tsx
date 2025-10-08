@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { useSessionStore } from '@/store/use-session-store';
+import toast from 'react-hot-toast';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 
 interface User {
@@ -49,7 +50,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string>('');
-    
+
     const { accessToken } = useAuthStore();
     const { profileData } = useSessionStore();
 
@@ -76,7 +77,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
     const loadUsers = async () => {
         setIsLoadingUsers(true);
         setError(null);
-        
+
         try {
             const response = await axiosInstance.get('/user');
             if (response.data?.users) {
@@ -117,7 +118,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
             if (response.data?.success) {
                 setSuccessMessage(response.data.message);
                 setStep('success');
-                showSuccessToast('Request submitted successfully! Check your email for the records.');
+                showSuccessToast('Request submitted successfully! Check your email for the records.', toast);
             } else {
                 throw new Error(response.data?.message || 'Request failed');
             }
@@ -125,7 +126,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
             console.error('Error requesting records:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Failed to request records';
             setError(errorMessage);
-            showErrorToast(errorMessage);
+            showErrorToast(errorMessage, toast);
         } finally {
             setIsLoading(false);
         }
@@ -135,8 +136,8 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
         <div className="space-y-4">
             <div>
                 <Label htmlFor="user-select">Select Employee</Label>
-                <Select 
-                    value={selectedUserId?.toString() || ""} 
+                <Select
+                    value={selectedUserId?.toString() || ""}
                     onValueChange={(value) => handleUserSelect(parseInt(value))}
                     disabled={isLoadingUsers}
                 >
@@ -176,8 +177,8 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
                 <Button variant="outline" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button 
-                    onClick={() => setStep('date-range')} 
+                <Button
+                    onClick={() => setStep('date-range')}
                     disabled={!selectedUserId || isLoadingUsers}
                 >
                     Next: Date Range
@@ -256,8 +257,8 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
                 <Button variant="outline" onClick={() => setStep('select-user')}>
                     Back
                 </Button>
-                <Button 
-                    onClick={() => setStep('confirm')} 
+                <Button
+                    onClick={() => setStep('confirm')}
                     disabled={!startDate || !endDate}
                 >
                     Next: Confirm
@@ -299,7 +300,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
             <Alert>
                 <Mail className="h-4 w-4" />
                 <AlertDescription>
-                    The attendance records will be compiled and sent to your email address. 
+                    The attendance records will be compiled and sent to your email address.
                     This may take a few minutes depending on the amount of data.
                 </AlertDescription>
             </Alert>
@@ -327,7 +328,7 @@ export const UserRecordsRequestModal: React.FC<UserRecordsRequestModalProps> = (
             <div className="flex justify-center">
                 <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
-            
+
             <div>
                 <h3 className="text-lg font-semibold text-green-700">Request Sent Successfully!</h3>
                 <p className="text-sm text-muted-foreground mt-2">

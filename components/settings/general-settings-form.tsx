@@ -965,7 +965,7 @@ export default function GeneralSettingsForm() {
                                                     </FormControl>
                                                     <SelectContent>
                                                         <SelectItem
-                                                            value="en-US"
+                                                            value="en-ZA"
                                                             className="text-[10px] font-thin font-body"
                                                         >
                                                             English (US)

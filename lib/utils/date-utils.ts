@@ -18,7 +18,7 @@ export const formatDate = (
     return 'Invalid date';
   }
 
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat('en-ZA', options).format(date);
 };
 
 /**

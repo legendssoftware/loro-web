@@ -130,7 +130,7 @@ const useDailyStats = (userId?: number, date?: string) => {
     });
 };
 
-export const AttendanceReportsDashboard: React.FC<AttendanceReportsDashboardProps> = ({
+export const AttendanceReportsDashboard: React.FunctionComponent<AttendanceReportsDashboardProps> = ({
     className = '',
 }) => {
     const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
@@ -371,9 +371,23 @@ export const AttendanceReportsDashboard: React.FC<AttendanceReportsDashboardProp
     };
 
     const renderBranchComparison = () => {
-        if (!currentReport?.branches && !organizationReport?.report?.organizationMetrics?.byBranch) return null;
+        // Get branches data based on report type
+        let branches: any[] = [];
+        
+        if (currentReport) {
+            if (currentReport.reportType === 'evening') {
+                // Evening reports use branchBreakdown instead of branches
+                branches = (currentReport as EveningAttendanceReport).branchBreakdown || [];
+            } else if (currentReport.reportType === 'morning' || currentReport.reportType === 'organization') {
+                // Morning and organization reports use branches
+                branches = (currentReport as MorningAttendanceReport | OrganizationAttendanceReport).branches || [];
+            }
+        } else if (organizationReport?.report?.organizationMetrics?.byBranch) {
+            branches = organizationReport.report.organizationMetrics.byBranch;
+        }
 
-        const branches = currentReport?.branches || organizationReport?.report?.organizationMetrics?.byBranch || [];
+        if (!branches || branches.length === 0) return null;
+
         const data = branches.map((branch: any) => ({
             name: branch.name || branch.branchName,
             attendance: branch.attendanceRate,

@@ -27,25 +27,25 @@ const isValidPosition = (position: any): position is [number, number] => {
 };
 
 interface MapComponentProps {
-    filteredWorkers: (
-        | WorkerType
-        | ClientType
-        | CompetitorType
-        | QuotationType
-    )[];
+    filteredWorkers: any[]; // Extended to support all marker types
     clients?: ClientType[];
     competitors?: CompetitorType[];
     quotations?: QuotationType[];
-    selectedMarker:
-        | WorkerType
-        | ClientType
-        | CompetitorType
-        | QuotationType
-        | null;
+    // New comprehensive data arrays
+    leads?: any[];
+    journals?: any[];
+    tasks?: any[];
+    checkIns?: any[];
+    shiftStarts?: any[];
+    shiftEnds?: any[];
+    breakStarts?: any[];
+    breakEnds?: any[];
+    allMarkers?: any[];
+    filteredEntities?: any[];
+    activeFilter?: string;
+    selectedMarker: any | null; // Extended to support all marker types
     highlightedMarkerId: string | null;
-    handleMarkerClick: (
-        marker: WorkerType | ClientType | CompetitorType | QuotationType,
-    ) => void;
+    handleMarkerClick: (marker: any) => void; // Extended to support all marker types
     mapRef: RefObject<L.Map>;
     mapConfig?: {
         defaultCenter: { lat: number; lng: number };
@@ -55,6 +55,44 @@ interface MapComponentProps {
             zoom: number;
         }>;
     };
+    
+    // Enhanced GPS Analysis Data
+    gpsAnalysis?: {
+        totalWorkersAnalyzed: number;
+        totalDistanceCovered: number;
+        totalStopsDetected: number;
+        averageStopsPerWorker: number;
+        averageSpeedKmh: number;
+        maxSpeedRecorded: number;
+        workersData: Array<{
+            workerId: number;
+            workerName: string;
+            tripSummary?: any;
+            stopsCount: number;
+            topStops: any[];
+        }>;
+    };
+    
+    routeOptimizations?: {
+        totalWorkersOptimized: number;
+        totalPotentialSaving: number;
+        averagePotentialSaving: number;
+        workersWithOptimizations: Array<{
+            workerId: number;
+            workerName: string;
+            optimization: any;
+        }>;
+    };
+    
+    analytics?: {
+        totalMarkers: number;
+        markerBreakdown: any;
+        gpsInsights: any;
+        routeInsights: any;
+    };
+    
+    showGpsAnalytics?: boolean; // Control visibility of GPS analytics
+    showRouteOptimizations?: boolean; // Control visibility of route optimizations
 }
 
 export default function MapComponent({
@@ -62,11 +100,27 @@ export default function MapComponent({
     clients = [],
     competitors = [],
     quotations = [],
+    leads = [],
+    journals = [],
+    tasks = [],
+    checkIns = [],
+    shiftStarts = [],
+    shiftEnds = [],
+    breakStarts = [],
+    breakEnds = [],
+    allMarkers = [],
+    filteredEntities = [],
+    activeFilter,
     selectedMarker,
     highlightedMarkerId,
     handleMarkerClick,
     mapRef,
     mapConfig,
+    gpsAnalysis,
+    routeOptimizations,
+    analytics,
+    showGpsAnalytics = false,
+    showRouteOptimizations = false,
 }: MapComponentProps) {
     const [isMapReady, setIsMapReady] = useState(false);
 
@@ -143,13 +197,57 @@ export default function MapComponent({
     }, [selectedMarker, mapRef]);
 
     // Process all markers to display
-    const allMarkers = useMemo(() => {
-        // Create an array of all entities we want to show on the map
+    const markersToRender = useMemo(() => {
+        // If filteredEntities is provided (when using filtering), use that
+        if (filteredEntities && filteredEntities.length > 0) {
+            return filteredEntities.filter(
+                (entity) =>
+                    entity &&
+                    entity.id &&
+                    (isValidPosition(entity.position) ||
+                        // Check if it's an entity with location.lat and location.lng (like an event)
+                        ('location' in entity &&
+                            typeof entity.location === 'object' &&
+                            entity.location !== null &&
+                            'lat' in entity.location &&
+                            'lng' in entity.location &&
+                            typeof entity.location.lat === 'number' &&
+                            typeof entity.location.lng === 'number')),
+            );
+        }
+
+        // If allMarkers prop is provided, use that (comes from the parent's filtering)
+        if (allMarkers && allMarkers.length > 0) {
+            return allMarkers.filter(
+                (entity) =>
+                    entity &&
+                    entity.id &&
+                    (isValidPosition(entity.position) ||
+                        // Check if it's an entity with location.lat and location.lng (like an event)
+                        ('location' in entity &&
+                            typeof entity.location === 'object' &&
+                            entity.location !== null &&
+                            'lat' in entity.location &&
+                            'lng' in entity.location &&
+                            typeof entity.location.lat === 'number' &&
+                            typeof entity.location.lng === 'number')),
+            );
+        }
+
+        // Otherwise, combine all available entities
         const entities = [
             ...filteredWorkers, // Already filtered by the parent component
             ...(clients || []),
             ...(competitors || []),
             ...(quotations || []),
+            ...(leads || []),
+            ...(journals || []),
+            ...(tasks || []),
+            ...(checkIns || []),
+            ...(shiftStarts || []),
+            ...(shiftEnds || []),
+            ...(breakStarts || []),
+            ...(breakEnds || []),
         ].filter(Boolean); // Remove any undefined or null entries
 
         // Filter out any invalid entities and ensure they have valid positions
@@ -167,41 +265,105 @@ export default function MapComponent({
                         typeof entity.location.lat === 'number' &&
                         typeof entity.location.lng === 'number')),
         );
-    }, [filteredWorkers, clients, competitors, quotations]);
+    }, [filteredWorkers, clients, competitors, quotations, leads, journals, tasks, checkIns, shiftStarts, shiftEnds, breakStarts, breakEnds, filteredEntities, allMarkers]);
 
     // Now handle the markers differently for rendering
     return (
-        <MapContainer
-            center={defaultCenter}
-            zoom={defaultZoom}
-            style={{
-                height: '100%',
-                width: '100%',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                borderRadius: 8,
-                zIndex: 1, // Lower z-index than sidebar and nav
-            }}
-            ref={mapRef}
-            whenReady={handleMapReady}
-        >
-            <TileLayer
-                attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            <MapCenter />
-
-            {/* Render all markers in a single layer */}
-            {isMapReady && allMarkers.length > 0 && (
-                <MarkersLayer
-                    filteredWorkers={allMarkers}
-                    selectedMarker={selectedMarker}
-                    highlightedMarkerId={highlightedMarkerId}
-                    handleMarkerClick={handleMarkerClick}
+        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+            <MapContainer
+                center={defaultCenter}
+                zoom={defaultZoom}
+                style={{
+                    height: '100%',
+                    width: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    borderRadius: 8,
+                    zIndex: 1, // Lower z-index than sidebar and nav
+                }}
+                ref={mapRef}
+                whenReady={handleMapReady}
+            >
+                <TileLayer
+                    attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                <MapCenter />
+
+                {/* Render all markers in a single layer */}
+                {isMapReady && markersToRender.length > 0 && (
+                    <MarkersLayer
+                        filteredWorkers={markersToRender}
+                        selectedMarker={selectedMarker}
+                        highlightedMarkerId={highlightedMarkerId}
+                        handleMarkerClick={handleMarkerClick}
+                    />
+                )}
+            </MapContainer>
+
+            {/* GPS Analytics Overlay */}
+            {showGpsAnalytics && gpsAnalysis && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 10,
+                        right: 10,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        padding: 15,
+                        borderRadius: 8,
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                        zIndex: 1000,
+                        minWidth: 280,
+                        maxWidth: 400,
+                        fontSize: 14,
+                    }}
+                >
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: 16, fontWeight: 'bold' }}>
+                        📍 GPS Analytics
+                    </h3>
+                    <div style={{ display: 'grid', gap: 8 }}>
+                        <div><strong>Workers Analyzed:</strong> {gpsAnalysis.totalWorkersAnalyzed}</div>
+                        <div><strong>Total Distance:</strong> {gpsAnalysis.totalDistanceCovered.toFixed(1)}km</div>
+                        <div><strong>Total Stops:</strong> {gpsAnalysis.totalStopsDetected}</div>
+                        <div><strong>Avg Speed:</strong> {gpsAnalysis.averageSpeedKmh.toFixed(1)}km/h</div>
+                        <div><strong>Max Speed:</strong> {gpsAnalysis.maxSpeedRecorded.toFixed(1)}km/h</div>
+                        <div><strong>Avg Stops/Worker:</strong> {gpsAnalysis.averageStopsPerWorker.toFixed(1)}</div>
+                    </div>
+                </div>
             )}
-        </MapContainer>
+
+            {/* Route Optimizations Overlay */}
+            {showRouteOptimizations && routeOptimizations && routeOptimizations.totalWorkersOptimized > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: 10,
+                        right: 10,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        padding: 15,
+                        borderRadius: 8,
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                        zIndex: 1000,
+                        minWidth: 280,
+                        maxWidth: 400,
+                        fontSize: 14,
+                    }}
+                >
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: 16, fontWeight: 'bold' }}>
+                        🛣️ Route Optimization
+                    </h3>
+                    <div style={{ display: 'grid', gap: 8 }}>
+                        <div><strong>Routes Optimized:</strong> {routeOptimizations.totalWorkersOptimized}</div>
+                        <div><strong>Total Potential Saving:</strong> {routeOptimizations.totalPotentialSaving.toFixed(1)}km</div>
+                        <div><strong>Avg Saving/Route:</strong> {routeOptimizations.averagePotentialSaving.toFixed(1)}km</div>
+                        <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
+                            💡 Optimization suggestions available for {routeOptimizations.workersWithOptimizations.length} workers
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

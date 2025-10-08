@@ -353,7 +353,7 @@ export const TaskFlagAccordion: React.FunctionComponent<TaskFlagAccordionProps> 
                                                         {new Date(
                                                             flag.deadline,
                                                         ).toLocaleDateString(
-                                                            'en-US',
+                                                            'en-ZA',
                                                             {
                                                                 month: 'short',
                                                                 day: 'numeric',

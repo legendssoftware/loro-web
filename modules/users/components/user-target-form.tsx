@@ -28,7 +28,9 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Trash2 } from 'lucide-react';
+import { CalendarIcon, Trash2, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -104,6 +106,11 @@ const userTargetSchema = z.object({
     periodStartDate: z.date().optional().nullable(),
     periodEndDate: z.date().optional().nullable(),
 
+    // Recurring Target Configuration
+    isRecurring: z.boolean().optional(),
+    recurringInterval: z.enum(['daily', 'weekly', 'monthly']).optional(),
+    carryForwardUnfulfilled: z.boolean().optional(),
+
     // Current Tracking Fields
     currentSalesAmount: numberPreprocess,
     currentQuotationsAmount: numberPreprocess,
@@ -139,6 +146,11 @@ type UserTargetFormInput = {
     targetPeriod?: string;
     periodStartDate?: Date;
     periodEndDate?: Date;
+
+    // Recurring Target Configuration
+    isRecurring?: boolean;
+    recurringInterval?: 'daily' | 'weekly' | 'monthly';
+    carryForwardUnfulfilled?: boolean;
 
     // Current Tracking Fields
     currentSalesAmount: string;
@@ -178,6 +190,14 @@ interface UserTarget {
     targetPeriod?: string;
     periodStartDate?: Date;
     periodEndDate?: Date;
+
+    // Recurring Target Configuration
+    isRecurring?: boolean;
+    recurringInterval?: 'daily' | 'weekly' | 'monthly';
+    carryForwardUnfulfilled?: boolean;
+    nextRecurrenceDate?: Date;
+    lastRecurrenceDate?: Date;
+    recurrenceCount?: number;
 
     // Current Tracking Fields
     currentSalesAmount?: number;
@@ -240,6 +260,11 @@ export default function UserTargetForm({
             periodStartDate: initialData?.periodStartDate ? new Date(initialData.periodStartDate) : undefined,
             periodEndDate: initialData?.periodEndDate ? new Date(initialData.periodEndDate) : undefined,
 
+            // Recurring Target Configuration
+            isRecurring: initialData?.isRecurring || false,
+            recurringInterval: initialData?.recurringInterval || 'monthly',
+            carryForwardUnfulfilled: initialData?.carryForwardUnfulfilled || false,
+
             // Current Tracking Fields
             currentSalesAmount: initialData?.currentSalesAmount?.toString() || '',
             currentQuotationsAmount: initialData?.currentQuotationsAmount?.toString() || '',
@@ -287,6 +312,11 @@ export default function UserTargetForm({
                             targetPeriod: userTarget.targetPeriod || 'monthly',
                             periodStartDate: userTarget.periodStartDate ? new Date(userTarget.periodStartDate) : undefined,
                             periodEndDate: userTarget.periodEndDate ? new Date(userTarget.periodEndDate) : undefined,
+
+                            // Recurring Target Configuration
+                            isRecurring: userTarget.isRecurring || false,
+                            recurringInterval: userTarget.recurringInterval || 'monthly',
+                            carryForwardUnfulfilled: userTarget.carryForwardUnfulfilled || false,
 
                             // Current Tracking Fields
                             currentSalesAmount: userTarget.currentSalesAmount?.toString() || '',
@@ -381,6 +411,11 @@ export default function UserTargetForm({
                 targetPeriod: 'monthly',
                 periodStartDate: undefined,
                 periodEndDate: undefined,
+
+                // Recurring Target Configuration
+                isRecurring: false,
+                recurringInterval: 'monthly',
+                carryForwardUnfulfilled: false,
 
                 // Current Tracking Fields
                 currentSalesAmount: '',
@@ -1253,6 +1288,114 @@ export default function UserTargetForm({
                                 )}
                             />
                         </div>
+                    </div>
+
+                    {/* Recurring Targets Configuration */}
+                    <div className="space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                        <div className="flex items-center space-x-2">
+                            <RefreshCw className="w-5 h-5 text-primary" />
+                            <h3 className="text-sm font-thin uppercase font-body">
+                                RECURRING TARGETS
+                            </h3>
+                        </div>
+
+                        <FormField
+                            control={form.control}
+                            name="isRecurring"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                    <div className="space-y-0.5">
+                                        <label className="text-xs font-light text-white uppercase font-body">
+                                            Enable Recurring Targets
+                                        </label>
+                                        <div className="text-[10px] text-muted-foreground font-thin">
+                                            Automatically reset targets at specified intervals
+                                        </div>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+
+                        {form.watch('isRecurring') && (
+                            <div className="space-y-4 animate-in fade-in-50">
+                                <FormField
+                                    control={form.control}
+                                    name="recurringInterval"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <label className="block text-xs font-light text-white uppercase font-body">
+                                                Recurrence Interval
+                                            </label>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger className="font-thin font-body">
+                                                        <SelectValue placeholder="Select interval" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="daily" className="font-thin font-body">
+                                                        Daily
+                                                    </SelectItem>
+                                                    <SelectItem value="weekly" className="font-thin font-body">
+                                                        Weekly
+                                                    </SelectItem>
+                                                    <SelectItem value="monthly" className="font-thin font-body">
+                                                        Monthly
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="carryForwardUnfulfilled"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <label className="text-xs font-light text-white uppercase font-body">
+                                                    Carry Forward Unfulfilled Targets
+                                                </label>
+                                                <div className="text-[10px] text-muted-foreground font-thin">
+                                                    Add unmet targets to the next period automatically
+                                                </div>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {(currentTarget?.recurrenceCount ?? 0) > 0 && (
+                                    <div className="p-3 rounded-md bg-muted/50">
+                                        <div className="text-[10px] text-muted-foreground font-thin space-y-1">
+                                            <p>📊 <strong>Recurrence Count:</strong> {currentTarget?.recurrenceCount ?? 0} times</p>
+                                            {currentTarget?.nextRecurrenceDate && (
+                                                <p>📅 <strong>Next Recurrence:</strong> {format(new Date(currentTarget.nextRecurrenceDate), 'PPP')}</p>
+                                            )}
+                                            {currentTarget?.lastRecurrenceDate && (
+                                                <p>🕒 <strong>Last Recurrence:</strong> {format(new Date(currentTarget.lastRecurrenceDate), 'PPP')}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-between space-x-2">

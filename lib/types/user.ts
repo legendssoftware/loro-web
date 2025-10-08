@@ -98,6 +98,13 @@ export interface User {
     userTarget?: UserTarget;
     assignedClients?: Client[];
     assignedClientIds?: number[];
+    preferences?: {
+        theme?: 'light' | 'dark';
+        language?: string;
+        notifications?: boolean;
+        shiftAutoEnd?: boolean;
+        [key: string]: any;
+    } | null;
 }
 
 export interface UsersByStatus {

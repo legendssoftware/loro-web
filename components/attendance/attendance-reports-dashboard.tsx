@@ -130,7 +130,7 @@ const useDailyStats = (userId?: number, date?: string) => {
     });
 };
 
-export const AttendanceReportsDashboard: React.FC<AttendanceReportsDashboardProps> = ({
+export const AttendanceReportsDashboard: React.FunctionComponent<AttendanceReportsDashboardProps> = ({
     className = '',
 }) => {
     const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();

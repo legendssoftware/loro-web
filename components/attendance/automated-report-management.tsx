@@ -101,7 +101,7 @@ interface AutomatedReportManagementProps {
     className?: string;
 }
 
-export const AutomatedReportManagement: React.FC<AutomatedReportManagementProps> = ({
+export const AutomatedReportManagement: React.FunctionComponent<AutomatedReportManagementProps> = ({
     onSendMorningReport,
     onSendEveningReport,
     onRequestReport,

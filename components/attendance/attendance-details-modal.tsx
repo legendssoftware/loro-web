@@ -84,7 +84,7 @@ const getStatusIcon = (status: string) => {
     }
 };
 
-export const AttendanceDetailsModal: React.FC<AttendanceDetailsModalProps> = ({
+export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsModalProps> = ({
     open,
     onOpenChange,
     record,
@@ -249,6 +249,169 @@ export const AttendanceDetailsModal: React.FC<AttendanceDetailsModalProps> = ({
                                         </div>
                                     )}
                                 </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* GPS Trip Analytics */}
+                    {record.dailyReport?.gpsData && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Activity className="w-5 h-5" />
+                                    GPS Trip Analytics
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {/* Trip Summary */}
+                                {record.dailyReport.gpsData.tripSummary && (
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div className="text-center p-4 border rounded-lg">
+                                                <BarChart3 className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                                                <div className="text-lg font-bold">
+                                                    {record.dailyReport.gpsData.tripSummary.totalDistanceKm < 1 
+                                                        ? `${Math.round(record.dailyReport.gpsData.tripSummary.totalDistanceKm * 1000)}m`
+                                                        : `${record.dailyReport.gpsData.tripSummary.totalDistanceKm.toFixed(2)}km`
+                                                    }
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">Total Distance</div>
+                                            </div>
+                                            <div className="text-center p-4 border rounded-lg">
+                                                <Timer className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                                                <div className="text-lg font-bold">
+                                                    {Math.floor(record.dailyReport.gpsData.tripSummary.totalTimeMinutes / 60)}h{' '}
+                                                    {record.dailyReport.gpsData.tripSummary.totalTimeMinutes % 60}m
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">Total Time</div>
+                                            </div>
+                                            <div className="text-center p-4 border rounded-lg">
+                                                <Zap className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+                                                <div className="text-lg font-bold">
+                                                    {record.dailyReport.gpsData.tripSummary.averageSpeedKmh.toFixed(1)} km/h
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">Avg Speed</div>
+                                            </div>
+                                            <div className="text-center p-4 border rounded-lg">
+                                                <MapPin className="w-6 h-6 mx-auto mb-2 text-orange-500" />
+                                                <div className="text-lg font-bold">
+                                                    {record.dailyReport.gpsData.tripSummary.numberOfStops}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">Stops</div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Additional Trip Details */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                                            <div className="text-center">
+                                                <div className="text-sm font-medium">Moving Time</div>
+                                                <div className="text-lg text-green-600">
+                                                    {Math.floor(record.dailyReport.gpsData.tripSummary.movingTimeMinutes / 60)}h{' '}
+                                                    {record.dailyReport.gpsData.tripSummary.movingTimeMinutes % 60}m
+                                                </div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-sm font-medium">Stopped Time</div>
+                                                <div className="text-lg text-orange-600">
+                                                    {Math.floor(record.dailyReport.gpsData.tripSummary.stoppedTimeMinutes / 60)}h{' '}
+                                                    {record.dailyReport.gpsData.tripSummary.stoppedTimeMinutes % 60}m
+                                                </div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-sm font-medium">Max Speed</div>
+                                                <div className="text-lg text-red-600">
+                                                    {record.dailyReport.gpsData.tripSummary.maxSpeedKmh.toFixed(1)} km/h
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* GPS Stops */}
+                                {record.dailyReport.gpsData.stops && record.dailyReport.gpsData.stops.length > 0 && (
+                                    <div className="mt-6 space-y-3">
+                                        <h4 className="font-medium">Travel Stops & Locations ({record.dailyReport.gpsData.stops.length})</h4>
+                                        <div className="grid gap-3">
+                                            {record.dailyReport.gpsData.stops.slice(0, 5).map((stop, index) => (
+                                                <div key={index} className="p-3 border rounded-lg">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="w-4 h-4 text-blue-500" />
+                                                            <span className="font-medium">Stop {index + 1}</span>
+                                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                                                {stop.durationFormatted}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground mb-2">
+                                                        {stop.address}
+                                                    </div>
+                                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                                        <span>
+                                                            {formatTime(stop.startTime)} - {formatTime(stop.endTime)}
+                                                        </span>
+                                                        <span>{stop.pointsCount} GPS points</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {record.dailyReport.gpsData.stops.length > 5 && (
+                                                <div className="text-center text-sm text-muted-foreground">
+                                                    ... and {record.dailyReport.gpsData.stops.length - 5} more stops
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Location Analysis */}
+                                {record.dailyReport.gpsData.locationAnalysis && (
+                                    <div className="mt-6 space-y-3">
+                                        <h4 className="font-medium">Location Analysis</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                                <div className="text-sm font-medium text-purple-800">Locations Visited</div>
+                                                <div className="text-lg font-bold text-purple-900">
+                                                    {record.dailyReport.gpsData.locationAnalysis?.locationsVisited?.length || 
+                                                     Object.keys(record.dailyReport.gpsData.timeSpentByLocation || {}).length}
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                                <div className="text-sm font-medium text-purple-800">Average Time/Location</div>
+                                                <div className="text-lg font-bold text-purple-900">
+                                                    {record.dailyReport.gpsData.averageTimePerLocationFormatted}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Data Quality */}
+                                {record.dailyReport.gpsData.geocodingStatus && (
+                                    <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <h4 className="font-medium text-green-800 mb-2">GPS Data Quality</h4>
+                                        <div className="grid grid-cols-3 gap-4 text-center">
+                                            <div>
+                                                <div className="text-sm text-green-600">Successful</div>
+                                                <div className="font-bold text-green-800">
+                                                    {record.dailyReport.gpsData.geocodingStatus.successful}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-green-600">Failed</div>
+                                                <div className="font-bold text-green-800">
+                                                    {record.dailyReport.gpsData.geocodingStatus.failed}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-green-600">Quality</div>
+                                                <div className="font-bold text-green-800">
+                                                    {record.dailyReport.gpsData.geocodingStatus.failed === 0 ? 'Excellent' : 
+                                                     record.dailyReport.gpsData.geocodingStatus.failed < record.dailyReport.gpsData.geocodingStatus.successful / 10 ? 'Good' : 'Fair'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     )}

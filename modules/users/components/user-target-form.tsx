@@ -104,9 +104,15 @@ const userTargetSchema = z.object({
     periodStartDate: z.date().optional().nullable(),
     periodEndDate: z.date().optional().nullable(),
 
-    // Current Tracking Fields (only fields available in DTO)
+    // Current Tracking Fields
+    currentSalesAmount: numberPreprocess,
     currentQuotationsAmount: numberPreprocess,
     currentOrdersAmount: numberPreprocess,
+    currentHoursWorked: integerPreprocess,
+    currentNewClients: integerPreprocess,
+    currentNewLeads: integerPreprocess,
+    currentCheckIns: integerPreprocess,
+    currentCalls: integerPreprocess,
 
     // Cost Breakdown Fields (Monthly) - All in ZAR
     baseSalary: numberPreprocess,
@@ -115,7 +121,7 @@ const userTargetSchema = z.object({
     fuel: numberPreprocess,
     cellPhoneAllowance: numberPreprocess,
     carMaintenance: numberPreprocess,
-    coicCosts: numberPreprocess,
+    cgicCosts: numberPreprocess,
     totalCost: numberPreprocess,
 });
 
@@ -134,9 +140,15 @@ type UserTargetFormInput = {
     periodStartDate?: Date;
     periodEndDate?: Date;
 
-    // Current Tracking Fields (only fields available in DTO)
+    // Current Tracking Fields
+    currentSalesAmount: string;
     currentQuotationsAmount: string;
     currentOrdersAmount: string;
+    currentHoursWorked: string;
+    currentNewClients: string;
+    currentNewLeads: string;
+    currentCheckIns: string;
+    currentCalls: string;
 
     // Cost Breakdown Fields
     baseSalary: string;
@@ -145,7 +157,7 @@ type UserTargetFormInput = {
     fuel: string;
     cellPhoneAllowance: string;
     carMaintenance: string;
-    coicCosts: string;
+    cgicCosts: string;
     totalCost: string;
 };
 
@@ -167,9 +179,15 @@ interface UserTarget {
     periodStartDate?: Date;
     periodEndDate?: Date;
 
-    // Current Tracking Fields (only fields available in DTO)
+    // Current Tracking Fields
+    currentSalesAmount?: number;
     currentQuotationsAmount?: number;
     currentOrdersAmount?: number;
+    currentHoursWorked?: number;
+    currentNewClients?: number;
+    currentNewLeads?: number;
+    currentCheckIns?: number;
+    currentCalls?: number;
 
     // Cost Breakdown Fields
     baseSalary?: number;
@@ -178,7 +196,7 @@ interface UserTarget {
     fuel?: number;
     cellPhoneAllowance?: number;
     carMaintenance?: number;
-    coicCosts?: number;
+    cgicCosts?: number;
     totalCost?: number;
 
     createdAt?: Date;
@@ -222,9 +240,15 @@ export default function UserTargetForm({
             periodStartDate: initialData?.periodStartDate ? new Date(initialData.periodStartDate) : undefined,
             periodEndDate: initialData?.periodEndDate ? new Date(initialData.periodEndDate) : undefined,
 
-            // Current Tracking Fields (only fields available in DTO)
+            // Current Tracking Fields
+            currentSalesAmount: initialData?.currentSalesAmount?.toString() || '',
             currentQuotationsAmount: initialData?.currentQuotationsAmount?.toString() || '',
             currentOrdersAmount: initialData?.currentOrdersAmount?.toString() || '',
+            currentHoursWorked: initialData?.currentHoursWorked?.toString() || '',
+            currentNewClients: initialData?.currentNewClients?.toString() || '',
+            currentNewLeads: initialData?.currentNewLeads?.toString() || '',
+            currentCheckIns: initialData?.currentCheckIns?.toString() || '',
+            currentCalls: initialData?.currentCalls?.toString() || '',
 
             // Cost Breakdown Fields
             baseSalary: initialData?.baseSalary?.toString() || '',
@@ -233,7 +257,7 @@ export default function UserTargetForm({
             fuel: initialData?.fuel?.toString() || '',
             cellPhoneAllowance: initialData?.cellPhoneAllowance?.toString() || '',
             carMaintenance: initialData?.carMaintenance?.toString() || '',
-            coicCosts: initialData?.coicCosts?.toString() || '',
+            cgicCosts: initialData?.cgicCosts?.toString() || '',
             totalCost: initialData?.totalCost?.toString() || '',
         },
     });
@@ -264,9 +288,15 @@ export default function UserTargetForm({
                             periodStartDate: userTarget.periodStartDate ? new Date(userTarget.periodStartDate) : undefined,
                             periodEndDate: userTarget.periodEndDate ? new Date(userTarget.periodEndDate) : undefined,
 
-                            // Current Tracking Fields (only fields available in DTO)
+                            // Current Tracking Fields
+                            currentSalesAmount: userTarget.currentSalesAmount?.toString() || '',
                             currentQuotationsAmount: userTarget.currentQuotationsAmount?.toString() || '',
                             currentOrdersAmount: userTarget.currentOrdersAmount?.toString() || '',
+                            currentHoursWorked: userTarget.currentHoursWorked?.toString() || '',
+                            currentNewClients: userTarget.currentNewClients?.toString() || '',
+                            currentNewLeads: userTarget.currentNewLeads?.toString() || '',
+                            currentCheckIns: userTarget.currentCheckIns?.toString() || '',
+                            currentCalls: userTarget.currentCalls?.toString() || '',
 
                             // Cost Breakdown Fields
                             baseSalary: userTarget.baseSalary?.toString() || '',
@@ -275,7 +305,7 @@ export default function UserTargetForm({
                             fuel: userTarget.fuel?.toString() || '',
                             cellPhoneAllowance: userTarget.cellPhoneAllowance?.toString() || '',
                             carMaintenance: userTarget.carMaintenance?.toString() || '',
-                            coicCosts: userTarget.coicCosts?.toString() || '',
+                            cgicCosts: userTarget.cgicCosts?.toString() || '',
                             totalCost: userTarget.totalCost?.toString() || '',
                         });
                     }
@@ -352,9 +382,15 @@ export default function UserTargetForm({
                 periodStartDate: undefined,
                 periodEndDate: undefined,
 
-                // Current Tracking Fields (only fields available in DTO)
+                // Current Tracking Fields
+                currentSalesAmount: '',
                 currentQuotationsAmount: '',
                 currentOrdersAmount: '',
+                currentHoursWorked: '',
+                currentNewClients: '',
+                currentNewLeads: '',
+                currentCheckIns: '',
+                currentCalls: '',
 
                 // Cost Breakdown Fields
                 baseSalary: '',
@@ -363,7 +399,7 @@ export default function UserTargetForm({
                 fuel: '',
                 cellPhoneAllowance: '',
                 carMaintenance: '',
-                coicCosts: '',
+                cgicCosts: '',
                 totalCost: '',
             });
 
@@ -644,7 +680,30 @@ export default function UserTargetForm({
                         <h3 className="text-sm font-thin uppercase font-body">
                             CURRENT SALES PERFORMANCE
                         </h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentSalesAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-sales-amount"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Total Sales
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current total sales"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="currentQuotationsAmount"
@@ -700,28 +759,139 @@ export default function UserTargetForm({
                             CURRENT TIME & ACTIVITY PERFORMANCE
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="block text-xs font-light text-white uppercase font-body">
-                                    Hours Worked (Current Period)
-                                </label>
-                                <Input
-                                    value="45"
-                                    readOnly
-                                    className="font-thin font-body bg-muted"
-                                    placeholder="calculated from attendance"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="block text-xs font-light text-white uppercase font-body">
-                                    Activities (Current Period)
-                                </label>
-                                <Input
-                                    value="45"
-                                    readOnly
-                                    className="font-thin font-body bg-muted"
-                                    placeholder="calculated from system data"
-                                />
-                            </div>
+                            <FormField
+                                control={form.control}
+                                name="currentHoursWorked"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-hours-worked"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Hours Worked
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current hours worked"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Current Client & Lead Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT CLIENT & LEAD PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentNewClients"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-new-clients"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current New Clients
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current new clients"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentNewLeads"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-new-leads"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current New Leads
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current new leads"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Current Activity Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT ACTIVITY PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentCheckIns"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-check-ins"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Check-ins
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current check-ins"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentCalls"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-calls"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Calls
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current calls"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                     </div>
 
@@ -871,20 +1041,20 @@ export default function UserTargetForm({
                             />
                             <FormField
                                 control={form.control}
-                                name="coicCosts"
+                                name="cgicCosts"
                                 render={({ field }) => (
                                     <FormItem>
                                         <label
-                                            htmlFor="coic-costs"
+                                            htmlFor="cgic-costs"
                                             className="block text-xs font-light text-white uppercase font-body"
                                         >
-                                            COIC Costs
+                                            CGIC Costs
                                         </label>
                                         <FormControl>
                                             <Input
                                                 {...field}
                                                 type="number"
-                                                placeholder="enter COIC costs"
+                                                placeholder="enter CGIC costs"
                                                 className="font-thin font-body"
                                             />
                                         </FormControl>

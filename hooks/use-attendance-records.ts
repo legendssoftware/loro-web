@@ -2,6 +2,70 @@ import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
 
+// GPS Data Interfaces
+export interface TripSummary {
+    totalDistanceKm: number;
+    totalTimeMinutes: number;
+    movingTimeMinutes: number;
+    stoppedTimeMinutes: number;
+    numberOfStops: number;
+    averageSpeedKmh: number;
+    maxSpeedKmh: number;
+}
+
+export interface GPSStop {
+    address: string;
+    latitude: number;
+    longitude: number;
+    startTime: string;
+    endTime: string;
+    durationMinutes: number;
+    durationFormatted: string;
+    pointsCount: number;
+}
+
+export interface LocationAnalysis {
+    locationsVisited: Array<{
+        address: string;
+        latitude: number;
+        longitude: number;
+        timeSpentMinutes: number;
+        timeSpentFormatted: string;
+    }>;
+    timeSpentByLocation: { [address: string]: number };
+    averageTimePerLocation: string;
+    averageTimePerLocationFormatted: string;
+    averageTimePerLocationMinutes: number;
+}
+
+export interface GeocodingStatus {
+    successful: number;
+    failed: number;
+    usedFallback: boolean;
+}
+
+export interface GPSData {
+    tripSummary: TripSummary;
+    stops: GPSStop[];
+    locationAnalysis: LocationAnalysis;
+    timeSpentByLocation: { [address: string]: number };
+    averageTimePerLocationFormatted: string;
+    geocodingStatus: GeocodingStatus;
+}
+
+export interface DailyReport {
+    uid: number;
+    name: string;
+    description?: string;
+    reportType: string;
+    generatedAt: string;
+    gpsData?: GPSData;
+    totalDistanceKm?: string;
+    totalStops?: number;
+    notes?: string;
+    reportData?: any; // Keep as any for now since it's complex
+}
+
 export interface AttendanceRecord {
     uid: number;
     status: string;
@@ -26,6 +90,7 @@ export interface AttendanceRecord {
     createdAt: string;
     updatedAt: string;
     verifiedAt?: string;
+    dailyReport?: DailyReport;
     owner: {
         uid: number;
         username: string;

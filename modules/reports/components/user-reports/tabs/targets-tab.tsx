@@ -25,6 +25,142 @@ import {
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
 
+// Pie Chart Component for Target Performance
+interface PieChartProps {
+    achieved: number;
+    remaining: number;
+    currency: string;
+    title: string;
+}
+
+const PieChart: React.FunctionComponent<PieChartProps> = ({ achieved, remaining, currency, title }) => {
+    const total = achieved + remaining;
+    const percentage = total > 0 ? Math.round((achieved / total) * 100) : 0;
+    const radius = 90;
+    const strokeWidth = 20;
+    const normalizedRadius = radius - strokeWidth * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDasharray = `${circumference} ${circumference}`;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+    return (
+        <Card className="relative">
+            <CardHeader>
+                <div className="flex gap-2 items-center">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    <CardTitle className="text-sm font-normal uppercase font-body">
+                        {title}
+                    </CardTitle>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-body w-fit">
+                    {percentage}% Complete
+                </Badge>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {/* Pie Chart */}
+                <div className="flex justify-center">
+                    <div className="relative">
+                        <svg
+                            height={radius * 2}
+                            width={radius * 2}
+                            className="transform -rotate-90"
+                        >
+                            {/* Background circle */}
+                            <circle
+                                stroke="#e5e7eb"
+                                fill="transparent"
+                                strokeWidth={strokeWidth}
+                                r={normalizedRadius}
+                                cx={radius}
+                                cy={radius}
+                            />
+                            {/* Progress circle */}
+                            <circle
+                                stroke="#ef4444"
+                                fill="transparent"
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={strokeDasharray}
+                                style={{ strokeDashoffset }}
+                                strokeLinecap="round"
+                                r={normalizedRadius}
+                                cx={radius}
+                                cy={radius}
+                                className="transition-all duration-300 ease-in-out"
+                            />
+                        </svg>
+                        {/* Center text */}
+                        <div className="flex absolute inset-0 flex-col justify-center items-center">
+                            <div className="text-2xl font-bold text-primary font-body">
+                                {percentage}%
+                            </div>
+                            <div className="text-xs uppercase text-muted-foreground font-body">
+                                Complete
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Legend */}
+                <div className="space-y-3">
+                    <div className="flex gap-3 items-center">
+                        <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
+                        <span className="text-sm font-medium text-foreground font-body">
+                            Achieved
+                        </span>
+                        <span className="ml-auto text-sm font-bold text-foreground font-body">
+                            {currency} {achieved.toLocaleString()}
+                        </span>
+                    </div>
+                    <div className="flex gap-3 items-center">
+                        <div className="w-4 h-4 bg-gray-300 rounded-sm"></div>
+                        <span className="text-sm font-medium text-muted-foreground font-body">
+                            Remaining
+                        </span>
+                        <span className="ml-auto text-sm font-bold text-muted-foreground font-body">
+                            {currency} {remaining.toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Summary */}
+                <div className="text-center">
+                    <p className="text-sm text-orange-600 dark:text-orange-400 font-body">
+                        {currency} {remaining.toLocaleString()} remaining to achieve target
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+// Helper function for consistent date formatting: "Monday 1st August 2025"
+const formatDateLong = (dateStr?: string | Date) => {
+    if (!dateStr) return 'N/A';
+    try {
+        const date = new Date(dateStr);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }); // Monday
+        const day = date.getDate();
+        const monthName = date.toLocaleDateString('en-US', { month: 'long' }); // August
+        const year = date.getFullYear();
+
+        // Add ordinal suffix to day
+        const getOrdinalSuffix = (day: number) => {
+            if (day >= 11 && day <= 13) return 'th';
+            switch (day % 10) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        };
+
+        return `${dayName} ${day}${getOrdinalSuffix(day)} ${monthName} ${year}`;
+    } catch (error) {
+        console.warn('Failed to format date:', dateStr, error);
+        return 'Invalid date';
+    }
+};
+
 // Types for AI requests - keeping only what we need
 interface TargetData {
     currentValue: number;
@@ -115,9 +251,9 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             <AvatarFallback>{getInitials(staff.fullName)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                            <h4 className="font-medium">{staff.fullName}</h4>
-                            <p className="text-sm text-muted-foreground">{staff.email}</p>
-                            <Badge variant="outline" className="mt-1">No targets set</Badge>
+                            <h4 className="font-medium font-body">{staff.fullName}</h4>
+                            <p className="text-sm text-muted-foreground font-body">{staff.email}</p>
+                            <Badge variant="outline" className="mt-1 font-body">No targets set</Badge>
                         </div>
                     </div>
                 </Card>
@@ -134,8 +270,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         <AvatarFallback>{getInitials(staff.fullName)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                        <h4 className="font-medium">{staff.fullName}</h4>
-                        <p className="text-sm text-muted-foreground">{staff.email}</p>
+                        <h4 className="font-medium font-body">{staff.fullName}</h4>
+                        <p className="text-sm text-muted-foreground font-body">{staff.email}</p>
                     </div>
                 </div>
 
@@ -592,7 +728,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             <p className="text-[10px] text-muted-foreground font-body uppercase">Period Start</p>
                             <p className="text-sm font-medium font-body">
                                 {targetsData.periodStartDate
-                                    ? new Date(targetsData.periodStartDate).toLocaleDateString()
+                                    ? formatDateLong(targetsData.periodStartDate)
                                     : 'Not set'}
                             </p>
                         </div>
@@ -600,7 +736,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             <p className="text-[10px] text-muted-foreground font-body uppercase">Period End</p>
                             <p className="text-sm font-medium font-body">
                                 {targetsData.periodEndDate
-                                    ? new Date(targetsData.periodEndDate).toLocaleDateString()
+                                    ? formatDateLong(targetsData.periodEndDate)
                                     : 'Not set'}
                             </p>
                         </div>
@@ -608,102 +744,24 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardContent>
             </Card>
 
-            {/* Sales Targets */}
+            {/* Sales Targets - Pie Chart */}
             {(targetsData.targetSalesAmount || targetsData.currentSalesAmount) && (
-                <Card className="relative">
-                    <CardHeader>
-                        <div className="flex gap-2 items-center">
-                            <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Sales Performance
-                            </CardTitle>
-                        </div>
-                        {/* Green badge for target reached */}
-                        {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount) >= 100 && (
-                            <div className="absolute top-2 right-2">
-                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                    <CheckCircle className="mr-1 w-3 h-3" />
-                                    Target Reached
-                                </Badge>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Sales Target</p>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount).toFixed(1)}%
-                                </Badge>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body">
-                                <span>{formatCurrency(targetsData.currentSalesAmount, targetsData.targetCurrency)}</span>
-                                <span>{formatCurrency(targetsData.targetSalesAmount, targetsData.targetCurrency)}</span>
-                            </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount)}
-                                className="h-3"
-                            />
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body uppercase">
-                                <span>Complete</span>
-                                <span>
-                                    {targetsData.targetSalesAmount && targetsData.currentSalesAmount
-                                        ? formatCurrency(targetsData.targetSalesAmount - targetsData.currentSalesAmount, targetsData.targetCurrency) + ' remaining'
-                                        : 'Target needed'}
-                                </span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <PieChart
+                    achieved={targetsData.currentSalesAmount || 0}
+                    remaining={(targetsData.targetSalesAmount || 0) - (targetsData.currentSalesAmount || 0)}
+                    currency={targetsData.targetCurrency || 'ZAR'}
+                    title="Sales Performance"
+                />
             )}
 
-            {/* Quotations Targets */}
+            {/* Quotations Targets - Pie Chart */}
             {(targetsData.targetQuotationsAmount || targetsData.currentQuotationsAmount) && (
-                <Card className="relative">
-                    <CardHeader>
-                        <div className="flex gap-2 items-center">
-                            <Target className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Quotations Performance
-                            </CardTitle>
-                        </div>
-                        {/* Green badge for target reached */}
-                        {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount) >= 100 && (
-                            <div className="absolute top-2 right-2">
-                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                    <CheckCircle className="mr-1 w-3 h-3" />
-                                    Target Reached
-                                </Badge>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Quotations Target</p>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount).toFixed(1)}%
-                                </Badge>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body">
-                                <span>{formatCurrency(targetsData.currentQuotationsAmount, targetsData.targetCurrency)}</span>
-                                <span>{formatCurrency(targetsData.targetQuotationsAmount, targetsData.targetCurrency)}</span>
-                            </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount)}
-                                className="h-3"
-                            />
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body uppercase">
-                                <span>Complete</span>
-                                <span>
-                                    {targetsData.targetQuotationsAmount && targetsData.currentQuotationsAmount
-                                        ? formatCurrency(targetsData.targetQuotationsAmount - targetsData.currentQuotationsAmount, targetsData.targetCurrency) + ' remaining'
-                                        : 'Target needed'}
-                                </span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <PieChart
+                    achieved={targetsData.currentQuotationsAmount || 0}
+                    remaining={(targetsData.targetQuotationsAmount || 0) - (targetsData.currentQuotationsAmount || 0)}
+                    currency={targetsData.targetCurrency || 'ZAR'}
+                    title="Quotations Performance"
+                />
             )}
 
             {/* Orders Performance - Shows current orders without target */}
@@ -725,14 +783,14 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                     {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
                                 </Badge>
                             </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 font-body">
-                                    {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
-                                </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    Total Orders (Converted from Quotations)
-                                </div>
+                        <div className="text-center">
+                            <div className="text-2xl text-orange-600 dark:text-orange-400 font-body">
+                                {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
                             </div>
+                            <div className="text-[10px] text-muted-foreground font-body uppercase">
+                                Total Orders (Converted from Quotations)
+                            </div>
+                        </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -802,7 +860,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         {/* Work Hours */}
                         {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
                             <div className="p-3 text-center rounded-lg bg-muted/50">
-                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentHoursWorked || 0}/{targetsData.targetHoursWorked || 0}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground font-body uppercase">Hours Worked</div>
@@ -815,7 +873,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         {/* New Clients */}
                         {(targetsData.targetNewClients || targetsData.currentNewClients) && (
                             <div className="p-3 text-center rounded-lg bg-muted/50">
-                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentNewClients || 0}/{targetsData.targetNewClients || 0}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground font-body uppercase">New Clients</div>
@@ -828,7 +886,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         {/* New Leads */}
                         {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
                             <div className="p-3 text-center rounded-lg bg-muted/50">
-                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentNewLeads || 0}/{targetsData.targetNewLeads || 0}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground font-body uppercase">New Leads</div>
@@ -841,7 +899,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         {/* Check-ins/Visits */}
                         {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
                             <div className="p-3 text-center rounded-lg bg-muted/50">
-                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentCheckIns || 0}/{targetsData.targetCheckIns || 0}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground font-body uppercase">Visits</div>
@@ -854,7 +912,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         {/* Calls */}
                         {(targetsData.targetCalls || targetsData.currentCalls) && (
                             <div className="p-3 text-center rounded-lg bg-muted/50">
-                                <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentCalls || 0}/{targetsData.targetCalls || 0}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground font-body uppercase">Calls</div>
@@ -1046,29 +1104,29 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                         <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                            <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.createdAt
-                                    ? new Date(targetsData.createdAt).toLocaleDateString()
+                                    ? formatDateLong(targetsData.createdAt)
                                     : 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Created</div>
                         </div>
                         <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                            <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.updatedAt
-                                    ? new Date(targetsData.updatedAt).toLocaleDateString()
+                                    ? formatDateLong(targetsData.updatedAt)
                                     : 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Last Updated</div>
                         </div>
                         <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-primary font-body">
+                            <div className="text-lg text-primary font-body">
                                 {targetsData.targetCurrency || 'ZAR'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Currency</div>
                         </div>
                         <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-green-600 dark:text-green-400 font-body">
+                            <div className="text-lg text-green-600 dark:text-green-400 font-body">
                                 {targetsData.id || 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Target ID</div>
@@ -1097,21 +1155,21 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                         <Card key={branch.uid} className="p-4">
                                             <div className="space-y-3">
                                                 <div>
-                                                    <h4 className="font-medium">{branch.name}</h4>
-                                                    <p className="text-sm text-muted-foreground">{formatAddress(branch.address)}</p>
+                                                    <h4 className="font-medium font-body">{branch.name}</h4>
+                                                    <p className="text-sm text-muted-foreground font-body">{formatAddress(branch.address)}</p>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <div className="flex gap-2 items-center">
                                                         <UserCheck className="w-4 h-4 text-muted-foreground" />
-                                                        <span className="text-sm">{branch.contactPerson}</span>
+                                                        <span className="text-sm font-body">{branch.contactPerson}</span>
                                                     </div>
                                                     <div className="flex gap-2 items-center">
                                                         <span className="text-sm text-muted-foreground">📧</span>
-                                                        <span className="text-sm">{branch.email}</span>
+                                                        <span className="text-sm font-body">{branch.email}</span>
                                                     </div>
                                                     <div className="flex gap-2 items-center">
                                                         <span className="text-sm text-muted-foreground">📱</span>
-                                                        <span className="text-sm">{branch.phone}</span>
+                                                        <span className="text-sm font-body">{branch.phone}</span>
                                                     </div>
                                                 </div>
                                                 <Badge variant={branch.status === 'ACTIVE' ? 'default' : 'secondary'}>
@@ -1151,8 +1209,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                 <div className="space-y-4 text-center">
                                     <Users className="mx-auto w-12 h-12 text-muted-foreground" />
                                     <div>
-                                        <h3 className="text-lg font-medium">No Team Management</h3>
-                                        <p className="text-sm text-muted-foreground">
+                                        <h3 className="text-lg font-medium font-body">No Team Management</h3>
+                                        <p className="text-sm text-muted-foreground font-body">
                                             You don't have any managed branches or staff members assigned to you.
                                         </p>
                                     </div>

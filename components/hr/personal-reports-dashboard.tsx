@@ -211,7 +211,7 @@ const useUserAttendanceStatus = () => {
 };
 
 // Personal stats card component
-const PersonalStatsCard: React.FC<{
+const PersonalStatsCard: React.FunctionComponent<{
     title: string;
     value: string | number;
     subtitle?: string;
@@ -238,7 +238,7 @@ const PersonalStatsCard: React.FC<{
 );
 
 // Shift Management Card Component
-const ShiftManagementCard: React.FC<{
+const ShiftManagementCard: React.FunctionComponent<{
     userStatus: any;
     userMetrics: any;
     onShiftAction: (action: 'start' | 'end' | 'startBreak' | 'endBreak') => void;
@@ -478,7 +478,7 @@ const getOrdinalSuffix = (day: number): string => {
     }
 };
 
-export const PersonalReportsDashboard: React.FC<PersonalReportsDashboardProps> = ({
+export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDashboardProps> = ({
     className = '',
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());

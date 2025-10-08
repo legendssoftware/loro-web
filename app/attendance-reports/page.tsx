@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     AlertCircle,
     Settings,
     BarChart3,
     Download,
     RefreshCw,
+    Users,
 } from 'lucide-react';
 
 // Import our attendance report components
 import { AttendanceReportsDashboard } from '@/components/attendance/attendance-reports-dashboard';
+import { UserRecordsRequestModal } from '@/components/attendance/user-records-request-modal';
 
 // Import hooks and types
 import { useAttendanceReports } from '@/hooks/use-attendance-reports';
@@ -23,6 +26,7 @@ type ReportView = 'dashboard' | 'automation';
 
 export default function AttendanceReportsPage() {
     const [activeView, setActiveView] = useState<ReportView>('dashboard');
+    const [isRequestRecordsModalOpen, setIsRequestRecordsModalOpen] = useState(false);
 
     // Use the attendance reports hook
     const {
@@ -88,6 +92,16 @@ export default function AttendanceReportsPage() {
                         >
                             <Download className="mr-2 w-4 h-4" />
                             Export
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsRequestRecordsModalOpen(true)}
+                            disabled={isLoading}
+                        >
+                            <Users className="mr-2 w-4 h-4" />
+                            Request Records
                         </Button>
                     </div>
                 </div>
@@ -209,6 +223,12 @@ export default function AttendanceReportsPage() {
                     {renderContent()}
                 </TabsContent>
             </Tabs>
+
+            {/* User Records Request Modal */}
+            <UserRecordsRequestModal
+                isOpen={isRequestRecordsModalOpen}
+                onClose={() => setIsRequestRecordsModalOpen(false)}
+            />
         </div>
     );
 }

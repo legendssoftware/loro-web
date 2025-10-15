@@ -105,7 +105,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
+                    <DialogTitle className="flex gap-2 items-center">
                         <CalendarDays className="w-5 h-5" />
                         Shift Details - {format(parseISO(record.checkIn), 'PPP')}
                     </DialogTitle>
@@ -116,10 +116,10 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
 
                 <div className="space-y-6">
                     {/* Status and Basic Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center text-sm">
                                     {getStatusIcon(record.status)}
                                     Status
                                 </CardTitle>
@@ -133,7 +133,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
 
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center text-sm">
                                     <Timer className="w-4 h-4" />
                                     Duration
                                 </CardTitle>
@@ -147,7 +147,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                         {hasBreaks && (
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm flex items-center gap-2">
+                                    <CardTitle className="flex gap-2 items-center text-sm">
                                         <Coffee className="w-4 h-4" />
                                         Breaks
                                     </CardTitle>
@@ -163,16 +163,16 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {/* Time Details */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex gap-2 items-center">
                                 <Clock className="w-5 h-5" />
                                 Time Details
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Check In Details */}
                                 <div className="space-y-3">
-                                    <h4 className="font-medium text-green-600 flex items-center gap-2">
+                                    <h4 className="flex gap-2 items-center font-medium text-green-600">
                                         <Play className="w-4 h-4" />
                                         Check In
                                     </h4>
@@ -188,7 +188,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                         {record.checkInNotes && (
                                             <div>
                                                 <span className="text-sm text-muted-foreground">Notes:</span>
-                                                <p className="text-sm mt-1 p-2 bg-muted rounded">{record.checkInNotes}</p>
+                                                <p className="p-2 mt-1 text-sm rounded bg-muted">{record.checkInNotes}</p>
                                             </div>
                                         )}
                                     </div>
@@ -196,7 +196,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
 
                                 {/* Check Out Details */}
                                 <div className="space-y-3">
-                                    <h4 className="font-medium text-blue-600 flex items-center gap-2">
+                                    <h4 className="flex gap-2 items-center font-medium text-blue-600">
                                         <CheckCircle className="w-4 h-4" />
                                         Check Out
                                     </h4>
@@ -212,7 +212,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                         {record.checkOutNotes && (
                                             <div>
                                                 <span className="text-sm text-muted-foreground">Notes:</span>
-                                                <p className="text-sm mt-1 p-2 bg-muted rounded">{record.checkOutNotes}</p>
+                                                <p className="p-2 mt-1 text-sm rounded bg-muted">{record.checkOutNotes}</p>
                                             </div>
                                         )}
                                     </div>
@@ -225,16 +225,16 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {hasLocation && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center">
                                     <MapPin className="w-5 h-5" />
                                     Location Information
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <h4 className="font-medium">Check In Location</h4>
-                                        <div className="text-sm space-y-1">
+                                        <div className="space-y-1 text-sm">
                                             <div>Latitude: {record.checkInLatitude}</div>
                                             <div>Longitude: {record.checkInLongitude}</div>
                                         </div>
@@ -242,7 +242,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                     {record.checkOutLatitude && record.checkOutLongitude && (
                                         <div className="space-y-2">
                                             <h4 className="font-medium">Check Out Location</h4>
-                                            <div className="text-sm space-y-1">
+                                            <div className="space-y-1 text-sm">
                                                 <div>Latitude: {record.checkOutLatitude}</div>
                                                 <div>Longitude: {record.checkOutLongitude}</div>
                                             </div>
@@ -257,7 +257,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {record.dailyReport?.gpsData && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center">
                                     <Activity className="w-5 h-5" />
                                     GPS Trip Analytics
                                 </CardTitle>
@@ -266,9 +266,9 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                 {/* Trip Summary */}
                                 {record.dailyReport.gpsData.tripSummary && (
                                     <div className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                            <div className="text-center p-4 border rounded-lg">
-                                                <BarChart3 className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                                            <div className="p-4 text-center rounded-lg border">
+                                                <BarChart3 className="mx-auto mb-2 w-6 h-6 text-blue-500" />
                                                 <div className="text-lg font-bold">
                                                     {record.dailyReport.gpsData.tripSummary.totalDistanceKm < 1 
                                                         ? `${Math.round(record.dailyReport.gpsData.tripSummary.totalDistanceKm * 1000)}m`
@@ -277,23 +277,23 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">Total Distance</div>
                                             </div>
-                                            <div className="text-center p-4 border rounded-lg">
-                                                <Timer className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                                            <div className="p-4 text-center rounded-lg border">
+                                                <Timer className="mx-auto mb-2 w-6 h-6 text-green-500" />
                                                 <div className="text-lg font-bold">
                                                     {Math.floor(record.dailyReport.gpsData.tripSummary.totalTimeMinutes / 60)}h{' '}
                                                     {record.dailyReport.gpsData.tripSummary.totalTimeMinutes % 60}m
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">Total Time</div>
                                             </div>
-                                            <div className="text-center p-4 border rounded-lg">
-                                                <Zap className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+                                            <div className="p-4 text-center rounded-lg border">
+                                                <Zap className="mx-auto mb-2 w-6 h-6 text-purple-500" />
                                                 <div className="text-lg font-bold">
                                                     {record.dailyReport.gpsData.tripSummary.averageSpeedKmh.toFixed(1)} km/h
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">Avg Speed</div>
                                             </div>
-                                            <div className="text-center p-4 border rounded-lg">
-                                                <MapPin className="w-6 h-6 mx-auto mb-2 text-orange-500" />
+                                            <div className="p-4 text-center rounded-lg border">
+                                                <MapPin className="mx-auto mb-2 w-6 h-6 text-orange-500" />
                                                 <div className="text-lg font-bold">
                                                     {record.dailyReport.gpsData.tripSummary.numberOfStops}
                                                 </div>
@@ -302,7 +302,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                         </div>
                                         
                                         {/* Additional Trip Details */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                                        <div className="grid grid-cols-1 gap-4 pt-4 border-t md:grid-cols-3">
                                             <div className="text-center">
                                                 <div className="text-sm font-medium">Moving Time</div>
                                                 <div className="text-lg text-green-600">
@@ -333,17 +333,17 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                         <h4 className="font-medium">Travel Stops & Locations ({record.dailyReport.gpsData.stops.length})</h4>
                                         <div className="grid gap-3">
                                             {record.dailyReport.gpsData.stops.slice(0, 5).map((stop, index) => (
-                                                <div key={index} className="p-3 border rounded-lg">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <div className="flex items-center gap-2">
+                                                <div key={index} className="p-3 rounded-lg border">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <div className="flex gap-2 items-center">
                                                             <MapPin className="w-4 h-4 text-blue-500" />
                                                             <span className="font-medium">Stop {index + 1}</span>
-                                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                                            <span className="px-2 py-1 text-xs text-green-800 bg-green-100 rounded-full">
                                                                 {stop.durationFormatted}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground mb-2">
+                                                    <div className="mb-2 text-sm text-muted-foreground">
                                                         {stop.address}
                                                     </div>
                                                     <div className="flex justify-between text-xs text-muted-foreground">
@@ -355,7 +355,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                                 </div>
                                             ))}
                                             {record.dailyReport.gpsData.stops.length > 5 && (
-                                                <div className="text-center text-sm text-muted-foreground">
+                                                <div className="text-sm text-center text-muted-foreground">
                                                     ... and {record.dailyReport.gpsData.stops.length - 5} more stops
                                                 </div>
                                             )}
@@ -367,15 +367,15 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                 {record.dailyReport.gpsData.locationAnalysis && (
                                     <div className="mt-6 space-y-3">
                                         <h4 className="font-medium">Location Analysis</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
                                                 <div className="text-sm font-medium text-purple-800">Locations Visited</div>
                                                 <div className="text-lg font-bold text-purple-900">
                                                     {record.dailyReport.gpsData.locationAnalysis?.locationsVisited?.length || 
                                                      Object.keys(record.dailyReport.gpsData.timeSpentByLocation || {}).length}
                                                 </div>
                                             </div>
-                                            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
                                                 <div className="text-sm font-medium text-purple-800">Average Time/Location</div>
                                                 <div className="text-lg font-bold text-purple-900">
                                                     {record.dailyReport.gpsData.averageTimePerLocationFormatted}
@@ -387,8 +387,8 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                 
                                 {/* Data Quality */}
                                 {record.dailyReport.gpsData.geocodingStatus && (
-                                    <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                        <h4 className="font-medium text-green-800 mb-2">GPS Data Quality</h4>
+                                    <div className="p-3 mt-6 bg-green-50 rounded-lg border border-green-200">
+                                        <h4 className="mb-2 font-medium text-green-800">GPS Data Quality</h4>
                                         <div className="grid grid-cols-3 gap-4 text-center">
                                             <div>
                                                 <div className="text-sm text-green-600">Successful</div>
@@ -420,22 +420,22 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {hasBreaks && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center">
                                     <Coffee className="w-5 h-5" />
                                     Break Analysis
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="text-center p-4 border rounded-lg">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div className="p-4 text-center rounded-lg border">
                                         <div className="text-2xl font-bold text-orange-600">{record.breakCount}</div>
                                         <div className="text-sm text-muted-foreground">Total Breaks</div>
                                     </div>
-                                    <div className="text-center p-4 border rounded-lg">
+                                    <div className="p-4 text-center rounded-lg border">
                                         <div className="text-2xl font-bold text-blue-600">{breakDuration}</div>
                                         <div className="text-sm text-muted-foreground">Total Break Time</div>
                                     </div>
-                                    <div className="text-center p-4 border rounded-lg">
+                                    <div className="p-4 text-center rounded-lg border">
                                         <div className="text-2xl font-bold text-purple-600">
                                             {record.breakDetails ? 
                                                 Math.round((record.breakDetails.reduce((sum, detail) => sum + (detail.duration || 0), 0)) / (record.breakDetails.length || 1)) 
@@ -448,11 +448,11 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
 
                                 {record.breakDetails && record.breakDetails.length > 0 && (
                                     <div className="mt-4">
-                                        <h4 className="font-medium mb-3">Break Timeline</h4>
+                                        <h4 className="mb-3 font-medium">Break Timeline</h4>
                                         <div className="space-y-2">
                                             {record.breakDetails.map((breakDetail, index) => (
-                                                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                                                    <div className="flex items-center gap-2">
+                                                <div key={index} className="flex justify-between items-center p-3 rounded-lg border">
+                                                    <div className="flex gap-2 items-center">
                                                         <Coffee className="w-4 h-4 text-orange-500" />
                                                         <span className="font-medium">Break {index + 1}</span>
                                                     </div>
@@ -472,30 +472,30 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {/* Performance Metrics */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex gap-2 items-center">
                                 <BarChart3 className="w-5 h-5" />
                                 Performance Metrics
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="text-center p-4 border rounded-lg">
-                                    <Zap className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                                <div className="p-4 text-center rounded-lg border">
+                                    <Zap className="mx-auto mb-2 w-6 h-6 text-green-500" />
                                     <div className="text-lg font-bold">{workDuration}</div>
                                     <div className="text-xs text-muted-foreground">Work Duration</div>
                                 </div>
-                                <div className="text-center p-4 border rounded-lg">
-                                    <Target className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                                <div className="p-4 text-center rounded-lg border">
+                                    <Target className="mx-auto mb-2 w-6 h-6 text-blue-500" />
                                     <div className="text-lg font-bold">{overtimeDuration !== 'N/A' ? overtimeDuration : '0h'}</div>
                                     <div className="text-xs text-muted-foreground">Overtime</div>
                                 </div>
-                                <div className="text-center p-4 border rounded-lg">
-                                    <Clock className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+                                <div className="p-4 text-center rounded-lg border">
+                                    <Clock className="mx-auto mb-2 w-6 h-6 text-purple-500" />
                                     <div className="text-lg font-bold">{isCompleted ? 'Complete' : 'Active'}</div>
                                     <div className="text-xs text-muted-foreground">Shift Status</div>
                                 </div>
-                                <div className="text-center p-4 border rounded-lg">
-                                    <Activity className="w-6 h-6 mx-auto mb-2 text-orange-500" />
+                                <div className="p-4 text-center rounded-lg border">
+                                    <Activity className="mx-auto mb-2 w-6 h-6 text-orange-500" />
                                     <div className="text-lg font-bold">{hasBreaks ? 'Yes' : 'No'}</div>
                                     <div className="text-xs text-muted-foreground">Breaks Taken</div>
                                 </div>
@@ -504,10 +504,10 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     </Card>
 
                     {/* User and Organization Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex gap-2 items-center">
                                     <User className="w-5 h-5" />
                                     Employee Information
                                 </CardTitle>
@@ -535,7 +535,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                         {record.branch && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
+                                    <CardTitle className="flex gap-2 items-center">
                                         <Building className="w-5 h-5" />
                                         Branch Information
                                     </CardTitle>
@@ -569,13 +569,13 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                     {/* Record Metadata */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex gap-2 items-center">
                                 <FileText className="w-5 h-5" />
                                 Record Information
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                 <div>
                                     <span className="text-sm text-muted-foreground">Record ID:</span>
                                     <div className="font-medium">#{record.uid}</div>

@@ -51,8 +51,8 @@ const GenerateReportSection = () => {
 
     // Report type options based on attendance controller routes
     const reportTypes = [
-        { 
-            value: 'morning_report', 
+        {
+            value: 'morning_report',
             label: 'Morning Attendance Report',
             description: 'Send automated morning attendance report via email',
             requiresUser: false,
@@ -60,8 +60,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'POST /reports/morning/send'
         },
-        { 
-            value: 'evening_report', 
+        {
+            value: 'evening_report',
             label: 'Evening Attendance Report',
             description: 'Send automated evening attendance report via email',
             requiresUser: false,
@@ -69,8 +69,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'POST /reports/evening/send'
         },
-        { 
-            value: 'organization_report', 
+        {
+            value: 'organization_report',
             label: 'Organization Report',
             description: 'Generate comprehensive organization-wide attendance report',
             requiresUser: false,
@@ -78,8 +78,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'GET /report'
         },
-        { 
-            value: 'user_attendance_request', 
+        {
+            value: 'user_attendance_request',
             label: 'User Attendance Report Request',
             description: 'Request attendance report for personal viewing via email',
             requiresUser: true,
@@ -87,8 +87,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'POST /reports/request'
         },
-        { 
-            value: 'daily_checkins', 
+        {
+            value: 'daily_checkins',
             label: 'Daily Check-ins Report',
             description: 'Get all check-ins for a specific date',
             requiresUser: false,
@@ -96,8 +96,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: true,
             endpoint: 'GET /checkins/:date'
         },
-        { 
-            value: 'user_checkins', 
+        {
+            value: 'user_checkins',
             label: 'User Check-ins Report',
             description: 'Get all check-ins for a specific user',
             requiresUser: true,
@@ -105,8 +105,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'GET /user/:ref'
         },
-        { 
-            value: 'user_metrics', 
+        {
+            value: 'user_metrics',
             label: 'User Attendance Metrics',
             description: 'Get detailed attendance metrics for a user with date range',
             requiresUser: true,
@@ -114,8 +114,8 @@ const GenerateReportSection = () => {
             requiresSpecificDate: false,
             endpoint: 'GET /metrics/:ref'
         },
-        { 
-            value: 'daily_stats', 
+        {
+            value: 'daily_stats',
             label: 'Daily User Stats',
             description: 'Get daily attendance statistics for a specific user and date',
             requiresUser: true,
@@ -163,9 +163,9 @@ const GenerateReportSection = () => {
         try {
             // Simulate API call (replace with actual API call)
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             showSuccessToast(`${selectedReportType.label} generated successfully! Check your email for the report.`, toast);
-            
+
             // Reset form
             setReportType('');
             setSelectedUser('');
@@ -187,7 +187,7 @@ const GenerateReportSection = () => {
                         <h2 className="text-2xl font-bold">Reports Dashboard</h2>
                         <p className="text-muted-foreground">Access comprehensive reports and analytics across different departments · Last updated {new Date().toLocaleTimeString()}</p>
                     </div>
-                    <motion.button 
+                    <motion.button
                         className="flex gap-2 items-center px-4 py-2 text-xs text-white rounded-lg transition-colors bg-primary hover:bg-primary/90"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -232,7 +232,7 @@ const GenerateReportSection = () => {
                 <div>
                     <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                     {/* Report Type Selection */}
-                    <motion.div 
+                    <motion.div
                         className="p-6 rounded-xl border shadow-sm bg-card"
                         whileHover={{ y: -5 }}
                         transition={{ duration: 0.3 }}
@@ -242,7 +242,7 @@ const GenerateReportSection = () => {
                                 <FileText size={20} className="text-primary" />
                                 <h3 className="font-semibold">Report Type</h3>
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <Label htmlFor="report-type">Select Report Type</Label>
                                 <Select value={reportType} onValueChange={setReportType}>
@@ -270,7 +270,7 @@ const GenerateReportSection = () => {
 
                 {/* User Selection - Conditional */}
                 {selectedReportType?.requiresUser && (
-                    <motion.div 
+                    <motion.div
                         className="p-6 rounded-xl border shadow-sm bg-card"
                         whileHover={{ y: -5 }}
                         transition={{ duration: 0.3 }}
@@ -282,7 +282,7 @@ const GenerateReportSection = () => {
                                 <Mail size={20} className="text-green-600" />
                                 <h3 className="font-semibold">User Selection</h3>
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <Label htmlFor="user-select">Select User</Label>
                                 <Select value={selectedUser} onValueChange={setSelectedUser}>
@@ -304,7 +304,7 @@ const GenerateReportSection = () => {
 
                 {/* Date Range Selection - Conditional */}
                 {selectedReportType?.requiresDateRange && (
-                    <motion.div 
+                    <motion.div
                         className="p-6 rounded-xl border shadow-sm bg-card"
                         whileHover={{ y: -5 }}
                         transition={{ duration: 0.3 }}
@@ -316,12 +316,12 @@ const GenerateReportSection = () => {
                                 <CalendarIcon size={20} className="text-blue-600" />
                                 <h3 className="font-semibold">Date Range</h3>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
                                     <Label>Start Date</Label>
                                     <div className="flex gap-2 items-center">
-                                        <Input 
+                                        <Input
                                             type="date"
                                             value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
                                             onChange={(e) => setStartDate(e.target.value ? new Date(e.target.value) : undefined)}
@@ -332,7 +332,7 @@ const GenerateReportSection = () => {
                                 <div className="space-y-2">
                                     <Label>End Date</Label>
                                     <div className="flex gap-2 items-center">
-                                        <Input 
+                                        <Input
                                             type="date"
                                             value={endDate ? format(endDate, 'yyyy-MM-dd') : ''}
                                             onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : undefined)}
@@ -347,7 +347,7 @@ const GenerateReportSection = () => {
 
                 {/* Specific Date Selection - Conditional */}
                 {selectedReportType?.requiresSpecificDate && (
-                    <motion.div 
+                    <motion.div
                         className="p-6 rounded-xl border shadow-sm bg-card"
                         whileHover={{ y: -5 }}
                         transition={{ duration: 0.3 }}
@@ -359,10 +359,10 @@ const GenerateReportSection = () => {
                                 <CalendarIcon size={20} className="text-orange-600" />
                                 <h3 className="font-semibold">Select Date</h3>
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <Label>Report Date</Label>
-                                <Input 
+                                <Input
                                     type="date"
                                     value={specificDate ? format(specificDate, 'yyyy-MM-dd') : ''}
                                     onChange={(e) => setSpecificDate(e.target.value ? new Date(e.target.value) : undefined)}
@@ -375,12 +375,12 @@ const GenerateReportSection = () => {
 
                 {/* Generate Button */}
                 {selectedReportType && (
-                    <motion.div 
+                    <motion.div
                         className="flex justify-center"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <Button 
+                        <Button
                             onClick={handleGenerateReport}
                             disabled={isGenerating}
                             size="lg"
@@ -406,7 +406,7 @@ const GenerateReportSection = () => {
                 )}
 
                 {/* Help Section */}
-                <motion.div 
+                <motion.div
                     className="p-6 rounded-xl border shadow-sm bg-muted/50"
                     whileHover={{ y: -5 }}
                     transition={{ duration: 0.3 }}
@@ -451,11 +451,11 @@ const GenerateReportSection = () => {
                                 <FileText size={24} className="text-primary" />
                                 <h3 className="text-xl font-semibold">Personal Reports</h3>
                             </div>
-                            
+
                             <p className="mb-6 text-muted-foreground">
                                 Access your personal attendance analytics, performance metrics, and individual reports.
                             </p>
-                            
+
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="p-4 rounded-lg bg-muted/50">
                                     <h4 className="mb-2 text-sm font-medium">📊 Your Analytics</h4>
@@ -477,7 +477,7 @@ const GenerateReportSection = () => {
 
                             <div className="p-4 mt-6 bg-blue-50 rounded-lg border border-blue-200">
                                 <p className="text-sm text-blue-800">
-                                    <strong>Coming Soon:</strong> Personal dashboard features will be available in the next update. 
+                                    <strong>Coming Soon:</strong> Personal dashboard features will be available in the next update.
                                     For now, use the Main Dashboard to generate all available reports.
                                 </p>
                             </div>
@@ -1266,363 +1266,6 @@ export default function Home() {
                                         </div>
                                     </div>
                                 </motion.div>
-                            </div>
-                        </div>
-                    </MotionSection>
-
-                    {/* Dashboard Section */}
-                    <MotionSection className="py-16 md:py-24 bg-muted/30" direction="up">
-                        <div className="container px-4 mx-auto md:px-6">
-                            <StaggerContainer
-                                className="mb-12 text-center"
-                                staggerChildren={0.2}
-                            >
-                                <StaggerItem>
-                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
-                                        Dashboard Overview
-                                    </h2>
-                                </StaggerItem>
-                                <StaggerItem>
-                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
-                                        Access comprehensive reports and analytics across different departments
-                                    </p>
-                                </StaggerItem>
-                            </StaggerContainer>
-
-                            <div className="mx-auto max-w-7xl">
-                                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                    <div className="overflow-hidden mb-8">
-                                        <TabsList className="flex flex-wrap gap-1 justify-center p-1 w-full h-auto rounded-lg bg-muted">
-                                            <TabsTrigger 
-                                                value="personal" 
-                                                className="flex-1 px-4 py-2 text-xs font-normal uppercase whitespace-nowrap rounded-md font-body min-w-fit"
-                                            >
-                                                Personal
-                                            </TabsTrigger>
-                                            <TabsTrigger 
-                                                value="attendance" 
-                                                className="flex-1 px-4 py-2 text-xs font-normal uppercase whitespace-nowrap rounded-md font-body min-w-fit"
-                                            >
-                                                Attendance
-                                            </TabsTrigger>
-                                            <TabsTrigger 
-                                                value="sales" 
-                                                className="flex-1 px-4 py-2 text-xs font-normal uppercase whitespace-nowrap rounded-md font-body min-w-fit"
-                                            >
-                                                Sales
-                                            </TabsTrigger>
-                                            <TabsTrigger 
-                                                value="activities" 
-                                                className="flex-1 px-4 py-2 text-xs font-normal uppercase whitespace-nowrap rounded-md font-body min-w-fit"
-                                            >
-                                                Activities
-                                            </TabsTrigger>
-                                            <TabsTrigger 
-                                                value="generate_report" 
-                                                className="flex-1 px-4 py-2 text-xs font-normal uppercase whitespace-nowrap rounded-md border font-body min-w-fit bg-primary/10 border-primary/20"
-                                            >
-                                                📊 Reports
-                                            </TabsTrigger>
-                                        </TabsList>
-                                    </div>
-
-                                    {/* Personal Dashboard */}
-                                    <TabsContent value="personal" className="space-y-6">
-                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">My Tasks</p>
-                                                        <p className="text-2xl font-normal font-body">12</p>
-                                                        <p className="text-xs text-green-600 font-body">3 completed today</p>
-                                                    </div>
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                                        <span className="text-xl">✅</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">My Leads</p>
-                                                        <p className="text-2xl font-normal font-body">8</p>
-                                                        <p className="text-xs text-blue-600 font-body">2 hot prospects</p>
-                                                    </div>
-                                                    <div className="p-3 bg-green-100 rounded-lg">
-                                                        <span className="text-xl">🎯</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Hours Today</p>
-                                                        <p className="text-2xl font-normal font-body">7.5h</p>
-                                                        <p className="text-xs text-green-600 font-body">0.5h overtime</p>
-                                                    </div>
-                                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                                        <span className="text-xl">⏰</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Commission</p>
-                                                        <p className="text-2xl font-normal font-body">R2,450</p>
-                                                        <p className="text-xs text-green-600 font-body">+15% this month</p>
-                                                    </div>
-                                                    <div className="p-3 bg-yellow-100 rounded-lg">
-                                                        <span className="text-xl">💰</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Attendance Dashboard */}
-                                    <TabsContent value="attendance" className="space-y-6">
-                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Total Employees</p>
-                                                        <p className="text-2xl font-normal font-body">0</p>
-                                                        <p className="text-xs text-muted-foreground font-body">12 active today</p>
-                                                    </div>
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                                        <span className="text-xl">👥</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Active Today</p>
-                                                        <p className="text-2xl font-normal font-body">12</p>
-                                                        <p className="text-xs text-green-600 font-body">100% attendance rate</p>
-                                                    </div>
-                                                    <div className="p-3 bg-green-100 rounded-lg">
-                                                        <span className="text-xl">✅</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Total Work Hours</p>
-                                                        <p className="text-2xl font-normal font-body">2.8h</p>
-                                                        <p className="text-xs text-blue-600 font-body">0.2h avg per person</p>
-                                                    </div>
-                                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                                        <span className="text-xl">⏱️</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Punctuality Rate</p>
-                                                        <p className="text-2xl font-normal font-body">63.0%</p>
-                                                        <p className="text-xs text-green-600 font-body">On-time arrivals today</p>
-                                                    </div>
-                                                    <div className="p-3 bg-orange-100 rounded-lg">
-                                                        <span className="text-xl">🎯</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Sales Dashboard */}
-                                    <TabsContent value="sales" className="space-y-6">
-                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Monthly Revenue</p>
-                                                        <p className="text-2xl font-normal font-body">R45,230</p>
-                                                        <p className="text-xs text-green-600 font-body">+23% from last month</p>
-                                                    </div>
-                                                    <div className="p-3 bg-green-100 rounded-lg">
-                                                        <span className="text-xl">💰</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">New Leads</p>
-                                                        <p className="text-2xl font-normal font-body">28</p>
-                                                        <p className="text-xs text-blue-600 font-body">5 converted this week</p>
-                                                    </div>
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                                        <span className="text-xl">🎯</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Conversion Rate</p>
-                                                        <p className="text-2xl font-normal font-body">32%</p>
-                                                        <p className="text-xs text-green-600 font-body">Above target (25%)</p>
-                                                    </div>
-                                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                                        <span className="text-xl">📊</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Active Deals</p>
-                                                        <p className="text-2xl font-normal font-body">15</p>
-                                                        <p className="text-xs text-orange-600 font-body">R125k pipeline value</p>
-                                                    </div>
-                                                    <div className="p-3 bg-yellow-100 rounded-lg">
-                                                        <span className="text-xl">🤝</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Activities Dashboard */}
-                                    <TabsContent value="activities" className="space-y-6">
-                                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Total Tasks</p>
-                                                        <p className="text-2xl font-normal font-body">47</p>
-                                                        <p className="text-xs text-green-600 font-body">12 completed today</p>
-                                                    </div>
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                                        <span className="text-xl">📋</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Client Meetings</p>
-                                                        <p className="text-2xl font-normal font-body">8</p>
-                                                        <p className="text-xs text-blue-600 font-body">3 scheduled today</p>
-                                                    </div>
-                                                    <div className="p-3 bg-green-100 rounded-lg">
-                                                        <span className="text-xl">👥</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Follow-ups</p>
-                                                        <p className="text-2xl font-normal font-body">23</p>
-                                                        <p className="text-xs text-orange-600 font-body">6 overdue</p>
-                                                    </div>
-                                                    <div className="p-3 bg-orange-100 rounded-lg">
-                                                        <span className="text-xl">📞</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-
-                                            <motion.div 
-                                                className="p-6 rounded-xl border shadow-sm bg-card"
-                                                whileHover={{ y: -5 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="text-xs font-normal uppercase text-muted-foreground font-body">Productivity Score</p>
-                                                        <p className="text-2xl font-normal font-body">87%</p>
-                                                        <p className="text-xs text-green-600 font-body">Above team average</p>
-                                                    </div>
-                                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                                        <span className="text-xl">⭐</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Generate Report Dashboard */}
-                                    <TabsContent value="generate_report" className="space-y-6">
-                                        <GenerateReportSection />
-                                    </TabsContent>
-                                </Tabs>
                             </div>
                         </div>
                     </MotionSection>

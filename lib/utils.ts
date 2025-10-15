@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
  * Formats a date as a string
  */
 export function formatDate(date: Date | string | number) {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('en-ZA', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',

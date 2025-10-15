@@ -16,7 +16,7 @@ interface WebKeyboardAvoidingViewProps {
  * Web-compatible KeyboardAvoidingView component
  * Automatically adjusts layout when virtual keyboard appears on mobile devices
  */
-export const WebKeyboardAvoidingView: React.FC<WebKeyboardAvoidingViewProps> = ({
+export const WebKeyboardAvoidingView: React.FunctionComponent<WebKeyboardAvoidingViewProps> = ({
     children,
     className,
     behavior = 'height',
@@ -89,7 +89,7 @@ export const withWebKeyboardAvoiding = <P extends object>(
     Component: React.ComponentType<P>,
     options?: Omit<WebKeyboardAvoidingViewProps, 'children'>
 ) => {
-    const WrappedComponent: React.FC<P> = (props) => (
+    const WrappedComponent: React.FunctionComponent<P> = (props) => (
         <WebKeyboardAvoidingView {...options}>
             <Component {...props} />
         </WebKeyboardAvoidingView>

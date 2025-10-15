@@ -28,7 +28,9 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Trash2 } from 'lucide-react';
+import { CalendarIcon, Trash2, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -64,98 +66,77 @@ const currencyOptions = [
     { value: 'NGN', label: 'NGN' },
 ];
 
+// Helper function for number preprocessing
+const numberPreprocess = z.preprocess(
+        (val) => (val === '' || val === null ? undefined : String(val)),
+        z
+            .string()
+            .optional()
+            .transform((val) => {
+                if (val === undefined) return undefined;
+                const num = parseFloat(val);
+                return isNaN(num) ? undefined : num;
+            }),
+);
+
+const integerPreprocess = z.preprocess(
+        (val) => (val === '' || val === null ? undefined : String(val)),
+        z
+            .string()
+            .optional()
+            .transform((val) => {
+                if (val === undefined) return undefined;
+                const num = parseInt(val);
+                return isNaN(num) ? undefined : num;
+            }),
+);
+
 // Schema for the form validation
 const userTargetSchema = z.object({
-    targetSalesAmount: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)), // Preprocess: Ensure string or undefined
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                // Validate/Transform the string
-                if (val === undefined) return undefined;
-                const num = parseFloat(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-    targetQuotationsAmount: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseFloat(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-
+    // Target Fields
+    targetSalesAmount: numberPreprocess,
+    targetQuotationsAmount: numberPreprocess,
     targetCurrency: z.string().optional(),
-    targetHoursWorked: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseInt(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-    targetNewClients: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseInt(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-    targetNewLeads: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseInt(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-    targetCheckIns: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseInt(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
-    targetCalls: z.preprocess(
-        (val) => (val === '' || val === null ? undefined : String(val)),
-        z
-            .string()
-            .optional()
-            .transform((val) => {
-                if (val === undefined) return undefined;
-                const num = parseInt(val);
-                return isNaN(num) ? undefined : num;
-            }),
-    ),
+    targetHoursWorked: integerPreprocess,
+    targetNewClients: integerPreprocess,
+    targetNewLeads: integerPreprocess,
+    targetCheckIns: integerPreprocess,
+    targetCalls: integerPreprocess,
     targetPeriod: z.string().optional(),
     periodStartDate: z.date().optional().nullable(),
     periodEndDate: z.date().optional().nullable(),
+
+    // Recurring Target Configuration
+    isRecurring: z.boolean().optional(),
+    recurringInterval: z.enum(['daily', 'weekly', 'monthly']).optional(),
+    carryForwardUnfulfilled: z.boolean().optional(),
+
+    // Current Tracking Fields
+    currentSalesAmount: numberPreprocess,
+    currentQuotationsAmount: numberPreprocess,
+    currentOrdersAmount: numberPreprocess,
+    currentHoursWorked: integerPreprocess,
+    currentNewClients: integerPreprocess,
+    currentNewLeads: integerPreprocess,
+    currentCheckIns: integerPreprocess,
+    currentCalls: integerPreprocess,
+
+    // Cost Breakdown Fields (Monthly) - All in ZAR
+    baseSalary: numberPreprocess,
+    carInstalment: numberPreprocess,
+    carInsurance: numberPreprocess,
+    fuel: numberPreprocess,
+    cellPhoneAllowance: numberPreprocess,
+    carMaintenance: numberPreprocess,
+    cgicCosts: numberPreprocess,
+    totalCost: numberPreprocess,
 });
 
 // Form input type (string values)
 type UserTargetFormInput = {
+    // Target Fields
     targetSalesAmount: string;
     targetQuotationsAmount: string;
-
     targetCurrency?: string;
     targetHoursWorked: string;
     targetNewClients: string;
@@ -165,6 +146,31 @@ type UserTargetFormInput = {
     targetPeriod?: string;
     periodStartDate?: Date;
     periodEndDate?: Date;
+
+    // Recurring Target Configuration
+    isRecurring?: boolean;
+    recurringInterval?: 'daily' | 'weekly' | 'monthly';
+    carryForwardUnfulfilled?: boolean;
+
+    // Current Tracking Fields
+    currentSalesAmount: string;
+    currentQuotationsAmount: string;
+    currentOrdersAmount: string;
+    currentHoursWorked: string;
+    currentNewClients: string;
+    currentNewLeads: string;
+    currentCheckIns: string;
+    currentCalls: string;
+
+    // Cost Breakdown Fields
+    baseSalary: string;
+    carInstalment: string;
+    carInsurance: string;
+    fuel: string;
+    cellPhoneAllowance: string;
+    carMaintenance: string;
+    cgicCosts: string;
+    totalCost: string;
 };
 
 // Exported type for transformed values (number values)
@@ -172,9 +178,9 @@ export type UserTargetFormValues = z.output<typeof userTargetSchema>;
 
 interface UserTarget {
     id?: number;
+    // Target Fields
     targetSalesAmount?: number;
     targetQuotationsAmount?: number;
-
     targetCurrency?: string;
     targetHoursWorked?: number;
     targetNewClients?: number;
@@ -184,6 +190,35 @@ interface UserTarget {
     targetPeriod?: string;
     periodStartDate?: Date;
     periodEndDate?: Date;
+
+    // Recurring Target Configuration
+    isRecurring?: boolean;
+    recurringInterval?: 'daily' | 'weekly' | 'monthly';
+    carryForwardUnfulfilled?: boolean;
+    nextRecurrenceDate?: Date;
+    lastRecurrenceDate?: Date;
+    recurrenceCount?: number;
+
+    // Current Tracking Fields
+    currentSalesAmount?: number;
+    currentQuotationsAmount?: number;
+    currentOrdersAmount?: number;
+    currentHoursWorked?: number;
+    currentNewClients?: number;
+    currentNewLeads?: number;
+    currentCheckIns?: number;
+    currentCalls?: number;
+
+    // Cost Breakdown Fields
+    baseSalary?: number;
+    carInstalment?: number;
+    carInsurance?: number;
+    fuel?: number;
+    cellPhoneAllowance?: number;
+    carMaintenance?: number;
+    cgicCosts?: number;
+    totalCost?: number;
+
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -212,36 +247,43 @@ export default function UserTargetForm({
     const form = useForm<UserTargetFormInput>({
         resolver: zodResolver(userTargetSchema),
         defaultValues: {
-            targetSalesAmount: initialData?.targetSalesAmount
-                ? initialData.targetSalesAmount.toString()
-                : '',
-            targetQuotationsAmount: initialData?.targetQuotationsAmount
-                ? initialData.targetQuotationsAmount.toString()
-                : '',
-
-            targetCurrency: initialData?.targetCurrency || 'USD',
-            targetHoursWorked: initialData?.targetHoursWorked
-                ? initialData.targetHoursWorked.toString()
-                : '',
-            targetNewClients: initialData?.targetNewClients
-                ? initialData.targetNewClients.toString()
-                : '',
-            targetNewLeads: initialData?.targetNewLeads
-                ? initialData.targetNewLeads.toString()
-                : '',
-            targetCheckIns: initialData?.targetCheckIns
-                ? initialData.targetCheckIns.toString()
-                : '',
-            targetCalls: initialData?.targetCalls
-                ? initialData.targetCalls.toString()
-                : '',
+            // Target Fields
+            targetSalesAmount: initialData?.targetSalesAmount?.toString() || '',
+            targetQuotationsAmount: initialData?.targetQuotationsAmount?.toString() || '',
+            targetCurrency: initialData?.targetCurrency || 'ZAR',
+            targetHoursWorked: initialData?.targetHoursWorked?.toString() || '',
+            targetNewClients: initialData?.targetNewClients?.toString() || '',
+            targetNewLeads: initialData?.targetNewLeads?.toString() || '',
+            targetCheckIns: initialData?.targetCheckIns?.toString() || '',
+            targetCalls: initialData?.targetCalls?.toString() || '',
             targetPeriod: initialData?.targetPeriod || 'monthly',
-            periodStartDate: initialData?.periodStartDate
-                ? new Date(initialData.periodStartDate)
-                : undefined,
-            periodEndDate: initialData?.periodEndDate
-                ? new Date(initialData.periodEndDate)
-                : undefined,
+            periodStartDate: initialData?.periodStartDate ? new Date(initialData.periodStartDate) : undefined,
+            periodEndDate: initialData?.periodEndDate ? new Date(initialData.periodEndDate) : undefined,
+
+            // Recurring Target Configuration
+            isRecurring: initialData?.isRecurring || false,
+            recurringInterval: initialData?.recurringInterval || 'monthly',
+            carryForwardUnfulfilled: initialData?.carryForwardUnfulfilled || false,
+
+            // Current Tracking Fields
+            currentSalesAmount: initialData?.currentSalesAmount?.toString() || '',
+            currentQuotationsAmount: initialData?.currentQuotationsAmount?.toString() || '',
+            currentOrdersAmount: initialData?.currentOrdersAmount?.toString() || '',
+            currentHoursWorked: initialData?.currentHoursWorked?.toString() || '',
+            currentNewClients: initialData?.currentNewClients?.toString() || '',
+            currentNewLeads: initialData?.currentNewLeads?.toString() || '',
+            currentCheckIns: initialData?.currentCheckIns?.toString() || '',
+            currentCalls: initialData?.currentCalls?.toString() || '',
+
+            // Cost Breakdown Fields
+            baseSalary: initialData?.baseSalary?.toString() || '',
+            carInstalment: initialData?.carInstalment?.toString() || '',
+            carInsurance: initialData?.carInsurance?.toString() || '',
+            fuel: initialData?.fuel?.toString() || '',
+            cellPhoneAllowance: initialData?.cellPhoneAllowance?.toString() || '',
+            carMaintenance: initialData?.carMaintenance?.toString() || '',
+            cgicCosts: initialData?.cgicCosts?.toString() || '',
+            totalCost: initialData?.totalCost?.toString() || '',
         },
     });
 
@@ -258,36 +300,43 @@ export default function UserTargetForm({
                         // Update form values
                         const userTarget = response.data.userTarget;
                         form.reset({
-                            targetSalesAmount: userTarget.targetSalesAmount
-                                ? userTarget.targetSalesAmount.toString()
-                                : '',
-                            targetQuotationsAmount: userTarget.targetQuotationsAmount
-                                ? userTarget.targetQuotationsAmount.toString()
-                                : '',
-
+                            // Target Fields
+                            targetSalesAmount: userTarget.targetSalesAmount?.toString() || '',
+                            targetQuotationsAmount: userTarget.targetQuotationsAmount?.toString() || '',
                             targetCurrency: userTarget.targetCurrency || 'ZAR',
-                            targetHoursWorked: userTarget.targetHoursWorked
-                                ? userTarget.targetHoursWorked.toString()
-                                : '',
-                            targetNewClients: userTarget.targetNewClients
-                                ? userTarget.targetNewClients.toString()
-                                : '',
-                            targetNewLeads: userTarget.targetNewLeads
-                                ? userTarget.targetNewLeads.toString()
-                                : '',
-                            targetCheckIns: userTarget.targetCheckIns
-                                ? userTarget.targetCheckIns.toString()
-                                : '',
-                            targetCalls: userTarget.targetCalls
-                                ? userTarget.targetCalls.toString()
-                                : '',
+                            targetHoursWorked: userTarget.targetHoursWorked?.toString() || '',
+                            targetNewClients: userTarget.targetNewClients?.toString() || '',
+                            targetNewLeads: userTarget.targetNewLeads?.toString() || '',
+                            targetCheckIns: userTarget.targetCheckIns?.toString() || '',
+                            targetCalls: userTarget.targetCalls?.toString() || '',
                             targetPeriod: userTarget.targetPeriod || 'monthly',
-                            periodStartDate: userTarget.periodStartDate
-                                ? new Date(userTarget.periodStartDate)
-                                : undefined,
-                            periodEndDate: userTarget.periodEndDate
-                                ? new Date(userTarget.periodEndDate)
-                                : undefined,
+                            periodStartDate: userTarget.periodStartDate ? new Date(userTarget.periodStartDate) : undefined,
+                            periodEndDate: userTarget.periodEndDate ? new Date(userTarget.periodEndDate) : undefined,
+
+                            // Recurring Target Configuration
+                            isRecurring: userTarget.isRecurring || false,
+                            recurringInterval: userTarget.recurringInterval || 'monthly',
+                            carryForwardUnfulfilled: userTarget.carryForwardUnfulfilled || false,
+
+                            // Current Tracking Fields
+                            currentSalesAmount: userTarget.currentSalesAmount?.toString() || '',
+                            currentQuotationsAmount: userTarget.currentQuotationsAmount?.toString() || '',
+                            currentOrdersAmount: userTarget.currentOrdersAmount?.toString() || '',
+                            currentHoursWorked: userTarget.currentHoursWorked?.toString() || '',
+                            currentNewClients: userTarget.currentNewClients?.toString() || '',
+                            currentNewLeads: userTarget.currentNewLeads?.toString() || '',
+                            currentCheckIns: userTarget.currentCheckIns?.toString() || '',
+                            currentCalls: userTarget.currentCalls?.toString() || '',
+
+                            // Cost Breakdown Fields
+                            baseSalary: userTarget.baseSalary?.toString() || '',
+                            carInstalment: userTarget.carInstalment?.toString() || '',
+                            carInsurance: userTarget.carInsurance?.toString() || '',
+                            fuel: userTarget.fuel?.toString() || '',
+                            cellPhoneAllowance: userTarget.cellPhoneAllowance?.toString() || '',
+                            carMaintenance: userTarget.carMaintenance?.toString() || '',
+                            cgicCosts: userTarget.cgicCosts?.toString() || '',
+                            totalCost: userTarget.totalCost?.toString() || '',
                         });
                     }
                 })
@@ -350,9 +399,9 @@ export default function UserTargetForm({
             // Reset the form and current target
             setCurrentTarget(null);
             form.reset({
+                // Target Fields
                 targetSalesAmount: '',
                 targetQuotationsAmount: '',
-
                 targetCurrency: 'ZAR',
                 targetHoursWorked: '',
                 targetNewClients: '',
@@ -362,6 +411,31 @@ export default function UserTargetForm({
                 targetPeriod: 'monthly',
                 periodStartDate: undefined,
                 periodEndDate: undefined,
+
+                // Recurring Target Configuration
+                isRecurring: false,
+                recurringInterval: 'monthly',
+                carryForwardUnfulfilled: false,
+
+                // Current Tracking Fields
+                currentSalesAmount: '',
+                currentQuotationsAmount: '',
+                currentOrdersAmount: '',
+                currentHoursWorked: '',
+                currentNewClients: '',
+                currentNewLeads: '',
+                currentCheckIns: '',
+                currentCalls: '',
+
+                // Cost Breakdown Fields
+                baseSalary: '',
+                carInstalment: '',
+                carInsurance: '',
+                fuel: '',
+                cellPhoneAllowance: '',
+                carMaintenance: '',
+                cgicCosts: '',
+                totalCost: '',
             });
 
             setShowDeleteConfirmation(false);
@@ -398,7 +472,7 @@ export default function UserTargetForm({
                         {/* Sales Target */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-thin uppercase font-body">
-                                Sales Targets
+                                SALES TARGETS
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
@@ -498,7 +572,7 @@ export default function UserTargetForm({
                         {/* Time Target */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-thin uppercase font-body">
-                                Time Targets
+                                TIME TARGETS
                             </h3>
                             <FormField
                                 control={form.control}
@@ -528,7 +602,7 @@ export default function UserTargetForm({
                         {/* Client & Lead Targets */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-thin uppercase font-body">
-                                Client & Lead Targets
+                                CLIENT & LEAD TARGETS
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
@@ -583,7 +657,7 @@ export default function UserTargetForm({
                         {/* Activity Targets */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-thin uppercase font-body">
-                                Activity Targets
+                                ACTIVITY TARGETS
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
@@ -636,10 +710,423 @@ export default function UserTargetForm({
                         </div>
                     </div>
 
+                    {/* Current Sales Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT SALES PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentSalesAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-sales-amount"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Total Sales
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current total sales"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentQuotationsAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-quotations-amount"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Quotations Amount
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current quotations amount"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentOrdersAmount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-orders-amount"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Orders Amount
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current orders amount"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Current Time & Activity Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT TIME & ACTIVITY PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentHoursWorked"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-hours-worked"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Hours Worked
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current hours worked"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Current Client & Lead Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT CLIENT & LEAD PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentNewClients"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-new-clients"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current New Clients
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current new clients"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentNewLeads"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-new-leads"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current New Leads
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current new leads"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Current Activity Performance */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            CURRENT ACTIVITY PERFORMANCE
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="currentCheckIns"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-check-ins"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Check-ins
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current check-ins"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="currentCalls"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="current-calls"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Current Calls
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter current calls"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Cost Breakdown Section - Hidden for now per request */}
+                    {false && <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            MONTHLY COST BREAKDOWN (ZAR)
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <FormField
+                                control={form.control}
+                                name="baseSalary"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="base-salary"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Base Salary
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter base salary"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="carInstalment"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="car-instalment"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Car Instalment
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter car instalment"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="carInsurance"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="car-insurance"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Car Insurance
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter car insurance"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="fuel"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="fuel"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Fuel Allowance
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter fuel allowance"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="cellPhoneAllowance"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="cell-phone-allowance"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Cell Phone Allowance
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter cell phone allowance"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="carMaintenance"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="car-maintenance"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Car Maintenance
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter car maintenance"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="cgicCosts"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="cgic-costs"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            CGIC Costs
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter CGIC costs"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="totalCost"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="total-cost"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            Total Cost
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                placeholder="enter total cost"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>}
+
                     {/* Target Period Settings */}
                     <div className="space-y-2">
                         <h3 className="text-sm font-thin uppercase font-body">
-                            Target Period
+                            TARGET PERIOD
                         </h3>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <FormField
@@ -801,6 +1288,114 @@ export default function UserTargetForm({
                                 )}
                             />
                         </div>
+                    </div>
+
+                    {/* Recurring Targets Configuration */}
+                    <div className="space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                        <div className="flex items-center space-x-2">
+                            <RefreshCw className="w-5 h-5 text-primary" />
+                            <h3 className="text-sm font-thin uppercase font-body">
+                                RECURRING TARGETS
+                            </h3>
+                        </div>
+
+                        <FormField
+                            control={form.control}
+                            name="isRecurring"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                    <div className="space-y-0.5">
+                                        <label className="text-xs font-light text-white uppercase font-body">
+                                            Enable Recurring Targets
+                                        </label>
+                                        <div className="text-[10px] text-muted-foreground font-thin">
+                                            Automatically reset targets at specified intervals
+                                        </div>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+
+                        {form.watch('isRecurring') && (
+                            <div className="space-y-4 animate-in fade-in-50">
+                                <FormField
+                                    control={form.control}
+                                    name="recurringInterval"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <label className="block text-xs font-light text-white uppercase font-body">
+                                                Recurrence Interval
+                                            </label>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger className="font-thin font-body">
+                                                        <SelectValue placeholder="Select interval" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="daily" className="font-thin font-body">
+                                                        Daily
+                                                    </SelectItem>
+                                                    <SelectItem value="weekly" className="font-thin font-body">
+                                                        Weekly
+                                                    </SelectItem>
+                                                    <SelectItem value="monthly" className="font-thin font-body">
+                                                        Monthly
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="carryForwardUnfulfilled"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <label className="text-xs font-light text-white uppercase font-body">
+                                                    Carry Forward Unfulfilled Targets
+                                                </label>
+                                                <div className="text-[10px] text-muted-foreground font-thin">
+                                                    Add unmet targets to the next period automatically
+                                                </div>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {(currentTarget?.recurrenceCount ?? 0) > 0 && (
+                                    <div className="p-3 rounded-md bg-muted/50">
+                                        <div className="text-[10px] text-muted-foreground font-thin space-y-1">
+                                            <p>📊 <strong>Recurrence Count:</strong> {currentTarget?.recurrenceCount ?? 0} times</p>
+                                            {currentTarget?.nextRecurrenceDate && (
+                                                <p>📅 <strong>Next Recurrence:</strong> {format(new Date(currentTarget.nextRecurrenceDate), 'PPP')}</p>
+                                            )}
+                                            {currentTarget?.lastRecurrenceDate && (
+                                                <p>🕒 <strong>Last Recurrence:</strong> {format(new Date(currentTarget.lastRecurrenceDate), 'PPP')}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-between space-x-2">

@@ -50,8 +50,48 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
 
+// Helper function to safely render address data
+const renderAddressSafely = (address: any): string => {
+    if (!address) return 'No address available';
+
+    // If address is a string, return it directly
+    if (typeof address === 'string') return address;
+
+    // If address is an object, safely extract and concatenate components
+    if (typeof address === 'object') {
+        const parts: string[] = [];
+
+        // Helper to safely get string value
+        const safeString = (value: any): string => {
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        };
+
+        // Try common address field names
+        const streetValue = safeString(address.street || address.streetAddress || address.address1);
+        const suburbValue = safeString(address.suburb || address.district || address.address2);
+        const cityValue = safeString(address.city || address.locality);
+        const stateValue = safeString(address.state || address.province || address.region);
+        const countryValue = safeString(address.country || address.countryName);
+        const postalValue = safeString(address.postalCode || address.zipCode || address.zip);
+
+        if (streetValue) parts.push(streetValue);
+        if (suburbValue) parts.push(suburbValue);
+        if (cityValue) parts.push(cityValue);
+        if (stateValue) parts.push(stateValue);
+        if (countryValue) parts.push(countryValue);
+        if (postalValue) parts.push(postalValue);
+
+        return parts.filter(part => part.trim().length > 0).join(', ') || 'Address details available';
+    }
+
+    return 'Invalid address format';
+};
+
 interface MarkerPopupProps {
-    worker: WorkerType | ClientType | CompetitorType | QuotationType;
+    worker: WorkerType | ClientType | CompetitorType | QuotationType | any; // Extended to support all marker types
 }
 
 function MarkerPopup({ worker }: MarkerPopupProps) {
@@ -59,10 +99,20 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
 
     // Determine marker type for conditional rendering
     const markerType = worker.markerType;
-    const isWorkerType = markerType !== 'client' && markerType !== 'competitor' && markerType !== 'quotation';
+    const isWorkerType = markerType !== 'client' && markerType !== 'competitor' && markerType !== 'quotation' &&
+                         markerType !== 'task' && markerType !== 'lead' && markerType !== 'journal' &&
+                         markerType !== 'check-in-visit' && !markerType?.includes('shift') && !markerType?.includes('break');
     const isClientType = markerType === 'client';
     const isCompetitorType = markerType === 'competitor';
     const isQuotationType = markerType === 'quotation';
+    const isTaskType = markerType === 'task';
+    const isLeadType = markerType === 'lead';
+    const isJournalType = markerType === 'journal';
+    const isCheckInVisitType = markerType === 'check-in-visit';
+    const isShiftStartType = markerType === 'shift-start';
+    const isShiftEndType = markerType === 'shift-end';
+    const isBreakStartType = markerType === 'break-start';
+    const isBreakEndType = markerType === 'break-end';
     const isEventType = 'type' in worker && worker.type === 'event';
 
     // Handle client navigation
@@ -86,6 +136,18 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
     const entityName =
         isQuotationType && 'quotationNumber' in worker
             ? worker.quotationNumber
+            : isTaskType && 'taskData' in worker
+            ? worker.taskData?.title || worker.name
+            : isLeadType && 'leadData' in worker
+            ? worker.leadData?.companyName || worker.leadData?.contactName || worker.name
+            : isJournalType && 'journalData' in worker
+            ? `Journal Entry #${worker.journalData?.uid || worker.id}`
+            : isCheckInVisitType && 'checkInData' in worker
+            ? `Check-in Visit - ${worker.client?.name || 'Client'}`
+            : isShiftStartType || isShiftEndType
+            ? `${isShiftStartType ? 'Shift Start' : 'Shift End'} - ${worker.name}`
+            : isBreakStartType || isBreakEndType
+            ? `${isBreakStartType ? 'Break Start' : 'Break End'} - ${worker.name}`
             : isEventType && 'name' in worker
             ? worker.name
             : 'name' in worker ? worker.name : 'Unnamed Entity';
@@ -97,15 +159,27 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             ? 'bg-red-500'
             : isQuotationType
                 ? 'bg-green-600'
-                : isEventType
-                    ? 'bg-orange-500'
-                : worker?.status?.includes('progress')
-                    ? 'bg-green-500'
-                    : worker?.status?.includes('break')
-                        ? 'bg-yellow-500'
-                        : worker?.status?.includes('Completed')
-                            ? 'bg-blue-500'
-                            : 'bg-gray-500';
+            : isTaskType
+                ? 'bg-pink-500'
+            : isLeadType
+                ? 'bg-orange-500'
+            : isJournalType
+                ? 'bg-purple-500'
+            : isCheckInVisitType
+                ? 'bg-blue-500'
+            : isShiftStartType || isShiftEndType
+                ? 'bg-green-500'
+            : isBreakStartType || isBreakEndType
+                ? 'bg-yellow-500'
+            : isEventType
+                ? 'bg-orange-500'
+            : worker?.status?.includes('progress')
+                ? 'bg-green-500'
+                : worker?.status?.includes('break')
+                    ? 'bg-yellow-500'
+                    : worker?.status?.includes('Completed')
+                        ? 'bg-blue-500'
+                        : 'bg-gray-500';
 
     return (
         <div className="p-3 font-body">
@@ -264,16 +338,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             Location
                         </p>
                         <p className="text-[10px]">
-                            {'address' in worker && worker.address ? (
-                                <>
-                                    {worker.address.street && <span>{worker.address.street}, </span>}
-                                    {worker.address.suburb && <span>{worker.address.suburb}, </span>}
-                                    {worker.address.city && <span>{worker.address.city}, </span>}
-                                    {worker.address.state && <span>{worker.address.state}, </span>}
-                                    {worker.address.country && <span>{worker.address.country} </span>}
-                                    {worker.address.postalCode && <span>{worker.address.postalCode}</span>}
-                                </>
-                            ) : 'No address available'}
+                            {renderAddressSafely('address' in worker ? worker.address : null)}
                         </p>
                     </div>
 
@@ -436,6 +501,322 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                 </>
             )}
 
+            {/* Task-specific information */}
+            {isTaskType && 'taskData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-pink-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <CheckCircle2 size={15} strokeWidth={1.5} />
+                            Task Details
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            {worker.taskData?.title || 'Task'}
+                        </p>
+                        <p className="text-[10px] flex items-center gap-1 mb-1">
+                            <span className={`w-2 h-2 rounded-full ${
+                                worker.taskData?.status === 'COMPLETED' ? 'bg-green-500' :
+                                worker.taskData?.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                                worker.taskData?.status === 'OVERDUE' ? 'bg-red-500' :
+                                'bg-yellow-500'
+                            }`}></span>
+                            Status: {worker.taskData?.status || 'PENDING'}
+                        </p>
+                        {worker.taskData?.description && (
+                            <p className="text-[9px] text-muted-foreground mt-1 line-clamp-2">
+                                {worker.taskData.description}
+                            </p>
+                        )}
+                        {worker.taskData?.priority && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Priority: {worker.taskData.priority}
+                            </p>
+                        )}
+                        {worker.taskData?.deadline && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Deadline: {new Date(worker.taskData.deadline).toLocaleDateString()}
+                            </p>
+                        )}
+                    </div>
+
+                    {worker.client && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <Building size={15} strokeWidth={1.5} />
+                                Client Location
+                            </p>
+                            <p className="text-[10px] font-medium">
+                                {worker.client.name}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground">
+                                {renderAddressSafely(worker.location?.address)}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex justify-center mt-2">
+                        <button className="px-3 py-1 text-[10px] uppercase font-thin border border-pink-500/20 rounded-md text-pink-600 hover:bg-pink-500/5 transition-colors">
+                            View Task Details
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {/* Lead-specific information */}
+            {isLeadType && 'leadData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-orange-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <UserPlus size={15} strokeWidth={1.5} />
+                            Lead Details
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            {worker.leadData?.companyName || worker.leadData?.contactName || 'Lead'}
+                        </p>
+                        <p className="text-[10px] flex items-center gap-1 mb-1">
+                            <span className={`w-2 h-2 rounded-full ${
+                                worker.leadData?.status === 'QUALIFIED' ? 'bg-green-500' :
+                                worker.leadData?.status === 'CONTACTED' ? 'bg-blue-500' :
+                                worker.leadData?.status === 'COLD' ? 'bg-red-500' :
+                                'bg-yellow-500'
+                            }`}></span>
+                            Status: {worker.leadData?.status || 'NEW'}
+                        </p>
+                        {worker.leadData?.email && (
+                            <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
+                                <Mail size={12} strokeWidth={1.5} className="text-orange-500" />
+                                {worker.leadData.email}
+                            </p>
+                        )}
+                        {worker.leadData?.phone && (
+                            <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                <PhoneCall size={12} strokeWidth={1.5} className="text-orange-500" />
+                                {worker.leadData.phone}
+                            </p>
+                        )}
+                        {worker.leadData?.industry && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Industry: {worker.leadData.industry}
+                            </p>
+                        )}
+                        {worker.leadData?.leadScore && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Lead Score: {worker.leadData.leadScore}/100
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <MapPin size={15} strokeWidth={1.5} />
+                            Lead Location
+                        </p>
+                        <p className="text-[10px]">
+                            {renderAddressSafely(worker.location?.address)}
+                        </p>
+                    </div>
+
+                    <div className="flex justify-center mt-2">
+                        <button className="px-3 py-1 text-[10px] uppercase font-thin border border-orange-500/20 rounded-md text-orange-600 hover:bg-orange-500/5 transition-colors">
+                            View Lead Details
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {/* Journal-specific information */}
+            {isJournalType && 'journalData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-purple-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <FolderIcon size={15} strokeWidth={1.5} />
+                            Journal Entry
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            Entry #{worker.journalData?.uid || worker.id}
+                        </p>
+                        <p className="text-[10px] flex items-center gap-1 mb-1">
+                            <span className={`w-2 h-2 rounded-full ${
+                                worker.journalData?.status === 'APPROVED' ? 'bg-green-500' :
+                                worker.journalData?.status === 'REJECTED' ? 'bg-red-500' :
+                                'bg-yellow-500'
+                            }`}></span>
+                            Status: {worker.journalData?.status || 'PENDING_REVIEW'}
+                        </p>
+                        {worker.journalData?.comments && (
+                            <p className="text-[9px] text-muted-foreground mt-1 line-clamp-3">
+                                {worker.journalData.comments}
+                            </p>
+                        )}
+                        {worker.journalData?.timestamp && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Created: {new Date(worker.journalData.timestamp).toLocaleDateString()}
+                            </p>
+                        )}
+                    </div>
+
+                    {worker.clientName && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <Building size={15} strokeWidth={1.5} />
+                                Client Reference
+                            </p>
+                            <p className="text-[10px] font-medium">
+                                {worker.clientName}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground">
+                                {renderAddressSafely(worker.location?.address)}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex justify-center mt-2">
+                        <button className="px-3 py-1 text-[10px] uppercase font-thin border border-purple-500/20 rounded-md text-purple-600 hover:bg-purple-500/5 transition-colors">
+                            View Journal Entry
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {/* Check-in Visit specific information */}
+            {isCheckInVisitType && 'checkInData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-blue-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <MapPin size={15} strokeWidth={1.5} />
+                            Check-in Visit
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            Visit #{worker.checkInData?.uid || worker.id}
+                        </p>
+                        <p className="text-[10px] flex items-center gap-1 mb-1">
+                            <span className={`w-2 h-2 rounded-full ${worker.checkInData?.checkOutTime ? 'bg-green-500' : 'bg-blue-500'}`}></span>
+                            Status: {worker.checkInData?.checkOutTime ? 'Completed' : 'In Progress'}
+                        </p>
+                        {worker.checkInData?.checkInTime && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Check-in: {new Date(worker.checkInData.checkInTime).toLocaleString()}
+                            </p>
+                        )}
+                        {worker.checkInData?.checkOutTime && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Check-out: {new Date(worker.checkInData.checkOutTime).toLocaleString()}
+                            </p>
+                        )}
+                        {worker.checkInData?.duration && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Duration: {worker.checkInData.duration}
+                            </p>
+                        )}
+                    </div>
+
+                    {worker.client && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <Building size={15} strokeWidth={1.5} />
+                                Visit Location
+                            </p>
+                            <p className="text-[10px] font-medium">
+                                {worker.client.name}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground">
+                                {renderAddressSafely(worker.location?.address)}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex justify-center mt-2">
+                        <button className="px-3 py-1 text-[10px] uppercase font-thin border border-blue-500/20 rounded-md text-blue-600 hover:bg-blue-500/5 transition-colors">
+                            View Visit Details
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {/* Shift Start/End specific information */}
+            {(isShiftStartType || isShiftEndType) && 'attendanceData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-green-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            {isShiftStartType ? <PlayCircle size={15} strokeWidth={1.5} /> : <TimerOff size={15} strokeWidth={1.5} />}
+                            {isShiftStartType ? 'Shift Started' : 'Shift Ended'}
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            {worker.name}
+                        </p>
+                        {worker.attendanceData?.checkInTime && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                {isShiftStartType ? 'Started' : 'Check-in'}: {new Date(worker.attendanceData.checkInTime).toLocaleString()}
+                            </p>
+                        )}
+                        {isShiftEndType && worker.attendanceData?.checkOutTime && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Ended: {new Date(worker.attendanceData.checkOutTime).toLocaleString()}
+                            </p>
+                        )}
+                        {isShiftEndType && worker.attendanceData?.duration && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Total Duration: {worker.attendanceData.duration}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <MapPin size={15} strokeWidth={1.5} />
+                            Location
+                        </p>
+                        <p className="text-[10px]">
+                            {renderAddressSafely(worker.location?.address)}
+                        </p>
+                    </div>
+                </>
+            )}
+
+            {/* Break Start/End specific information */}
+            {(isBreakStartType || isBreakEndType) && 'attendanceData' in worker && (
+                <>
+                    <div className="p-2 text-[10px] bg-yellow-500/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <Coffee size={15} strokeWidth={1.5} />
+                            {isBreakStartType ? 'Break Started' : 'Break Ended'}
+                        </p>
+                        <p className="text-[10px] font-medium mb-2">
+                            {worker.name}
+                        </p>
+                        {worker.attendanceData?.breakStartTime && (
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                                Started: {new Date(worker.attendanceData.breakStartTime).toLocaleString()}
+                            </p>
+                        )}
+                        {isBreakEndType && worker.attendanceData?.breakEndTime && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Ended: {new Date(worker.attendanceData.breakEndTime).toLocaleString()}
+                            </p>
+                        )}
+                        {worker.attendanceData?.breakCount && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Break Count: {worker.attendanceData.breakCount}
+                            </p>
+                        )}
+                        {worker.attendanceData?.totalBreakTime && (
+                            <p className="text-[9px] text-muted-foreground">
+                                Total Break Time: {worker.attendanceData.totalBreakTime}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                        <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                            <MapPin size={15} strokeWidth={1.5} />
+                            Break Location
+                        </p>
+                        <p className="text-[10px]">
+                            {renderAddressSafely(worker.location?.address)}
+                        </p>
+                    </div>
+                </>
+            )}
+
             {/* Competitor-specific information */}
             {isCompetitorType && 'competitorRef' in worker && (
                 <>
@@ -445,18 +826,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             Location
                         </p>
                         <p className="text-[10px]">
-                            {'address' in worker && worker.address ? (
-                                typeof worker.address === 'object' ? (
-                                    <>
-                                        {worker.address.street && <span>{worker.address.street}, </span>}
-                                        {worker.address.suburb && <span>{worker.address.suburb}, </span>}
-                                        {worker.address.city && <span>{worker.address.city}, </span>}
-                                        {worker.address.state && <span>{worker.address.state}, </span>}
-                                        {worker.address.country && <span>{worker.address.country} </span>}
-                                        {worker.address.postalCode && <span>{worker.address.postalCode}</span>}
-                                    </>
-                                ) : worker.address.toString()
-                            ) : 'No address available'}
+                            {renderAddressSafely('address' in worker ? worker.address : null)}
                         </p>
                     </div>
 
@@ -830,10 +1200,10 @@ const markerTypeColors = {
 };
 
 interface MarkersLayerProps {
-    filteredWorkers: WorkerType[] | ClientType[] | CompetitorType[] | QuotationType[] | (WorkerType | ClientType | CompetitorType | QuotationType)[];
-    selectedMarker: WorkerType | ClientType | CompetitorType | QuotationType | null;
+    filteredWorkers: any[]; // Extended to support all marker types (WorkerType, ClientType, CompetitorType, QuotationType, TaskType, LeadType, etc.)
+    selectedMarker: any | null; // Extended to support all marker types
     highlightedMarkerId: string | null;
-    handleMarkerClick: (marker: WorkerType | ClientType | CompetitorType | QuotationType) => void;
+    handleMarkerClick: (marker: any) => void; // Extended to support all marker types
 }
 
 // Helper function to get position from marker

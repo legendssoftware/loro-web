@@ -74,7 +74,7 @@ interface OrganizationAttendanceReportProps {
     className?: string;
 }
 
-export const OrganizationAttendanceReportComponent: React.FC<OrganizationAttendanceReportProps> = ({
+export const OrganizationAttendanceReportComponent: React.FunctionComponent<OrganizationAttendanceReportProps> = ({
     report,
     isLoading = false,
     onRefresh,

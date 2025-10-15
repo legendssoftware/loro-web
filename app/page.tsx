@@ -24,6 +24,12 @@ import {
     handleVapiError,
     retryVapiOperation,
 } from '@/lib/utils/vapi-error-handler';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { CalendarIcon, FileText, Download, Mail } from 'lucide-react';
 
 // Update the constants for call time management to use environment variables with fallbacks
 const CALL_MAX_DURATION_MS =
@@ -32,6 +38,463 @@ const CALL_MAX_DURATION_MS =
     1000; // Default: 5 minutes
 const WARNING_TIME_REMAINING_MS =
     parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
+
+// Generate Report Section Component
+const GenerateReportSection = () => {
+    const [reportType, setReportType] = useState<string>('');
+    const [selectedUser, setSelectedUser] = useState<string>('');
+    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    const [specificDate, setSpecificDate] = useState<Date | undefined>(undefined);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [reportSubTab, setReportSubTab] = useState('main_dashboard');
+
+    // Report type options based on attendance controller routes
+    const reportTypes = [
+        {
+            value: 'morning_report',
+            label: 'Morning Attendance Report',
+            description: 'Send automated morning attendance report via email',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/morning/send'
+        },
+        {
+            value: 'evening_report',
+            label: 'Evening Attendance Report',
+            description: 'Send automated evening attendance report via email',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/evening/send'
+        },
+        {
+            value: 'organization_report',
+            label: 'Organization Report',
+            description: 'Generate comprehensive organization-wide attendance report',
+            requiresUser: false,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'GET /report'
+        },
+        {
+            value: 'user_attendance_request',
+            label: 'User Attendance Report Request',
+            description: 'Request attendance report for personal viewing via email',
+            requiresUser: true,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/request'
+        },
+        {
+            value: 'daily_checkins',
+            label: 'Daily Check-ins Report',
+            description: 'Get all check-ins for a specific date',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: true,
+            endpoint: 'GET /checkins/:date'
+        },
+        {
+            value: 'user_checkins',
+            label: 'User Check-ins Report',
+            description: 'Get all check-ins for a specific user',
+            requiresUser: true,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'GET /user/:ref'
+        },
+        {
+            value: 'user_metrics',
+            label: 'User Attendance Metrics',
+            description: 'Get detailed attendance metrics for a user with date range',
+            requiresUser: true,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'GET /metrics/:ref'
+        },
+        {
+            value: 'daily_stats',
+            label: 'Daily User Stats',
+            description: 'Get daily attendance statistics for a specific user and date',
+            requiresUser: true,
+            requiresDateRange: false,
+            requiresSpecificDate: true,
+            endpoint: 'GET /daily-stats/:uid'
+        }
+    ];
+
+    // Mock users data (in real app, this would come from API)
+    const mockUsers = [
+        { id: '1', name: 'John Doe', email: 'john.doe@company.com' },
+        { id: '2', name: 'Jane Smith', email: 'jane.smith@company.com' },
+        { id: '3', name: 'Mike Johnson', email: 'mike.johnson@company.com' },
+        { id: '4', name: 'Sarah Wilson', email: 'sarah.wilson@company.com' },
+        { id: '5', name: 'David Brown', email: 'david.brown@company.com' },
+    ];
+
+    const selectedReportType = reportTypes.find(rt => rt.value === reportType);
+
+    const handleGenerateReport = async () => {
+        if (!selectedReportType) {
+            showErrorToast('Please select a report type', toast);
+            return;
+        }
+
+        // Validate required fields
+        if (selectedReportType.requiresUser && !selectedUser) {
+            showErrorToast('Please select a user', toast);
+            return;
+        }
+
+        if (selectedReportType.requiresDateRange && (!startDate || !endDate)) {
+            showErrorToast('Please select both start and end dates', toast);
+            return;
+        }
+
+        if (selectedReportType.requiresSpecificDate && !specificDate) {
+            showErrorToast('Please select a date', toast);
+            return;
+        }
+
+        setIsGenerating(true);
+
+        try {
+            // Simulate API call (replace with actual API call)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            showSuccessToast(`${selectedReportType.label} generated successfully! Check your email for the report.`, toast);
+
+            // Reset form
+            setReportType('');
+            setSelectedUser('');
+            setStartDate(undefined);
+            setEndDate(undefined);
+            setSpecificDate(undefined);
+        } catch (error) {
+            showErrorToast('Failed to generate report. Please try again.', toast);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="text-center">
+                <div className="flex justify-between items-center mx-auto mb-4 max-w-4xl">
+                    <div className="text-left">
+                        <h2 className="text-2xl font-bold">Reports Dashboard</h2>
+                        <p className="text-muted-foreground">Access comprehensive reports and analytics across different departments · Last updated {new Date().toLocaleTimeString()}</p>
+                    </div>
+                    <motion.button
+                        className="flex gap-2 items-center px-4 py-2 text-xs text-white rounded-lg transition-colors bg-primary hover:bg-primary/90"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => window.location.reload()}
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                    </motion.button>
+                </div>
+            </div>
+
+            {/* Sub-tabs for Reports */}
+            <div className="flex justify-center">
+                <div className="flex p-1 rounded-lg bg-muted">
+                    <button
+                        onClick={() => setReportSubTab('main_dashboard')}
+                        className={`px-6 py-2 text-xs font-normal uppercase font-body rounded-md transition-colors ${
+                            reportSubTab === 'main_dashboard'
+                                ? 'bg-white shadow-sm text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Main Dashboard
+                    </button>
+                    <button
+                        onClick={() => setReportSubTab('personal')}
+                        className={`px-6 py-2 text-xs font-normal uppercase font-body rounded-md transition-colors ${
+                            reportSubTab === 'personal'
+                                ? 'bg-white shadow-sm text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Personal
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Dashboard Content */}
+            {reportSubTab === 'main_dashboard' && (
+                <div>
+                    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                    {/* Report Type Selection */}
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <FileText size={20} className="text-primary" />
+                                <h3 className="font-semibold">Report Type</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="report-type">Select Report Type</Label>
+                                <Select value={reportType} onValueChange={setReportType}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose a report type..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {reportTypes.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {selectedReportType && (
+                                <div className="p-3 rounded-lg bg-muted">
+                                    <p className="text-sm text-muted-foreground">{selectedReportType.description}</p>
+                                    <p className="mt-1 text-xs text-primary">{selectedReportType.endpoint}</p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+
+                {/* User Selection - Conditional */}
+                {selectedReportType?.requiresUser && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <Mail size={20} className="text-green-600" />
+                                <h3 className="font-semibold">User Selection</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="user-select">Select User</Label>
+                                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose a user..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {mockUsers.map((user) => (
+                                            <SelectItem key={user.id} value={user.id}>
+                                                {user.name} ({user.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Date Range Selection - Conditional */}
+                {selectedReportType?.requiresDateRange && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <CalendarIcon size={20} className="text-blue-600" />
+                                <h3 className="font-semibold">Date Range</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Start Date</Label>
+                                    <div className="flex gap-2 items-center">
+                                        <Input
+                                            type="date"
+                                            value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
+                                            onChange={(e) => setStartDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>End Date</Label>
+                                    <div className="flex gap-2 items-center">
+                                        <Input
+                                            type="date"
+                                            value={endDate ? format(endDate, 'yyyy-MM-dd') : ''}
+                                            onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Specific Date Selection - Conditional */}
+                {selectedReportType?.requiresSpecificDate && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <CalendarIcon size={20} className="text-orange-600" />
+                                <h3 className="font-semibold">Select Date</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Report Date</Label>
+                                <Input
+                                    type="date"
+                                    value={specificDate ? format(specificDate, 'yyyy-MM-dd') : ''}
+                                    onChange={(e) => setSpecificDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+                </div>
+
+                {/* Generate Button */}
+                {selectedReportType && (
+                    <motion.div
+                        className="flex justify-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <Button
+                            onClick={handleGenerateReport}
+                            disabled={isGenerating}
+                            size="lg"
+                            className="gap-2"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <motion.div
+                                        className="w-4 h-4 rounded-full border-2 border-white border-t-transparent"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={20} />
+                                    Generate {selectedReportType.label}
+                                </>
+                            )}
+                        </Button>
+                    </motion.div>
+                )}
+
+                {/* Help Section */}
+                <motion.div
+                    className="p-6 rounded-xl border shadow-sm bg-muted/50"
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <h3 className="flex gap-2 items-center mb-4 font-semibold">
+                        <FileText size={20} className="text-primary" />
+                        Report Types Guide
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <h4 className="text-sm font-medium">Automated Reports</h4>
+                            <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                                <li>• Morning & Evening reports are sent automatically</li>
+                                <li>• Organization reports provide comprehensive insights</li>
+                                <li>• User attendance requests are emailed directly</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-medium">Data Reports</h4>
+                            <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                                <li>• Daily check-ins show all activity for a date</li>
+                                <li>• User metrics provide detailed analytics</li>
+                                <li>• Daily stats show individual performance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </motion.div>
+                </div>
+            )}
+
+            {/* Personal Dashboard Content */}
+            {reportSubTab === 'personal' && (
+                <div className="py-12 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="space-y-6"
+                    >
+                        <div className="p-8 mx-auto max-w-2xl rounded-xl border shadow-sm bg-card">
+                            <div className="flex gap-2 justify-center items-center mb-4">
+                                <FileText size={24} className="text-primary" />
+                                <h3 className="text-xl font-semibold">Personal Reports</h3>
+                            </div>
+
+                            <p className="mb-6 text-muted-foreground">
+                                Access your personal attendance analytics, performance metrics, and individual reports.
+                            </p>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="p-4 rounded-lg bg-muted/50">
+                                    <h4 className="mb-2 text-sm font-medium">📊 Your Analytics</h4>
+                                    <ul className="space-y-1 text-xs text-muted-foreground">
+                                        <li>• Personal attendance history</li>
+                                        <li>• Performance metrics</li>
+                                        <li>• Productivity insights</li>
+                                    </ul>
+                                </div>
+                                <div className="p-4 rounded-lg bg-muted/50">
+                                    <h4 className="mb-2 text-sm font-medium">📋 Individual Reports</h4>
+                                    <ul className="space-y-1 text-xs text-muted-foreground">
+                                        <li>• Weekly summaries</li>
+                                        <li>• Monthly performance</li>
+                                        <li>• Goal tracking</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="p-4 mt-6 bg-blue-50 rounded-lg border border-blue-200">
+                                <p className="text-sm text-blue-800">
+                                    <strong>Coming Soon:</strong> Personal dashboard features will be available in the next update.
+                                    For now, use the Main Dashboard to generate all available reports.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {reportSubTab === 'generate_report' && (
+                <div>
+                    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function Home() {
     const diverseUsers = mockDataStore.getDiverseUserProfiles();
@@ -65,6 +528,9 @@ export default function Home() {
 
     // Mobile menu state
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Dashboard tab state
+    const [activeTab, setActiveTab] = useState('generate_report');
 
     // Refresh stats every 30 seconds to show live data
     useEffect(() => {

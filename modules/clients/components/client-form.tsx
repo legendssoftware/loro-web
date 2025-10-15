@@ -31,6 +31,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import {
     Popover,
@@ -62,7 +63,11 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+// DatePicker functionality handled by existing UI components
+// import DatePicker from 'react-datepicker';
+// import 'react-datepicker/dist/react-datepicker.css';
 
 // List of countries for dropdown
 const COUNTRIES = [
@@ -445,6 +450,116 @@ export const clientFormSchema = z.object({
         )
         .optional()
         .default([{}]), // Default with one empty object
+
+    // User Target Fields - optional section for managing user targets and costs
+    userTargets: z.object({
+        // Target amounts
+        targetSalesAmount: z.union([
+            z.number().min(0, { message: 'Target sales amount must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentSalesAmount: z.union([
+            z.number().min(0, { message: 'Current sales amount must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        targetQuotationsAmount: z.union([
+            z.number().min(0, { message: 'Target quotations amount must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentQuotationsAmount: z.union([
+            z.number().min(0, { message: 'Current quotations amount must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentOrdersAmount: z.union([
+            z.number().min(0, { message: 'Current orders amount must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+
+        // Target counts
+        targetHoursWorked: z.union([
+            z.number().min(0, { message: 'Target hours worked must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentHoursWorked: z.union([
+            z.number().min(0, { message: 'Current hours worked must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        targetNewClients: z.union([
+            z.number().min(0, { message: 'Target new clients must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentNewClients: z.union([
+            z.number().min(0, { message: 'Current new clients must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        targetNewLeads: z.union([
+            z.number().min(0, { message: 'Target new leads must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentNewLeads: z.union([
+            z.number().min(0, { message: 'Current new leads must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        targetCheckIns: z.union([
+            z.number().min(0, { message: 'Target check-ins must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentCheckIns: z.union([
+            z.number().min(0, { message: 'Current check-ins must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        targetCalls: z.union([
+            z.number().min(0, { message: 'Target calls must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        currentCalls: z.union([
+            z.number().min(0, { message: 'Current calls must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+
+        // Financial fields - salary and costs
+        baseSalary: z.union([
+            z.number().min(0, { message: 'Base salary must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        carInstalment: z.union([
+            z.number().min(0, { message: 'Car instalment must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        carInsurance: z.union([
+            z.number().min(0, { message: 'Car insurance must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        fuel: z.union([
+            z.number().min(0, { message: 'Fuel cost must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        cellPhoneAllowance: z.union([
+            z.number().min(0, { message: 'Cell phone allowance must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        carMaintenance: z.union([
+            z.number().min(0, { message: 'Car maintenance must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        cgicCosts: z.union([
+            z.number().min(0, { message: 'CGIC costs must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+        totalCost: z.union([
+            z.number().min(0, { message: 'Total cost must be positive' }),
+            z.literal('')
+        ]).transform(v => v === '' ? undefined : v).optional(),
+
+        // Period and currency settings
+        targetCurrency: z.string()
+            .optional()
+            .default('ZAR'),
+        targetPeriod: z.string()
+            .optional(),
+        periodStartDate: z.date().optional(),
+        periodEndDate: z.date().optional(),
+    }).optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -526,6 +641,35 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
         geofenceRadius: 500,
         enableGeofence: false,
         communicationSchedules: [{ isActive: true }], // Single empty object for communication preferences
+        userTargets: {
+            targetSalesAmount: undefined,
+            currentSalesAmount: undefined,
+            targetQuotationsAmount: undefined,
+            currentQuotationsAmount: undefined,
+            currentOrdersAmount: undefined,
+            targetHoursWorked: undefined,
+            currentHoursWorked: undefined,
+            targetNewClients: undefined,
+            currentNewClients: undefined,
+            targetNewLeads: undefined,
+            currentNewLeads: undefined,
+            targetCheckIns: undefined,
+            currentCheckIns: undefined,
+            targetCalls: undefined,
+            currentCalls: undefined,
+            baseSalary: undefined,
+            carInstalment: undefined,
+            carInsurance: undefined,
+            fuel: undefined,
+            cellPhoneAllowance: undefined,
+            carMaintenance: undefined,
+            cgicCosts: undefined,
+            totalCost: undefined,
+            targetCurrency: 'ZAR',
+            targetPeriod: 'Monthly',
+            periodStartDate: undefined,
+            periodEndDate: undefined,
+        },
         ...initialData, // Override with any provided initial data
     };
 
@@ -724,10 +868,7 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
     }, [logoImage]);
 
     return (
-        <form
-            onSubmit={handleSubmit(onFormSubmit)}
-            className="space-y-6 bg-card"
-        >
+        <div className="space-y-6 bg-card">
             <p className="mb-2 text-xs text-muted-foreground">
                 <span className="text-red-500">*</span> indicates required
                 fields
@@ -3389,6 +3530,161 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                                 </p>
                             </div>
                         </div>
+
+                        {/* Custom Frequency Days - Show only when frequency is CUSTOM */}
+                        {watch('communicationSchedules.0.frequency') === CommunicationFrequency.CUSTOM && (
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="customFrequencyDays"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Custom Frequency (Days)
+                                </Label>
+                                <Input
+                                    id="customFrequencyDays"
+                                    type="number"
+                                    min="1"
+                                    max="365"
+                                    {...register('communicationSchedules.0.customFrequencyDays')}
+                                    placeholder="e.g. 14 for every 14 days"
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Number of days between communications
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Preferred Days of the Week */}
+                        <div className="space-y-1">
+                            <Label className="block text-xs font-light uppercase font-body">
+                                Preferred Days of the Week
+                            </Label>
+                            <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
+                                {[
+                                    { value: 0, label: 'Sun' },
+                                    { value: 1, label: 'Mon' },
+                                    { value: 2, label: 'Tue' },
+                                    { value: 3, label: 'Wed' },
+                                    { value: 4, label: 'Thu' },
+                                    { value: 5, label: 'Fri' },
+                                    { value: 6, label: 'Sat' },
+                                ].map((day) => (
+                                    <div key={day.value} className="flex items-center space-x-1">
+                                        <Controller
+                                            control={control}
+                                            name="communicationSchedules.0.preferredDays"
+                                            render={({ field }) => (
+                                                <Checkbox
+                                                    id={`day-${day.value}`}
+                                                    checked={field.value?.includes(day.value) || false}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentDays = field.value || [];
+                                                        if (checked) {
+                                                            field.onChange([...currentDays, day.value]);
+                                                        } else {
+                                                            field.onChange(currentDays.filter((d: number) => d !== day.value));
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                        <Label
+                                            htmlFor={`day-${day.value}`}
+                                            className="text-[10px] font-light cursor-pointer"
+                                        >
+                                            {day.label}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                                Select preferred days for communication
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Next Scheduled Date */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="nextScheduledDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Next Scheduled Contact
+                                </Label>
+                                <Input
+                                    id="nextScheduledDate"
+                                    type="datetime-local"
+                                    {...register('communicationSchedules.0.nextScheduledDate')}
+                                    className="font-light bg-card border-border"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    When to schedule the next communication
+                                </p>
+                            </div>
+
+                            {/* Assigned User */}
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="assignedUser"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Assigned Team Member
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="communicationSchedules.0.assignedToUserId"
+                                    render={({ field }) => (
+                                        <Select
+                                            onValueChange={(value) => field.onChange(Number(value))}
+                                            value={field.value?.toString()}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select team member" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {users?.map((user: any) => (
+                                                    <SelectItem key={user.uid} value={user.uid.toString()}>
+                                                        <span className="text-[10px] font-thin font-body">
+                                                            {user.name} {user.surname}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Who will handle this communication
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Active Toggle */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <Label
+                                    htmlFor="isActive"
+                                    className="text-xs font-light uppercase font-body"
+                                >
+                                    Schedule Active
+                                </Label>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Enable automatic task generation for this schedule
+                                </p>
+                            </div>
+                            <Controller
+                                control={control}
+                                name="communicationSchedules.0.isActive"
+                                render={({ field }) => (
+                                    <Switch
+                                        id="isActive"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                )}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -3581,6 +3877,706 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* User Targets & Cost Management Section */}
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <CreditCard className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                User Targets & Cost Management
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Target Period & Currency */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div>
+                                <Label htmlFor="userTargets.targetPeriod" className="text-[10px] font-thin uppercase font-body">
+                                    Target Period
+                                </Label>
+                                <Controller
+                                    name="userTargets.targetPeriod"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || 'Monthly'}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <div className="text-xs font-body">
+                                                    {field.value || 'Monthly'}
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Weekly">Weekly</SelectItem>
+                                                <SelectItem value="Monthly">Monthly</SelectItem>
+                                                <SelectItem value="Quarterly">Quarterly</SelectItem>
+                                                <SelectItem value="Annually">Annually</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="userTargets.targetCurrency" className="text-[10px] font-thin uppercase font-body">
+                                    Currency
+                                </Label>
+                                <Controller
+                                    name="userTargets.targetCurrency"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || 'ZAR'}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <div className="text-xs font-body">
+                                                    {field.value || 'ZAR'}
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ZAR">ZAR (South African Rand)</SelectItem>
+                                                <SelectItem value="USD">USD (US Dollar)</SelectItem>
+                                                <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                                                <SelectItem value="GBP">GBP (British Pound)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Period Dates */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <Label htmlFor="userTargets.periodStartDate" className="text-[10px] font-thin uppercase font-body">
+                                    Period Start Date
+                                </Label>
+                                <Controller
+                                    name="userTargets.periodStartDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className="justify-between w-full h-10 font-light bg-card border-border"
+                                                >
+                                                    <span className="text-xs font-body">
+                                                        {field.value
+                                                            ? format(field.value, 'PPP')
+                                                            : 'Select start date'}
+                                                    </span>
+                                                    <CalendarIcon className="w-4 h-4 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="p-0 w-auto">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="userTargets.periodEndDate" className="text-[10px] font-thin uppercase font-body">
+                                    Period End Date
+                                </Label>
+                                <Controller
+                                    name="userTargets.periodEndDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className="justify-between w-full h-10 font-light bg-card border-border"
+                                                >
+                                                    <span className="text-xs font-body">
+                                                        {field.value
+                                                            ? format(field.value, 'PPP')
+                                                            : 'Select end date'}
+                                                    </span>
+                                                    <CalendarIcon className="w-4 h-4 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="p-0 w-auto">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Sales Targets */}
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium text-primary">Sales Targets</h4>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="userTargets.targetSalesAmount" className="text-[10px] font-thin uppercase font-body">
+                                        Target Sales Amount (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetSalesAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.targetSalesAmount', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="50000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetSalesAmount && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetSalesAmount.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentSalesAmount" className="text-[10px] font-thin uppercase font-body">
+                                        Current Sales Amount (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentSalesAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.currentSalesAmount', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="25000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentSalesAmount && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentSalesAmount.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.targetQuotationsAmount" className="text-[10px] font-thin uppercase font-body">
+                                        Target Quotations Amount (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetQuotationsAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.targetQuotationsAmount', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="30000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetQuotationsAmount && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetQuotationsAmount.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentQuotationsAmount" className="text-[10px] font-thin uppercase font-body">
+                                        Current Quotations Amount (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentQuotationsAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.currentQuotationsAmount', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="15000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentQuotationsAmount && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentQuotationsAmount.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentOrdersAmount" className="text-[10px] font-thin uppercase font-body">
+                                        Current Orders Amount (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentOrdersAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.currentOrdersAmount', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="10000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentOrdersAmount && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentOrdersAmount.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Activity Targets */}
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium text-primary">Activity Targets</h4>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="userTargets.targetHoursWorked" className="text-[10px] font-thin uppercase font-body">
+                                        Target Hours Worked
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetHoursWorked"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.targetHoursWorked', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="160"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetHoursWorked && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetHoursWorked.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentHoursWorked" className="text-[10px] font-thin uppercase font-body">
+                                        Current Hours Worked
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentHoursWorked"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.currentHoursWorked', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="80"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentHoursWorked && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentHoursWorked.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.targetNewClients" className="text-[10px] font-thin uppercase font-body">
+                                        Target New Clients
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetNewClients"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.targetNewClients', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="10"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetNewClients && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetNewClients.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentNewClients" className="text-[10px] font-thin uppercase font-body">
+                                        Current New Clients
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentNewClients"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.currentNewClients', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="5"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentNewClients && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentNewClients.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.targetNewLeads" className="text-[10px] font-thin uppercase font-body">
+                                        Target New Leads
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetNewLeads"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.targetNewLeads', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="20"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetNewLeads && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetNewLeads.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentNewLeads" className="text-[10px] font-thin uppercase font-body">
+                                        Current New Leads
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentNewLeads"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.currentNewLeads', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="12"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentNewLeads && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentNewLeads.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.targetCheckIns" className="text-[10px] font-thin uppercase font-body">
+                                        Target Check-Ins
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetCheckIns"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.targetCheckIns', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="50"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetCheckIns && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetCheckIns.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentCheckIns" className="text-[10px] font-thin uppercase font-body">
+                                        Current Check-Ins
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentCheckIns"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.currentCheckIns', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="25"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentCheckIns && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentCheckIns.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.targetCalls" className="text-[10px] font-thin uppercase font-body">
+                                        Target Calls
+                                    </Label>
+                                    <Input
+                                        id="userTargets.targetCalls"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.targetCalls', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="100"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.targetCalls && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.targetCalls.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.currentCalls" className="text-[10px] font-thin uppercase font-body">
+                                        Current Calls
+                                    </Label>
+                                    <Input
+                                        id="userTargets.currentCalls"
+                                        type="number"
+                                        min="0"
+                                        {...register('userTargets.currentCalls', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="60"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.currentCalls && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.currentCalls.message}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cost Management */}
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium text-primary">Cost Management</h4>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="userTargets.baseSalary" className="text-[10px] font-thin uppercase font-body">
+                                        Base Salary (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.baseSalary"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.baseSalary', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="25000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.baseSalary && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.baseSalary.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.carInstalment" className="text-[10px] font-thin uppercase font-body">
+                                        Car Instalment (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.carInstalment"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.carInstalment', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="5000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.carInstalment && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.carInstalment.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.carInsurance" className="text-[10px] font-thin uppercase font-body">
+                                        Car Insurance (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.carInsurance"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.carInsurance', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="1500.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.carInsurance && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.carInsurance.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.fuel" className="text-[10px] font-thin uppercase font-body">
+                                        Fuel Costs (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.fuel"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.fuel', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="3000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.fuel && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.fuel.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.cellPhoneAllowance" className="text-[10px] font-thin uppercase font-body">
+                                        Cell Phone Allowance (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.cellPhoneAllowance"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.cellPhoneAllowance', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="500.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.cellPhoneAllowance && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.cellPhoneAllowance.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.carMaintenance" className="text-[10px] font-thin uppercase font-body">
+                                        Car Maintenance (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.carMaintenance"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.carMaintenance', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="1000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.carMaintenance && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.carMaintenance.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.cgicCosts" className="text-[10px] font-thin uppercase font-body">
+                                        CGIC Costs (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.cgicCosts"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.cgicCosts', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="2000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.cgicCosts && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.cgicCosts.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="userTargets.totalCost" className="text-[10px] font-thin uppercase font-body">
+                                        Total Cost (ZAR)
+                                    </Label>
+                                    <Input
+                                        id="userTargets.totalCost"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        {...register('userTargets.totalCost', {
+                                            valueAsNumber: true,
+                                        })}
+                                        placeholder="38000.00"
+                                        className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    />
+                                    {errors.userTargets?.totalCost && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            {errors.userTargets.totalCost.message}
+                                        </p>
+                                    )}
+                                    <p className="text-[10px] text-muted-foreground">
+                                        Total of all cost components
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cost Breakdown Summary */}
+                        <div className="p-4 rounded-lg border bg-muted/30 border-border">
+                            <h5 className="mb-2 text-xs font-medium uppercase text-primary">Cost Breakdown Summary</h5>
+                            <div className="text-xs text-muted-foreground">
+                                <p>Base Salary: R {watch('userTargets.baseSalary')?.toLocaleString() || '0'}</p>
+                                <p>Car Instalment: R {watch('userTargets.carInstalment')?.toLocaleString() || '0'}</p>
+                                <p>Car Insurance: R {watch('userTargets.carInsurance')?.toLocaleString() || '0'}</p>
+                                <p>Fuel: R {watch('userTargets.fuel')?.toLocaleString() || '0'}</p>
+                                <p>Cell Phone: R {watch('userTargets.cellPhoneAllowance')?.toLocaleString() || '0'}</p>
+                                <p>Car Maintenance: R {watch('userTargets.carMaintenance')?.toLocaleString() || '0'}</p>
+                                <p>CGIC Costs: R {watch('userTargets.cgicCosts')?.toLocaleString() || '0'}</p>
+                                <hr className="my-2 border-border" />
+                                <p className="font-medium">
+                                    Calculated Total: R {
+                                        (
+                                            (watch('userTargets.baseSalary') || 0) +
+                                            (watch('userTargets.carInstalment') || 0) +
+                                            (watch('userTargets.carInsurance') || 0) +
+                                            (watch('userTargets.fuel') || 0) +
+                                            (watch('userTargets.cellPhoneAllowance') || 0) +
+                                            (watch('userTargets.carMaintenance') || 0) +
+                                            (watch('userTargets.cgicCosts') || 0)
+                                        ).toLocaleString()
+                                    }
+                                </p>
+                                {watch('userTargets.currentSalesAmount') && watch('userTargets.totalCost') && (
+                                    <p className="mt-2 font-medium text-primary">
+                                        Basket Total: R {
+                                            (
+                                                (watch('userTargets.currentSalesAmount') || 0) -
+                                                (watch('userTargets.totalCost') || 0)
+                                            ).toLocaleString()
+                                        }
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </fieldset>
 
             {/* Submit Button */}
@@ -3646,7 +4642,8 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                         Reset Form
                     </Button>
                     <Button
-                        type="submit"
+                        type="button"
+                        onClick={handleSubmit(onFormSubmit)}
                         disabled={isLoading || isSubmitting}
                         className="h-9 text-[10px] font-light uppercase font-body bg-primary hover:bg-primary/90 text-white"
                     >
@@ -3663,6 +4660,6 @@ export const ClientForm: React.FunctionComponent<ClientFormProps> = ({
                     </Button>
                 </div>
             </div>
-        </form>
+        </div>
     );
 };

@@ -83,7 +83,7 @@ interface MorningAttendanceReportProps {
     className?: string;
 }
 
-export const MorningAttendanceReportComponent: React.FC<MorningAttendanceReportProps> = ({
+export const MorningAttendanceReportComponent: React.FunctionComponent<MorningAttendanceReportProps> = ({
     report,
     isLoading = false,
     onRefresh,

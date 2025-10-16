@@ -163,12 +163,16 @@ const formatDate = (date: Date): string => {
 const formatTime = (timeString: string): string => {
     if (!timeString || timeString === 'N/A') return 'N/A';
     try {
-        const time = new Date(`2000-01-01T${timeString}`);
-        return time.toLocaleTimeString('en-ZA', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
+        // If already formatted (contains AM/PM), return as-is
+        if (timeString.includes('AM') || timeString.includes('PM')) {
+            return timeString;
+        }
+        // Parse HH:mm format and display without timezone conversion
+        const [hours, minutes] = timeString.split(':');
+        if (hours && minutes) {
+            return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        }
+        return timeString;
     } catch {
         return timeString;
     }
@@ -214,8 +218,8 @@ const exportPresentUsersToCSV = (users: DailyAttendanceOverview['data']['present
             `"${user.phoneNumber || 'N/A'}"`,
             `"${user.branchName}"`,
             user.accessLevel,
-            `"${new Date(user.checkInTime).toLocaleTimeString()}"`,
-            `"${user.checkOutTime ? new Date(user.checkOutTime).toLocaleTimeString() : 'Still Working'}"`,
+            `"${typeof user.checkInTime === 'string' && (user.checkInTime.includes('AM') || user.checkInTime.includes('PM')) ? user.checkInTime : new Date(user.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}"`,
+            `"${user.checkOutTime ? (typeof user.checkOutTime === 'string' && (user.checkOutTime.includes('AM') || user.checkOutTime.includes('PM')) ? user.checkOutTime : new Date(user.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })) : 'Still Working'}"`,
             user.status,
             user.workingHours || 'N/A',
             `"${user.shiftDuration}"`,
@@ -865,10 +869,14 @@ const DailyAttendanceTable: React.FunctionComponent = () => {
                                                 <div className="text-right">
                                                     <div className="flex flex-row gap-1 items-center text-sm font-medium">
                                                         <p>
-                                                            {new Date(user?.checkInTime).toLocaleTimeString([], {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })} -
+                                                            {typeof user?.checkInTime === 'string' && user?.checkInTime.includes('AM') || user?.checkInTime.includes('PM')
+                                                                ? user?.checkInTime
+                                                                : new Date(user?.checkInTime).toLocaleTimeString([], {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                    timeZone: 'UTC'
+                                                                })
+                                                            } -
                                                         </p>
                                                         <p>{user?.shiftDuration}</p>
                                                     </div>

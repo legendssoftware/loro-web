@@ -226,7 +226,6 @@ const GenerateReportSection = () => {
                     </button>
                 </div>
             </div>
-
             {/* Main Dashboard Content */}
             {reportSubTab === 'main_dashboard' && (
                 <div>

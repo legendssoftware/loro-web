@@ -232,19 +232,55 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <h4 className="font-medium">Check In Location</h4>
-                                        <div className="space-y-1 text-sm">
+                                    <div className="space-y-3">
+                                        <h4 className="font-medium text-green-600">Check In Location</h4>
+                                        <div className="space-y-2 text-sm">
+                                            {record.placesOfInterest?.startAddress && (
+                                                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                                    <span className="font-medium text-green-800">
+                                                        {typeof record.placesOfInterest.startAddress === 'string' 
+                                                            ? record.placesOfInterest.startAddress
+                                                            : `${(record.placesOfInterest.startAddress as any)?.street || ''}, ${(record.placesOfInterest.startAddress as any)?.suburb || ''}`
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="space-y-1">
                                             <div>Latitude: {record.checkInLatitude}</div>
                                             <div>Longitude: {record.checkInLongitude}</div>
+                                            </div>
+                                            {(record as any).checkInAccuracy !== undefined && (
+                                                <div className="flex gap-1 items-center text-blue-600">
+                                                    <MapPin className="w-3 h-3" />
+                                                    <span>Accuracy: ±{Math.round((record as any).checkInAccuracy)}m</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     {record.checkOutLatitude && record.checkOutLongitude && (
-                                        <div className="space-y-2">
-                                            <h4 className="font-medium">Check Out Location</h4>
-                                            <div className="space-y-1 text-sm">
+                                        <div className="space-y-3">
+                                            <h4 className="font-medium text-blue-600">Check Out Location</h4>
+                                            <div className="space-y-2 text-sm">
+                                                {record.placesOfInterest?.endAddress && (
+                                                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                        <span className="font-medium text-blue-800">
+                                                            {typeof record.placesOfInterest.endAddress === 'string' 
+                                                                ? record.placesOfInterest.endAddress
+                                                                : `${(record.placesOfInterest.endAddress as any)?.street || ''}, ${(record.placesOfInterest.endAddress as any)?.suburb || ''}`
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="space-y-1">
                                                 <div>Latitude: {record.checkOutLatitude}</div>
                                                 <div>Longitude: {record.checkOutLongitude}</div>
+                                                </div>
+                                                {(record as any).checkOutAccuracy !== undefined && (
+                                                    <div className="flex gap-1 items-center text-blue-600">
+                                                        <MapPin className="w-3 h-3" />
+                                                        <span>Accuracy: ±{Math.round((record as any).checkOutAccuracy)}m</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -469,6 +505,32 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                         </Card>
                     )}
 
+                    {/* Overtime Information */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex gap-2 items-center">
+                                <Clock className="w-5 h-5" />
+                                Overtime Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                <div className="flex justify-between items-center mb-3">
+                                    <div className="flex gap-2 items-center">
+                                        <Clock className="w-5 h-5 text-amber-600" />
+                                        <span className="font-medium text-amber-800">Overtime Worked</span>
+                                    </div>
+                                    <div className="text-2xl font-bold text-amber-900">
+                                        {overtimeDuration !== 'N/A' ? overtimeDuration : '0h 0m'}
+                                    </div>
+                                </div>
+                                <div className="text-sm text-amber-700">
+                                    This shift included {overtimeDuration !== 'N/A' ? overtimeDuration : '0h 0m'} of overtime work beyond regular hours.
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Performance Metrics */}
                     <Card>
                         <CardHeader>
@@ -503,7 +565,203 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                         </CardContent>
                     </Card>
 
-                    {/* User and Organization Info */}
+                    {/* Daily Performance Report */}
+                    {record.dailyReport?.reportData && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex gap-2 items-center">
+                                    <FileText className="w-5 h-5" />
+                                    Daily Performance Report
+                                </CardTitle>
+                                <CardDescription>
+                                    Comprehensive report of activities and achievements
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* Summary Metrics */}
+                                {record.dailyReport.reportData.summary && (
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                            <div className="text-sm text-blue-600">Hours Worked</div>
+                                            <div className="text-2xl font-bold text-blue-900">
+                                                {record.dailyReport.reportData.summary.hoursWorked || '0'}h
+                                            </div>
+                                        </div>
+                                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                                            <div className="text-sm text-green-600">XP Earned</div>
+                                            <div className="text-2xl font-bold text-green-900">
+                                                {record.dailyReport.reportData.summary.xpEarned || '0'} XP
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Detailed Metrics */}
+                                {record.dailyReport.reportData.details && (
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        {/* Tasks */}
+                                        {record.dailyReport.reportData.details.tasks && (
+                                            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-sm font-medium text-orange-800">📋 Tasks</span>
+                                                    <Badge variant="outline" className="text-orange-800">
+                                                        {Math.round(record.dailyReport.reportData.details.tasks.completionRate || 0)}%
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-lg font-bold text-orange-900">
+                                                    {record.dailyReport.reportData.details.tasks.completedCount || 0} completed
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Leads */}
+                                        {record.dailyReport.reportData.details.leads && (
+                                            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-sm font-medium text-purple-800">🎯 Leads</span>
+                                                    <Badge variant="outline" className="text-purple-800">
+                                                        {Math.round(record.dailyReport.reportData.details.leads.conversionRate || 0)}%
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-lg font-bold text-purple-900">
+                                                    {record.dailyReport.reportData.details.leads.newLeadsCount || 0} new
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Revenue */}
+                                        {record.dailyReport.reportData.details.quotations && (
+                                            <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                                                <div className="text-sm font-medium text-emerald-800">💰 Revenue</div>
+                                                <div className="text-lg font-bold text-emerald-900">
+                                                    {record.dailyReport.reportData.details.quotations.totalRevenueFormatted || 'R 0.00'}
+                                                </div>
+                                                <div className="text-xs text-emerald-600">
+                                                    {record.dailyReport.reportData.details.quotations.totalQuotations || 0} quotations
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Rewards */}
+                                        {record.dailyReport.reportData.details.rewards && (
+                                            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                                <div className="text-sm font-medium text-yellow-800">🏆 Achievements</div>
+                                                <div className="text-lg font-bold text-yellow-900">
+                                                    Level {record.dailyReport.reportData.details.rewards.currentLevel || 1}
+                                                </div>
+                                                <div className="text-xs text-yellow-600">
+                                                    {record.dailyReport.reportData.details.rewards.currentRank || 'ROOKIE'} • 
+                                                    Position #{record.dailyReport.reportData.details.rewards.leaderboardPosition || 'N/A'}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Performance Analysis */}
+                                {record.dailyReport.reportData.details?.performance && (
+                                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                        <h4 className="mb-3 font-semibold text-purple-900">🎯 Performance Analysis</h4>
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                            <div>
+                                                <div className="text-sm text-purple-600">Overall Score</div>
+                                                <div className="text-2xl font-bold text-purple-900">
+                                                    {record.dailyReport.reportData.details.performance.overallScore || 0}/100
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-purple-600">Task Efficiency</div>
+                                                <div className="text-2xl font-bold text-purple-900">
+                                                    {record.dailyReport.reportData.details.performance.taskEfficiency || 0}%
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-purple-600">Productivity</div>
+                                                <div className="text-2xl font-bold text-purple-900">
+                                                    {record.dailyReport.reportData.details.productivity?.productivityScore || 0}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Strengths and Improvements */}
+                                        {(record.dailyReport.reportData.details.performance.strengths?.length > 0 || 
+                                          record.dailyReport.reportData.details.performance.improvementAreas?.length > 0) && (
+                                            <div className="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
+                                                {record.dailyReport.reportData.details.performance.strengths?.length > 0 && (
+                                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                                        <div className="mb-2 text-sm font-medium text-green-800">💪 Strengths</div>
+                                                        <ul className="space-y-1 text-xs text-green-700">
+                                                            {record.dailyReport.reportData.details.performance.strengths.slice(0, 2).map((strength: string, idx: number) => (
+                                                                <li key={idx}>• {strength}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {record.dailyReport.reportData.details.performance.improvementAreas?.length > 0 && (
+                                                    <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                                        <div className="mb-2 text-sm font-medium text-orange-800">🎯 Focus Areas</div>
+                                                        <ul className="space-y-1 text-xs text-orange-700">
+                                                            {record.dailyReport.reportData.details.performance.improvementAreas.slice(0, 2).map((area: string, idx: number) => (
+                                                                <li key={idx}>• {area}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Report Metadata */}
+                                {record.dailyReport.reportData.metadata?.generatedAt && (
+                                    <div className="p-3 text-sm text-center text-blue-700 bg-blue-100 rounded-lg">
+                                        Report generated: {formatDateTime(record.dailyReport.reportData.metadata.generatedAt)}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Organization Information */}
+                    {(record as any).organisation && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex gap-2 items-center">
+                                    <Building className="w-5 h-5" />
+                                    Organization Information
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex gap-4 items-start">
+                                    <div className="p-3 bg-gray-100 rounded-lg">
+                                        <Building className="w-8 h-8 text-gray-600" />
+                                    </div>
+                                    <div className="flex-1 space-y-2">
+                                        <div>
+                                            <div className="font-semibold text-lg">
+                                                {(record as any).organisation.name || 'N/A'}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                Ref: {(record as any).organisation.ref || 'N/A'}
+                                            </div>
+                                        </div>
+                                        {(record as any).organisation.contactNumber && (
+                                            <div className="text-sm">
+                                                📞 {(record as any).organisation.contactNumber}
+                                            </div>
+                                        )}
+                                        {(record as any).organisation.contactPerson && (
+                                            <div className="text-sm">
+                                                👤 {(record as any).organisation.contactPerson}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* User and Branch Info */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader>
@@ -519,7 +777,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-muted-foreground">Email:</span>
-                                    <span className="font-medium">{record.owner.email}</span>
+                                    <span className="font-medium text-sm">{record.owner.email}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-muted-foreground">Role:</span>
@@ -529,6 +787,12 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                     <span className="text-sm text-muted-foreground">Access Level:</span>
                                     <Badge variant="outline">{record.owner.accessLevel}</Badge>
                                 </div>
+                                {(record.owner as any).phoneNumber && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Phone:</span>
+                                        <span className="font-medium">{(record.owner as any).phoneNumber}</span>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -549,13 +813,32 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                         <span className="text-sm text-muted-foreground">Reference:</span>
                                         <span className="font-medium">{record.branch.ref}</span>
                                     </div>
+                                    {(record.branch as any).email && (
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-muted-foreground">Email:</span>
+                                            <span className="font-medium text-sm">{(record.branch as any).email}</span>
+                                        </div>
+                                    )}
+                                    {(record.branch as any).phoneNumber && (
                                     <div className="flex justify-between">
+                                            <span className="text-sm text-muted-foreground">Phone:</span>
+                                            <span className="font-medium">{(record.branch as any).phoneNumber}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col gap-1">
                                         <span className="text-sm text-muted-foreground">Address:</span>
-                                        <span className="font-medium text-right">
+                                        <span className="font-medium text-sm">
                                             {typeof record.branch.address === 'object' && record.branch.address !== null
                                                 ? (() => {
                                                     const addr = record.branch.address as any;
-                                                    return `${addr.street || ''} ${addr.suburb || ''}, ${addr.city || ''}, ${addr.state || ''} ${addr.postalCode || ''}`.trim().replace(/,\s*,/g, ',').replace(/^,|,$/g, '');
+                                                    const parts = [
+                                                        addr.street,
+                                                        addr.suburb,
+                                                        addr.city,
+                                                        addr.state,
+                                                        addr.postalCode
+                                                    ].filter(Boolean);
+                                                    return parts.join(', ') || 'N/A';
                                                   })()
                                                 : record.branch.address || 'N/A'
                                             }

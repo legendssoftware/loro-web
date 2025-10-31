@@ -74,7 +74,9 @@ const numberPreprocess = z.preprocess(
             .optional()
             .transform((val) => {
                 if (val === undefined) return undefined;
-                const num = parseFloat(val);
+                // Remove commas and other formatting characters before parsing
+                const cleanedVal = val.replace(/,/g, '');
+                const num = parseFloat(cleanedVal);
                 return isNaN(num) ? undefined : num;
             }),
 );
@@ -86,7 +88,9 @@ const integerPreprocess = z.preprocess(
             .optional()
             .transform((val) => {
                 if (val === undefined) return undefined;
-                const num = parseInt(val);
+                // Remove commas and other formatting characters before parsing
+                const cleanedVal = val.replace(/,/g, '');
+                const num = parseInt(cleanedVal);
                 return isNaN(num) ? undefined : num;
             }),
 );

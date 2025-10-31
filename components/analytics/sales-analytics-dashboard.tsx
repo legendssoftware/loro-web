@@ -481,6 +481,13 @@ export function SalesAnalyticsDashboard() {
     refetchAll,
   } = useReportsQuery(selectedBranch);
 
+  // Clear all filters - resets branch selection and refetches data
+  const handleClearFilters = () => {
+    setSelectedBranch(undefined);
+    refetchAll();
+    showSuccessToast('Filters cleared - showing all branches', toast);
+  };
+
   // Use actual data from reports service with proper defaults
   const salesData = salesOverview.data || {
     summary: { totalRevenue: 0, revenueGrowth: 0, totalQuotations: 0, conversionRate: 0, averageOrderValue: 0, topPerformingProduct: 'N/A' },

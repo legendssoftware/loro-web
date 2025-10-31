@@ -91,6 +91,10 @@ export interface AttendanceRecord {
     updatedAt: string;
     verifiedAt?: string;
     dailyReport?: DailyReport;
+    placesOfInterest?: {
+        startAddress?: string | { street?: string; suburb?: string; city?: string; state?: string; postalCode?: string };
+        endAddress?: string | { street?: string; suburb?: string; city?: string; state?: string; postalCode?: string };
+    };
     owner: {
         uid: number;
         username: string;

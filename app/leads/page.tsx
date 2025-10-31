@@ -8,6 +8,7 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import { LeadsTabGroup } from '@/modules/leads/components/leads-tab-group';
 import { LeadsTabContent } from '@/modules/leads/components/leads-tab-content';
+import { LeadsHeader } from '@/modules/leads/components/leads-header';
 import {
     Dialog,
     DialogContent,
@@ -147,6 +148,20 @@ export default function LeadsPage() {
         [createLead],
     );
 
+    const handleApplyFilters = useCallback((newFilters: LeadFilterParams) => {
+        setFilterParams((prev) => ({
+            ...prev,
+            ...newFilters,
+        }));
+    }, []);
+
+    const handleClearFilters = useCallback(() => {
+        setFilterParams({
+            page: 1,
+            limit: 500,
+        });
+    }, []);
+
     return (
         <PageTransition>
             <div className="flex flex-col h-screen gap-2 overflow-hidden">
@@ -156,6 +171,11 @@ export default function LeadsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex flex-col flex-1 overflow-hidden">
+                    <LeadsHeader
+                        onApplyFilters={handleApplyFilters}
+                        onClearFilters={handleClearFilters}
+                        onAddLead={handleCreateLead}
+                    />
                     <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
                         <LeadsTabContent
                             activeTab={activeTab}

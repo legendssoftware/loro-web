@@ -32,6 +32,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { DailyReportsSection } from '@/components/reports/daily-reports-section';
 
 interface HRReportsDashboardProps {
     className?: string;
@@ -1263,6 +1264,9 @@ export const HRReportsDashboard: React.FunctionComponent<HRReportsDashboardProps
 
             {/* Daily Attendance Table */}
             <DailyAttendanceTable />
+
+            {/* Daily Reports Archive */}
+            <DailyReportsSection variant="organization" />
         </div>
     );
 };

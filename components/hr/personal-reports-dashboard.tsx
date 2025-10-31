@@ -38,6 +38,7 @@ import { format, parseISO, isToday, isYesterday, isThisWeek } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useUserAttendance, AttendanceRecord } from '@/hooks/use-attendance-records';
 import { AttendanceDetailsModal } from '@/components/attendance/attendance-details-modal';
+import { DailyReportsSection } from '@/components/reports/daily-reports-section';
 
 interface PersonalReportsDashboardProps {
     className?: string;
@@ -1135,6 +1136,9 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                 onOpenChange={handleModalClose}
                 record={selectedAttendanceRecord}
             />
+
+            {/* Daily Reports Archive */}
+            <DailyReportsSection variant="personal" />
         </div>
     );
 };

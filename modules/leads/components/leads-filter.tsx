@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -56,68 +56,143 @@ interface LeadsFilterProps {
     onClearFilters: () => void;
 }
 
+// Define initial filter state as a constant
+const INITIAL_FILTERS = {
+    search: '',
+    status: undefined as LeadStatus | undefined,
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+    ownerUid: undefined as number | undefined,
+};
+
 export function LeadsFilter({
     onApplyFilters,
     onClearFilters,
 }: LeadsFilterProps) {
-    const [search, setSearch] = useState<string>('');
-    const [status, setStatus] = useState<LeadStatus | undefined>(undefined);
-    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    // Single consolidated filter state
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
     const [dateRangePreset, setDateRangePreset] = useState<
         DateRangePreset | undefined
     >(undefined);
-    const [activeFilters, setActiveFilters] = useState<string[]>([]);
-    const [ownerUid, setOwnerUid] = useState<number | undefined>(undefined);
 
+    // Ref to track the last applied filters to prevent unnecessary API calls
+    const lastAppliedFiltersRef = useRef<LeadFilterParams>({});
+
+    // Ref for debounce timer
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Derive active filter count from current filter state
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        if (filters.search) count++;
+        if (filters.status) count++;
+        if (filters.startDate || filters.endDate) count++;
+        if (filters.ownerUid) count++;
+        return count;
+    }, [filters]);
+
+    // Helper function to build filter params from state
+    const buildFilterParams = useCallback((): LeadFilterParams => {
+        const params: LeadFilterParams = {};
+
+        if (filters.search) params.search = filters.search;
+        if (filters.status) params.status = filters.status;
+        if (filters.startDate) params.startDate = filters.startDate;
+        if (filters.endDate) params.endDate = filters.endDate;
+        if (filters.ownerUid !== undefined) params.ownerUid = filters.ownerUid;
+
+        return params;
+    }, [filters]);
+
+    // Check if filters have actually changed
+    const hasFiltersChanged = useCallback((newParams: LeadFilterParams): boolean => {
+        const lastParams = lastAppliedFiltersRef.current;
+
+        return (
+            lastParams.search !== newParams.search ||
+            lastParams.status !== newParams.status ||
+            lastParams.startDate !== newParams.startDate ||
+            lastParams.endDate !== newParams.endDate ||
+            lastParams.ownerUid !== newParams.ownerUid
+        );
+    }, []);
+
+    // Single unified apply filters function
+    const applyFilters = useCallback(() => {
+        const params = buildFilterParams();
+
+        // Only apply if filters have actually changed
+        if (hasFiltersChanged(params)) {
+            lastAppliedFiltersRef.current = params;
+            onApplyFilters(params);
+        }
+    }, [buildFilterParams, hasFiltersChanged, onApplyFilters]);
+
+    // Debounced search effect
+    useEffect(() => {
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Set new timer for search debouncing
+        debounceTimerRef.current = setTimeout(() => {
+            applyFilters();
+        }, 300);
+
+        // Cleanup function
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, [filters.search, applyFilters]);
+
+    // Immediate effect for non-search filters
+    useEffect(() => {
+        applyFilters();
+    }, [filters.status, filters.startDate, filters.endDate, filters.ownerUid, applyFilters]);
+
+    // Handle search input changes
     const handleSearchChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
-            setSearch(e.target.value);
-            if (e.target.value) {
-                setTimeout(handleApplyFilters, 0);
-            } else if (activeFilters.includes('Search')) {
-                setTimeout(handleApplyFilters, 0);
-            }
+            setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+            }));
         },
-        [activeFilters],
+        [],
     );
 
+    // Handle date range selection
     const handleDateRangeSelect = useCallback((preset: DateRangePreset) => {
         const today = new Date();
 
         switch (preset) {
             case DateRangePreset.TODAY:
-                setStartDate(today);
-                setEndDate(today);
+                setFilters((prev) => ({ ...prev, startDate: today, endDate: today }));
                 break;
             case DateRangePreset.YESTERDAY:
                 const yesterday = subDays(today, 1);
-                setStartDate(yesterday);
-                setEndDate(yesterday);
+                setFilters((prev) => ({ ...prev, startDate: yesterday, endDate: yesterday }));
                 break;
             case DateRangePreset.LAST_WEEK:
                 const lastWeekStart = startOfWeek(subDays(today, 7));
                 const lastWeekEnd = endOfWeek(subDays(today, 7));
-                setStartDate(lastWeekStart);
-                setEndDate(lastWeekEnd);
+                setFilters((prev) => ({ ...prev, startDate: lastWeekStart, endDate: lastWeekEnd }));
                 break;
             case DateRangePreset.LAST_MONTH:
                 const lastMonthStart = startOfMonth(subDays(today, 30));
                 const lastMonthEnd = endOfMonth(subDays(today, 30));
-                setStartDate(lastMonthStart);
-                setEndDate(lastMonthEnd);
+                setFilters((prev) => ({ ...prev, startDate: lastMonthStart, endDate: lastMonthEnd }));
                 break;
             case DateRangePreset.CUSTOM:
                 break;
             default:
-                setStartDate(undefined);
-                setEndDate(undefined);
+                setFilters((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
         }
 
         setDateRangePreset(preset);
-        if (preset !== DateRangePreset.CUSTOM) {
-            setTimeout(handleApplyFilters, 0);
-        }
     }, []);
 
     const getDateRangeLabel = useCallback(() => {
@@ -126,59 +201,45 @@ export function LeadsFilter({
         if (dateRangePreset === DateRangePreset.LAST_WEEK) return 'LAST WEEK';
         if (dateRangePreset === DateRangePreset.LAST_MONTH) return 'LAST MONTH';
         if (dateRangePreset === DateRangePreset.CUSTOM) {
-            if (startDate && endDate) {
-                return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')}`;
+            if (filters.startDate && filters.endDate) {
+                return `${format(filters.startDate, 'MMM d')} - ${format(filters.endDate, 'MMM d')}`;
             }
-            if (startDate) {
-                return `FROM ${format(startDate, 'MMM d')}`;
+            if (filters.startDate) {
+                return `FROM ${format(filters.startDate, 'MMM d')}`;
             }
         }
         return 'DATE RANGE';
-    }, [dateRangePreset, startDate, endDate]);
+    }, [dateRangePreset, filters.startDate, filters.endDate]);
 
-    const handleApplyFilters = useCallback(() => {
-        const filters: LeadFilterParams = {};
-        const newActiveFilters: string[] = [];
-
-        if (search) {
-            filters.search = search;
-            newActiveFilters.push('Search');
-        }
-
-        if (status) {
-            filters.status = status;
-            newActiveFilters.push('Status');
-        }
-
-        if (startDate || endDate) {
-            if (startDate) {
-                filters.startDate = startDate;
-            }
-            if (endDate) {
-                filters.endDate = endDate;
-            }
-            newActiveFilters.push('Date Range');
-        }
-
-        if (ownerUid !== undefined) {
-            filters.ownerUid = ownerUid;
-            newActiveFilters.push('Owner');
-        }
-
-        setActiveFilters(newActiveFilters);
-        onApplyFilters(filters);
-    }, [search, status, startDate, endDate, ownerUid, onApplyFilters]);
-
+    // Handle clearing filters
     const handleClearFilters = useCallback(() => {
-        setSearch('');
-        setStatus(undefined);
-        setStartDate(undefined);
-        setEndDate(undefined);
+        setFilters(INITIAL_FILTERS);
         setDateRangePreset(undefined);
-        setOwnerUid(undefined);
-        setActiveFilters([]);
+        lastAppliedFiltersRef.current = {};
         onClearFilters();
     }, [onClearFilters]);
+
+    // Handle individual filter updates
+    const updateFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: value,
+            }));
+        },
+        [],
+    );
+
+    // Toggle filter (set to undefined if already selected, otherwise set to new value)
+    const toggleFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: prev[key] === value ? undefined : value,
+            }));
+        },
+        [],
+    );
 
     // Status Options with Icons and colors
     const statusLabels = {
@@ -215,21 +276,16 @@ export function LeadsFilter({
                 <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
                 <Input
                     placeholder="search..."
-                    value={search}
+                    value={filters.search}
                     onChange={handleSearchChange}
                     className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
                 />
-                {search && (
+                {filters.search && (
                     <Button
                         variant="ghost"
                         size="icon"
                         className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
-                        onClick={() => {
-                            setSearch('');
-                            if (activeFilters.includes('Search')) {
-                                handleApplyFilters();
-                            }
-                        }}
+                        onClick={() => updateFilter('search', '')}
                     >
                         <X className="w-4 h-4" />
                         <span className="sr-only">Clear search</span>
@@ -360,13 +416,13 @@ export function LeadsFilter({
                                                             variant="outline"
                                                             className={cn(
                                                                 'w-full h-7 px-2 text-left font-normal text-xs justify-start',
-                                                                !startDate &&
+                                                                !filters.startDate &&
                                                                     'text-muted-foreground',
                                                             )}
                                                         >
-                                                            {startDate
+                                                            {filters.startDate
                                                                 ? format(
-                                                                      startDate,
+                                                                      filters.startDate,
                                                                       'MMM d, yyyy',
                                                                   )
                                                                 : 'Select'}
@@ -378,9 +434,9 @@ export function LeadsFilter({
                                                     >
                                                         <CalendarComponent
                                                             mode="single"
-                                                            selected={startDate}
-                                                            onSelect={
-                                                                setStartDate
+                                                            selected={filters.startDate}
+                                                            onSelect={(date) =>
+                                                                updateFilter('startDate', date)
                                                             }
                                                             initialFocus
                                                         />
@@ -397,13 +453,13 @@ export function LeadsFilter({
                                                             variant="outline"
                                                             className={cn(
                                                                 'w-full h-7 px-2 text-left font-normal text-xs justify-start',
-                                                                !endDate &&
+                                                                !filters.endDate &&
                                                                     'text-muted-foreground',
                                                             )}
                                                         >
-                                                            {endDate
+                                                            {filters.endDate
                                                                 ? format(
-                                                                      endDate,
+                                                                      filters.endDate,
                                                                       'MMM d, yyyy',
                                                                   )
                                                                 : 'Select'}
@@ -415,9 +471,9 @@ export function LeadsFilter({
                                                     >
                                                         <CalendarComponent
                                                             mode="single"
-                                                            selected={endDate}
-                                                            onSelect={
-                                                                setEndDate
+                                                            selected={filters.endDate}
+                                                            onSelect={(date) =>
+                                                                updateFilter('endDate', date)
                                                             }
                                                             initialFocus
                                                         />
@@ -428,7 +484,7 @@ export function LeadsFilter({
                                         <Button
                                             size="sm"
                                             className="w-full mt-2 h-7"
-                                            onClick={handleApplyFilters}
+                                            onClick={() => {}}
                                         >
                                             Apply Range
                                         </Button>
@@ -439,11 +495,8 @@ export function LeadsFilter({
                             <DropdownMenuItem
                                 onClick={() => {
                                     setDateRangePreset(undefined);
-                                    setStartDate(undefined);
-                                    setEndDate(undefined);
-                                    if (activeFilters.includes('Date Range')) {
-                                        handleApplyFilters();
-                                    }
+                                    updateFilter('startDate', undefined);
+                                    updateFilter('endDate', undefined);
                                 }}
                                 className="flex items-center justify-center w-full"
                             >
@@ -462,19 +515,19 @@ export function LeadsFilter({
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
                             <div className="flex items-center gap-2">
-                                {status ? (
+                                {filters.status ? (
                                     <>
                                         {React.createElement(
-                                            statusIcons[status],
+                                            statusIcons[filters.status],
                                             {
-                                                className: `w-4 h-4 ${statusColors[status]}`,
+                                                className: `w-4 h-4 ${statusColors[filters.status]}`,
                                                 strokeWidth: 1.5,
                                             },
                                         )}
                                         <span
-                                            className={`text-[10px] font-thin font-body ${statusColors[status]}`}
+                                            className={`text-[10px] font-thin font-body ${statusColors[filters.status]}`}
                                         >
-                                            {statusLabels[status]}
+                                            {statusLabels[filters.status]}
                                         </span>
                                     </>
                                 ) : (
@@ -507,14 +560,7 @@ export function LeadsFilter({
                                     <DropdownMenuItem
                                         key={statusOption}
                                         className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            setStatus(
-                                                status === statusOption
-                                                    ? undefined
-                                                    : statusOption,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
+                                        onClick={() => toggleFilter('status', statusOption)}
                                     >
                                         {StatusIcon && (
                                             <StatusIcon
@@ -524,14 +570,14 @@ export function LeadsFilter({
                                         )}
                                         <span
                                             className={`text-[10px] font-normal font-body ${
-                                                status === statusOption
+                                                filters.status === statusOption
                                                     ? statusColors[statusOption]
                                                     : ''
                                             }`}
                                         >
                                             {statusLabels[statusOption]}
                                         </span>
-                                        {status === statusOption && (
+                                        {filters.status === statusOption && (
                                             <Check
                                                 className="w-4 h-4 ml-auto text-primary"
                                                 strokeWidth={1.5}
@@ -542,12 +588,7 @@ export function LeadsFilter({
                             })}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setStatus(undefined);
-                                    if (activeFilters.includes('Status')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
+                                onClick={() => updateFilter('status', undefined)}
                                 className="flex items-center justify-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
@@ -570,7 +611,7 @@ export function LeadsFilter({
                                     strokeWidth={1.5}
                                 />
                                 <span className="text-[10px] font-thin font-body">
-                                    {ownerUid ? 'OWNER' : 'ASSIGNEE'}
+                                    {filters.ownerUid ? 'OWNER' : 'ASSIGNEE'}
                                 </span>
                             </div>
                             <ChevronDown
@@ -586,10 +627,7 @@ export function LeadsFilter({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                            onClick={() => {
-                                setOwnerUid(ownerUid === -1 ? undefined : -1);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            onClick={() => toggleFilter('ownerUid', -1)}
                         >
                             <Avatar className="w-6 h-6 mr-2">
                                 <AvatarFallback>ME</AvatarFallback>
@@ -597,7 +635,7 @@ export function LeadsFilter({
                             <span className="text-[10px] font-normal font-body">
                                 Assigned to Me
                             </span>
-                            {ownerUid === -1 && (
+                            {filters.ownerUid === -1 && (
                                 <Check
                                     className="w-4 h-4 ml-auto text-primary"
                                     strokeWidth={1.5}
@@ -606,10 +644,7 @@ export function LeadsFilter({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                            onClick={() => {
-                                setOwnerUid(ownerUid === 0 ? undefined : 0);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            onClick={() => toggleFilter('ownerUid', 0)}
                         >
                             <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
                                 <X className="w-3 h-3" strokeWidth={1.5} />
@@ -617,7 +652,7 @@ export function LeadsFilter({
                             <span className="text-[10px] font-normal font-body">
                                 Unassigned
                             </span>
-                            {ownerUid === 0 && (
+                            {filters.ownerUid === 0 && (
                                 <Check
                                     className="w-4 h-4 ml-auto text-primary"
                                     strokeWidth={1.5}
@@ -626,12 +661,7 @@ export function LeadsFilter({
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => {
-                                setOwnerUid(undefined);
-                                if (activeFilters.includes('Owner')) {
-                                    handleApplyFilters();
-                                }
-                            }}
+                            onClick={() => updateFilter('ownerUid', undefined)}
                             className="flex items-center justify-center w-full"
                         >
                             <span className="text-[10px] font-normal text-red-500 font-body">
@@ -643,7 +673,7 @@ export function LeadsFilter({
             </div>
 
             {/* Clear Filters Button - Only show when filters are active */}
-            {activeFilters.length > 0 && (
+            {activeFilterCount > 0 && (
                 <Button
                     variant="outline"
                     size="sm"
@@ -651,7 +681,7 @@ export function LeadsFilter({
                     onClick={handleClearFilters}
                 >
                     <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    Clear All ({activeFilters.length})
+                    Clear All ({activeFilterCount})
                 </Button>
             )}
         </div>

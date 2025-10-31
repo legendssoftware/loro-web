@@ -226,7 +226,6 @@ const GenerateReportSection = () => {
                     </button>
                 </div>
             </div>
-
             {/* Main Dashboard Content */}
             {reportSubTab === 'main_dashboard' && (
                 <div>
@@ -876,12 +875,6 @@ export default function Home() {
                                         Benefits
                                     </Link>
                                     <Link
-                                        href="#pricing"
-                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
-                                    >
-                                        Pricing
-                                    </Link>
-                                    <Link
                                         href="#testimonials"
                                         className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
                                     >
@@ -1028,13 +1021,6 @@ export default function Home() {
                                                         className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
                                                     >
                                                         Benefits
-                                                    </Link>
-                                                    <Link
-                                                        href="#pricing"
-                                                        onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
-                                                    >
-                                                        Pricing
                                                     </Link>
                                                     <Link
                                                         href="#testimonials"
@@ -2320,357 +2306,6 @@ export default function Home() {
                         </div>
                     </MotionSection>
 
-                    <MotionSection
-                        id="pricing"
-                        className="py-20"
-                        direction="up"
-                    >
-                        <div className="container px-4 mx-auto md:px-6">
-                            <StaggerContainer
-                                className="mb-12 text-center"
-                                staggerChildren={0.2}
-                            >
-                                <StaggerItem>
-                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
-                                        Transparent Pricing for Every Business
-                                    </h2>
-                                </StaggerItem>
-                                <StaggerItem>
-                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
-                                        Choose the plan that fits your team size and needs. All prices in South African Rands, per user per month.
-                                    </p>
-                                </StaggerItem>
-                            </StaggerContainer>
-                            <StaggerContainer
-                                className="grid gap-8 md:grid-cols-3"
-                                staggerChildren={0.15}
-                            >
-                                <StaggerItem direction="up">
-                                    <motion.div
-                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    🚀
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Basic Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R99
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Lead creation & tracking (up to 500)',
-                                                'Basic expense claims workflow',
-                                                'Activity logging & notes',
-                                                'Real-time tracking (up to 5 users)',
-                                                'Client profile management',
-                                                'Basic task management',
-                                                'Standard reports (CSV/Excel)',
-                                                'Stock level visibility',
-                                                'Basic product catalog',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="w-full text-xs font-normal uppercase font-body"
-                                            >
-                                                <Link href="/signup?plan=basic">
-                                                    Start Basic Plan
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                                <StaggerItem
-                                    direction="up"
-                                    className="mt-4 md:mt-0"
-                                >
-                                    <motion.div
-                                        className="relative p-6 h-full rounded-xl border-2 shadow-lg bg-card border-primary"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <motion.div
-                                            className="absolute -top-4 left-1/2 px-4 py-1 text-xs font-normal uppercase rounded-full transform -translate-x-1/2 bg-primary text-primary-foreground font-body"
-                                            initial={{ y: -10, opacity: 0 }}
-                                            whileInView={{ y: 0, opacity: 1 }}
-                                            transition={{
-                                                duration: 0.5,
-                                                delay: 0.2,
-                                            }}
-                                            viewport={{ once: true }}
-                                        >
-                                            Most Popular
-                                        </motion.div>
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    ⭐
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Premium Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R199
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Everything in Basic Plan',
-                                                'Unlimited lead storage',
-                                                'Advanced approval workflows',
-                                                'Unlimited user tracking',
-                                                'Geofencing & route alerts',
-                                                'Client portal access',
-                                                'Quotation PDF generation',
-                                                'Custom report builder',
-                                                'Priority 24/7 support',
-                                                'Subtasks & priority tagging',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button className="w-full text-xs font-normal uppercase font-body">
-                                                <Link href="/signup?plan=premium">
-                                                    Get Premium
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                                <StaggerItem
-                                    direction="up"
-                                    className="mt-8 md:mt-0"
-                                >
-                                    <motion.div
-                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    🏢
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Enterprise Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R399
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Everything in Premium Plan',
-                                                'Audit logs & SSO integration',
-                                                'Custom user permissions',
-                                                'Workflow automation',
-                                                'API access for integrations',
-                                                'Bulk actions & mass updates',
-                                                'Custom branding on PDFs',
-                                                'Unlimited attachments/data',
-                                                'Dedicated account manager',
-                                                'SLA-guaranteed support',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="w-full text-xs font-normal uppercase font-body"
-                                            >
-                                                <Link href="/contact">
-                                                    Contact Sales
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                            </StaggerContainer>
-                            <motion.div
-                                className="mt-12 text-center"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.6 }}
-                                viewport={{ once: true }}
-                            >
-                                <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                    All plans include free trial • Annual billing saves up to 20% • No setup fees
-                                </p>
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Button asChild variant="outline" className="text-xs font-normal uppercase font-body">
-                                        <Link href="/pricing-comparison">
-                                            Compare All Features
-                                        </Link>
-                                    </Button>
-                                </motion.div>
-                            </motion.div>
-                        </div>
-                    </MotionSection>
                 </main>
 
                 {/* FAQ Section */}
@@ -3072,39 +2707,42 @@ export default function Home() {
                                                                   'Contact',
                                                               ]
                                                             : [
-                                                                  'Privacy',
-                                                                  'Terms',
-                                                                  'Cookies',
+                                                                  { name: 'Privacy Policy', href: '/privacy' },
+                                                                  { name: 'Terms', href: '#' },
+                                                                  { name: 'Cookies', href: '#' },
                                                               ],
-                                                ][0].map((item, itemIndex) => (
-                                                    <motion.li
-                                                        key={item}
-                                                        initial={{
-                                                            opacity: 0,
-                                                            x: -10,
-                                                        }}
-                                                        whileInView={{
-                                                            opacity: 1,
-                                                            x: 0,
-                                                        }}
-                                                        transition={{
-                                                            duration: 0.3,
-                                                            delay:
-                                                                0.2 +
-                                                                itemIndex * 0.1,
-                                                        }}
-                                                        viewport={{
-                                                            once: true,
-                                                        }}
-                                                    >
-                                                        <Link
-                                                            href="#"
-                                                            className="text-xs text-muted-foreground hover:text-foreground font-body"
+                                                ][0].map((item, itemIndex) => {
+                                                    const itemData = typeof item === 'string' ? { name: item, href: '#' } : item;
+                                                    return (
+                                                        <motion.li
+                                                            key={itemData.name}
+                                                            initial={{
+                                                                opacity: 0,
+                                                                x: -10,
+                                                            }}
+                                                            whileInView={{
+                                                                opacity: 1,
+                                                                x: 0,
+                                                            }}
+                                                            transition={{
+                                                                duration: 0.3,
+                                                                delay:
+                                                                    0.2 +
+                                                                    itemIndex * 0.1,
+                                                            }}
+                                                            viewport={{
+                                                                once: true,
+                                                            }}
                                                         >
-                                                            {item}
-                                                        </Link>
-                                                    </motion.li>
-                                                ))}
+                                                            <Link
+                                                                href={itemData.href}
+                                                                className="text-xs text-muted-foreground hover:text-foreground font-body"
+                                                            >
+                                                                {itemData.name}
+                                                            </Link>
+                                                        </motion.li>
+                                                    );
+                                                })}
                                             </ul>
                                         </StaggerItem>
                                     ),

@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Clock,
     CalendarDays,
@@ -738,7 +738,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         <div>
-                                            <div className="font-semibold text-lg">
+                                            <div className="text-lg font-semibold">
                                                 {(record as any).organisation.name || 'N/A'}
                                             </div>
                                             <div className="text-sm text-muted-foreground">
@@ -777,7 +777,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-muted-foreground">Email:</span>
-                                    <span className="font-medium text-sm">{record.owner.email}</span>
+                                    <span className="text-sm font-medium">{record.owner.email}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-sm text-muted-foreground">Role:</span>
@@ -816,7 +816,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                     {(record.branch as any).email && (
                                         <div className="flex justify-between">
                                             <span className="text-sm text-muted-foreground">Email:</span>
-                                            <span className="font-medium text-sm">{(record.branch as any).email}</span>
+                                            <span className="text-sm font-medium">{(record.branch as any).email}</span>
                                         </div>
                                     )}
                                     {(record.branch as any).phoneNumber && (
@@ -827,7 +827,7 @@ export const AttendanceDetailsModal: React.FunctionComponent<AttendanceDetailsMo
                                     )}
                                     <div className="flex flex-col gap-1">
                                         <span className="text-sm text-muted-foreground">Address:</span>
-                                        <span className="font-medium text-sm">
+                                        <span className="text-sm font-medium">
                                             {typeof record.branch.address === 'object' && record.branch.address !== null
                                                 ? (() => {
                                                     const addr = record.branch.address as any;

@@ -44,7 +44,7 @@ import {
     BarChart2,
     MapPin,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import {
     format,
     subDays,
@@ -76,89 +76,141 @@ interface TasksFilterProps {
     tasks?: Task[];
 }
 
+// Define initial filter state as a constant
+const INITIAL_FILTERS = {
+    search: '',
+    status: undefined as TaskStatus | undefined,
+    priority: undefined as TaskPriority | undefined,
+    taskType: undefined as TaskType | undefined,
+    assigneeId: undefined as number | undefined,
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+};
+
 export function TasksFilter({
     onApplyFilters,
     onClearFilters,
     tasks = [],
 }: TasksFilterProps) {
-    const [search, setSearch] = useState<string>('');
-    const [status, setStatus] = useState<TaskStatus | undefined>(undefined);
-    const [priority, setPriority] = useState<TaskPriority | undefined>(
-        undefined,
-    );
-    const [taskType, setTaskType] = useState<TaskType | undefined>(undefined);
-    const [assigneeId, setAssigneeId] = useState<number | undefined>(undefined);
-    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    // Single consolidated filter state
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
     const [dateRangePreset, setDateRangePreset] = useState<
         DateRangePreset | undefined
     >(undefined);
-    const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-    const handleApplyFilters = useCallback(() => {
-        const filters: ExtendedTaskFilterParams = {};
-        const newActiveFilters: string[] = [];
+    // Ref to track the last applied filters to prevent unnecessary API calls
+    const lastAppliedFiltersRef = useRef<ExtendedTaskFilterParams>({});
 
-        if (search) {
-            filters.search = search;
-            newActiveFilters.push('Search');
+    // Ref for debounce timer
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Derive active filter count from current filter state
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        if (filters.search) count++;
+        if (filters.status) count++;
+        if (filters.priority) count++;
+        if (filters.taskType) count++;
+        if (filters.assigneeId) count++;
+        if (filters.startDate || filters.endDate) count++;
+        return count;
+    }, [filters]);
+
+    // Helper function to build filter params from state
+    const buildFilterParams = useCallback((): ExtendedTaskFilterParams => {
+        const params: ExtendedTaskFilterParams = {};
+
+        if (filters.search) params.search = filters.search;
+        if (filters.status) params.status = filters.status;
+        if (filters.priority) params.priority = filters.priority;
+        if (filters.taskType) params.taskType = filters.taskType;
+        if (filters.assigneeId) params.assigneeId = filters.assigneeId;
+        if (filters.startDate) params.startDate = filters.startDate;
+        if (filters.endDate) params.endDate = filters.endDate;
+
+        return params;
+    }, [filters]);
+
+    // Check if filters have actually changed
+    const hasFiltersChanged = useCallback((newParams: ExtendedTaskFilterParams): boolean => {
+        const lastParams = lastAppliedFiltersRef.current;
+
+        return (
+            lastParams.search !== newParams.search ||
+            lastParams.status !== newParams.status ||
+            lastParams.priority !== newParams.priority ||
+            lastParams.taskType !== newParams.taskType ||
+            lastParams.assigneeId !== newParams.assigneeId ||
+            lastParams.startDate !== newParams.startDate ||
+            lastParams.endDate !== newParams.endDate
+        );
+    }, []);
+
+    // Single unified apply filters function
+    const applyFilters = useCallback(() => {
+        const params = buildFilterParams();
+
+        // Only apply if filters have actually changed
+        if (hasFiltersChanged(params)) {
+            lastAppliedFiltersRef.current = params;
+            onApplyFilters(params);
+        }
+    }, [buildFilterParams, hasFiltersChanged, onApplyFilters]);
+
+    // Debounced search effect
+    useEffect(() => {
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
         }
 
-        if (status) {
-            filters.status = status;
-            newActiveFilters.push('Status');
-        }
+        // Set new timer for search debouncing
+        debounceTimerRef.current = setTimeout(() => {
+            applyFilters();
+        }, 300);
 
-        if (priority) {
-            filters.priority = priority;
-            newActiveFilters.push('Priority');
-        }
-
-        if (taskType) {
-            filters.taskType = taskType;
-            newActiveFilters.push('Task Type');
-        }
-
-        if (assigneeId) {
-            filters.assigneeId = assigneeId;
-            newActiveFilters.push('Assignee');
-        }
-
-        if (startDate || endDate) {
-            if (startDate) {
-                filters.startDate = startDate;
-                newActiveFilters.push('Date Range');
+        // Cleanup function
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
             }
-            if (endDate) {
-                filters.endDate = endDate;
-            }
-        }
+        };
+    }, [filters.search, applyFilters]);
 
-        setActiveFilters(newActiveFilters);
-        onApplyFilters(filters);
-    }, [
-        search,
-        status,
-        priority,
-        taskType,
-        assigneeId,
-        startDate,
-        endDate,
-        onApplyFilters,
-    ]);
+    // Immediate effect for non-search filters
+    useEffect(() => {
+        applyFilters();
+    }, [filters.status, filters.priority, filters.taskType, filters.assigneeId, filters.startDate, filters.endDate, applyFilters]);
 
+    // Handle clearing filters
     const handleClearFilters = useCallback(() => {
-        setSearch('');
-        setStatus(undefined);
-        setPriority(undefined);
-        setTaskType(undefined);
-        setAssigneeId(undefined);
-        setStartDate(undefined);
-        setEndDate(undefined);
+        setFilters(INITIAL_FILTERS);
         setDateRangePreset(undefined);
-        setActiveFilters([]);
+        lastAppliedFiltersRef.current = {};
         onClearFilters();
     }, [onClearFilters]);
+
+    // Handle individual filter updates
+    const updateFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: value,
+            }));
+        },
+        [],
+    );
+
+    // Toggle filter (set to undefined if already selected, otherwise set to new value)
+    const toggleFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: prev[key] === value ? undefined : value,
+            }));
+        },
+        [],
+    );
 
     const handleDateRangeSelect = useCallback(
         (preset: DateRangePreset) => {
@@ -166,39 +218,31 @@ export function TasksFilter({
 
             switch (preset) {
                 case DateRangePreset.TODAY:
-                    setStartDate(today);
-                    setEndDate(today);
+                    setFilters((prev) => ({ ...prev, startDate: today, endDate: today }));
                     break;
                 case DateRangePreset.YESTERDAY:
                     const yesterday = subDays(today, 1);
-                    setStartDate(yesterday);
-                    setEndDate(yesterday);
+                    setFilters((prev) => ({ ...prev, startDate: yesterday, endDate: yesterday }));
                     break;
                 case DateRangePreset.LAST_WEEK:
                     const lastWeekStart = startOfWeek(subDays(today, 7));
                     const lastWeekEnd = endOfWeek(subDays(today, 7));
-                    setStartDate(lastWeekStart);
-                    setEndDate(lastWeekEnd);
+                    setFilters((prev) => ({ ...prev, startDate: lastWeekStart, endDate: lastWeekEnd }));
                     break;
                 case DateRangePreset.LAST_MONTH:
                     const lastMonthStart = startOfMonth(subDays(today, 30));
                     const lastMonthEnd = endOfMonth(subDays(today, 30));
-                    setStartDate(lastMonthStart);
-                    setEndDate(lastMonthEnd);
+                    setFilters((prev) => ({ ...prev, startDate: lastMonthStart, endDate: lastMonthEnd }));
                     break;
                 case DateRangePreset.CUSTOM:
                     break;
                 default:
-                    setStartDate(undefined);
-                    setEndDate(undefined);
+                    setFilters((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
             }
 
             setDateRangePreset(preset);
-            if (preset !== DateRangePreset.CUSTOM) {
-                setTimeout(handleApplyFilters, 0);
-            }
         },
-        [handleApplyFilters],
+        [],
     );
 
     const getDateRangeLabel = useCallback(() => {
@@ -207,15 +251,15 @@ export function TasksFilter({
         if (dateRangePreset === DateRangePreset.LAST_WEEK) return 'LAST WEEK';
         if (dateRangePreset === DateRangePreset.LAST_MONTH) return 'LAST MONTH';
         if (dateRangePreset === DateRangePreset.CUSTOM) {
-            if (startDate && endDate) {
-                return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')}`;
+            if (filters.startDate && filters.endDate) {
+                return `${format(filters.startDate, 'MMM d')} - ${format(filters.endDate, 'MMM d')}`;
             }
-            if (startDate) {
-                return `FROM ${format(startDate, 'MMM d')}`;
+            if (filters.startDate) {
+                return `FROM ${format(filters.startDate, 'MMM d')}`;
             }
         }
         return 'DATE RANGE';
-    }, [dateRangePreset, startDate, endDate]);
+    }, [dateRangePreset, filters.startDate, filters.endDate]);
 
     const priorityLabels = {
         [TaskPriority.LOW]: 'Low',
@@ -311,34 +355,22 @@ export function TasksFilter({
               ];
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2">
+        <div className="flex flex-1 gap-2 justify-end items-center">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
                 <Input
                     placeholder="search..."
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        if (e.target.value) {
-                            handleApplyFilters();
-                        } else if (activeFilters.includes('Search')) {
-                            handleApplyFilters();
-                        }
-                    }}
+                    value={filters.search}
+                    onChange={(e) => updateFilter('search', e.target.value)}
                     className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-thin placeholder:font-body"
                 />
-                {search && (
+                {filters.search && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
-                        onClick={() => {
-                            setSearch('');
-                            if (activeFilters.includes('Search')) {
-                                handleApplyFilters();
-                            }
-                        }}
+                        className="absolute right-1 top-1/2 w-8 h-8 transform -translate-y-1/2"
+                        onClick={() => updateFilter('search', '')}
                     >
                         <X className="w-4 h-4" />
                         <span className="sr-only">Clear search</span>
@@ -350,8 +382,8 @@ export function TasksFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <CalendarIcon
                                     className="w-4 h-4 text-muted-foreground"
                                     strokeWidth={1.5}
@@ -360,7 +392,7 @@ export function TasksFilter({
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -375,7 +407,7 @@ export function TasksFilter({
                             >
                                 Today
                             {dateRangePreset === DateRangePreset.TODAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -384,7 +416,7 @@ export function TasksFilter({
                             >
                                 Yesterday
                             {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -393,7 +425,7 @@ export function TasksFilter({
                             >
                                 Last Week
                             {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -402,20 +434,17 @@ export function TasksFilter({
                             >
                                 Last Month
                                 {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {
                                     setDateRangePreset(undefined);
-                                    setStartDate(undefined);
-                                    setEndDate(undefined);
-                                    if (activeFilters.includes('Date Range')) {
-                                        handleApplyFilters();
-                                    }
+                                    updateFilter('startDate', undefined);
+                                    updateFilter('endDate', undefined);
                                 }}
-                                className="flex items-center justify-center w-full"
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Date Range
@@ -430,20 +459,20 @@ export function TasksFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {status ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {filters.status ? (
                                     <>
-                                        {statusIcons[status] &&
+                                        {statusIcons[filters.status] &&
                                             React.createElement(
-                                                statusIcons[status],
+                                                statusIcons[filters.status],
                                                 {
-                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[filters.status]}`,
                                                     strokeWidth: 1.5,
                                                 },
                                             )}
-                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
-                                            {statusLabels[status]}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[filters.status]}`}>
+                                            {statusLabels[filters.status]}
                                         </span>
                                     </>
                                 ) : (
@@ -458,7 +487,7 @@ export function TasksFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -473,46 +502,34 @@ export function TasksFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            setStatus(
-                                                status === statusOption
-                                                    ? undefined
-                                                    : statusOption,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                                        onClick={() => toggleFilter('status', statusOption)}
                                     >
                                             {StatusIcon && (
                                                     <StatusIcon
-                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                className={`mr-2 w-4 h-4 ${statusColors[statusOption]}`}
                                                 strokeWidth={1.5}
                                                     />
                                             )}
                                             <span
                                             className={`text-[10px] font-normal font-body ${
-                                                    status === statusOption
+                                                    filters.status === statusOption
                                                     ? statusColors[statusOption]
                                                         : ''
                                                 }`}
                                             >
                                                 {statusLabels[statusOption]}
                                             </span>
-                                        {status === statusOption && (
-                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                        {filters.status === statusOption && (
+                                            <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setStatus(undefined);
-                                    if (activeFilters.includes('Status')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
+                                onClick={() => updateFilter('status', undefined)}
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Status Filter
@@ -527,16 +544,16 @@ export function TasksFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {priority ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {filters.priority ? (
                                     <>
                                         <Award
-                                            className={`w-4 h-4 ${priorityColors[priority]}`}
+                                            className={`w-4 h-4 ${priorityColors[filters.priority]}`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className={`text-[10px] font-thin font-body ${priorityColors[priority]}`}>
-                                            {priorityLabels[priority].toUpperCase()}
+                                        <span className={`text-[10px] font-thin font-body ${priorityColors[filters.priority]}`}>
+                                            {priorityLabels[filters.priority].toUpperCase()}
                                         </span>
                                     </>
                                 ) : (
@@ -551,7 +568,7 @@ export function TasksFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -564,44 +581,32 @@ export function TasksFilter({
                                 (priorityOption) => (
                                     <DropdownMenuItem
                                         key={priorityOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            setPriority(
-                                                priority === priorityOption
-                                                    ? undefined
-                                                    : priorityOption,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                                        onClick={() => toggleFilter('priority', priorityOption)}
                                     >
                                                 <Award
-                                            className={`w-4 h-4 mr-2 ${priorityColors[priorityOption]}`}
+                                            className={`mr-2 w-4 h-4 ${priorityColors[priorityOption]}`}
                                             strokeWidth={1.5}
                                                 />
                                             <span
                                             className={`text-[10px] font-normal font-body ${
-                                                    priority === priorityOption
+                                                    filters.priority === priorityOption
                                                     ? priorityColors[priorityOption]
                                                         : ''
                                                 }`}
                                             >
                                             {priorityLabels[priorityOption].toUpperCase()}
                                             </span>
-                                        {priority === priorityOption && (
-                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                        {filters.priority === priorityOption && (
+                                            <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 ),
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setPriority(undefined);
-                                    if (activeFilters.includes('Priority')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
+                                onClick={() => updateFilter('priority', undefined)}
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Priority Filter
@@ -616,16 +621,16 @@ export function TasksFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {taskType ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {filters.taskType ? (
                                     <>
                                         <Tag
-                                            className={`w-4 h-4 ${taskTypeColors[taskType]}`}
+                                            className={`w-4 h-4 ${taskTypeColors[filters.taskType]}`}
                                             strokeWidth={1.5}
                                         />
-                                        <span className={`text-[10px] font-thin font-body ${taskTypeColors[taskType]}`}>
-                                            {taskType.replace(/_/g, ' ')}
+                                        <span className={`text-[10px] font-thin font-body ${taskTypeColors[filters.taskType]}`}>
+                                            {filters.taskType.replace(/_/g, ' ')}
                                         </span>
                                     </>
                                 ) : (
@@ -640,7 +645,7 @@ export function TasksFilter({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -678,44 +683,32 @@ export function TasksFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={typeOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                        onClick={() => {
-                                            setTaskType(
-                                                taskType === typeOption
-                                                    ? undefined
-                                                    : typeOption,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                                        onClick={() => toggleFilter('taskType', typeOption)}
                                     >
                                             <TypeIcon
-                                                className={`w-4 h-4 mr-2 ${taskTypeColors[typeOption]}`}
+                                                className={`mr-2 w-4 h-4 ${taskTypeColors[typeOption]}`}
                                             strokeWidth={1.5}
                                             />
                                             <span
                                             className={`text-[10px] font-normal font-body ${
-                                                    taskType === typeOption
+                                                    filters.taskType === typeOption
                                                     ? taskTypeColors[typeOption]
                                                         : ''
                                                 }`}
                                             >
                                                 {typeOption.replace(/_/g, ' ')}
                                             </span>
-                                        {taskType === typeOption && (
-                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                        {filters.taskType === typeOption && (
+                                            <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setTaskType(undefined);
-                                    if (activeFilters.includes('Task Type')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
+                                onClick={() => updateFilter('taskType', undefined)}
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Task Type Filter
@@ -730,17 +723,17 @@ export function TasksFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <Users
                                     className="w-4 h-4 text-muted-foreground"
                                     strokeWidth={1.5}
                                 />
                                 <span className="text-[10px] font-thin font-body">
-                                    {assigneeId ? 'ASSIGNED' : 'ASSIGNEE'}
+                                    {filters.assigneeId ? 'ASSIGNED' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -749,56 +742,41 @@ export function TasksFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                            onClick={() => {
-                                setAssigneeId(
-                                    assigneeId === -1 ? undefined : -1,
-                                );
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                            onClick={() => toggleFilter('assigneeId', -1)}
                         >
-                            <Avatar className="w-6 h-6 mr-2">
+                            <Avatar className="mr-2 w-6 h-6">
                                     <AvatarFallback>ME</AvatarFallback>
                                 </Avatar>
                             <span className="text-[10px] font-normal font-body">
                                     Assigned to Me
                                 </span>
-                            {assigneeId === -1 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                            {filters.assigneeId === -1 && (
+                                <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                            onClick={() => {
-                                setAssigneeId(assigneeId === 0 ? undefined : 0);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                            onClick={() => toggleFilter('assigneeId', 0)}
                         >
-                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                            <div className="flex justify-center items-center mr-2 w-6 h-6 rounded-full bg-muted">
                                 <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
                             <span className="text-[10px] font-normal font-body">
                                 Unassigned
                             </span>
-                            {assigneeId === 0 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                            {filters.assigneeId === 0 && (
+                                <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {assignees.map((assignee) => (
                             <DropdownMenuItem
                                 key={assignee.id}
-                                className="flex items-center gap-2 px-2 text-xs font-normal font-body"
-                                onClick={() => {
-                                    setAssigneeId(
-                                        assigneeId === assignee.id
-                                            ? undefined
-                                            : assignee.id,
-                                    );
-                                    setTimeout(handleApplyFilters, 0);
-                                }}
+                                className="flex gap-2 items-center px-2 text-xs font-normal font-body"
+                                onClick={() => toggleFilter('assigneeId', assignee.id)}
                             >
-                                <Avatar className="w-6 h-6 mr-2">
+                                <Avatar className="mr-2 w-6 h-6">
                                         <AvatarImage
                                             src={assignee.avatar}
                                             alt={assignee.name}
@@ -810,20 +788,15 @@ export function TasksFilter({
                                 <span className="text-[10px] font-normal font-body">
                                         {assignee.name}
                                     </span>
-                                {assigneeId === assignee.id && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                {filters.assigneeId === assignee.id && (
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => {
-                                setAssigneeId(undefined);
-                                if (activeFilters.includes('Assignee')) {
-                                    handleApplyFilters();
-                                }
-                            }}
-                            className="flex items-center justify-center w-full"
+                            onClick={() => updateFilter('assigneeId', undefined)}
+                            className="flex justify-center items-center w-full"
                         >
                             <span className="text-[10px] font-normal text-red-500 font-body">
                                 Clear Assignee Filter
@@ -834,15 +807,15 @@ export function TasksFilter({
             </div>
 
             {/* Clear Filters Button - Only show when filters are active */}
-            {activeFilters.length > 0 && (
+            {activeFilterCount > 0 && (
                 <Button
                     variant="outline"
                     size="sm"
                     className="h-10 text-xs font-normal font-body"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    Clear All ({activeFilters.length})
+                    <X className="mr-2 w-4 h-4" strokeWidth={1.5} />
+                    Clear All ({activeFilterCount})
                 </Button>
             )}
         </div>

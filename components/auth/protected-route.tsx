@@ -1,11 +1,13 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { AppLoader } from '@/components/loaders/page-loader';
 import { hasPermission, PermissionValue } from '@/lib/permissions/permission-manager';
 import { AccessLevel, rolePermissions } from '@/types/auth';
+import { getAccessTokenFromCookie, getUserRole } from '@/lib/utils/token-utils';
+import { authService } from '@/lib/services/auth-service';
 
 interface ProtectedRouteProps {
     children: ReactNode;
@@ -18,81 +20,70 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
     const pathname = usePathname();
     const { isAuthenticated, profileData, isLoading } = useAuthStore();
 
-    // Get user role - prioritize JWT token role over profile accessLevel for consistency with middleware
-    const getUserRole = () => {
-        // First, try to get role from JWT token (same as middleware)
+    // Track if we've checked cookies (to avoid redirect loops)
+    const [hasCheckedCookies, setHasCheckedCookies] = useState(false);
+    const [hasCookieAuth, setHasCookieAuth] = useState(false);
+
+    // Use state to store user role (client-side only)
+    // Initialize with profileData for SSR compatibility
+    const [userRole, setUserRole] = useState<string | null>(
+        profileData?.accessLevel || null
+    );
+
+    // Check if user is authenticated via cookies (fallback when store isn't hydrated)
+    const checkAuthViaCookies = (): boolean => {
+        if (typeof window === 'undefined') return false;
+
+        const token = getAccessTokenFromCookie();
+        if (!token) return false;
+
+        // Validate token using auth service
         try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('accessToken='))
-                ?.split('=')[1];
-
-            if (token) {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(
-                    atob(base64)
-                        .split('')
-                        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                        .join('')
-                );
-                const payload = JSON.parse(jsonPayload);
-                if (payload.role) {
-                    return payload.role;
-                }
-            }
-        } catch (e) {
-            console.error("Failed to extract role from token:", e);
+            return authService.validateToken(token);
+        } catch {
+            return false;
         }
-
-        // Fallback to profile data accessLevel
-        return profileData?.accessLevel || null;
     };
 
-    const userRole = getUserRole();
+    // Update user role from token when component mounts or auth state changes (client-side only)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const token = getAccessTokenFromCookie();
+        const role = getUserRole(token, profileData?.accessLevel);
+        const cookieAuth = checkAuthViaCookies();
+
+        setUserRole(role);
+        setHasCookieAuth(cookieAuth);
+        setHasCheckedCookies(true);
+    }, [profileData?.accessLevel]);
 
     useEffect(() => {
         // Skip if still loading
         if (isLoading) return;
 
-        // If not authenticated, redirect to sign-in
-        if (!isAuthenticated) {
+        // If store isn't hydrated yet but we have cookies, wait a bit
+        // Middleware already validated the user, so trust that
+        if (!hasCheckedCookies && typeof window !== 'undefined') {
+            // Wait for cookie check to complete
+            return;
+        }
+
+        // If not authenticated and no valid cookies, redirect to sign-in
+        if (!isAuthenticated && !hasCookieAuth) {
             // Save the current URL to redirect back after sign-in
-            const callbackUrl = encodeURIComponent(window.location.href);
-            router.push(`/sign-in?callbackUrl=${callbackUrl}`);
+            if (typeof window !== 'undefined') {
+                const callbackUrl = encodeURIComponent(window.location.href);
+                router.push(`/sign-in?callbackUrl=${callbackUrl}`);
+            }
             return;
         }
 
         // Special case: Allow CLIENT direct access to quotations page
         // Extract role from JWT token if not available in profileData
-        const getClientRoleFromToken = () => {
-            try {
-                const token = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('accessToken='))
-                    ?.split('=')[1];
-
-                if (token) {
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(
-                        atob(base64)
-                            .split('')
-                            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                            .join('')
-                    );
-                    const payload = JSON.parse(jsonPayload);
-                    return payload.role;
-                }
-            } catch (e) {
-                console.error("Failed to extract role from token:", e);
-            }
-            return null;
-        };
-
-        // For quotations page, check if user is a client from token
         if (pathname === '/quotations') {
-            const tokenRole = getClientRoleFromToken();
+            const token = getAccessTokenFromCookie();
+            const tokenRole = getUserRole(token, profileData?.accessLevel);
             if (tokenRole === 'client') {
                 // Always allow clients to access quotations
                 return;
@@ -130,10 +121,10 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
                 }
             }
         }
-    }, [isAuthenticated, isLoading, router, pathname, userRole, requiredPermissions, fallback]);
+    }, [isAuthenticated, isLoading, router, pathname, userRole, requiredPermissions, fallback, profileData?.accessLevel, hasCheckedCookies, hasCookieAuth]);
 
-    // Show loader while checking authentication
-    if (isLoading) {
+    // Show loader while checking authentication or if store is loading
+    if (isLoading || !hasCheckedCookies) {
         return (
             <div className='flex justify-center items-center w-full h-screen'>
                 <AppLoader />
@@ -141,10 +132,13 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
         );
     }
 
+    // If we have cookies but store says not authenticated, trust cookies (middleware validated)
+    const effectiveAuth = isAuthenticated || hasCookieAuth;
+
     // Show fallback if user doesn't have required permissions
     if (
         !isLoading &&
-        isAuthenticated &&
+        effectiveAuth &&
         requiredPermissions.length > 0 &&
         userRole &&
         !requiredPermissions.some(permission => hasPermission(userRole, permission))
@@ -152,8 +146,8 @@ export function ProtectedRoute({ children, requiredPermissions = [], fallback }:
         return fallback || null;
     }
 
-    // If authenticated and has required permissions, render children
-    if (!isLoading && isAuthenticated) {
+    // If authenticated (via store or cookies) and has required permissions, render children
+    if (!isLoading && effectiveAuth) {
         return <>{children}</>;
     }
 

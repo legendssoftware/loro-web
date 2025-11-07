@@ -90,6 +90,17 @@ interface UserAttendanceMetrics {
             punctualityScore: number;
             overtimeFrequency: number;
         };
+        overtimeAnalytics: {
+            totalOvertimeHours: {
+                allTime: number; // in hours
+                thisMonth: number;
+                thisWeek: number;
+                today: number;
+            };
+            averageOvertimePerShift: number; // in hours
+            overtimeFrequency: number; // percentage of shifts with overtime
+            longestOvertimeShift: number; // in hours
+        };
         productivityInsights: {
             workEfficiencyScore: number;
             shiftCompletionRate: number;

@@ -46,6 +46,17 @@ export interface AttendanceMetrics {
         punctualityScore: number; // percentage of on-time arrivals
         overtimeFrequency: number; // percentage of shifts with overtime
     };
+    overtimeAnalytics: {
+        totalOvertimeHours: {
+            allTime: number; // in hours
+            thisMonth: number;
+            thisWeek: number;
+            today: number;
+        };
+        averageOvertimePerShift: number; // in hours
+        overtimeFrequency: number; // percentage of shifts with overtime
+        longestOvertimeShift: number; // in hours
+    };
     productivityInsights: {
         workEfficiencyScore: number; // percentage based on work vs break time
         shiftCompletionRate: number; // percentage of completed shifts

@@ -113,6 +113,9 @@ const userFormSchema = z.object({
     // Management Fields
     managedBranches: z.array(z.number()).optional(),
     managedStaff: z.array(z.number()).optional(),
+
+    // ERP Integration
+    erpSalesRepCode: z.string().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -290,6 +293,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         managedBranches: [],
         managedStaff: [],
         assignedClients: [],
+        
+        // ERP Integration
+        erpSalesRepCode: '',
         ...initialData,
     };
 
@@ -1708,6 +1714,24 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         </button>
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="erpSalesRepCode"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    ERP Sales Rep Code
+                                </Label>
+                                <Input
+                                    id="erpSalesRepCode"
+                                    {...register('erpSalesRepCode')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="e.g. SAL001 (ERP sales code for linking)"
+                                />
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Code used to link user to ERP sales data
+                                </p>
                             </div>
                         </div>
                     </CardContent>

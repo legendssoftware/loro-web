@@ -67,6 +67,7 @@ export interface UserTarget {
     targetPeriod: string;
     periodStartDate: string;
     periodEndDate: string;
+    erpSalesRepCode?: string;
     createdAt: string;
     updatedAt: string;
 }

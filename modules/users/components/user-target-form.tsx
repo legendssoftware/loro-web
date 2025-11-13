@@ -134,6 +134,9 @@ const userTargetSchema = z.object({
     carMaintenance: numberPreprocess,
     cgicCosts: numberPreprocess,
     totalCost: numberPreprocess,
+
+    // ERP Integration
+    erpSalesRepCode: z.string().optional(),
 });
 
 // Form input type (string values)
@@ -175,6 +178,9 @@ type UserTargetFormInput = {
     carMaintenance: string;
     cgicCosts: string;
     totalCost: string;
+
+    // ERP Integration
+    erpSalesRepCode?: string;
 };
 
 // Exported type for transformed values (number values)
@@ -222,6 +228,9 @@ interface UserTarget {
     carMaintenance?: number;
     cgicCosts?: number;
     totalCost?: number;
+
+    // ERP Integration
+    erpSalesRepCode?: string;
 
     createdAt?: Date;
     updatedAt?: Date;
@@ -288,6 +297,9 @@ export default function UserTargetForm({
             carMaintenance: initialData?.carMaintenance?.toString() || '',
             cgicCosts: initialData?.cgicCosts?.toString() || '',
             totalCost: initialData?.totalCost?.toString() || '',
+
+            // ERP Integration
+            erpSalesRepCode: initialData?.erpSalesRepCode || '',
         },
     });
 
@@ -341,6 +353,9 @@ export default function UserTargetForm({
                             carMaintenance: userTarget.carMaintenance?.toString() || '',
                             cgicCosts: userTarget.cgicCosts?.toString() || '',
                             totalCost: userTarget.totalCost?.toString() || '',
+
+                            // ERP Integration
+                            erpSalesRepCode: userTarget.erpSalesRepCode || '',
                         });
                     }
                 })
@@ -440,6 +455,9 @@ export default function UserTargetForm({
                 carMaintenance: '',
                 cgicCosts: '',
                 totalCost: '',
+
+                // ERP Integration
+                erpSalesRepCode: '',
             });
 
             setShowDeleteConfirmation(false);
@@ -453,7 +471,7 @@ export default function UserTargetForm({
 
     if (loadingTarget) {
         return (
-            <div className="flex items-center justify-center h-40">
+            <div className="flex justify-center items-center h-40">
                 Loading user targets...
             </div>
         );
@@ -467,7 +485,7 @@ export default function UserTargetForm({
                     className="space-y-6"
                 >
                     {error && (
-                        <div className="p-3 text-sm text-red-500 rounded-md bg-red-50 dark:bg-red-900/20 dark:text-red-300">
+                        <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md dark:bg-red-900/20 dark:text-red-300">
                             {error}
                         </div>
                     )}
@@ -1127,6 +1145,40 @@ export default function UserTargetForm({
                         </div>
                     </div>}
 
+                    {/* ERP Integration Section */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-thin uppercase font-body">
+                            ERP INTEGRATION
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="erpSalesRepCode"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <label
+                                            htmlFor="erp-sales-rep-code"
+                                            className="block text-xs font-light text-white uppercase font-body"
+                                        >
+                                            ERP Sales Rep Code
+                                        </label>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder="e.g. SAL001 (ERP sales code for linking)"
+                                                className="font-thin font-body"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                        <p className="text-xs text-muted-foreground">
+                                            Code used to link user to ERP sales data
+                                        </p>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
                     {/* Target Period Settings */}
                     <div className="space-y-2">
                         <h3 className="text-sm font-thin uppercase font-body">
@@ -1201,12 +1253,12 @@ export default function UserTargetForm({
                                                                 Pick a date
                                                             </span>
                                                         )}
-                                                        <CalendarIcon className="w-4 h-4 ml-auto opacity-50" />
+                                                        <CalendarIcon className="ml-auto w-4 h-4 opacity-50" />
                                                     </Button>
                                                 </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent
-                                                className="w-auto p-0"
+                                                className="p-0 w-auto"
                                                 align="start"
                                             >
                                                 <Calendar
@@ -1257,12 +1309,12 @@ export default function UserTargetForm({
                                                                 Pick a date
                                                             </span>
                                                         )}
-                                                        <CalendarIcon className="w-4 h-4 ml-auto opacity-50" />
+                                                        <CalendarIcon className="ml-auto w-4 h-4 opacity-50" />
                                                     </Button>
                                                 </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent
-                                                className="w-auto p-0"
+                                                className="p-0 w-auto"
                                                 align="start"
                                             >
                                                 <Calendar
@@ -1295,7 +1347,7 @@ export default function UserTargetForm({
                     </div>
 
                     {/* Recurring Targets Configuration */}
-                    <div className="space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                    <div className="p-4 space-y-4 rounded-lg border border-primary/20 bg-primary/5">
                         <div className="flex items-center space-x-2">
                             <RefreshCw className="w-5 h-5 text-primary" />
                             <h3 className="text-sm font-thin uppercase font-body">
@@ -1307,7 +1359,7 @@ export default function UserTargetForm({
                             control={form.control}
                             name="isRecurring"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                <FormItem className="flex flex-row justify-between items-center p-3 rounded-lg border">
                                     <div className="space-y-0.5">
                                         <label className="text-xs font-light text-white uppercase font-body">
                                             Enable Recurring Targets
@@ -1366,7 +1418,7 @@ export default function UserTargetForm({
                                     control={form.control}
                                     name="carryForwardUnfulfilled"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                        <FormItem className="flex flex-row items-start p-4 space-x-3 space-y-0 rounded-md border">
                                             <FormControl>
                                                 <Checkbox
                                                     checked={field.value}
@@ -1413,7 +1465,7 @@ export default function UserTargetForm({
                                 }
                                 className="font-thin text-red-600 border-red-200 upercase hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-900/30 dark:hover:bg-red-900/20 font-body"
                             >
-                                <Trash2 className="w-4 h-4 mr-2" />
+                                <Trash2 className="mr-2 w-4 h-4" />
                                 Delete Targets
                             </Button>
                         )}

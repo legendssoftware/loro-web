@@ -160,24 +160,18 @@ const formatDate = (date: Date): string => {
     return date?.toISOString()?.split('T')[0];
 };
 
-// Utility function to format time
-const formatTime = (timeString: string): string => {
-    if (!timeString || timeString === 'N/A') return 'N/A';
-    try {
-        // If already formatted (contains AM/PM), return as-is
-        if (timeString.includes('AM') || timeString.includes('PM')) {
-            return timeString;
-        }
-        // Parse HH:mm format and display without timezone conversion
-        const [hours, minutes] = timeString.split(':');
-        if (hours && minutes) {
-            return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
-        }
-        return timeString;
-    } catch {
-        return timeString;
-    }
+// Utility function to extract time from ISO timestamp (HH:mm:ss)
+const extractTime = (isoString: string | null | undefined): string => {
+    if (!isoString) return 'N/A';
+    // If it's already formatted (doesn't contain 'T'), return as-is
+    if (!isoString.includes('T')) return isoString;
+    // Extract time portion from ISO string (e.g., "2025-11-11T08:34:33.000Z" -> "08:34:33")
+    const timePart = isoString.split('T')[1];
+    if (!timePart) return isoString;
+    // Remove milliseconds and timezone (everything after '.')
+    return timePart.split('.')[0].split('Z')[0].split('+')[0];
 };
+
 
 // CSV Export utility functions
 const downloadCSV = (csvContent: string, filename: string) => {
@@ -219,8 +213,8 @@ const exportPresentUsersToCSV = (users: DailyAttendanceOverview['data']['present
             `"${user.phoneNumber || 'N/A'}"`,
             `"${user.branchName}"`,
             user.accessLevel,
-            `"${typeof user.checkInTime === 'string' && (user.checkInTime.includes('AM') || user.checkInTime.includes('PM')) ? user.checkInTime : new Date(user.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}"`,
-            `"${user.checkOutTime ? (typeof user.checkOutTime === 'string' && (user.checkOutTime.includes('AM') || user.checkOutTime.includes('PM')) ? user.checkOutTime : new Date(user.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })) : 'Still Working'}"`,
+            `"${extractTime(user.checkInTime)}"`,
+            `"${user.checkOutTime ? extractTime(user.checkOutTime) : 'Still Working'}"`,
             user.status,
             user.workingHours || 'N/A',
             `"${user.shiftDuration}"`,
@@ -490,13 +484,13 @@ const WorkHoursBreakdown: React.FunctionComponent<{
                         <div>
                             <div className="text-sm font-medium">Average Start Time</div>
                             <div className="text-lg font-semibold text-green-600">
-                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.startTime)}
+                                {orgReport?.report?.organizationMetrics?.averageTimes?.startTime || 'N/A'}
                             </div>
                         </div>
                         <div>
                             <div className="text-sm font-medium">Average End Time</div>
                             <div className="text-lg font-semibold text-blue-600">
-                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.endTime)}
+                                {orgReport?.report?.organizationMetrics?.averageTimes?.endTime || 'N/A'}
                             </div>
                         </div>
                     </div>
@@ -870,16 +864,8 @@ const DailyAttendanceTable: React.FunctionComponent = () => {
                                                 <div className="text-right">
                                                     <div className="flex flex-row gap-1 items-center text-sm font-medium">
                                                         <p>
-                                                            {typeof user?.checkInTime === 'string' && user?.checkInTime.includes('AM') || user?.checkInTime.includes('PM')
-                                                                ? user?.checkInTime
-                                                                : new Date(user?.checkInTime).toLocaleTimeString([], {
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit',
-                                                                    timeZone: 'UTC'
-                                                                })
-                                                            } -
+                                                            {extractTime(user?.checkInTime)} - {user?.shiftDuration}
                                                         </p>
-                                                        <p>{user?.shiftDuration}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1241,13 +1227,13 @@ export const HRReportsDashboard: React.FunctionComponent<HRReportsDashboardProps
                             </div>
                             <div className="p-3 text-center rounded-lg border">
                                 <div className="text-lg font-bold">
-                                    {formatTime(orgReport.report.organizationMetrics.insights.peakCheckInTime)}
+                                    {orgReport.report.organizationMetrics.insights.peakCheckInTime || 'N/A'}
                                 </div>
                                 <div className="text-xs text-muted-foreground">Peak Check-in</div>
                             </div>
                             <div className="p-3 text-center rounded-lg border">
                                 <div className="text-lg font-bold">
-                                    {formatTime(orgReport.report.organizationMetrics.insights.peakCheckOutTime)}
+                                    {orgReport.report.organizationMetrics.insights.peakCheckOutTime || 'N/A'}
                                 </div>
                                 <div className="text-xs text-muted-foreground">Peak Check-out</div>
                             </div>

@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useMemo, ReactNode } from 'react'
 import { useAuthStore } from '@/store/auth-store';
 import { authService, ProfileData } from '@/lib/services/auth-service';
 import { AppLoader } from '@/components/loaders/page-loader';
+import { useTokenValidation } from '@/hooks/use-token-validation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -22,36 +24,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         accessToken,
         refreshToken,
-        setAuthState
+        setAuthState,
+        signOut
     } = useAuthStore();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Use token validation hook to check expiration periodically
+    useTokenValidation();
 
     // On mount, load tokens from store and set them in the auth service
     useEffect(() => {
         if (accessToken && refreshToken) {
-            if (authService.validateToken(accessToken)) {
+            const isValid = authService.validateToken(accessToken);
+            
+            if (isValid) {
+                // Token is valid, set it in auth service
                 authService.setTokens(accessToken, refreshToken);
             } else {
-                // Token is invalid, try to refresh it
+                // Token is invalid/expired, try to refresh it
+                console.warn('Access token expired, attempting to refresh...');
                 authService.refreshAccessToken(refreshToken)
                     .then(tokens => {
-                        if (tokens) {
+                        if (tokens && authService.validateToken(tokens.accessToken)) {
+                            // Refresh successful, update state
                             setAuthState({
                                 accessToken: tokens.accessToken,
                                 refreshToken: tokens.refreshToken,
+                                isAuthenticated: true,
                             });
+                            authService.setTokens(tokens.accessToken, tokens.refreshToken);
                         } else {
-                            // Refresh failed, clear auth state
-                            useAuthStore.getState().signOut();
+                            // Refresh failed or returned invalid token, sign out
+                            console.warn('Token refresh failed or returned invalid token. Signing out.');
+                            signOut();
+                            
+                            // Redirect to sign-in if not on public path
+                            const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/verify-email', '/verify-otp', '/'];
+                            if (!publicPaths.includes(pathname) && !pathname.startsWith('/api')) {
+                                const callbackUrl = encodeURIComponent(window.location.href);
+                                router.push(`/sign-in?callbackUrl=${callbackUrl}&token_expired=true`);
+                            }
                         }
                     })
                     .catch((error) => {
                         console.error('Token refresh failed:', error);
-                        // Refresh failed, clear auth state
-                        useAuthStore.getState().signOut();
+                        // Refresh failed, clear auth state and redirect
+                        signOut();
+                        
+                        // Redirect to sign-in if not on public path
+                        const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/verify-email', '/verify-otp', '/'];
+                        if (!publicPaths.includes(pathname) && !pathname.startsWith('/api')) {
+                            const callbackUrl = encodeURIComponent(window.location.href);
+                            router.push(`/sign-in?callbackUrl=${callbackUrl}&token_expired=true`);
+                        }
                     });
             }
+        } else if (!accessToken && !refreshToken && isAuthenticated) {
+            // No tokens but still marked as authenticated - this shouldn't happen, but handle it
+            console.warn('No tokens found but user is marked as authenticated. Signing out.');
+            signOut();
         }
-    }, [accessToken, refreshToken, setAuthState]);
+    }, [accessToken, refreshToken, setAuthState, signOut, router, pathname, isAuthenticated]);
 
     const contextValue = useMemo<AuthContextType>(
         () => ({

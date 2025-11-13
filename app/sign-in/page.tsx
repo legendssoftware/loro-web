@@ -43,6 +43,7 @@ interface UserSignInFormProps {
 const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const { signIn, isLoading, error, clearAuthError, profileData } = useAuthStore();
 
@@ -70,22 +71,27 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
 
     // Handle URL reason parameters for cases like token expiration or refresh failure
     useEffect(() => {
-        if (reason) {
+        const tokenExpired = searchParams.get('token_expired');
+        if (reason || tokenExpired) {
             let message = '';
-            switch (reason) {
-                case 'refresh_failed':
-                    message = 'Your session has expired. Please sign in again.';
-                    break;
-                case 'token_expired':
-                    message =
-                        'Your authentication token has expired. Please sign in again.';
-                    break;
-                default:
-                    message = 'Please sign in to continue.';
+            if (tokenExpired === 'true' || reason === 'token_expired') {
+                message = 'Your session has expired. Please sign in again.';
+            } else {
+                switch (reason) {
+                    case 'refresh_failed':
+                        message = 'Your session has expired. Please sign in again.';
+                        break;
+                    case 'token_expired':
+                        message =
+                            'Your authentication token has expired. Please sign in again.';
+                        break;
+                    default:
+                        message = 'Please sign in to continue.';
+                }
             }
             showErrorToast(message, toast);
         }
-    }, [reason]);
+    }, [reason, searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

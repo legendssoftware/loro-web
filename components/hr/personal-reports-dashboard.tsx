@@ -156,6 +156,18 @@ const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
 };
 
+// Utility function to extract time from ISO timestamp (HH:mm:ss)
+const extractTime = (isoString: string | null | undefined): string => {
+    if (!isoString) return 'N/A';
+    // If it's already formatted (doesn't contain 'T'), return as-is
+    if (!isoString.includes('T')) return isoString;
+    // Extract time portion from ISO string (e.g., "2025-11-11T08:34:33.000Z" -> "08:34:33")
+    const timePart = isoString.split('T')[1];
+    if (!timePart) return isoString;
+    // Remove milliseconds and timezone (everything after '.')
+    return timePart.split('.')[0].split('Z')[0].split('+')[0];
+};
+
 // Utility function to convert milliseconds to hours
 const msToHours = (ms: number): number => {
     return ms / (1000 * 60 * 60);
@@ -414,7 +426,7 @@ const ShiftManagementCard: React.FunctionComponent<{
                         {userStatus.attendance.checkIn && (
                             <div className="flex justify-between text-sm">
                                 <span>Started:</span>
-                                <span>{format(new Date(userStatus.attendance.checkIn), 'HH:mm')}</span>
+                                <span>{extractTime(userStatus.attendance.checkIn)}</span>
                             </div>
                         )}
                         {userStatus.attendance.duration && (
@@ -1081,8 +1093,8 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="w-3 h-3 text-gray-700 dark:text-gray-300" />
                                                     <span>
-                                                        {format(parseISO(record.checkIn), 'HH:mm')}
-                                                        {record.checkOut && ` - ${format(parseISO(record.checkOut), 'HH:mm')}`}
+                                                        {extractTime(record.checkIn)}
+                                                        {record.checkOut && ` - ${extractTime(record.checkOut)}`}
                                                     </span>
                                                 </div>
                                                 {record.duration && (

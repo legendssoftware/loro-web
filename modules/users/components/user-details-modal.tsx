@@ -452,6 +452,7 @@ export function UserDetailsModal({
                     targetPeriod: user.userTarget.targetPeriod,
                     periodStartDate: user.userTarget.periodStartDate,
                     periodEndDate: user.userTarget.periodEndDate,
+                    erpSalesRepCode: user.userTarget.erpSalesRepCode,
                     createdAt: user.userTarget.createdAt,
                     updatedAt: user.userTarget.updatedAt,
                 } : null;

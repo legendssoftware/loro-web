@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Building2, UserCheck } from 'lucide-react';
+import { Users, Building2, UserCheck, ShoppingCart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
     Loader2,
@@ -20,10 +20,11 @@ import {
     RefreshCw,
     Star,
     Zap,
-    Info,
     Settings
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
+import { useQuery } from '@tanstack/react-query';
+import { axiosInstance } from '@/lib/services/api-client';
 
 // Pie Chart Component for Target Performance
 interface PieChartProps {
@@ -44,7 +45,7 @@ const PieChart: React.FunctionComponent<PieChartProps> = ({ achieved, remaining,
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     return (
-        <Card className="relative">
+        <Card className="relative bg-white dark:bg-gray-900">
             <CardHeader>
                 <div className="flex gap-2 items-center">
                     <TrendingUp className="w-5 h-5 text-primary" />
@@ -213,6 +214,17 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
     const [activeInsightTab, setActiveInsightTab] = useState('insights');
     const [insightsGenerated, setInsightsGenerated] = useState(false);
     const [activeMainTab, setActiveMainTab] = useState('personal');
+
+    // Fetch profile sales data
+    const { data: profileSalesData } = useQuery({
+        queryKey: ['profile-sales', profileData?.uid],
+        queryFn: async () => {
+            const response = await axiosInstance.get('/erp/profile/sales');
+            return response.data;
+        },
+        enabled: !!profileData?.uid,
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
 
     // Helper functions
     const getProgressPercentage = (current: number | undefined, target: number | undefined) => {
@@ -746,12 +758,49 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
             {/* Sales Targets - Pie Chart */}
             {(targetsData.targetSalesAmount || targetsData.currentSalesAmount) && (
-                <PieChart
-                    achieved={targetsData.currentSalesAmount || 0}
-                    remaining={(targetsData.targetSalesAmount || 0) - (targetsData.currentSalesAmount || 0)}
-                    currency={targetsData.targetCurrency || 'ZAR'}
-                    title="Sales Performance"
-                />
+                <>
+                    <PieChart
+                        achieved={targetsData.currentSalesAmount || 0}
+                        remaining={(targetsData.targetSalesAmount || 0) - (targetsData.currentSalesAmount || 0)}
+                        currency={targetsData.targetCurrency || 'ZAR'}
+                        title="Sales Performance"
+                    />
+
+                    {/* Sales Metrics */}
+                    {profileSalesData?.data && (
+                        <Card>
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    {profileSalesData.data.transactionCount > 0 && (
+                                        <div className="flex gap-3 items-center">
+                                            <ShoppingCart className="w-5 h-5 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground font-body uppercase">Transactions</p>
+                                                <p className="text-sm font-medium font-body">{profileSalesData.data.transactionCount}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {profileSalesData.data.uniqueCustomers > 0 && (
+                                        <div className="flex gap-3 items-center">
+                                            <Users className="w-5 h-5 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground font-body uppercase">Customers</p>
+                                                <p className="text-sm font-medium font-body">{profileSalesData.data.uniqueCustomers}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {profileSalesData.data.uniqueCustomers > 0 && (
+                                    <div className="pt-4 mt-4 border-t">
+                                        <p className="text-sm text-center text-muted-foreground font-body">
+                                            You have assisted <span className="font-semibold text-foreground">{profileSalesData.data.uniqueCustomers}</span> customer{profileSalesData.data.uniqueCustomers !== 1 ? 's' : ''} this month
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </>
             )}
 
             {/* Quotations Targets - Pie Chart */}
@@ -859,7 +908,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                         {/* Work Hours */}
                         {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
-                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                                 <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentHoursWorked || 0}/{targetsData.targetHoursWorked || 0}
                                 </div>
@@ -872,7 +921,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                         {/* New Clients */}
                         {(targetsData.targetNewClients || targetsData.currentNewClients) && (
-                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                                 <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentNewClients || 0}/{targetsData.targetNewClients || 0}
                                 </div>
@@ -885,7 +934,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                         {/* New Leads */}
                         {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
-                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                                 <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentNewLeads || 0}/{targetsData.targetNewLeads || 0}
                                 </div>
@@ -898,7 +947,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                         {/* Check-ins/Visits */}
                         {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
-                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                                 <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentCheckIns || 0}/{targetsData.targetCheckIns || 0}
                                 </div>
@@ -911,7 +960,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
                         {/* Calls */}
                         {(targetsData.targetCalls || targetsData.currentCalls) && (
-                            <div className="p-3 text-center rounded-lg bg-muted/50">
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                                 <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                     {targetsData.currentCalls || 0}/{targetsData.targetCalls || 0}
                                 </div>
@@ -954,10 +1003,10 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         </div>
                     </div>
                     {quickSummary && (
-                        <div className="p-3 mt-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 dark:from-purple-500/10 dark:to-blue-500/10 dark:border-purple-500/20">
+                        <div className="p-3 mt-3 bg-white rounded-lg border dark:bg-gray-900">
                             <div className="flex gap-2 items-start">
-                                <Star className="w-4 h-4 text-purple-500 mt-0.5" />
-                                <p className="text-sm text-purple-800 dark:text-purple-300 font-body">
+                                <Star className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <p className="text-sm text-foreground font-body">
                                     {quickSummary}
                                 </p>
                             </div>
@@ -990,14 +1039,9 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                     {insights?.map((insight, index) => (
                                         <div
                                             key={index}
-                                            className="flex gap-3 items-start p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"
+                                            className="flex gap-3 items-start p-4 bg-white rounded-lg border dark:bg-gray-900"
                                         >
-                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold font-body ${
-                                                index === 0 ? 'bg-green-500' :
-                                                index === 1 ? 'bg-blue-500' :
-                                                index === 2 ? 'bg-purple-500' :
-                                                index === 3 ? 'bg-orange-500' : 'bg-gray-500'
-                                            }`}>
+                                            <div className="flex justify-center items-center w-6 h-6 text-xs font-bold text-white bg-gray-500 rounded-full font-body">
                                                 {index + 1}
                                             </div>
                                             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 font-body">
@@ -1030,10 +1074,10 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         <TabsContent value="email" className="mt-6 space-y-4">
                             {emailTemplate ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
+                                    <div className="p-4 bg-white rounded-lg border dark:bg-gray-900">
                                         <div className="flex gap-2 items-center mb-3">
-                                            <Mail className="w-4 h-4 text-green-600" />
-                                            <h4 className="text-sm font-medium text-green-800 uppercase dark:text-green-300 font-body">
+                                            <Mail className="w-4 h-4 text-muted-foreground" />
+                                            <h4 className="text-sm font-medium uppercase text-foreground font-body">
                                                 Generated Email Template
                                             </h4>
                                         </div>
@@ -1103,7 +1147,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                             <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.createdAt
                                     ? formatDateLong(targetsData.createdAt)
@@ -1111,7 +1155,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Created</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                             <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.updatedAt
                                     ? formatDateLong(targetsData.updatedAt)
@@ -1119,19 +1163,33 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Last Updated</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
                             <div className="text-lg text-primary font-body">
                                 {targetsData.targetCurrency || 'ZAR'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Currency</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg text-green-600 dark:text-green-400 font-body">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="text-lg text-foreground font-body">
                                 {targetsData.id || 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Target ID</div>
                         </div>
                     </div>
+                    {/* ERP Sales Rep Code */}
+                    {(targetsData as any).erpSalesRepCode && (
+                        <div className="p-3 mt-4 bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="flex gap-2 items-center">
+                                <Settings className="w-4 h-4 text-primary" />
+                                <div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">ERP Sales Rep Code</div>
+                                    <div className="text-sm font-medium text-foreground font-body">
+                                        {(targetsData as any).erpSalesRepCode}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
                 </TabsContent>

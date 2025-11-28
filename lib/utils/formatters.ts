@@ -47,7 +47,7 @@ export function formatCurrency(
 export function formatCompactNumber(num: number): string {
     if (num === null || num === undefined) return '0';
 
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ZA', {
         notation: 'compact',
         compactDisplay: 'short',
         maximumFractionDigits: 1,

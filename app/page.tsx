@@ -24,6 +24,12 @@ import {
     handleVapiError,
     retryVapiOperation,
 } from '@/lib/utils/vapi-error-handler';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { CalendarIcon, FileText, Download, Mail } from 'lucide-react';
 
 // Update the constants for call time management to use environment variables with fallbacks
 const CALL_MAX_DURATION_MS =
@@ -32,6 +38,462 @@ const CALL_MAX_DURATION_MS =
     1000; // Default: 5 minutes
 const WARNING_TIME_REMAINING_MS =
     parseInt(process.env.NEXT_PUBLIC_CALL_WARNING_SECONDS || '60', 10) * 1000; // Default: 60 seconds
+
+// Generate Report Section Component
+const GenerateReportSection = () => {
+    const [reportType, setReportType] = useState<string>('');
+    const [selectedUser, setSelectedUser] = useState<string>('');
+    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    const [specificDate, setSpecificDate] = useState<Date | undefined>(undefined);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [reportSubTab, setReportSubTab] = useState('main_dashboard');
+
+    // Report type options based on attendance controller routes
+    const reportTypes = [
+        {
+            value: 'morning_report',
+            label: 'Morning Attendance Report',
+            description: 'Send automated morning attendance report via email',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/morning/send'
+        },
+        {
+            value: 'evening_report',
+            label: 'Evening Attendance Report',
+            description: 'Send automated evening attendance report via email',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/evening/send'
+        },
+        {
+            value: 'organization_report',
+            label: 'Organization Report',
+            description: 'Generate comprehensive organization-wide attendance report',
+            requiresUser: false,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'GET /report'
+        },
+        {
+            value: 'user_attendance_request',
+            label: 'User Attendance Report Request',
+            description: 'Request attendance report for personal viewing via email',
+            requiresUser: true,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'POST /reports/request'
+        },
+        {
+            value: 'daily_checkins',
+            label: 'Daily Check-ins Report',
+            description: 'Get all check-ins for a specific date',
+            requiresUser: false,
+            requiresDateRange: false,
+            requiresSpecificDate: true,
+            endpoint: 'GET /checkins/:date'
+        },
+        {
+            value: 'user_checkins',
+            label: 'User Check-ins Report',
+            description: 'Get all check-ins for a specific user',
+            requiresUser: true,
+            requiresDateRange: false,
+            requiresSpecificDate: false,
+            endpoint: 'GET /user/:ref'
+        },
+        {
+            value: 'user_metrics',
+            label: 'User Attendance Metrics',
+            description: 'Get detailed attendance metrics for a user with date range',
+            requiresUser: true,
+            requiresDateRange: true,
+            requiresSpecificDate: false,
+            endpoint: 'GET /metrics/:ref'
+        },
+        {
+            value: 'daily_stats',
+            label: 'Daily User Stats',
+            description: 'Get daily attendance statistics for a specific user and date',
+            requiresUser: true,
+            requiresDateRange: false,
+            requiresSpecificDate: true,
+            endpoint: 'GET /daily-stats/:uid'
+        }
+    ];
+
+    // Mock users data (in real app, this would come from API)
+    const mockUsers = [
+        { id: '1', name: 'John Doe', email: 'john.doe@company.com' },
+        { id: '2', name: 'Jane Smith', email: 'jane.smith@company.com' },
+        { id: '3', name: 'Mike Johnson', email: 'mike.johnson@company.com' },
+        { id: '4', name: 'Sarah Wilson', email: 'sarah.wilson@company.com' },
+        { id: '5', name: 'David Brown', email: 'david.brown@company.com' },
+    ];
+
+    const selectedReportType = reportTypes.find(rt => rt.value === reportType);
+
+    const handleGenerateReport = async () => {
+        if (!selectedReportType) {
+            showErrorToast('Please select a report type', toast);
+            return;
+        }
+
+        // Validate required fields
+        if (selectedReportType.requiresUser && !selectedUser) {
+            showErrorToast('Please select a user', toast);
+            return;
+        }
+
+        if (selectedReportType.requiresDateRange && (!startDate || !endDate)) {
+            showErrorToast('Please select both start and end dates', toast);
+            return;
+        }
+
+        if (selectedReportType.requiresSpecificDate && !specificDate) {
+            showErrorToast('Please select a date', toast);
+            return;
+        }
+
+        setIsGenerating(true);
+
+        try {
+            // Simulate API call (replace with actual API call)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            showSuccessToast(`${selectedReportType.label} generated successfully! Check your email for the report.`, toast);
+
+            // Reset form
+            setReportType('');
+            setSelectedUser('');
+            setStartDate(undefined);
+            setEndDate(undefined);
+            setSpecificDate(undefined);
+        } catch (error) {
+            showErrorToast('Failed to generate report. Please try again.', toast);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="text-center">
+                <div className="flex justify-between items-center mx-auto mb-4 max-w-4xl">
+                    <div className="text-left">
+                        <h2 className="text-2xl font-bold">Reports Dashboard</h2>
+                        <p className="text-muted-foreground">Access comprehensive reports and analytics across different departments · Last updated {new Date().toLocaleTimeString()}</p>
+                    </div>
+                    <motion.button
+                        className="flex gap-2 items-center px-4 py-2 text-xs text-white rounded-lg transition-colors bg-primary hover:bg-primary/90"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => window.location.reload()}
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                    </motion.button>
+                </div>
+            </div>
+
+            {/* Sub-tabs for Reports */}
+            <div className="flex justify-center">
+                <div className="flex p-1 rounded-lg bg-muted">
+                    <button
+                        onClick={() => setReportSubTab('main_dashboard')}
+                        className={`px-6 py-2 text-xs font-normal uppercase font-body rounded-md transition-colors ${
+                            reportSubTab === 'main_dashboard'
+                                ? 'bg-white shadow-sm text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Main Dashboard
+                    </button>
+                    <button
+                        onClick={() => setReportSubTab('personal')}
+                        className={`px-6 py-2 text-xs font-normal uppercase font-body rounded-md transition-colors ${
+                            reportSubTab === 'personal'
+                                ? 'bg-white shadow-sm text-primary border-b-2 border-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        Personal
+                    </button>
+                </div>
+            </div>
+            {/* Main Dashboard Content */}
+            {reportSubTab === 'main_dashboard' && (
+                <div>
+                    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                    {/* Report Type Selection */}
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <FileText size={20} className="text-primary" />
+                                <h3 className="font-semibold">Report Type</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="report-type">Select Report Type</Label>
+                                <Select value={reportType} onValueChange={setReportType}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose a report type..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {reportTypes.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {selectedReportType && (
+                                <div className="p-3 rounded-lg bg-muted">
+                                    <p className="text-sm text-muted-foreground">{selectedReportType.description}</p>
+                                    <p className="mt-1 text-xs text-primary">{selectedReportType.endpoint}</p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+
+                {/* User Selection - Conditional */}
+                {selectedReportType?.requiresUser && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <Mail size={20} className="text-green-600" />
+                                <h3 className="font-semibold">User Selection</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="user-select">Select User</Label>
+                                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose a user..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {mockUsers.map((user) => (
+                                            <SelectItem key={user.id} value={user.id}>
+                                                {user.name} ({user.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Date Range Selection - Conditional */}
+                {selectedReportType?.requiresDateRange && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <CalendarIcon size={20} className="text-blue-600" />
+                                <h3 className="font-semibold">Date Range</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Start Date</Label>
+                                    <div className="flex gap-2 items-center">
+                                        <Input
+                                            type="date"
+                                            value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
+                                            onChange={(e) => setStartDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>End Date</Label>
+                                    <div className="flex gap-2 items-center">
+                                        <Input
+                                            type="date"
+                                            value={endDate ? format(endDate, 'yyyy-MM-dd') : ''}
+                                            onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Specific Date Selection - Conditional */}
+                {selectedReportType?.requiresSpecificDate && (
+                    <motion.div
+                        className="p-6 rounded-xl border shadow-sm bg-card"
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="space-y-4">
+                            <div className="flex gap-2 items-center">
+                                <CalendarIcon size={20} className="text-orange-600" />
+                                <h3 className="font-semibold">Select Date</h3>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Report Date</Label>
+                                <Input
+                                    type="date"
+                                    value={specificDate ? format(specificDate, 'yyyy-MM-dd') : ''}
+                                    onChange={(e) => setSpecificDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+                </div>
+
+                {/* Generate Button */}
+                {selectedReportType && (
+                    <motion.div
+                        className="flex justify-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <Button
+                            onClick={handleGenerateReport}
+                            disabled={isGenerating}
+                            size="lg"
+                            className="gap-2"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <motion.div
+                                        className="w-4 h-4 rounded-full border-2 border-white border-t-transparent"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={20} />
+                                    Generate {selectedReportType.label}
+                                </>
+                            )}
+                        </Button>
+                    </motion.div>
+                )}
+
+                {/* Help Section */}
+                <motion.div
+                    className="p-6 rounded-xl border shadow-sm bg-muted/50"
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <h3 className="flex gap-2 items-center mb-4 font-semibold">
+                        <FileText size={20} className="text-primary" />
+                        Report Types Guide
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <h4 className="text-sm font-medium">Automated Reports</h4>
+                            <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                                <li>• Morning & Evening reports are sent automatically</li>
+                                <li>• Organization reports provide comprehensive insights</li>
+                                <li>• User attendance requests are emailed directly</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-medium">Data Reports</h4>
+                            <ul className="mt-1 space-y-1 text-xs text-muted-foreground">
+                                <li>• Daily check-ins show all activity for a date</li>
+                                <li>• User metrics provide detailed analytics</li>
+                                <li>• Daily stats show individual performance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </motion.div>
+                </div>
+            )}
+
+            {/* Personal Dashboard Content */}
+            {reportSubTab === 'personal' && (
+                <div className="py-12 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="space-y-6"
+                    >
+                        <div className="p-8 mx-auto max-w-2xl rounded-xl border shadow-sm bg-card">
+                            <div className="flex gap-2 justify-center items-center mb-4">
+                                <FileText size={24} className="text-primary" />
+                                <h3 className="text-xl font-semibold">Personal Reports</h3>
+                            </div>
+
+                            <p className="mb-6 text-muted-foreground">
+                                Access your personal attendance analytics, performance metrics, and individual reports.
+                            </p>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="p-4 rounded-lg bg-muted/50">
+                                    <h4 className="mb-2 text-sm font-medium">📊 Your Analytics</h4>
+                                    <ul className="space-y-1 text-xs text-muted-foreground">
+                                        <li>• Personal attendance history</li>
+                                        <li>• Performance metrics</li>
+                                        <li>• Productivity insights</li>
+                                    </ul>
+                                </div>
+                                <div className="p-4 rounded-lg bg-muted/50">
+                                    <h4 className="mb-2 text-sm font-medium">📋 Individual Reports</h4>
+                                    <ul className="space-y-1 text-xs text-muted-foreground">
+                                        <li>• Weekly summaries</li>
+                                        <li>• Monthly performance</li>
+                                        <li>• Goal tracking</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="p-4 mt-6 bg-blue-50 rounded-lg border border-blue-200">
+                                <p className="text-sm text-blue-800">
+                                    <strong>Coming Soon:</strong> Personal dashboard features will be available in the next update.
+                                    For now, use the Main Dashboard to generate all available reports.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {reportSubTab === 'generate_report' && (
+                <div>
+                    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function Home() {
     const diverseUsers = mockDataStore.getDiverseUserProfiles();
@@ -65,6 +527,9 @@ export default function Home() {
 
     // Mobile menu state
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Dashboard tab state
+    const [activeTab, setActiveTab] = useState('generate_report');
 
     // Refresh stats every 30 seconds to show live data
     useEffect(() => {
@@ -410,12 +875,6 @@ export default function Home() {
                                         Benefits
                                     </Link>
                                     <Link
-                                        href="#pricing"
-                                        className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
-                                    >
-                                        Pricing
-                                    </Link>
-                                    <Link
                                         href="#testimonials"
                                         className="text-xs font-normal uppercase transition-colors font-body hover:text-primary"
                                     >
@@ -564,13 +1023,6 @@ export default function Home() {
                                                         Benefits
                                                     </Link>
                                                     <Link
-                                                        href="#pricing"
-                                                        onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
-                                                    >
-                                                        Pricing
-                                                    </Link>
-                                                    <Link
                                                         href="#testimonials"
                                                         onClick={() => setIsMobileMenuOpen(false)}
                                                         className="p-3 text-sm font-normal uppercase rounded-lg transition-colors font-body hover:bg-muted hover:text-primary"
@@ -695,7 +1147,7 @@ export default function Home() {
                                             </AnimatePresence>
                                         </div>
                                         <p className="max-w-[600px] text-xs uppercase text-muted-foreground font-body md:text-xs text-center mx-auto">
-                                            Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform.
+                                            Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform. See your sales and quotes live from your ERP system. Order directly from CRM — everything connected.
                                         </p>
                                     </StaggerItem>
                                     <StaggerItem className="flex flex-col gap-2 min-[400px]:flex-row justify-center items-center">
@@ -888,12 +1340,12 @@ export default function Home() {
                                             Sales Pipeline Control
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Visual sales pipeline with drag-and-drop stages, deal probability tracking, and revenue forecasting.
+                                            Visual sales pipeline with drag-and-drop stages, deal probability tracking, and revenue forecasting. Sales reps can see their targets and track progress in real-time.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
-                                                Visual pipeline management
+                                                Target tracking & progress
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
@@ -1040,20 +1492,20 @@ export default function Home() {
                                             Mobile-First Design
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Work from anywhere with native mobile apps featuring offline capabilities and GPS tracking.
+                                            Work from anywhere with native mobile apps featuring offline capabilities, GPS tracking, biometric authentication, and push notifications.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Offline functionality
+                                                Biometric authentication
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Real-time GPS tracking
+                                                Location tracking & trip summaries
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Native mobile apps
+                                                Push notifications
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1078,20 +1530,20 @@ export default function Home() {
                                             Smart Quotations
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Generate professional quotes in seconds with automated pricing, templates, and e-signature integration.
+                                            Generate professional quotes in seconds with automated pricing, templates, and e-signature integration. Order directly from CRM — no system switching required.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                Automated pricing
+                                                Order directly from CRM
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                Custom templates
+                                                Quotation-to-order conversion
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                E-signature integration
+                                                Live ERP pricing integration
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1107,35 +1559,197 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-amber-600 bg-amber-100 rounded-full transition-transform duration-300 group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-cyan-600 bg-cyan-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
-                                                📦
+                                                🔄
                                             </span>
                                         </div>
                                         <h3 className="mb-3 text-lg font-normal uppercase font-body">
-                                            Inventory Integration
+                                            ERP Live Integration
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Track stock levels, manage suppliers, and automate reordering with integrated inventory management.
+                                            See your sales and quotes live from your ERP system. Real-time performance tracking, automatic data sync, and no manual reporting needed.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Real-time stock tracking
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Live sales & quotes visibility
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Automated reordering
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Real-time ERP data sync
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Supplier management
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Automatic performance tracking
                                             </div>
                                         </div>
                                     </motion.div>
                                 </StaggerItem>
+
                             </StaggerContainer>
 
+                        </div>
+                    </MotionSection>
+
+                    {/* ERP Integration Section */}
+                    <MotionSection className="py-16 bg-gradient-to-b md:py-24 from-muted/50 to-background" direction="up">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        ERP Integration & Live Visibility
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mx-auto mt-4 max-w-3xl text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        See your sales and quotes live from your ERP system. No manual data entry, no delays, no disconnected systems. Everything updates automatically in real-time.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <div className="grid gap-8 items-center md:grid-cols-2">
+                                <StaggerContainer
+                                    className="space-y-6"
+                                    staggerChildren={0.15}
+                                    delay={0.3}
+                                >
+                                    <StaggerItem>
+                                        <h3 className="mb-4 text-2xl font-normal uppercase font-body">
+                                            Real-Time ERP Data Integration
+                                        </h3>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live Sales Performance & Target Tracking
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    See your sales performance in real-time directly from your ERP system. Sales reps can see their targets and track progress automatically. Track revenue, transactions, and customer activity as it happens — no manual updates needed.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live Quotation Tracking
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Monitor all your quotations live from your ERP system. See which quotes convert to orders, track conversion rates, and manage your sales pipeline in real-time.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Location Tracking & Trip Summaries
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Track field team locations in real-time with GPS tracking. Automatic trip summaries show routes taken, time spent at locations, and distance traveled — perfect for route optimization and client visit verification.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Automatic Data Sync
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    All your ERP data syncs automatically. Sales, quotes, customer information, and performance metrics update in real-time — eliminating manual data entry and reducing errors.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                                <motion.div
+                                    className="overflow-hidden rounded-xl"
+                                    initial={{ opacity: 0, x: 50 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <motion.div
+                                        whileHover={{ scale: 1.03 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="p-8 rounded-xl border bg-card">
+                                            <div className="space-y-4">
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Live Sales</span>
+                                                        <span className="text-lg font-semibold text-green-600 font-body">R 125,450</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Updated in real-time from ERP</div>
+                                                </div>
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Active Quotes</span>
+                                                        <span className="text-lg font-semibold text-blue-600 font-body">23</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Live from ERP system</div>
+                                                </div>
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Conversion Rate</span>
+                                                        <span className="text-lg font-semibold text-purple-600 font-body">68%</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Automatically calculated</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            </div>
                         </div>
                     </MotionSection>
 
@@ -1411,6 +2025,50 @@ export default function Home() {
                                             </div>
                                         </div>
                                     </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Order Directly from CRM
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Create quotations and convert them to orders seamlessly within your CRM. No switching systems, no data re-entry — everything flows from quote to order in one platform.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live ERP Visibility
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    See your sales and quotes live from your ERP system. Real-time performance tracking means you always know exactly where your business stands — no manual updates needed.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
                                 </StaggerContainer>
                             </div>
                         </div>
@@ -1546,6 +2204,176 @@ export default function Home() {
                                     </StaggerItem>
                                 </StaggerContainer>
                             </div>
+                        </div>
+                    </MotionSection>
+
+                    {/* What Sets Loro Apart Section */}
+                    <MotionSection
+                        className="py-20 bg-gradient-to-b from-background to-muted/30"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        What Sets Loro Apart
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        One platform. Everything connected. No juggling multiple systems.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <StaggerContainer className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" staggerChildren={0.15}>
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🔄</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                ERP Live Integration
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            See your sales and quotes live from your ERP system. Sales reps can see their targets and track progress in real-time. Real-time visibility means no delays, no manual updates, and no disconnected data.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🛒</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Order Via CRM
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Order directly from CRM. Quotations convert to orders seamlessly — no switching between systems, no data re-entry, everything flows together.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🔗</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Everything Connected
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            CRM, Field Service, ERP, Analytics — all in one platform. Every module links together seamlessly, giving you complete business visibility.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">📱</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Mobile-First Design
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Native mobile apps with offline capabilities, biometric authentication, and push notifications. Work from anywhere, track locations with trip summaries, and sync when you're back online.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">⚡</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Real-Time Analytics
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Make data-driven decisions with real-time dashboards. Performance metrics, sales analytics with target tracking, location tracking with trip summaries, and business intelligence — all updated automatically.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🎯</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Built for South Africa
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Designed specifically for South African businesses. Local support, ZAR pricing, and understanding of local business needs and regulations.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
                         </div>
                     </MotionSection>
 
@@ -1854,357 +2682,6 @@ export default function Home() {
                         </div>
                     </MotionSection>
 
-                    <MotionSection
-                        id="pricing"
-                        className="py-20"
-                        direction="up"
-                    >
-                        <div className="container px-4 mx-auto md:px-6">
-                            <StaggerContainer
-                                className="mb-12 text-center"
-                                staggerChildren={0.2}
-                            >
-                                <StaggerItem>
-                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
-                                        Transparent Pricing for Every Business
-                                    </h2>
-                                </StaggerItem>
-                                <StaggerItem>
-                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
-                                        Choose the plan that fits your team size and needs. All prices in South African Rands, per user per month.
-                                    </p>
-                                </StaggerItem>
-                            </StaggerContainer>
-                            <StaggerContainer
-                                className="grid gap-8 md:grid-cols-3"
-                                staggerChildren={0.15}
-                            >
-                                <StaggerItem direction="up">
-                                    <motion.div
-                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    🚀
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Basic Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R99
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Lead creation & tracking (up to 500)',
-                                                'Basic expense claims workflow',
-                                                'Activity logging & notes',
-                                                'Real-time tracking (up to 5 users)',
-                                                'Client profile management',
-                                                'Basic task management',
-                                                'Standard reports (CSV/Excel)',
-                                                'Stock level visibility',
-                                                'Basic product catalog',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="w-full text-xs font-normal uppercase font-body"
-                                            >
-                                                <Link href="/signup?plan=basic">
-                                                    Start Basic Plan
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                                <StaggerItem
-                                    direction="up"
-                                    className="mt-4 md:mt-0"
-                                >
-                                    <motion.div
-                                        className="relative p-6 h-full rounded-xl border-2 shadow-lg bg-card border-primary"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <motion.div
-                                            className="absolute -top-4 left-1/2 px-4 py-1 text-xs font-normal uppercase rounded-full transform -translate-x-1/2 bg-primary text-primary-foreground font-body"
-                                            initial={{ y: -10, opacity: 0 }}
-                                            whileInView={{ y: 0, opacity: 1 }}
-                                            transition={{
-                                                duration: 0.5,
-                                                delay: 0.2,
-                                            }}
-                                            viewport={{ once: true }}
-                                        >
-                                            Most Popular
-                                        </motion.div>
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    ⭐
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Premium Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R199
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Everything in Basic Plan',
-                                                'Unlimited lead storage',
-                                                'Advanced approval workflows',
-                                                'Unlimited user tracking',
-                                                'Geofencing & route alerts',
-                                                'Client portal access',
-                                                'Quotation PDF generation',
-                                                'Custom report builder',
-                                                'Priority 24/7 support',
-                                                'Subtasks & priority tagging',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button className="w-full text-xs font-normal uppercase font-body">
-                                                <Link href="/signup?plan=premium">
-                                                    Get Premium
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                                <StaggerItem
-                                    direction="up"
-                                    className="mt-8 md:mt-0"
-                                >
-                                    <motion.div
-                                        className="p-6 h-full rounded-xl border shadow-sm bg-card border-border"
-                                        whileHover={{
-                                            y: -10,
-                                            boxShadow:
-                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="mb-6">
-                                            <motion.div
-                                                className="flex justify-center items-center mb-4 w-12 h-12 rounded-xl bg-primary/10"
-                                                whileHover={{
-                                                    scale: 1.1,
-                                                    rotate: 5,
-                                                }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <span className="text-2xl">
-                                                    🏢
-                                                </span>
-                                            </motion.div>
-                                            <h3 className="text-xl font-normal uppercase font-body">
-                                                Enterprise Plan
-                                            </h3>
-                                            <p className="mt-2 text-3xl font-normal font-body">
-                                                R399
-                                            </p>
-                                            <p className="text-xs uppercase text-muted-foreground font-body">
-                                                per user/month
-                                            </p>
-                                        </div>
-                                        <ul className="mb-6 space-y-2">
-                                            {[
-                                                'Everything in Premium Plan',
-                                                'Audit logs & SSO integration',
-                                                'Custom user permissions',
-                                                'Workflow automation',
-                                                'API access for integrations',
-                                                'Bulk actions & mass updates',
-                                                'Custom branding on PDFs',
-                                                'Unlimited attachments/data',
-                                                'Dedicated account manager',
-                                                'SLA-guaranteed support',
-                                            ].map((feature, i) => (
-                                                <motion.li
-                                                    key={i}
-                                                    className="flex items-start"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    whileInView={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    transition={{
-                                                        duration: 0.3,
-                                                        delay: 0.3 + i * 0.05,
-                                                    }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="w-4 h-4 mr-2 mt-0.5 text-green-500 shrink-0"
-                                                    >
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    <span className="text-[10px] font-normal uppercase font-body">{feature}</span>
-                                                </motion.li>
-                                            ))}
-                                        </ul>
-                                        <motion.div
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="w-full text-xs font-normal uppercase font-body"
-                                            >
-                                                <Link href="/contact">
-                                                    Contact Sales
-                                                </Link>
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </StaggerItem>
-                            </StaggerContainer>
-                            <motion.div
-                                className="mt-12 text-center"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.6 }}
-                                viewport={{ once: true }}
-                            >
-                                <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                    All plans include free trial • Annual billing saves up to 20% • No setup fees
-                                </p>
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Button asChild variant="outline" className="text-xs font-normal uppercase font-body">
-                                        <Link href="/pricing-comparison">
-                                            Compare All Features
-                                        </Link>
-                                    </Button>
-                                </motion.div>
-                            </motion.div>
-                        </div>
-                    </MotionSection>
                 </main>
 
                 {/* FAQ Section */}
@@ -2606,39 +3083,42 @@ export default function Home() {
                                                                   'Contact',
                                                               ]
                                                             : [
-                                                                  'Privacy',
-                                                                  'Terms',
-                                                                  'Cookies',
+                                                                  { name: 'Privacy Policy', href: '/privacy' },
+                                                                  { name: 'Terms', href: '#' },
+                                                                  { name: 'Cookies', href: '#' },
                                                               ],
-                                                ][0].map((item, itemIndex) => (
-                                                    <motion.li
-                                                        key={item}
-                                                        initial={{
-                                                            opacity: 0,
-                                                            x: -10,
-                                                        }}
-                                                        whileInView={{
-                                                            opacity: 1,
-                                                            x: 0,
-                                                        }}
-                                                        transition={{
-                                                            duration: 0.3,
-                                                            delay:
-                                                                0.2 +
-                                                                itemIndex * 0.1,
-                                                        }}
-                                                        viewport={{
-                                                            once: true,
-                                                        }}
-                                                    >
-                                                        <Link
-                                                            href="#"
-                                                            className="text-xs text-muted-foreground hover:text-foreground font-body"
+                                                ][0].map((item, itemIndex) => {
+                                                    const itemData = typeof item === 'string' ? { name: item, href: '#' } : item;
+                                                    return (
+                                                        <motion.li
+                                                            key={itemData.name}
+                                                            initial={{
+                                                                opacity: 0,
+                                                                x: -10,
+                                                            }}
+                                                            whileInView={{
+                                                                opacity: 1,
+                                                                x: 0,
+                                                            }}
+                                                            transition={{
+                                                                duration: 0.3,
+                                                                delay:
+                                                                    0.2 +
+                                                                    itemIndex * 0.1,
+                                                            }}
+                                                            viewport={{
+                                                                once: true,
+                                                            }}
                                                         >
-                                                            {item}
-                                                        </Link>
-                                                    </motion.li>
-                                                ))}
+                                                            <Link
+                                                                href={itemData.href}
+                                                                className="text-xs text-muted-foreground hover:text-foreground font-body"
+                                                            >
+                                                                {itemData.name}
+                                                            </Link>
+                                                        </motion.li>
+                                                    );
+                                                })}
                                             </ul>
                                         </StaggerItem>
                                     ),

@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Users, Building2, UserCheck, ShoppingCart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
     Loader2,
@@ -18,9 +20,147 @@ import {
     RefreshCw,
     Star,
     Zap,
-    Info
+    Settings
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
+import { useQuery } from '@tanstack/react-query';
+import { axiosInstance } from '@/lib/services/api-client';
+
+// Pie Chart Component for Target Performance
+interface PieChartProps {
+    achieved: number;
+    remaining: number;
+    currency: string;
+    title: string;
+}
+
+const PieChart: React.FunctionComponent<PieChartProps> = ({ achieved, remaining, currency, title }) => {
+    const total = achieved + remaining;
+    const percentage = total > 0 ? Math.round((achieved / total) * 100) : 0;
+    const radius = 90;
+    const strokeWidth = 20;
+    const normalizedRadius = radius - strokeWidth * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDasharray = `${circumference} ${circumference}`;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+    return (
+        <Card className="relative bg-white dark:bg-gray-900">
+            <CardHeader>
+                <div className="flex gap-2 items-center">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    <CardTitle className="text-sm font-normal uppercase font-body">
+                        {title}
+                    </CardTitle>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-body w-fit">
+                    {percentage}% Complete
+                </Badge>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {/* Pie Chart */}
+                <div className="flex justify-center">
+                    <div className="relative">
+                        <svg
+                            height={radius * 2}
+                            width={radius * 2}
+                            className="transform -rotate-90"
+                        >
+                            {/* Background circle */}
+                            <circle
+                                stroke="#e5e7eb"
+                                fill="transparent"
+                                strokeWidth={strokeWidth}
+                                r={normalizedRadius}
+                                cx={radius}
+                                cy={radius}
+                            />
+                            {/* Progress circle */}
+                            <circle
+                                stroke="#ef4444"
+                                fill="transparent"
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={strokeDasharray}
+                                style={{ strokeDashoffset }}
+                                strokeLinecap="round"
+                                r={normalizedRadius}
+                                cx={radius}
+                                cy={radius}
+                                className="transition-all duration-300 ease-in-out"
+                            />
+                        </svg>
+                        {/* Center text */}
+                        <div className="flex absolute inset-0 flex-col justify-center items-center">
+                            <div className="text-2xl font-bold text-primary font-body">
+                                {percentage}%
+                            </div>
+                            <div className="text-xs uppercase text-muted-foreground font-body">
+                                Complete
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Legend */}
+                <div className="space-y-3">
+                    <div className="flex gap-3 items-center">
+                        <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
+                        <span className="text-sm font-medium text-foreground font-body">
+                            Achieved
+                        </span>
+                        <span className="ml-auto text-sm font-bold text-foreground font-body">
+                            {currency} {achieved.toLocaleString()}
+                        </span>
+                    </div>
+                    <div className="flex gap-3 items-center">
+                        <div className="w-4 h-4 bg-gray-300 rounded-sm"></div>
+                        <span className="text-sm font-medium text-muted-foreground font-body">
+                            Remaining
+                        </span>
+                        <span className="ml-auto text-sm font-bold text-muted-foreground font-body">
+                            {currency} {remaining.toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Summary */}
+                <div className="text-center">
+                    <p className="text-sm text-orange-600 dark:text-orange-400 font-body">
+                        {currency} {remaining.toLocaleString()} remaining to achieve target
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+// Helper function for consistent date formatting: "Monday 1st August 2025"
+const formatDateLong = (dateStr?: string | Date) => {
+    if (!dateStr) return 'N/A';
+    try {
+        const date = new Date(dateStr);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }); // Monday
+        const day = date.getDate();
+        const monthName = date.toLocaleDateString('en-US', { month: 'long' }); // August
+        const year = date.getFullYear();
+
+        // Add ordinal suffix to day
+        const getOrdinalSuffix = (day: number) => {
+            if (day >= 11 && day <= 13) return 'th';
+            switch (day % 10) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        };
+
+        return `${dayName} ${day}${getOrdinalSuffix(day)} ${monthName} ${year}`;
+    } catch (error) {
+        console.warn('Failed to format date:', dateStr, error);
+        return 'Invalid date';
+    }
+};
 
 // Types for AI requests - keeping only what we need
 interface TargetData {
@@ -73,6 +213,18 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
     const [emailTemplate, setEmailTemplate] = useState<string>('');
     const [activeInsightTab, setActiveInsightTab] = useState('insights');
     const [insightsGenerated, setInsightsGenerated] = useState(false);
+    const [activeMainTab, setActiveMainTab] = useState('personal');
+
+    // Fetch profile sales data
+    const { data: profileSalesData } = useQuery({
+        queryKey: ['profile-sales', profileData?.uid],
+        queryFn: async () => {
+            const response = await axiosInstance.get('/erp/profile/sales');
+            return response.data;
+        },
+        enabled: !!profileData?.uid,
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
 
     // Helper functions
     const getProgressPercentage = (current: number | undefined, target: number | undefined) => {
@@ -90,6 +242,187 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
     const formatCurrency = (amount: number | undefined, currency: string = 'ZAR') => {
         if (!amount) return `${currency} 0`;
         return `${currency} ${amount.toLocaleString()}`;
+    };
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
+
+    const formatAddress = (address: any) => {
+        if (!address) return 'Address not available';
+        return `${address.street}, ${address.suburb}, ${address.city}, ${address.state} ${address.postalCode}`;
+    };
+
+    const renderStaffTargetCard = (staff: any) => {
+        if (!staff.hasTargets || !staff.targets) {
+            return (
+                <Card key={staff.uid} className="p-4">
+                    <div className="flex items-center space-x-4">
+                        <Avatar className="w-12 h-12">
+                            <AvatarImage src={staff.avatar} alt={staff.fullName} />
+                            <AvatarFallback>{getInitials(staff.fullName)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                            <h4 className="font-medium font-body">{staff.fullName}</h4>
+                            <p className="text-sm text-muted-foreground font-body">{staff.email}</p>
+                            <Badge variant="outline" className="mt-1 font-body">No targets set</Badge>
+                        </div>
+                    </div>
+                </Card>
+            );
+        }
+
+        const targets = staff.targets;
+
+        return (
+            <Card key={staff.uid} className="p-4">
+                <div className="flex items-center mb-4 space-x-4">
+                    <Avatar className="w-12 h-12">
+                        <AvatarImage src={staff.avatar} alt={staff.fullName} />
+                        <AvatarFallback>{getInitials(staff.fullName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                        <h4 className="font-medium font-body">{staff.fullName}</h4>
+                        <p className="text-sm text-muted-foreground font-body">{staff.email}</p>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    {/* Sales Target - New format support */}
+                    {targets.sales && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.sales.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.sales.currency} {targets.sales.current?.toLocaleString()} / {targets.sales.currency} {targets.sales.target?.toLocaleString()}
+                                </span>
+                            </div>
+                            <Progress value={targets.sales.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.sales.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.sales.currency} {targets.sales.remaining?.toLocaleString()} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Hours Target - New format support */}
+                    {targets.hours && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.hours.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.hours.current || 0}{targets.hours.unit} / {targets.hours.target}{targets.hours.unit}
+                                </span>
+                            </div>
+                            <Progress value={targets.hours.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.hours.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.hours.remaining}{targets.hours.unit} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quotations Target - New format support */}
+                    {targets.quotations && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.quotations.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.quotations.currency} {targets.quotations.current?.toLocaleString()} / {targets.quotations.currency} {targets.quotations.target?.toLocaleString()}
+                                </span>
+                            </div>
+                            <Progress value={targets.quotations.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.quotations.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.quotations.currency} {targets.quotations.remaining?.toLocaleString()} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* New Leads Target - New format support */}
+                    {targets.newLeads && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.newLeads.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.newLeads.current || 0} / {targets.newLeads.target}
+                                </span>
+                            </div>
+                            <Progress value={targets.newLeads.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.newLeads.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.newLeads.remaining} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* New Clients Target - New format support */}
+                    {targets.newClients && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.newClients.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.newClients.current || 0} / {targets.newClients.target}
+                                </span>
+                            </div>
+                            <Progress value={targets.newClients.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.newClients.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.newClients.remaining} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Check-ins Target - New format support */}
+                    {targets.checkIns && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.checkIns.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.checkIns.current || 0} / {targets.checkIns.target}
+                                </span>
+                            </div>
+                            <Progress value={targets.checkIns.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.checkIns.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.checkIns.remaining} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Calls Target - New format support */}
+                    {targets.calls && (
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{targets.calls.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {targets.calls.current || 0} / {targets.calls.target}
+                                </span>
+                            </div>
+                            <Progress value={targets.calls.progress || 0} className="h-2" />
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">{Math.round(targets.calls.progress || 0)}% complete</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {targets.calls.remaining} remaining
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </Card>
+        );
     };
 
     // Helper function to transform UserTarget to TargetData array
@@ -371,8 +704,23 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
 
     return (
         <div className="space-y-6">
-            {/* Target Period Info */}
-            <Card>
+            {/* Main Tabs */}
+            <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
+                <TabsList className="grid grid-cols-2 w-full">
+                    <TabsTrigger value="personal" className="flex gap-2 items-center">
+                        <Target className="w-4 h-4" />
+                        My Targets
+                    </TabsTrigger>
+                    <TabsTrigger value="team" className="flex gap-2 items-center">
+                        <Users className="w-4 h-4" />
+                        My Team
+                    </TabsTrigger>
+                </TabsList>
+
+                {/* Personal Targets Tab */}
+                <TabsContent value="personal" className="mt-6 space-y-6">
+                    {/* Target Period Info */}
+                    <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <div className="flex gap-2 items-center">
@@ -392,7 +740,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             <p className="text-[10px] text-muted-foreground font-body uppercase">Period Start</p>
                             <p className="text-sm font-medium font-body">
                                 {targetsData.periodStartDate
-                                    ? new Date(targetsData.periodStartDate).toLocaleDateString()
+                                    ? formatDateLong(targetsData.periodStartDate)
                                     : 'Not set'}
                             </p>
                         </div>
@@ -400,7 +748,7 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             <p className="text-[10px] text-muted-foreground font-body uppercase">Period End</p>
                             <p className="text-sm font-medium font-body">
                                 {targetsData.periodEndDate
-                                    ? new Date(targetsData.periodEndDate).toLocaleDateString()
+                                    ? formatDateLong(targetsData.periodEndDate)
                                     : 'Not set'}
                             </p>
                         </div>
@@ -408,102 +756,61 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardContent>
             </Card>
 
-            {/* Sales Targets */}
+            {/* Sales Targets - Pie Chart */}
             {(targetsData.targetSalesAmount || targetsData.currentSalesAmount) && (
-                <Card className="relative">
-                    <CardHeader>
-                        <div className="flex gap-2 items-center">
-                            <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Sales Performance
-                            </CardTitle>
-                        </div>
-                        {/* Green badge for target reached */}
-                        {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount) >= 100 && (
-                            <div className="absolute top-2 right-2">
-                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                    <CheckCircle className="mr-1 w-3 h-3" />
-                                    Target Reached
-                                </Badge>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Sales Target</p>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount).toFixed(1)}%
-                                </Badge>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body">
-                                <span>{formatCurrency(targetsData.currentSalesAmount, targetsData.targetCurrency)}</span>
-                                <span>{formatCurrency(targetsData.targetSalesAmount, targetsData.targetCurrency)}</span>
-                            </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentSalesAmount, targetsData.targetSalesAmount)}
-                                className="h-3"
-                            />
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body uppercase">
-                                <span>Complete</span>
-                                <span>
-                                    {targetsData.targetSalesAmount && targetsData.currentSalesAmount
-                                        ? formatCurrency(targetsData.targetSalesAmount - targetsData.currentSalesAmount, targetsData.targetCurrency) + ' remaining'
-                                        : 'Target needed'}
-                                </span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <>
+                    <PieChart
+                        achieved={targetsData.currentSalesAmount || 0}
+                        remaining={(targetsData.targetSalesAmount || 0) - (targetsData.currentSalesAmount || 0)}
+                        currency={targetsData.targetCurrency || 'ZAR'}
+                        title="Sales Performance"
+                    />
+
+                    {/* Sales Metrics */}
+                    {profileSalesData?.data && (
+                        <Card>
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    {profileSalesData.data.transactionCount > 0 && (
+                                        <div className="flex gap-3 items-center">
+                                            <ShoppingCart className="w-5 h-5 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground font-body uppercase">Transactions</p>
+                                                <p className="text-sm font-medium font-body">{profileSalesData.data.transactionCount}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {profileSalesData.data.uniqueCustomers > 0 && (
+                                        <div className="flex gap-3 items-center">
+                                            <Users className="w-5 h-5 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground font-body uppercase">Customers</p>
+                                                <p className="text-sm font-medium font-body">{profileSalesData.data.uniqueCustomers}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {profileSalesData.data.uniqueCustomers > 0 && (
+                                    <div className="pt-4 mt-4 border-t">
+                                        <p className="text-sm text-center text-muted-foreground font-body">
+                                            You have assisted <span className="font-semibold text-foreground">{profileSalesData.data.uniqueCustomers}</span> customer{profileSalesData.data.uniqueCustomers !== 1 ? 's' : ''} this month
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </>
             )}
 
-            {/* Quotations Targets */}
+            {/* Quotations Targets - Pie Chart */}
             {(targetsData.targetQuotationsAmount || targetsData.currentQuotationsAmount) && (
-                <Card className="relative">
-                    <CardHeader>
-                        <div className="flex gap-2 items-center">
-                            <Target className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Quotations Performance
-                            </CardTitle>
-                        </div>
-                        {/* Green badge for target reached */}
-                        {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount) >= 100 && (
-                            <div className="absolute top-2 right-2">
-                                <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                    <CheckCircle className="mr-1 w-3 h-3" />
-                                    Target Reached
-                                </Badge>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <p className="text-[10px] font-medium text-muted-foreground font-body uppercase">Quotations Target</p>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount).toFixed(1)}%
-                                </Badge>
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body">
-                                <span>{formatCurrency(targetsData.currentQuotationsAmount, targetsData.targetCurrency)}</span>
-                                <span>{formatCurrency(targetsData.targetQuotationsAmount, targetsData.targetCurrency)}</span>
-                            </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentQuotationsAmount, targetsData.targetQuotationsAmount)}
-                                className="h-3"
-                            />
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-body uppercase">
-                                <span>Complete</span>
-                                <span>
-                                    {targetsData.targetQuotationsAmount && targetsData.currentQuotationsAmount
-                                        ? formatCurrency(targetsData.targetQuotationsAmount - targetsData.currentQuotationsAmount, targetsData.targetCurrency) + ' remaining'
-                                        : 'Target needed'}
-                                </span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <PieChart
+                    achieved={targetsData.currentQuotationsAmount || 0}
+                    remaining={(targetsData.targetQuotationsAmount || 0) - (targetsData.currentQuotationsAmount || 0)}
+                    currency={targetsData.targetCurrency || 'ZAR'}
+                    title="Quotations Performance"
+                />
             )}
 
             {/* Orders Performance - Shows current orders without target */}
@@ -525,14 +832,14 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                     {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
                                 </Badge>
                             </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 font-body">
-                                    {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
-                                </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    Total Orders (Converted from Quotations)
-                                </div>
+                        <div className="text-center">
+                            <div className="text-2xl text-orange-600 dark:text-orange-400 font-body">
+                                {formatCurrency(targetsData.currentOrdersAmount, targetsData.targetCurrency)}
                             </div>
+                            <div className="text-[10px] text-muted-foreground font-body uppercase">
+                                Total Orders (Converted from Quotations)
+                            </div>
+                        </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -587,159 +894,87 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </Card>
             )}
 
-            {/* Client & Lead Targets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* New Clients */}
-                {(targetsData.targetNewClients || targetsData.currentNewClients) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                New Clients
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+            {/* General Metrics */}
+            <Card>
+                <CardHeader>
+                    <div className="flex gap-2 items-center">
+                        <Target className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                        <CardTitle className="text-sm font-normal uppercase font-body">
+                            General Metrics
+                        </CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+                        {/* Work Hours */}
+                        {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentHoursWorked || 0}/{targetsData.targetHoursWorked || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-body">
-                                    {targetsData.currentNewClients || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Hours Worked</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentHoursWorked, targetsData.targetHoursWorked).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetNewClients || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                        )}
 
-                {/* New Leads */}
-                {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                New Leads
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        {/* New Clients */}
+                        {(targetsData.targetNewClients || targetsData.currentNewClients) && (
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentNewClients || 0}/{targetsData.targetNewClients || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-body">
-                                    {targetsData.currentNewLeads || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">New Clients</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentNewClients, targetsData.targetNewClients).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetNewLeads || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                        )}
 
-            {/* Activity Targets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Check-ins */}
-                {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Check-ins
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        {/* New Leads */}
+                        {(targetsData.targetNewLeads || targetsData.currentNewLeads) && (
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentNewLeads || 0}/{targetsData.targetNewLeads || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-body">
-                                    {targetsData.currentCheckIns || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">New Leads</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentNewLeads, targetsData.targetNewLeads).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetCheckIns || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                        )}
 
-                {/* Calls */}
-                {(targetsData.targetCalls || targetsData.currentCalls) && (
-                    <Card className="relative">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-normal uppercase font-body">
-                                Calls
-                            </CardTitle>
-                            {/* Green badge for target reached */}
-                            {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls) >= 100 && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge variant="default" className="bg-emerald-500 text-white text-[10px] font-body">
-                                        <CheckCircle className="mr-1 w-3 h-3" />
-                                        Target Reached
-                                    </Badge>
+                        {/* Check-ins/Visits */}
+                        {(targetsData.targetCheckIns || targetsData.currentCheckIns) && (
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentCheckIns || 0}/{targetsData.targetCheckIns || 0}
                                 </div>
-                            )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2 text-center">
-                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 font-body">
-                                    {targetsData.currentCalls || 0}
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Visits</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentCheckIns, targetsData.targetCheckIns).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-body uppercase">
-                                    of {targetsData.targetCalls || 0} target
-                                </div>
-                                <Badge variant="outline" className="text-[10px] font-body">
-                                    {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls).toFixed(1)}%
-                                </Badge>
                             </div>
-                            <Progress
-                                value={getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls)}
-                                className="h-2"
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                        )}
+
+                        {/* Calls */}
+                        {(targetsData.targetCalls || targetsData.currentCalls) && (
+                            <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                                <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
+                                    {targetsData.currentCalls || 0}/{targetsData.targetCalls || 0}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground font-body uppercase">Calls</div>
+                                <div className="text-[10px] text-primary font-body">
+                                    {getProgressPercentage(targetsData.currentCalls, targetsData.targetCalls).toFixed(0)}%
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Cost Breakdown - Hidden for now per request */}
 
             {/* AI Insights Section */}
             <Card>
@@ -768,10 +1003,10 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         </div>
                     </div>
                     {quickSummary && (
-                        <div className="p-3 mt-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 dark:from-purple-500/10 dark:to-blue-500/10 dark:border-purple-500/20">
+                        <div className="p-3 mt-3 bg-white rounded-lg border dark:bg-gray-900">
                             <div className="flex gap-2 items-start">
-                                <Star className="w-4 h-4 text-purple-500 mt-0.5" />
-                                <p className="text-sm text-purple-800 dark:text-purple-300 font-body">
+                                <Star className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <p className="text-sm text-foreground font-body">
                                     {quickSummary}
                                 </p>
                             </div>
@@ -804,14 +1039,9 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                                     {insights?.map((insight, index) => (
                                         <div
                                             key={index}
-                                            className="flex gap-3 items-start p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:from-blue-500/10 dark:to-indigo-500/10 dark:border-blue-500/20"
+                                            className="flex gap-3 items-start p-4 bg-white rounded-lg border dark:bg-gray-900"
                                         >
-                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold font-body ${
-                                                index === 0 ? 'bg-green-500' :
-                                                index === 1 ? 'bg-blue-500' :
-                                                index === 2 ? 'bg-purple-500' :
-                                                index === 3 ? 'bg-orange-500' : 'bg-gray-500'
-                                            }`}>
+                                            <div className="flex justify-center items-center w-6 h-6 text-xs font-bold text-white bg-gray-500 rounded-full font-body">
                                                 {index + 1}
                                             </div>
                                             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 font-body">
@@ -844,15 +1074,15 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         <TabsContent value="email" className="mt-6 space-y-4">
                             {emailTemplate ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
+                                    <div className="p-4 bg-white rounded-lg border dark:bg-gray-900">
                                         <div className="flex gap-2 items-center mb-3">
-                                            <Mail className="w-4 h-4 text-green-600" />
-                                            <h4 className="text-sm font-medium text-green-800 uppercase dark:text-green-300 font-body">
+                                            <Mail className="w-4 h-4 text-muted-foreground" />
+                                            <h4 className="text-sm font-medium uppercase text-foreground font-body">
                                                 Generated Email Template
                                             </h4>
                                         </div>
                                         <div className="p-4 bg-white rounded-lg border dark:bg-gray-800">
-                                            <pre className="font-mono text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
+                                            <pre className="text-xs text-gray-800 whitespace-pre-wrap dark:text-gray-200 font-body">
                                                 {emailTemplate}
                                             </pre>
                                         </div>
@@ -917,37 +1147,137 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.createdAt
-                                    ? new Date(targetsData.createdAt).toLocaleDateString()
+                                    ? formatDateLong(targetsData.createdAt)
                                     : 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Created</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 font-body">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="text-lg text-gray-900 dark:text-gray-100 font-body">
                                 {targetsData.updatedAt
-                                    ? new Date(targetsData.updatedAt).toLocaleDateString()
+                                    ? formatDateLong(targetsData.updatedAt)
                                     : 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Last Updated</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-primary font-body">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="text-lg text-primary font-body">
                                 {targetsData.targetCurrency || 'ZAR'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Currency</div>
                         </div>
-                        <div className="p-3 text-center rounded-lg bg-muted/50">
-                            <div className="text-lg font-bold text-green-600 dark:text-green-400 font-body">
+                        <div className="p-3 text-center bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="text-lg text-foreground font-body">
                                 {targetsData.id || 'N/A'}
                             </div>
                             <div className="text-[10px] text-muted-foreground font-body uppercase">Target ID</div>
                         </div>
                     </div>
+                    {/* ERP Sales Rep Code */}
+                    {(targetsData as any).erpSalesRepCode && (
+                        <div className="p-3 mt-4 bg-white rounded-lg border dark:bg-gray-900">
+                            <div className="flex gap-2 items-center">
+                                <Settings className="w-4 h-4 text-primary" />
+                                <div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">ERP Sales Rep Code</div>
+                                    <div className="text-sm font-medium text-foreground font-body">
+                                        {(targetsData as any).erpSalesRepCode}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
+                </TabsContent>
+
+                {/* My Team Tab */}
+                <TabsContent value="team" className="mt-6 space-y-6">
+                    {/* Managed Branches Section */}
+                    {(targetsData as any)?.managedBranches?.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex gap-2 items-center">
+                                    <Building2 className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                                    <CardTitle className="text-sm font-normal uppercase font-body">
+                                        Managed Branches ({(targetsData as any).managedBranches.length})
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {(targetsData as any).managedBranches.map((branch: any) => (
+                                        <Card key={branch.uid} className="p-4">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <h4 className="font-medium font-body">{branch.name}</h4>
+                                                    <p className="text-sm text-muted-foreground font-body">{formatAddress(branch.address)}</p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex gap-2 items-center">
+                                                        <UserCheck className="w-4 h-4 text-muted-foreground" />
+                                                        <span className="text-sm font-body">{branch.contactPerson}</span>
+                                                    </div>
+                                                    <div className="flex gap-2 items-center">
+                                                        <span className="text-sm text-muted-foreground">📧</span>
+                                                        <span className="text-sm font-body">{branch.email}</span>
+                                                    </div>
+                                                    <div className="flex gap-2 items-center">
+                                                        <span className="text-sm text-muted-foreground">📱</span>
+                                                        <span className="text-sm font-body">{branch.phone}</span>
+                                                    </div>
+                                                </div>
+                                                <Badge variant={branch.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                                                    {branch.status}
+                                                </Badge>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Managed Staff Section */}
+                    {(targetsData as any)?.managedStaff?.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex gap-2 items-center">
+                                    <Users className="w-5 h-5 text-green-500 dark:text-green-400" />
+                                    <CardTitle className="text-sm font-normal uppercase font-body">
+                                        Managed Staff ({(targetsData as any).managedStaff.length})
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+                                    {(targetsData as any).managedStaff.map(renderStaffTargetCard)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* No managed data message */}
+                    {(!(targetsData as any)?.managedBranches?.length && !(targetsData as any)?.managedStaff?.length) && (
+                        <Card>
+                            <CardContent className="py-8">
+                                <div className="space-y-4 text-center">
+                                    <Users className="mx-auto w-12 h-12 text-muted-foreground" />
+                                    <div>
+                                        <h3 className="text-lg font-medium font-body">No Team Management</h3>
+                                        <p className="text-sm text-muted-foreground font-body">
+                                            You don't have any managed branches or staff members assigned to you.
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };

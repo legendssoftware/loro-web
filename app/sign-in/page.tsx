@@ -42,6 +42,8 @@ interface UserSignInFormProps {
 
 const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const { signIn, isLoading, error, clearAuthError, profileData } = useAuthStore();
 
@@ -69,22 +71,27 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
 
     // Handle URL reason parameters for cases like token expiration or refresh failure
     useEffect(() => {
-        if (reason) {
+        const tokenExpired = searchParams.get('token_expired');
+        if (reason || tokenExpired) {
             let message = '';
-            switch (reason) {
-                case 'refresh_failed':
-                    message = 'Your session has expired. Please sign in again.';
-                    break;
-                case 'token_expired':
-                    message =
-                        'Your authentication token has expired. Please sign in again.';
-                    break;
-                default:
-                    message = 'Please sign in to continue.';
+            if (tokenExpired === 'true' || reason === 'token_expired') {
+                message = 'Your session has expired. Please sign in again.';
+            } else {
+                switch (reason) {
+                    case 'refresh_failed':
+                        message = 'Your session has expired. Please sign in again.';
+                        break;
+                    case 'token_expired':
+                        message =
+                            'Your authentication token has expired. Please sign in again.';
+                        break;
+                    default:
+                        message = 'Please sign in to continue.';
+                }
             }
             showErrorToast(message, toast);
         }
-    }, [reason]);
+    }, [reason, searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,8 +140,12 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
                 );
 
                 // Always redirect to dashboard after successful sign in
-                // The middleware will handle role-based redirects from dashboard
-                window.location.href = '/dashboard';
+                // Use window.location.href for a full page reload to ensure cookies are available to middleware
+                // The auth service already sets cookies and waits 100ms, so cookies should be set by now
+                // Using full page reload ensures middleware can read cookies properly
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 50); // Small additional delay to ensure cookies are fully set
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);
@@ -354,9 +365,11 @@ const ClientSignInForm = ({ callbackUrl }: ClientSignInFormProps) => {
                 );
 
                 // Always redirect client users directly to quotations page
-                // Use window.location.href for a hard navigation instead of router.push
-                // This ensures the middleware can properly handle the authentication
-                window.location.href = '/quotations';
+                // Use window.location.href for a full page reload to ensure cookies are available to middleware
+                // The auth service already sets cookies and waits 100ms, so cookies should be set by now
+                setTimeout(() => {
+                    window.location.href = '/quotations';
+                }, 50); // Small additional delay to ensure cookies are fully set
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);

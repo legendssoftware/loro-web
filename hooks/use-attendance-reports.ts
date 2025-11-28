@@ -14,6 +14,8 @@ import {
     AttendanceReportFilters,
     AttendanceAnalyticsData,
     AttendanceChartData,
+    AttendanceReportUser,
+    AttendanceReportBranch,
 } from '@/types/attendance-reports';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -242,9 +244,16 @@ const generateCSVFromReport = (report: MorningAttendanceReport | EveningAttendan
         `${report.summary.lateToday} Late`
     ]);
 
-    // Add branch data
-    report.branches.forEach(branch => {
-        branch.users.forEach(user => {
+    // Add branch data - handle different report types
+    let branches: AttendanceReportBranch[] = [];
+    if (report.reportType === 'evening') {
+        branches = (report as EveningAttendanceReport).branchBreakdown || [];
+    } else if (report.reportType === 'morning' || report.reportType === 'organization') {
+        branches = (report as MorningAttendanceReport | OrganizationAttendanceReport).branches || [];
+    }
+
+    branches.forEach((branch: AttendanceReportBranch) => {
+        branch.users.forEach((user: AttendanceReportUser) => {
             rows.push([
                 user.fullName,
                 user.role,

@@ -52,10 +52,11 @@ const MapError = dynamic(
     { ssr: false },
 );
 
-// Filter type definition
+// Filter type definition - Enhanced with all new marker types
 type FilterType =
     | 'all'
     | 'check-in'
+    | 'check-in-visit'
     | 'shift-start'
     | 'shift-end'
     | 'lead'
@@ -68,9 +69,7 @@ type FilterType =
     | 'quotation';
 
 export default function MapPage() {
-    const [selectedMarker, setSelectedMarker] = useState<
-        WorkerType | ClientType | CompetitorType | QuotationType | null
-    >(null);
+    const [selectedMarker, setSelectedMarker] = useState<any | null>(null); // Extended to support all marker types
     const [highlightedMarkerId, setHighlightedMarkerId] = useState<
         string | null
     >(null);
@@ -87,6 +86,15 @@ export default function MapPage() {
         clients,
         competitors,
         quotations,
+        leads,
+        journals,
+        tasks,
+        checkIns,
+        shiftStarts,
+        shiftEnds,
+        breakStarts,
+        breakEnds,
+        allMarkers,
         isLoading,
         isError,
         error,
@@ -100,9 +108,7 @@ export default function MapPage() {
         setIsClient(true);
     }, []);
 
-    const handleMarkerClick = (
-        marker: WorkerType | ClientType | CompetitorType | QuotationType,
-    ) => {
+    const handleMarkerClick = (marker: any) => { // Extended to support all marker types
         if (!marker) return;
         setSelectedMarker(marker);
         setHighlightedMarkerId(marker.id.toString());
@@ -123,7 +129,7 @@ export default function MapPage() {
         return worker.markerType === activeFilter;
     });
 
-    // Get all entities for the map based on active filter
+    // Get all entities for the map based on active filter with enhanced logging
     const getFilteredEntities = () => {
         const entities = [];
 
@@ -139,64 +145,158 @@ export default function MapPage() {
             );
         };
 
+        // Log the filter being applied
+        console.log(`🗺️ Map Filter Applied: "${activeFilter}"`);
+
         // Add filtered entities based on the active filter
         if (activeFilter === 'all') {
-            // Add all workers with valid positions
+            // Use allMarkers if available for comprehensive view
+            if (allMarkers && allMarkers.length > 0) {
+                const validAllMarkers = allMarkers.filter(hasValidPosition);
+                entities.push(...validAllMarkers);
+                console.log(`📍 All Markers - Total: ${allMarkers.length}, Valid positions: ${validAllMarkers.length}`);
+            } else {
+                // Fallback to individual arrays for backward compatibility
             const validWorkers = workers?.filter(hasValidPosition) || [];
-            entities.push(...validWorkers);
-
-            // Add all clients with valid positions
             const validClients = clients?.filter(hasValidPosition) || [];
-            entities.push(...validClients);
-
-            // Add all competitors with valid positions
-            const validCompetitors =
-                competitors?.filter(hasValidPosition) || [];
-            entities.push(...validCompetitors);
-
-            // Add all quotations with valid positions
+                const validCompetitors = competitors?.filter(hasValidPosition) || [];
             const validQuotations = quotations?.filter(hasValidPosition) || [];
-            entities.push(...validQuotations);
+                const validLeads = leads?.filter(hasValidPosition) || [];
+                const validJournals = journals?.filter(hasValidPosition) || [];
+                const validTasks = tasks?.filter(hasValidPosition) || [];
+                const validCheckIns = checkIns?.filter(hasValidPosition) || [];
+                const validShiftStarts = shiftStarts?.filter(hasValidPosition) || [];
+                const validShiftEnds = shiftEnds?.filter(hasValidPosition) || [];
+                const validBreakStarts = breakStarts?.filter(hasValidPosition) || [];
+                const validBreakEnds = breakEnds?.filter(hasValidPosition) || [];
+
+                entities.push(
+                    ...validWorkers,
+                    ...validClients,
+                    ...validCompetitors,
+                    ...validQuotations,
+                    ...validLeads,
+                    ...validJournals,
+                    ...validTasks,
+                    ...validCheckIns,
+                    ...validShiftStarts,
+                    ...validShiftEnds,
+                    ...validBreakStarts,
+                    ...validBreakEnds
+                );
+
+                console.log(`📍 Individual Arrays - Workers: ${validWorkers.length}, Clients: ${validClients.length}, Competitors: ${validCompetitors.length}, Quotations: ${validQuotations.length}, Leads: ${validLeads.length}, Journals: ${validJournals.length}, Tasks: ${validTasks.length}, Check-ins: ${validCheckIns.length}, Shift Starts: ${validShiftStarts.length}, Shift Ends: ${validShiftEnds.length}, Break Starts: ${validBreakStarts.length}, Break Ends: ${validBreakEnds.length}`);
+            }
         } else {
-            // Filter by specific types
+            // Filter by specific types using allMarkers for comprehensive filtering
+            if (allMarkers && allMarkers.length > 0) {
+                const filteredMarkers = allMarkers.filter(
+                    (marker) =>
+                        marker.markerType === activeFilter &&
+                        hasValidPosition(marker)
+                );
+                entities.push(...filteredMarkers);
+                console.log(`📍 Filtered by "${activeFilter}" - Found: ${filteredMarkers.length} markers`);
+
+                // Log detailed breakdown of filtered markers
+                if (filteredMarkers.length > 0) {
+                    console.log(`🔍 Filtered Markers Details:`, filteredMarkers.map(m => ({
+                        id: m.id,
+                        name: m.name,
+                        type: m.markerType,
+                        status: m.status,
+                        position: m.position
+                    })));
+                }
+            } else {
+                // Fallback to individual array filtering for backward compatibility
             switch (activeFilter) {
                 case 'check-in':
-                case 'shift-start':
-                case 'shift-end':
-                case 'lead':
-                case 'journal':
-                case 'task':
-                case 'break-start':
-                case 'break-end':
-                    // Filter workers by marker type
-                    const filteredWorkers =
-                        workers?.filter(
+                        const filteredWorkers = workers?.filter(
                             (worker) =>
                                 worker.markerType === activeFilter &&
                                 hasValidPosition(worker),
                         ) || [];
                     entities.push(...filteredWorkers);
+                        console.log(`📍 Check-in Workers: ${filteredWorkers.length}`);
+                        break;
+
+                    case 'check-in-visit':
+                        const filteredCheckIns = checkIns?.filter(hasValidPosition) || [];
+                        entities.push(...filteredCheckIns);
+                        console.log(`📍 Check-in Visits: ${filteredCheckIns.length}`);
+                        break;
+
+                    case 'shift-start':
+                        const filteredShiftStarts = shiftStarts?.filter(hasValidPosition) || [];
+                        entities.push(...filteredShiftStarts);
+                        console.log(`📍 Shift Starts: ${filteredShiftStarts.length}`);
+                        break;
+
+                    case 'shift-end':
+                        const filteredShiftEnds = shiftEnds?.filter(hasValidPosition) || [];
+                        entities.push(...filteredShiftEnds);
+                        console.log(`📍 Shift Ends: ${filteredShiftEnds.length}`);
+                        break;
+
+                    case 'lead':
+                        const filteredLeads = leads?.filter(hasValidPosition) || [];
+                        entities.push(...filteredLeads);
+                        console.log(`📍 Leads: ${filteredLeads.length}`);
+                        break;
+
+                    case 'journal':
+                        const filteredJournals = journals?.filter(hasValidPosition) || [];
+                        entities.push(...filteredJournals);
+                        console.log(`📍 Journals: ${filteredJournals.length}`);
+                        break;
+
+                    case 'task':
+                        const filteredTasks = tasks?.filter(hasValidPosition) || [];
+                        entities.push(...filteredTasks);
+                        console.log(`📍 Tasks: ${filteredTasks.length}`);
+                        break;
+
+                    case 'break-start':
+                        const filteredBreakStarts = breakStarts?.filter(hasValidPosition) || [];
+                        entities.push(...filteredBreakStarts);
+                        console.log(`📍 Break Starts: ${filteredBreakStarts.length}`);
+                        break;
+
+                    case 'break-end':
+                        const filteredBreakEnds = breakEnds?.filter(hasValidPosition) || [];
+                        entities.push(...filteredBreakEnds);
+                        console.log(`📍 Break Ends: ${filteredBreakEnds.length}`);
                     break;
 
                 case 'client':
-                    const filteredClients =
-                        clients?.filter(hasValidPosition) || [];
+                        const filteredClients = clients?.filter(hasValidPosition) || [];
                     entities.push(...filteredClients);
+                        console.log(`📍 Clients: ${filteredClients.length}`);
                     break;
 
                 case 'competitor':
-                    const filteredCompetitors =
-                        competitors?.filter(hasValidPosition) || [];
+                        const filteredCompetitors = competitors?.filter(hasValidPosition) || [];
                     entities.push(...filteredCompetitors);
+                        console.log(`📍 Competitors: ${filteredCompetitors.length}`);
                     break;
 
                 case 'quotation':
-                    const filteredQuotations =
-                        quotations?.filter(hasValidPosition) || [];
+                        const filteredQuotations = quotations?.filter(hasValidPosition) || [];
                     entities.push(...filteredQuotations);
+                        console.log(`📍 Quotations: ${filteredQuotations.length}`);
                     break;
+                }
             }
         }
+
+        // Log final result
+        console.log(`🎯 Final Filtered Results: ${entities.length} markers to display on map`);
+        console.log(`📊 Marker Types in Results:`, entities.reduce((acc, entity) => {
+            const type = entity.markerType || 'unknown';
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+        }, {}));
 
         return entities;
     };
@@ -365,6 +465,50 @@ export default function MapPage() {
                                 ? quotations
                                 : []
                         }
+                        // Pass all the new data arrays to MapComponent
+                        leads={
+                            activeFilter === 'all' || activeFilter === 'lead'
+                                ? leads
+                                : []
+                        }
+                        journals={
+                            activeFilter === 'all' || activeFilter === 'journal'
+                                ? journals
+                                : []
+                        }
+                        tasks={
+                            activeFilter === 'all' || activeFilter === 'task'
+                                ? tasks
+                                : []
+                        }
+                        checkIns={
+                            activeFilter === 'all' || activeFilter === 'check-in-visit'
+                                ? checkIns
+                                : []
+                        }
+                        shiftStarts={
+                            activeFilter === 'all' || activeFilter === 'shift-start'
+                                ? shiftStarts
+                                : []
+                        }
+                        shiftEnds={
+                            activeFilter === 'all' || activeFilter === 'shift-end'
+                                ? shiftEnds
+                                : []
+                        }
+                        breakStarts={
+                            activeFilter === 'all' || activeFilter === 'break-start'
+                                ? breakStarts
+                                : []
+                        }
+                        breakEnds={
+                            activeFilter === 'all' || activeFilter === 'break-end'
+                                ? breakEnds
+                                : []
+                        }
+                        allMarkers={allMarkers}
+                        filteredEntities={filteredEntities}
+                        activeFilter={activeFilter}
                         selectedMarker={selectedMarker}
                         highlightedMarkerId={highlightedMarkerId}
                         handleMarkerClick={handleMarkerClick}
@@ -411,33 +555,23 @@ export default function MapPage() {
                                         { id: 'all', label: 'All', icon: List },
                                         {
                                             id: 'check-in',
-                                            label: 'Check In',
+                                            label: 'Active Check-ins',
                                             icon: MapPin,
+                                        },
+                                        {
+                                            id: 'check-in-visit',
+                                            label: 'Client Visits',
+                                            icon: Building,
                                         },
                                         {
                                             id: 'shift-start',
                                             label: 'Shift Start',
-                                            icon: Clock,
+                                            icon: PlayCircle,
                                         },
                                         {
                                             id: 'shift-end',
                                             label: 'Shift End',
-                                            icon: Clock,
-                                        },
-                                        {
-                                            id: 'lead',
-                                            label: 'Lead',
-                                            icon: UserPlus,
-                                        },
-                                        {
-                                            id: 'journal',
-                                            label: 'Journal',
-                                            icon: FileText,
-                                        },
-                                        {
-                                            id: 'task',
-                                            label: 'Task',
-                                            icon: CalendarClock,
+                                            icon: TimerOff,
                                         },
                                         {
                                             id: 'break-start',
@@ -450,18 +584,33 @@ export default function MapPage() {
                                             icon: Coffee,
                                         },
                                         {
+                                            id: 'lead',
+                                            label: 'Leads',
+                                            icon: UserPlus,
+                                        },
+                                        {
+                                            id: 'journal',
+                                            label: 'Journals',
+                                            icon: FileText,
+                                        },
+                                        {
+                                            id: 'task',
+                                            label: 'Tasks',
+                                            icon: CheckCircle2,
+                                        },
+                                        {
                                             id: 'client',
-                                            label: 'Client',
+                                            label: 'Clients',
                                             icon: Building,
                                         },
                                         {
                                             id: 'competitor',
-                                            label: 'Competitor',
+                                            label: 'Competitors',
                                             icon: Building,
                                         },
                                         {
                                             id: 'quotation',
-                                            label: 'Quotation',
+                                            label: 'Quotations',
                                             icon: FileText,
                                         },
                                     ].map((filter) => (

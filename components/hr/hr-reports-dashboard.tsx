@@ -32,6 +32,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
+import { DailyReportsSection } from '@/components/reports/daily-reports-section';
 
 interface HRReportsDashboardProps {
     className?: string;
@@ -159,20 +160,18 @@ const formatDate = (date: Date): string => {
     return date?.toISOString()?.split('T')[0];
 };
 
-// Utility function to format time
-const formatTime = (timeString: string): string => {
-    if (!timeString || timeString === 'N/A') return 'N/A';
-    try {
-        const time = new Date(`2000-01-01T${timeString}`);
-        return time.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    } catch {
-        return timeString;
-    }
+// Utility function to extract time from ISO timestamp (HH:mm:ss)
+const extractTime = (isoString: string | null | undefined): string => {
+    if (!isoString) return 'N/A';
+    // If it's already formatted (doesn't contain 'T'), return as-is
+    if (!isoString.includes('T')) return isoString;
+    // Extract time portion from ISO string (e.g., "2025-11-11T08:34:33.000Z" -> "08:34:33")
+    const timePart = isoString.split('T')[1];
+    if (!timePart) return isoString;
+    // Remove milliseconds and timezone (everything after '.')
+    return timePart.split('.')[0].split('Z')[0].split('+')[0];
 };
+
 
 // CSV Export utility functions
 const downloadCSV = (csvContent: string, filename: string) => {
@@ -214,8 +213,8 @@ const exportPresentUsersToCSV = (users: DailyAttendanceOverview['data']['present
             `"${user.phoneNumber || 'N/A'}"`,
             `"${user.branchName}"`,
             user.accessLevel,
-            `"${new Date(user.checkInTime).toLocaleTimeString()}"`,
-            `"${user.checkOutTime ? new Date(user.checkOutTime).toLocaleTimeString() : 'Still Working'}"`,
+            `"${extractTime(user.checkInTime)}"`,
+            `"${user.checkOutTime ? extractTime(user.checkOutTime) : 'Still Working'}"`,
             user.status,
             user.workingHours || 'N/A',
             `"${user.shiftDuration}"`,
@@ -377,7 +376,7 @@ const useDailyAttendanceOverview = () => {
 };
 
 // Stats card component
-const StatsCard: React.FC<{
+const StatsCard: React.FunctionComponent<{
     title: string;
     value: string | number;
     subtitle?: string;
@@ -415,7 +414,7 @@ const StatsCard: React.FC<{
 );
 
 // Work hours breakdown component
-const WorkHoursBreakdown: React.FC<{
+const WorkHoursBreakdown: React.FunctionComponent<{
     data: TodayAttendanceData;
     orgReport?: OrganizationReportData;
 }> = ({ data, orgReport }) => {
@@ -485,13 +484,13 @@ const WorkHoursBreakdown: React.FC<{
                         <div>
                             <div className="text-sm font-medium">Average Start Time</div>
                             <div className="text-lg font-semibold text-green-600">
-                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.startTime)}
+                                {orgReport?.report?.organizationMetrics?.averageTimes?.startTime || 'N/A'}
                             </div>
                         </div>
                         <div>
                             <div className="text-sm font-medium">Average End Time</div>
                             <div className="text-lg font-semibold text-blue-600">
-                                {formatTime(orgReport?.report?.organizationMetrics?.averageTimes?.endTime)}
+                                {orgReport?.report?.organizationMetrics?.averageTimes?.endTime || 'N/A'}
                             </div>
                         </div>
                     </div>
@@ -586,7 +585,7 @@ const EmployeeStatusOverview: React.FunctionComponent<{
 };
 
 // Personal Metrics Component
-const PersonalMetrics: React.FC<{
+const PersonalMetrics: React.FunctionComponent<{
     userMetrics: any;
     dailyStats: any;
 }> = ({ userMetrics, dailyStats }) => {
@@ -695,7 +694,7 @@ const PersonalMetrics: React.FC<{
 };
 
 // Daily Attendance Table Component
-const DailyAttendanceTable: React.FC = () => {
+const DailyAttendanceTable: React.FunctionComponent = () => {
     const { data: attendanceOverview, isLoading, error } = useDailyAttendanceOverview();
 
     if (isLoading) {
@@ -712,7 +711,7 @@ const DailyAttendanceTable: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
-                            {[...Array(4)].map((_, i) => (
+                            {[...Array(4)]?.map((_, i) => (
                                 <Skeleton key={i} className="h-16 rounded-lg" />
                             ))}
                         </div>
@@ -766,19 +765,19 @@ const DailyAttendanceTable: React.FC = () => {
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-blue-600">{data.totalEmployees}</div>
+                            <div className="text-2xl font-bold text-blue-600">{data?.totalEmployees}</div>
                             <div className="text-sm text-muted-foreground">Total Employees</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-green-600">{data.presentEmployees}</div>
+                            <div className="text-2xl font-bold text-green-600">{data?.presentEmployees}</div>
                             <div className="text-sm text-muted-foreground">Present</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-red-600">{data.absentEmployees}</div>
+                            <div className="text-2xl font-bold text-red-600">{data?.absentEmployees}</div>
                             <div className="text-sm text-muted-foreground">Absent</div>
                         </div>
                         <div className="p-3 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-purple-600">{data.attendanceRate}%</div>
+                            <div className="text-2xl font-bold text-purple-600">{data?.attendanceRate}%</div>
                             <div className="text-sm text-muted-foreground">Attendance Rate</div>
                         </div>
                     </div>
@@ -787,9 +786,9 @@ const DailyAttendanceTable: React.FC = () => {
                     <div className="mb-4">
                         <div className="flex justify-between mb-2 text-sm">
                             <span>Attendance Progress</span>
-                            <span>{data.attendanceRate}%</span>
+                            <span>{data?.attendanceRate}%</span>
                         </div>
-                        <Progress value={data.attendanceRate} className="h-2" />
+                        <Progress value={data?.attendanceRate} className="h-2" />
                     </div>
                 </CardContent>
             </Card>
@@ -819,7 +818,7 @@ const DailyAttendanceTable: React.FC = () => {
                     <CardContent className="p-4 sm:p-6">
                     <div className="overflow-y-auto p-2 rounded-lg border" style={{ maxHeight: 'min(400px, 70vh)' }}>
                     {data.presentUsers.length > 0 ? (
-                                <div className="divide-y">
+                              <div className="flex flex-col gap-2">
                                     {data.presentUsers?.map((user: any) => (
                                         <div key={user?.uid} className="flex flex-col gap-3 p-4 rounded-md border transition-colors hover:bg-muted/50 sm:flex-row sm:items-center">
                                            <div className="flex gap-3 items-center md:w-1/2">
@@ -864,13 +863,9 @@ const DailyAttendanceTable: React.FC = () => {
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="flex flex-row gap-1 items-center text-sm font-medium">
-                                                        <p>  
-                                                            {new Date(user?.checkInTime).toLocaleTimeString([], {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })} - 
+                                                        <p>
+                                                            {extractTime(user?.checkInTime)} - {user?.shiftDuration}
                                                         </p>
-                                                        <p>{user?.shiftDuration} Worked</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -971,7 +966,7 @@ const DailyAttendanceTable: React.FC = () => {
     );
 };
 
-export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
+export const HRReportsDashboard: React.FunctionComponent<HRReportsDashboardProps> = ({
     className = '',
 }) => {
     const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
@@ -1232,13 +1227,13 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
                             </div>
                             <div className="p-3 text-center rounded-lg border">
                                 <div className="text-lg font-bold">
-                                    {formatTime(orgReport.report.organizationMetrics.insights.peakCheckInTime)}
+                                    {orgReport.report.organizationMetrics.insights.peakCheckInTime || 'N/A'}
                                 </div>
                                 <div className="text-xs text-muted-foreground">Peak Check-in</div>
                             </div>
                             <div className="p-3 text-center rounded-lg border">
                                 <div className="text-lg font-bold">
-                                    {formatTime(orgReport.report.organizationMetrics.insights.peakCheckOutTime)}
+                                    {orgReport.report.organizationMetrics.insights.peakCheckOutTime || 'N/A'}
                                 </div>
                                 <div className="text-xs text-muted-foreground">Peak Check-out</div>
                             </div>
@@ -1255,6 +1250,9 @@ export const HRReportsDashboard: React.FC<HRReportsDashboardProps> = ({
 
             {/* Daily Attendance Table */}
             <DailyAttendanceTable />
+
+            {/* Daily Reports Archive */}
+            <DailyReportsSection variant="organization" />
         </div>
     );
 };

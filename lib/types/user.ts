@@ -67,6 +67,7 @@ export interface UserTarget {
     targetPeriod: string;
     periodStartDate: string;
     periodEndDate: string;
+    erpSalesRepCode?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -98,6 +99,13 @@ export interface User {
     userTarget?: UserTarget;
     assignedClients?: Client[];
     assignedClientIds?: number[];
+    preferences?: {
+        theme?: 'light' | 'dark';
+        language?: string;
+        notifications?: boolean;
+        shiftAutoEnd?: boolean;
+        [key: string]: any;
+    } | null;
 }
 
 export interface UsersByStatus {

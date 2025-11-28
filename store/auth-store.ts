@@ -212,19 +212,31 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                             isLoading: false, // Ensure loading is false
                         });
                     } else {
-                        // Token is invalid on rehydration, sign out immediately
-                        console.warn('AuthStore: Invalid token on rehydration. Signing out.');
-                        // Need to call signOut via the store's own action for proper state reset
-                        // Directly calling state.signOut() might cause issues if called during rehydration
-                        // Instead, we set initial state and rely on other mechanisms (middleware/interceptors) to handle it.
-                        // Or better: Schedule the signOut after rehydration completes.
-                        // However, the middleware redirect should handle this case anyway.
-                        // For simplicity, let's just clear the store state here directly.
+                        // Token is invalid/expired on rehydration, sign out immediately
+                        console.warn('AuthStore: Token expired or invalid on rehydration. Signing out and redirecting to sign-in.');
+                        
+                        // Clear auth state
                         state.setAuthState(initialState);
                         // Also clear the authService tokens
                         authService.clearTokens();
-                        // Clear the sessionStorage explicitly again just in case
+                        // Clear the sessionStorage explicitly
                         window.sessionStorage.removeItem('auth-storage');
+                        
+                        // Schedule redirect to sign-in page after rehydration completes
+                        // Use setTimeout to ensure this happens after React hydration
+                        setTimeout(() => {
+                            // Only redirect if we're not already on a public/auth page
+                            if (typeof window !== 'undefined') {
+                                const currentPath = window.location.pathname;
+                                const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/verify-email', '/verify-otp', '/'];
+                                
+                                if (!publicPaths.includes(currentPath) && !currentPath.startsWith('/api')) {
+                                    // Redirect to sign-in with callback URL
+                                    const callbackUrl = encodeURIComponent(window.location.href);
+                                    window.location.href = `/sign-in?callbackUrl=${callbackUrl}&token_expired=true`;
+                                }
+                            }
+                        }, 100);
                     }
                 } else {
                     // No tokens found, ensure clean initial state

@@ -481,6 +481,13 @@ export function SalesAnalyticsDashboard() {
     refetchAll,
   } = useReportsQuery(selectedBranch);
 
+  // Clear all filters - resets branch selection and refetches data
+  const handleClearFilters = () => {
+    setSelectedBranch(undefined);
+    refetchAll();
+    showSuccessToast('Filters cleared - showing all branches', toast);
+  };
+
   // Use actual data from reports service with proper defaults
   const salesData = salesOverview.data || {
     summary: { totalRevenue: 0, revenueGrowth: 0, totalQuotations: 0, conversionRate: 0, averageOrderValue: 0, topPerformingProduct: 'N/A' },
@@ -746,7 +753,7 @@ export function SalesAnalyticsDashboard() {
                                 minTickGap={32}
                                 tickFormatter={(value) => {
                                   const date = new Date(value);
-                                  return date.toLocaleDateString("en-US", {
+                                  return date.toLocaleDateString("en-ZA", {
                                     month: "short",
                                     day: "numeric",
                                   });
@@ -758,7 +765,7 @@ export function SalesAnalyticsDashboard() {
                                 content={
                                   <ChartTooltipContent
                                     labelFormatter={(value) => {
-                                      return new Date(value).toLocaleDateString("en-US", {
+                                      return new Date(value).toLocaleDateString("en-ZA", {
                                         month: "short",
                                         day: "numeric",
                                         year: "numeric",

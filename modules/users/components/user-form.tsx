@@ -35,6 +35,7 @@ import {
     ClientStatus,
     Client,
 } from '@/hooks/use-clients-query';
+import { useUsersQuery } from '@/hooks/use-users-query';
 import { showErrorToast } from '@/lib/utils/toast-config';
 import toast from 'react-hot-toast';
 
@@ -78,16 +79,43 @@ const userFormSchema = z.object({
     country: z.string().optional(),
     postalCode: z.string().optional(),
 
-    // Target Information (basic targets only)
+    // Target Information (comprehensive targets)
     targetSalesAmount: z.string().optional(),
+    currentSalesAmount: z.string().optional(),
     targetQuotationsAmount: z.string().optional(),
+    currentQuotationsAmount: z.string().optional(),
+    currentOrdersAmount: z.string().optional(),
     targetCurrency: z.string().optional(),
     targetHoursWorked: z.number().optional(),
+    currentHoursWorked: z.number().optional(),
     targetNewClients: z.number().optional(),
+    currentNewClients: z.number().optional(),
     targetNewLeads: z.number().optional(),
+    currentNewLeads: z.number().optional(),
     targetCheckIns: z.number().optional(),
+    currentCheckIns: z.number().optional(),
     targetCalls: z.number().optional(),
+    currentCalls: z.number().optional(),
     targetPeriod: z.string().optional(),
+    periodStartDate: z.string().optional(),
+    periodEndDate: z.string().optional(),
+
+    // Cost Breakdown Fields (Monthly) - All in ZAR
+    baseSalary: z.string().optional(),
+    carInstalment: z.string().optional(),
+    carInsurance: z.string().optional(),
+    fuel: z.string().optional(),
+    cellPhoneAllowance: z.string().optional(),
+    carMaintenance: z.string().optional(),
+    cgicCosts: z.string().optional(),
+    totalCost: z.string().optional(),
+
+    // Management Fields
+    managedBranches: z.array(z.number()).optional(),
+    managedStaff: z.array(z.number()).optional(),
+
+    // ERP Integration
+    erpSalesRepCode: z.string().optional(),
 });
 
 // Infer TypeScript type from the schema
@@ -111,6 +139,8 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [selectedClients, setSelectedClients] = useState<number[]>([]);
+    const [selectedManagedBranches, setSelectedManagedBranches] = useState<number[]>([]);
+    const [selectedManagedStaff, setSelectedManagedStaff] = useState<number[]>([]);
 
     // Use the global branch query hook
     const {
@@ -129,6 +159,16 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     } = useAdminClientsQuery({
         limit: 500, // Get all available clients for assignment
         status: ClientStatus.ACTIVE, // Only fetch active clients for assignment
+    });
+
+    // Use the users query hook to get all users for managed staff assignment
+    const {
+        users,
+        isLoading: isLoadingUsers,
+        error: usersError,
+        refetch: refetchUsers,
+    } = useUsersQuery({
+        limit: 500, // Get all available users for staff management
     });
 
     // Position options
@@ -220,15 +260,42 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         country: '',
         postalCode: '',
         targetSalesAmount: '0',
+        currentSalesAmount: '0',
         targetQuotationsAmount: '0',
-        targetCurrency: 'USD',
+        currentQuotationsAmount: '0',
+        currentOrdersAmount: '0',
+        targetCurrency: 'ZAR',
         targetHoursWorked: 40,
+        currentHoursWorked: 0,
         targetNewClients: 0,
+        currentNewClients: 0,
         targetNewLeads: 0,
+        currentNewLeads: 0,
         targetCheckIns: 0,
+        currentCheckIns: 0,
         targetCalls: 0,
+        currentCalls: 0,
         targetPeriod: 'monthly',
+        periodStartDate: '',
+        periodEndDate: '',
+
+        // Cost Breakdown Fields
+        baseSalary: '0',
+        carInstalment: '0',
+        carInsurance: '0',
+        fuel: '0',
+        cellPhoneAllowance: '0',
+        carMaintenance: '0',
+        cgicCosts: '0',
+        totalCost: '0',
+        
+        // Management Fields
+        managedBranches: [],
+        managedStaff: [],
         assignedClients: [],
+        
+        // ERP Integration
+        erpSalesRepCode: '',
         ...initialData,
     };
 
@@ -250,7 +317,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         if (initialData?.assignedClients) {
             setSelectedClients(initialData.assignedClients);
         }
-    }, [initialData?.assignedClients]);
+        if (initialData?.managedBranches) {
+            setSelectedManagedBranches(initialData.managedBranches);
+        }
+        if (initialData?.managedStaff) {
+            setSelectedManagedStaff(initialData.managedStaff);
+        }
+    }, [initialData?.assignedClients, initialData?.managedBranches, initialData?.managedStaff]);
 
     // Watch for name changes to generate avatar preview
     const watchedName = watch('name');
@@ -289,13 +362,29 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             label: `${client.name}${client.contactPerson ? ` (${client.contactPerson})` : ''}${client.email ? ` - ${client.email}` : ''}`,
         })) || [];
 
+    // Prepare branch options for MultiSelect
+    const branchOptions: MultiSelectOption[] =
+        branches?.map((branch) => ({
+            value: branch.uid,
+            label: branch.name,
+        })) || [];
+
+    // Prepare user options for MultiSelect with better labeling
+    const userOptions: MultiSelectOption[] =
+        users?.map((user) => ({
+            value: user.uid,
+            label: `${user.name} ${user.surname}${user.email ? ` - ${user.email}` : ''}`,
+        })) || [];
+
     // Handle form submission
     const handleFormSubmit = async (data: UserFormValues) => {
         try {
             setIsSubmitting(true);
 
-            // Include selected clients in form data
+            // Include selected clients and management fields in form data
             data.assignedClients = selectedClients;
+            data.managedBranches = selectedManagedBranches;
+            data.managedStaff = selectedManagedStaff;
 
             // If there's a selected file, upload it first
             if (selectedFile) {
@@ -871,18 +960,34 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Target Sales Fields */}
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="targetSalesAmount"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Sales Amount
+                                        Target Sales Amount (Monthly)
                                 </Label>
                                 <Input
                                     id="targetSalesAmount"
                                     {...register('targetSalesAmount')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="100000"
+                                    placeholder="e.g. 150000 (Monthly revenue goal in ZAR)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentSalesAmount"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current Sales Amount
+                                </Label>
+                                <Input
+                                    id="currentSalesAmount"
+                                    {...register('currentSalesAmount')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="e.g. 75000 (Current achieved sales in ZAR)"
                                 />
                             </div>
 
@@ -891,13 +996,13 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetQuotationsAmount"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Quotations Amount
+                                        Target Quotations Amount (Monthly)
                                 </Label>
                                 <Input
                                     id="targetQuotationsAmount"
                                     {...register('targetQuotationsAmount')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="50000"
+                                    placeholder="e.g. 75000 (Monthly quotations goal in ZAR)"
                                 />
                             </div>
 
@@ -912,16 +1017,17 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     id="targetCurrency"
                                     {...register('targetCurrency')}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="USD"
+                                    placeholder="ZAR"
                                 />
                             </div>
 
+                                {/* Target Activity Fields */}
                             <div className="space-y-1">
                                 <Label
                                     htmlFor="targetHoursWorked"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Hours Worked
+                                        Target Hours Worked (Monthly)
                                 </Label>
                                 <Input
                                     id="targetHoursWorked"
@@ -930,7 +1036,25 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="40"
+                                    placeholder="160 (Standard: 40 hours/week × 4 weeks)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentHoursWorked"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current Hours Worked
+                                </Label>
+                                <Input
+                                    id="currentHoursWorked"
+                                    type="number"
+                                    {...register('currentHoursWorked', {
+                                        valueAsNumber: true,
+                                    })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="80 (Hours worked so far)"
                                 />
                             </div>
 
@@ -939,7 +1063,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetNewClients"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target New Clients
+                                        Target New Clients (Monthly)
                                 </Label>
                                 <Input
                                     id="targetNewClients"
@@ -948,7 +1072,25 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="10"
+                                    placeholder="5 (New clients to acquire per month)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentNewClients"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current New Clients
+                                </Label>
+                                <Input
+                                    id="currentNewClients"
+                                    type="number"
+                                    {...register('currentNewClients', {
+                                        valueAsNumber: true,
+                                    })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="2 (New clients acquired so far)"
                                 />
                             </div>
 
@@ -957,7 +1099,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetNewLeads"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target New Leads
+                                        Target New Leads (Monthly)
                                 </Label>
                                 <Input
                                     id="targetNewLeads"
@@ -966,7 +1108,25 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="20"
+                                    placeholder="25 (New leads to generate per month)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentNewLeads"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current New Leads
+                                </Label>
+                                <Input
+                                    id="currentNewLeads"
+                                    type="number"
+                                    {...register('currentNewLeads', {
+                                        valueAsNumber: true,
+                                    })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="12 (New leads generated so far)"
                                 />
                             </div>
 
@@ -975,7 +1135,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetCheckIns"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Check-ins
+                                        Target Check-ins (Monthly)
                                 </Label>
                                 <Input
                                     id="targetCheckIns"
@@ -984,7 +1144,25 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="22"
+                                    placeholder="30 (Client visits/check-ins per month)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentCheckIns"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current Check-ins
+                                </Label>
+                                <Input
+                                    id="currentCheckIns"
+                                    type="number"
+                                    {...register('currentCheckIns', {
+                                        valueAsNumber: true,
+                                    })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="15 (Check-ins completed so far)"
                                 />
                             </div>
 
@@ -993,7 +1171,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     htmlFor="targetCalls"
                                     className="block text-xs font-light uppercase font-body"
                                 >
-                                    Target Calls
+                                        Target Calls (Monthly)
                                 </Label>
                                 <Input
                                     id="targetCalls"
@@ -1002,7 +1180,25 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         valueAsNumber: true,
                                     })}
                                     className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="50"
+                                    placeholder="80 (Phone calls/outreach per month)"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="currentCalls"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                        Current Calls
+                                </Label>
+                                <Input
+                                    id="currentCalls"
+                                    type="number"
+                                    {...register('currentCalls', {
+                                        valueAsNumber: true,
+                                    })}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="40 (Calls made so far)"
                                 />
                             </div>
 
@@ -1044,6 +1240,313 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                         </Select>
                                     )}
                                 />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="periodStartDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Period Start Date
+                                </Label>
+                                <Input
+                                    id="periodStartDate"
+                                    type="date"
+                                    {...register('periodStartDate')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="periodEndDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Period End Date
+                                </Label>
+                                <Input
+                                    id="periodEndDate"
+                                    type="date"
+                                    {...register('periodEndDate')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                />
+                            </div>
+
+                                {/* Current Performance Tracking */}
+                                <div className="col-span-2 pt-4 border-t border-border">
+                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                        Current Performance Tracking
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="currentQuotationsAmount"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Current Quotations Amount
+                                            </Label>
+                                            <Input
+                                                id="currentQuotationsAmount"
+                                                {...register('currentQuotationsAmount')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="Current quotations amount"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="currentOrdersAmount"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Current Orders Amount
+                                            </Label>
+                                            <Input
+                                                id="currentOrdersAmount"
+                                                {...register('currentOrdersAmount')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="Current orders amount"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Cost Breakdown Section */}
+                                <div className="col-span-2 pt-4 border-t border-border">
+                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
+                                        Monthly Cost Breakdown (ZAR)
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="baseSalary"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Base Salary
+                                            </Label>
+                                            <Input
+                                                id="baseSalary"
+                                                {...register('baseSalary')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 25000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carInstalment"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Instalment
+                                            </Label>
+                                            <Input
+                                                id="carInstalment"
+                                                {...register('carInstalment')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 8000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carInsurance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Insurance
+                                            </Label>
+                                            <Input
+                                                id="carInsurance"
+                                                {...register('carInsurance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 1500"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="fuel"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Fuel Allowance
+                                            </Label>
+                                            <Input
+                                                id="fuel"
+                                                {...register('fuel')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 3000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="cellPhoneAllowance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Cell Phone Allowance
+                                            </Label>
+                                            <Input
+                                                id="cellPhoneAllowance"
+                                                {...register('cellPhoneAllowance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 800"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="carMaintenance"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Car Maintenance
+                                            </Label>
+                                            <Input
+                                                id="carMaintenance"
+                                                {...register('carMaintenance')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 2000"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="cgicCosts"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                CGIC Costs
+                                            </Label>
+                                            <Input
+                                                id="cgicCosts"
+                                                {...register('cgicCosts')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 1200"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="totalCost"
+                                                className="block text-xs font-light uppercase font-body"
+                                            >
+                                                Total Cost
+                                            </Label>
+                                            <Input
+                                                id="totalCost"
+                                                {...register('totalCost')}
+                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                                placeholder="e.g. 41500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </fieldset>
+
+            {/* Management Section */}
+            <fieldset className="space-y-4">
+                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Management Assignments
+                </legend>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Settings className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Branches & Staff Management
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedBranches"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Branches
+                                </Label>
+                                <MultiSelect
+                                    options={branchOptions}
+                                    selectedValues={selectedManagedBranches}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedBranches(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingBranches
+                                            ? 'Loading branches...'
+                                            : branchOptions.length === 0
+                                              ? 'No branches available'
+                                              : 'Select branches to manage...'
+                                    }
+                                    disabled={isLoadingBranches}
+                                    className="w-full"
+                                />
+                                {isLoadingBranches && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading branches...
+                                    </p>
+                                )}
+                                {branchError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load branches.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchBranches()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedStaff"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Staff
+                                </Label>
+                                <MultiSelect
+                                    options={userOptions}
+                                    selectedValues={selectedManagedStaff}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedStaff(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingUsers
+                                            ? 'Loading users...'
+                                            : userOptions.length === 0
+                                              ? 'No users available'
+                                              : 'Select staff to manage...'
+                                    }
+                                    disabled={isLoadingUsers}
+                                    className="w-full"
+                                />
+                                {isLoadingUsers && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading users...
+                                    </p>
+                                )}
+                                {usersError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load users.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchUsers()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                                {!isLoadingUsers &&
+                                    !usersError &&
+                                    userOptions.length === 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No users available for staff management.
+                                        </p>
+                                    )}
                             </div>
                         </div>
                     </CardContent>
@@ -1212,6 +1715,24 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     </div>
                                 )}
                             </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="erpSalesRepCode"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    ERP Sales Rep Code
+                                </Label>
+                                <Input
+                                    id="erpSalesRepCode"
+                                    {...register('erpSalesRepCode')}
+                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
+                                    placeholder="e.g. SAL001 (ERP sales code for linking)"
+                                />
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Code used to link user to ERP sales data
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -1227,6 +1748,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         reset();
                         setUserImage(null);
                         setSelectedFile(null);
+                        setSelectedClients([]);
+                        setSelectedManagedBranches([]);
+                        setSelectedManagedStaff([]);
                     }}
                     disabled={isSubmitting}
                 >

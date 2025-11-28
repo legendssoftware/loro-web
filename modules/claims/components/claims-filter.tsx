@@ -44,7 +44,7 @@ import {
     Clock,
     CalendarX2,
 } from 'lucide-react';
-import { useCallback, useState, memo } from 'react';
+import { useCallback, useState, memo, useMemo, useEffect, useRef } from 'react';
 import {
     format,
     subDays,
@@ -76,73 +76,137 @@ interface ClaimsFilterProps {
     claims?: Claim[];
 }
 
+// Define initial filter state as a constant
+const INITIAL_FILTERS = {
+    search: '',
+    status: undefined as ClaimStatus | undefined,
+    category: undefined as ClaimCategory | undefined,
+    ownerId: undefined as number | undefined,
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+};
+
 function ClaimsFilterComponent({
     onApplyFilters,
     onClearFilters,
     claims = [],
 }: ClaimsFilterProps) {
-    const [search, setSearch] = useState<string>('');
-    const [status, setStatus] = useState<ClaimStatus | undefined>(undefined);
-    const [category, setCategory] = useState<ClaimCategory | undefined>(
-        undefined,
-    );
-    const [ownerId, setOwnerId] = useState<number | undefined>(undefined);
-    const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-    const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    // Single consolidated filter state
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
     const [dateRangePreset, setDateRangePreset] = useState<
         DateRangePreset | undefined
     >(undefined);
-    const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-    const handleApplyFilters = useCallback(() => {
-        const filters: ExtendedClaimFilterParams = {};
-        const newActiveFilters: string[] = [];
+    // Ref to track the last applied filters to prevent unnecessary API calls
+    const lastAppliedFiltersRef = useRef<ExtendedClaimFilterParams>({});
 
-        if (search) {
-            filters.search = search;
-            newActiveFilters.push('Search');
+    // Ref for debounce timer
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Derive active filter count from current filter state
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        if (filters.search) count++;
+        if (filters.status) count++;
+        if (filters.category) count++;
+        if (filters.ownerId) count++;
+        if (filters.startDate || filters.endDate) count++;
+        return count;
+    }, [filters]);
+
+    // Helper function to build filter params from state
+    const buildFilterParams = useCallback((): ExtendedClaimFilterParams => {
+        const params: ExtendedClaimFilterParams = {};
+
+        if (filters.search) params.search = filters.search;
+        if (filters.status) params.status = filters.status;
+        if (filters.category) params.category = filters.category;
+        if (filters.ownerId) params.ownerId = filters.ownerId;
+        if (filters.startDate) params.startDate = filters.startDate;
+        if (filters.endDate) params.endDate = filters.endDate;
+
+        return params;
+    }, [filters]);
+
+    // Check if filters have actually changed
+    const hasFiltersChanged = useCallback((newParams: ExtendedClaimFilterParams): boolean => {
+        const lastParams = lastAppliedFiltersRef.current;
+
+        return (
+            lastParams.search !== newParams.search ||
+            lastParams.status !== newParams.status ||
+            lastParams.category !== newParams.category ||
+            lastParams.ownerId !== newParams.ownerId ||
+            lastParams.startDate !== newParams.startDate ||
+            lastParams.endDate !== newParams.endDate
+        );
+    }, []);
+
+    // Single unified apply filters function
+    const applyFilters = useCallback(() => {
+        const params = buildFilterParams();
+
+        // Only apply if filters have actually changed
+        if (hasFiltersChanged(params)) {
+            lastAppliedFiltersRef.current = params;
+            onApplyFilters(params);
+        }
+    }, [buildFilterParams, hasFiltersChanged, onApplyFilters]);
+
+    // Debounced search effect
+    useEffect(() => {
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
         }
 
-        if (status) {
-            filters.status = status;
-            newActiveFilters.push('Status');
-        }
+        // Set new timer for search debouncing
+        debounceTimerRef.current = setTimeout(() => {
+            applyFilters();
+        }, 300);
 
-        if (category) {
-            filters.category = category;
-            newActiveFilters.push('Category');
-        }
-
-        if (ownerId) {
-            filters.ownerId = ownerId;
-            newActiveFilters.push('Owner');
-        }
-
-        if (startDate || endDate) {
-            if (startDate) {
-                filters.startDate = startDate;
-                newActiveFilters.push('Date Range');
+        // Cleanup function
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
             }
-            if (endDate) {
-                filters.endDate = endDate;
-            }
-        }
+        };
+    }, [filters.search, applyFilters]);
 
-        setActiveFilters(newActiveFilters);
-        onApplyFilters(filters);
-    }, [search, status, category, ownerId, startDate, endDate, onApplyFilters]);
+    // Immediate effect for non-search filters
+    useEffect(() => {
+        applyFilters();
+    }, [filters.status, filters.category, filters.ownerId, filters.startDate, filters.endDate, applyFilters]);
 
+    // Handle clearing filters
     const handleClearFilters = useCallback(() => {
-        setSearch('');
-        setStatus(undefined);
-        setCategory(undefined);
-        setOwnerId(undefined);
-        setStartDate(undefined);
-        setEndDate(undefined);
+        setFilters(INITIAL_FILTERS);
         setDateRangePreset(undefined);
-        setActiveFilters([]);
+        lastAppliedFiltersRef.current = {};
         onClearFilters();
     }, [onClearFilters]);
+
+    // Handle individual filter updates
+    const updateFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: value,
+            }));
+        },
+        [],
+    );
+
+    // Toggle filter (set to undefined if already selected, otherwise set to new value)
+    const toggleFilter = useCallback(
+        <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+            setFilters((prev) => ({
+                ...prev,
+                [key]: prev[key] === value ? undefined : value,
+            }));
+        },
+        [],
+    );
 
     const handleDateRangeSelect = useCallback(
         (preset: DateRangePreset) => {
@@ -150,39 +214,31 @@ function ClaimsFilterComponent({
 
             switch (preset) {
                 case DateRangePreset.TODAY:
-                    setStartDate(today);
-                    setEndDate(today);
+                    setFilters((prev) => ({ ...prev, startDate: today, endDate: today }));
                     break;
                 case DateRangePreset.YESTERDAY:
                     const yesterday = subDays(today, 1);
-                    setStartDate(yesterday);
-                    setEndDate(yesterday);
+                    setFilters((prev) => ({ ...prev, startDate: yesterday, endDate: yesterday }));
                     break;
                 case DateRangePreset.LAST_WEEK:
                     const lastWeekStart = startOfWeek(subDays(today, 7));
                     const lastWeekEnd = endOfWeek(subDays(today, 7));
-                    setStartDate(lastWeekStart);
-                    setEndDate(lastWeekEnd);
+                    setFilters((prev) => ({ ...prev, startDate: lastWeekStart, endDate: lastWeekEnd }));
                     break;
                 case DateRangePreset.LAST_MONTH:
                     const lastMonthStart = startOfMonth(subDays(today, 30));
                     const lastMonthEnd = endOfMonth(subDays(today, 30));
-                    setStartDate(lastMonthStart);
-                    setEndDate(lastMonthEnd);
+                    setFilters((prev) => ({ ...prev, startDate: lastMonthStart, endDate: lastMonthEnd }));
                     break;
                 case DateRangePreset.CUSTOM:
                     break;
                 default:
-                    setStartDate(undefined);
-                    setEndDate(undefined);
+                    setFilters((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
             }
 
             setDateRangePreset(preset);
-            if (preset !== DateRangePreset.CUSTOM) {
-                setTimeout(handleApplyFilters, 0);
-            }
         },
-        [handleApplyFilters],
+        [],
     );
 
     const getDateRangeLabel = useCallback(() => {
@@ -191,15 +247,15 @@ function ClaimsFilterComponent({
         if (dateRangePreset === DateRangePreset.LAST_WEEK) return 'LAST WEEK';
         if (dateRangePreset === DateRangePreset.LAST_MONTH) return 'LAST MONTH';
         if (dateRangePreset === DateRangePreset.CUSTOM) {
-            if (startDate && endDate) {
-                return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')}`;
+            if (filters.startDate && filters.endDate) {
+                return `${format(filters.startDate, 'MMM d')} - ${format(filters.endDate, 'MMM d')}`;
             }
-            if (startDate) {
-                return `FROM ${format(startDate, 'MMM d')}`;
+            if (filters.startDate) {
+                return `FROM ${format(filters.startDate, 'MMM d')}`;
             }
         }
         return 'DATE RANGE';
-    }, [dateRangePreset, startDate, endDate]);
+    }, [dateRangePreset, filters.startDate, filters.endDate]);
 
     const categoryLabels = {
         [ClaimCategory.GENERAL]: 'General',
@@ -313,34 +369,22 @@ function ClaimsFilterComponent({
               ];
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2">
+        <div className="flex flex-1 gap-2 justify-end items-center">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
                 <Input
                     placeholder="search..."
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        if (e.target.value) {
-                            handleApplyFilters();
-                        } else if (activeFilters.includes('Search')) {
-                            handleApplyFilters();
-                        }
-                    }}
+                    value={filters.search}
+                    onChange={(e) => updateFilter('search', e.target.value)}
                     className="h-10 rounded-md pl-9 pr-9 bg-card border-input placeholder:text-muted-foreground placeholder:text-[10px] placeholder:font-normal placeholder:font-body"
                 />
-                {search && (
+                {filters.search && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
-                        onClick={() => {
-                            setSearch('');
-                            if (activeFilters.includes('Search')) {
-                                handleApplyFilters();
-                            }
-                        }}
+                        className="absolute right-1 top-1/2 w-8 h-8 transform -translate-y-1/2"
+                        onClick={() => updateFilter('search', '')}
                     >
                         <X className="w-4 h-4" />
                         <span className="sr-only">Clear search</span>
@@ -352,8 +396,8 @@ function ClaimsFilterComponent({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <Calendar
                                     className="w-4 h-4 text-muted-foreground"
                                     strokeWidth={1.5}
@@ -362,7 +406,7 @@ function ClaimsFilterComponent({
                                     {getDateRangeLabel()}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="start">
@@ -377,7 +421,7 @@ function ClaimsFilterComponent({
                             >
                                 Today
                                 {dateRangePreset === DateRangePreset.TODAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -386,7 +430,7 @@ function ClaimsFilterComponent({
                             >
                                 Yesterday
                                 {dateRangePreset === DateRangePreset.YESTERDAY && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -395,7 +439,7 @@ function ClaimsFilterComponent({
                             >
                                 Last Week
                                 {dateRangePreset === DateRangePreset.LAST_WEEK && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -404,20 +448,17 @@ function ClaimsFilterComponent({
                             >
                                 Last Month
                                 {dateRangePreset === DateRangePreset.LAST_MONTH && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {
                                     setDateRangePreset(undefined);
-                                    setStartDate(undefined);
-                                    setEndDate(undefined);
-                                    if (activeFilters.includes('Date Range')) {
-                                        handleApplyFilters();
-                                    }
+                                    updateFilter('startDate', undefined);
+                                    updateFilter('endDate', undefined);
                                 }}
-                                className="flex items-center justify-center w-full"
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Date Range
@@ -432,20 +473,20 @@ function ClaimsFilterComponent({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {status ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {filters.status ? (
                                     <>
-                                        {statusIcons[status] &&
+                                        {statusIcons[filters.status] &&
                                             React.createElement(
-                                                statusIcons[status],
+                                                statusIcons[filters.status],
                                                 {
-                                                    className: `w-4 h-4 ${statusColors[status]}`,
+                                                    className: `w-4 h-4 ${statusColors[filters.status]}`,
                                                     strokeWidth: 1.5,
                                                 },
                                             )}
-                                        <span className={`text-[10px] font-thin font-body ${statusColors[status]}`}>
-                                            {statusLabels[status]}
+                                        <span className={`text-[10px] font-thin font-body ${statusColors[filters.status]}`}>
+                                            {statusLabels[filters.status]}
                                         </span>
                                     </>
                                 ) : (
@@ -457,12 +498,12 @@ function ClaimsFilterComponent({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="w-56 p-1"
+                        className="p-1 w-56"
                     >
                         <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
                             Filter by Status
@@ -475,46 +516,34 @@ function ClaimsFilterComponent({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
-                                        onClick={() => {
-                                            setStatus(
-                                                status === statusOption
-                                                    ? undefined
-                                                    : statusOption,
-                                            );
-                                            setTimeout(handleApplyFilters, 0);
-                                        }}
+                                        className="flex gap-2 items-center px-2 text-xs font-normal rounded cursor-pointer font-body"
+                                        onClick={() => toggleFilter('status', statusOption)}
                                     >
                                         {StatusIcon && (
                                             <StatusIcon
-                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                className={`mr-2 w-4 h-4 ${statusColors[statusOption]}`}
                                                 strokeWidth={1.5}
                                             />
                                         )}
                                         <span
                                             className={`text-[10px] font-normal font-body ${
-                                                status === statusOption
+                                                filters.status === statusOption
                                                     ? statusColors[statusOption]
                                                     : ''
                                             }`}
                                         >
                                             {statusLabels[statusOption]}
                                         </span>
-                                        {status === statusOption && (
-                                            <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                        {filters.status === statusOption && (
+                                            <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                         )}
                                     </DropdownMenuItem>
                                 );
                             })}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setStatus(undefined);
-                                    if (activeFilters.includes('Status')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
+                                onClick={() => updateFilter('status', undefined)}
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Status Filter
@@ -529,20 +558,20 @@ function ClaimsFilterComponent({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
-                                {category ? (
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
+                                {filters.category ? (
                                     <>
-                                        {categoryIcons[category] &&
+                                        {categoryIcons[filters.category] &&
                                             React.createElement(
-                                                categoryIcons[category],
+                                                categoryIcons[filters.category],
                                                 {
-                                                    className: `w-4 h-4 ${categoryColors[category]}`,
+                                                    className: `w-4 h-4 ${categoryColors[filters.category]}`,
                                                     strokeWidth: 1.5,
                                                 },
                                             )}
-                                        <span className={`text-[10px] font-thin font-body ${categoryColors[category]}`}>
-                                            {categoryLabels[category].toUpperCase()}
+                                        <span className={`text-[10px] font-thin font-body ${categoryColors[filters.category]}`}>
+                                            {categoryLabels[filters.category].toUpperCase()}
                                         </span>
                                     </>
                                 ) : (
@@ -554,12 +583,12 @@ function ClaimsFilterComponent({
                                     </>
                                 )}
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="w-56 p-1"
+                        className="p-1 w-56"
                     >
                         <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
                             Filter by Category
@@ -574,34 +603,24 @@ function ClaimsFilterComponent({
                                     return (
                                         <DropdownMenuItem
                                             key={categoryOption}
-                                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
-                                            onClick={() => {
-                                                setCategory(
-                                                    category === categoryOption
-                                                        ? undefined
-                                                        : categoryOption,
-                                                );
-                                                setTimeout(
-                                                    handleApplyFilters,
-                                                    0,
-                                                );
-                                            }}
+                                            className="flex gap-2 items-center px-2 text-xs font-normal rounded cursor-pointer font-body"
+                                            onClick={() => toggleFilter('category', categoryOption)}
                                         >
                                             <CategoryIcon
-                                                className={`w-4 h-4 mr-2 ${categoryColors[categoryOption]}`}
+                                                className={`mr-2 w-4 h-4 ${categoryColors[categoryOption]}`}
                                                 strokeWidth={1.5}
                                             />
                                             <span
                                                 className={`text-[10px] font-normal font-body ${
-                                                    category === categoryOption
+                                                    filters.category === categoryOption
                                                         ? categoryColors[categoryOption]
                                                         : ''
                                                 }`}
                                             >
                                                 {categoryLabels[categoryOption].toUpperCase()}
                                             </span>
-                                            {category === categoryOption && (
-                                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                            {filters.category === categoryOption && (
+                                                <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                             )}
                                         </DropdownMenuItem>
                                     );
@@ -609,13 +628,8 @@ function ClaimsFilterComponent({
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setCategory(undefined);
-                                    if (activeFilters.includes('Category')) {
-                                        handleApplyFilters();
-                                    }
-                                }}
-                                className="flex items-center justify-center w-full"
+                                onClick={() => updateFilter('category', undefined)}
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Category Filter
@@ -630,73 +644,60 @@ function ClaimsFilterComponent({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                                 <span className="text-[10px] font-thin font-body">
-                                    {ownerId ? 'OWNER' : 'ASSIGNEE'}
+                                    {filters.ownerId ? 'OWNER' : 'ASSIGNEE'}
                                 </span>
                             </div>
-                            <ChevronDown className="w-4 h-4 ml-2 opacity-50" strokeWidth={1.5} />
+                            <ChevronDown className="ml-2 w-4 h-4 opacity-50" strokeWidth={1.5} />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="w-56 p-1"
+                        className="p-1 w-56"
                     >
                         <DropdownMenuLabel className="px-2 mb-1 text-[10px] font-thin uppercase font-body">
                             Filter by Owner
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
-                            onClick={() => {
-                                setOwnerId(ownerId === -1 ? undefined : -1);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            className="flex gap-2 items-center px-2 text-xs font-normal rounded cursor-pointer font-body"
+                            onClick={() => toggleFilter('ownerId', -1)}
                         >
-                            <Avatar className="w-6 h-6 mr-2">
+                            <Avatar className="mr-2 w-6 h-6">
                                 <AvatarFallback>ME</AvatarFallback>
                             </Avatar>
                             <span className="text-[10px] font-normal font-body">
                                 My Claims
                             </span>
-                            {ownerId === -1 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                            {filters.ownerId === -1 && (
+                                <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
-                            onClick={() => {
-                                setOwnerId(ownerId === 0 ? undefined : 0);
-                                setTimeout(handleApplyFilters, 0);
-                            }}
+                            className="flex gap-2 items-center px-2 text-xs font-normal rounded cursor-pointer font-body"
+                            onClick={() => toggleFilter('ownerId', 0)}
                         >
-                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                            <div className="flex justify-center items-center mr-2 w-6 h-6 rounded-full bg-muted">
                                 <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
                             <span className="text-[10px] font-normal font-body">
                                 No Owner
                             </span>
-                            {ownerId === 0 && (
-                                <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                            {filters.ownerId === 0 && (
+                                <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {owners.map((owner) => (
                             <DropdownMenuItem
                                 key={owner.id}
-                                className="flex items-center gap-2 px-2 text-xs font-normal rounded cursor-pointer font-body"
-                                onClick={() => {
-                                    setOwnerId(
-                                        ownerId === owner.id
-                                            ? undefined
-                                            : owner.id,
-                                    );
-                                    setTimeout(handleApplyFilters, 0);
-                                }}
+                                className="flex gap-2 items-center px-2 text-xs font-normal rounded cursor-pointer font-body"
+                                onClick={() => toggleFilter('ownerId', owner.id)}
                             >
-                                <Avatar className="w-6 h-6 mr-2">
+                                <Avatar className="mr-2 w-6 h-6">
                                     <AvatarImage
                                         src={owner.avatar}
                                         alt={owner.name}
@@ -708,20 +709,15 @@ function ClaimsFilterComponent({
                                 <span className="text-[10px] font-normal font-body">
                                     {owner.name}
                                 </span>
-                                {ownerId === owner.id && (
-                                    <Check className="w-4 h-4 ml-auto text-primary" strokeWidth={1.5} />
+                                {filters.ownerId === owner.id && (
+                                    <Check className="ml-auto w-4 h-4 text-primary" strokeWidth={1.5} />
                                 )}
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => {
-                                setOwnerId(undefined);
-                                if (activeFilters.includes('Owner')) {
-                                    handleApplyFilters();
-                                }
-                            }}
-                            className="flex items-center justify-center w-full"
+                            onClick={() => updateFilter('ownerId', undefined)}
+                            className="flex justify-center items-center w-full"
                         >
                             <span className="text-[10px] font-normal text-red-500 font-body">
                                 Clear Owner Filter
@@ -732,15 +728,15 @@ function ClaimsFilterComponent({
             </div>
 
             {/* Clear Filters Button - Only show when filters are active */}
-            {activeFilters.length > 0 && (
+            {activeFilterCount > 0 && (
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={handleClearFilters}
                     className="h-10 text-xs font-normal font-body"
                 >
-                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
-                    Clear All ({activeFilters.length})
+                    <X className="mr-2 w-4 h-4" strokeWidth={1.5} />
+                    Clear All ({activeFilterCount})
                 </Button>
             )}
         </div>

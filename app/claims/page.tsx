@@ -8,6 +8,7 @@ import { useAuthStatus } from '@/hooks/use-auth-status';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ClaimsTabGroup } from '@/modules/claims/components/claims-tab-group';
+import { ClaimsHeader } from '@/modules/claims/components/claims-header';
 import { AppLoader } from '@/components/ui/app-loader';
 
 // Dynamic imports for components that don't need to be loaded immediately
@@ -50,7 +51,7 @@ export default function ClaimsPage() {
 
     // State
     const [activeTab, setActiveTab] = useState<string>('claims');
-    const [filterParams] = useState<ClaimFilterParams>({
+    const [filterParams, setFilterParams] = useState<ClaimFilterParams>({
         page: 1,
         limit: 500,
     });
@@ -104,6 +105,20 @@ export default function ClaimsPage() {
         [createClaim],
     );
 
+    const handleApplyFilters = useCallback((newFilters: ClaimFilterParams) => {
+        setFilterParams((prev) => ({
+            ...prev,
+            ...newFilters,
+        }));
+    }, []);
+
+    const handleClearFilters = useCallback(() => {
+        setFilterParams({
+            page: 1,
+            limit: 500,
+        });
+    }, []);
+
     return (
         <PageTransition>
             <div className="flex overflow-hidden flex-col gap-2 h-screen">
@@ -113,6 +128,11 @@ export default function ClaimsPage() {
                     onTabChange={setActiveTab}
                 />
                 <div className="flex overflow-hidden flex-col flex-1">
+                    <ClaimsHeader
+                        onApplyFilters={handleApplyFilters}
+                        onClearFilters={handleClearFilters}
+                        onAddClaim={handleCreateClaim}
+                    />
                     <div className="flex overflow-hidden flex-1 justify-center items-center px-3 py-3 xl:px-8 xl:px-4">
                         <ClaimsTabContent
                             activeTab={activeTab}

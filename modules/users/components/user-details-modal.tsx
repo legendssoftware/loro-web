@@ -452,6 +452,7 @@ export function UserDetailsModal({
                     targetPeriod: user.userTarget.targetPeriod,
                     periodStartDate: user.userTarget.periodStartDate,
                     periodEndDate: user.userTarget.periodEndDate,
+                    erpSalesRepCode: user.userTarget.erpSalesRepCode,
                     createdAt: user.userTarget.createdAt,
                     updatedAt: user.userTarget.updatedAt,
                 } : null;
@@ -591,28 +592,22 @@ export function UserDetailsModal({
                         </div>
                     </DialogHeader>
                     <div className="mt-4">
-                        <div className="flex overflow-x-auto items-center mb-6 border-b border-border/10">
+                        <div className="flex overflow-x-auto gap-6 items-center mb-6 border-b border-border/20">
                             {tabs.map((tab) => (
-                                <div
+                                <button
                                     key={tab?.id}
-                                    className="flex relative gap-1 justify-center items-center mr-8 w-28 cursor-pointer"
+                                    onClick={() => handleTabChange(tab?.id)}
+                                    className={`relative pb-3 px-1 text-xs font-thin uppercase font-body transition-colors ${
+                                        activeTab === tab.id
+                                            ? 'text-foreground'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
                                 >
-                                    <div
-                                        className={`mb-3 font-body px-0 font-normal ${
-                                            activeTab === tab.id
-                                                ? 'text-primary dark:text-primary'
-                                                : 'text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200'
-                                        }`}
-                                        onClick={() => handleTabChange(tab?.id)}
-                                    >
-                                        <span className="text-xs font-thin uppercase font-body">
-                                            {tab?.label}
-                                        </span>
-                                    </div>
+                                    {tab?.label}
                                     {activeTab === tab?.id && (
-                                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-primary dark:bg-primary" />
+                                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-600 dark:bg-purple-500" />
                                     )}
-                                </div>
+                                </button>
                             ))}
                         </div>
                         {renderTabContent()}

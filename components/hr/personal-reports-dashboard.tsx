@@ -29,6 +29,7 @@ import {
     FileText,
     ChevronRight,
     Eye,
+    Clock2,
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-config';
 import { axiosInstance } from '@/lib/services/api-client';
@@ -1014,6 +1015,117 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                 />
             </div>
 
+            {/* Total Hours Worked Section - Matching Mobile Implementation */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex gap-2 items-center">
+                        <Timer className="w-5 h-5" />
+                        Total Hours Worked
+                    </CardTitle>
+                    <CardDescription>
+                        Your work hours breakdown across different time periods
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <div className="flex flex-col items-center p-4 rounded-lg border">
+                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {metrics?.totalHours.today.toFixed(1) || 0}h
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase">Today</div>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg border">
+                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {metrics?.totalHours.thisWeek.toFixed(1) || 0}h
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase">This Week</div>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg border">
+                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {metrics?.totalHours.thisMonth.toFixed(1) || 0}h
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase">This Month</div>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg border">
+                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {metrics?.totalHours.allTime.toFixed(1) || 0}h
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase">All Time</div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Overtime Analytics Section - Full Details */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex gap-2 items-center">
+                        <Clock2 className="w-5 h-5 text-amber-600" />
+                        Overtime Analytics
+                    </CardTitle>
+                    <CardDescription>
+                        Your overtime hours breakdown and statistics across all time periods
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* Overtime Hours Breakdown */}
+                    <div>
+                        <div className="mb-3 text-sm font-medium uppercase">Total Overtime Hours</div>
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                            <div className="flex flex-col items-center p-4 rounded-lg border">
+                                <div className="text-2xl font-bold text-amber-600 mb-1">
+                                    {metrics?.overtimeAnalytics.totalOvertimeHours.today.toFixed(1) || 0}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase">Today</div>
+                            </div>
+                            <div className="flex flex-col items-center p-4 rounded-lg border">
+                                <div className="text-2xl font-bold text-amber-600 mb-1">
+                                    {metrics?.overtimeAnalytics.totalOvertimeHours.thisWeek.toFixed(1) || 0}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase">This Week</div>
+                            </div>
+                            <div className="flex flex-col items-center p-4 rounded-lg border">
+                                <div className="text-2xl font-bold text-amber-600 mb-1">
+                                    {metrics?.overtimeAnalytics.totalOvertimeHours.thisMonth.toFixed(1) || 0}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase">This Month</div>
+                            </div>
+                            <div className="flex flex-col items-center p-4 rounded-lg border">
+                                <div className="text-2xl font-bold text-amber-600 mb-1">
+                                    {metrics?.overtimeAnalytics.totalOvertimeHours.allTime.toFixed(1) || 0}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase">All Time</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Overtime Details */}
+                    <div className="pt-4 border-t">
+                        <div className="mb-3 text-sm font-medium uppercase">Overtime Statistics</div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                                <div className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                    {metrics?.overtimeAnalytics.averageOvertimePerShift.toFixed(1) || '0.0'}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase text-center">Average per Shift</div>
+                            </div>
+                            <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                                <div className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                    {metrics?.overtimeAnalytics.overtimeFrequency.toFixed(0) || 0}%
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase text-center">Overtime Frequency</div>
+                            </div>
+                            <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                                <div className="text-xl font-semibold text-orange-600 mb-1">
+                                    {metrics?.overtimeAnalytics.longestOvertimeShift.toFixed(1) || '0.0'}h
+                                </div>
+                                <div className="text-xs text-muted-foreground uppercase text-center">Longest Overtime Shift</div>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Shift Management and Performance */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Performance Overview */}
@@ -1090,29 +1202,62 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold text-orange-600">
-                                    {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.today || 0)}
+                        {/* Total Break Time Breakdown */}
+                        <div>
+                            <div className="mb-3 text-sm font-medium uppercase">Total Break Time</div>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                <div className="flex flex-col items-center p-3 rounded-lg border">
+                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.today || 0)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground uppercase">Today</div>
                                 </div>
-                                <div className="text-xs text-muted-foreground">Today's Breaks</div>
-                            </div>
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold text-blue-600">
-                                    {metrics?.breakAnalytics.averageBreakDuration || 0}m
+                                <div className="flex flex-col items-center p-3 rounded-lg border">
+                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.thisWeek || 0)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground uppercase">This Week</div>
                                 </div>
-                                <div className="text-xs text-muted-foreground">Avg Break Duration</div>
+                                <div className="flex flex-col items-center p-3 rounded-lg border">
+                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.thisMonth || 0)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground uppercase">This Month</div>
+                                </div>
+                                <div className="flex flex-col items-center p-3 rounded-lg border">
+                                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {minutesToHoursDisplay(metrics?.breakAnalytics.totalBreakTime.allTime || 0)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground uppercase">All Time</div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="text-sm font-medium">Break Frequency</div>
-                            <div className="text-2xl font-bold">
-                                {metrics?.breakAnalytics.breakFrequency.toFixed(1) || 0} breaks/shift
+                        {/* Break Statistics */}
+                        <div className="grid grid-cols-2 gap-3 pt-4 border-t">
+                            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {minutesToHoursDisplay(metrics?.breakAnalytics.averageBreakDuration || 0)}
+                                </div>
+                                <div className="text-xs text-center text-muted-foreground uppercase">Avg Break Duration</div>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                                Longest: {metrics?.breakAnalytics.longestBreak || 0}m •
-                                Shortest: {metrics?.breakAnalytics.shortestBreak || 0}m
+                            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {metrics?.breakAnalytics.breakFrequency.toFixed(1) || '0.0'}
+                                </div>
+                                <div className="text-xs text-center text-muted-foreground uppercase">Breaks per Shift</div>
+                            </div>
+                            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {minutesToHoursDisplay(metrics?.breakAnalytics.longestBreak || 0)}
+                                </div>
+                                <div className="text-xs text-center text-muted-foreground uppercase">Longest Break</div>
+                            </div>
+                            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {minutesToHoursDisplay(metrics?.breakAnalytics.shortestBreak || 0)}
+                                </div>
+                                <div className="text-xs text-center text-muted-foreground uppercase">Shortest Break</div>
                             </div>
                         </div>
                     </CardContent>
@@ -1163,12 +1308,12 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                 </Card>
             </div>
 
-            {/* All-Time Summary */}
+            {/* Attendance Summary */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex gap-2 items-center">
                         <BarChart3 className="w-5 h-5" />
-                        All-Time Summary
+                        Attendance Summary
                     </CardTitle>
                     <CardDescription>
                         Your complete attendance history and achievements
@@ -1177,7 +1322,7 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
                 <CardContent>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="p-4 text-center rounded-lg border">
-                            <div className="text-2xl font-bold text-primary">
+                            <div className="text-2xl font-bold text-purple-600">
                                 {metrics?.totalHours.allTime.toFixed(1) || 0}h
                             </div>
                             <div className="text-sm text-muted-foreground">Total Hours</div>

@@ -1147,7 +1147,7 @@ export default function Home() {
                                             </AnimatePresence>
                                         </div>
                                         <p className="max-w-[600px] text-xs uppercase text-muted-foreground font-body md:text-xs text-center mx-auto">
-                                            Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform.
+                                            Stop juggling multiple systems. Loro combines CRM, field service management, inventory tracking, quotation system, task management, and real-time analytics in one powerful platform. See your sales and quotes live from your ERP system. Order directly from CRM — everything connected.
                                         </p>
                                     </StaggerItem>
                                     <StaggerItem className="flex flex-col gap-2 min-[400px]:flex-row justify-center items-center">
@@ -1340,12 +1340,12 @@ export default function Home() {
                                             Sales Pipeline Control
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Visual sales pipeline with drag-and-drop stages, deal probability tracking, and revenue forecasting.
+                                            Visual sales pipeline with drag-and-drop stages, deal probability tracking, and revenue forecasting. Sales reps can see their targets and track progress in real-time.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
-                                                Visual pipeline management
+                                                Target tracking & progress
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-green-500 rounded-full"></div>
@@ -1492,20 +1492,20 @@ export default function Home() {
                                             Mobile-First Design
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Work from anywhere with native mobile apps featuring offline capabilities and GPS tracking.
+                                            Work from anywhere with native mobile apps featuring offline capabilities, GPS tracking, biometric authentication, and push notifications.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Offline functionality
+                                                Biometric authentication
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Real-time GPS tracking
+                                                Location tracking & trip summaries
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-teal-500 rounded-full"></div>
-                                                Native mobile apps
+                                                Push notifications
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1530,20 +1530,20 @@ export default function Home() {
                                             Smart Quotations
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Generate professional quotes in seconds with automated pricing, templates, and e-signature integration.
+                                            Generate professional quotes in seconds with automated pricing, templates, and e-signature integration. Order directly from CRM — no system switching required.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                Automated pricing
+                                                Order directly from CRM
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                Custom templates
+                                                Quotation-to-order conversion
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
                                                 <div className="mr-2 w-2 h-2 bg-rose-500 rounded-full"></div>
-                                                E-signature integration
+                                                Live ERP pricing integration
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1559,35 +1559,197 @@ export default function Home() {
                                         }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-amber-600 bg-amber-100 rounded-full transition-transform duration-300 group-hover:scale-110">
+                                        <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 text-cyan-600 bg-cyan-100 rounded-full transition-transform duration-300 group-hover:scale-110">
                                             <span className="text-xl font-normal font-body">
-                                                📦
+                                                🔄
                                             </span>
                                         </div>
                                         <h3 className="mb-3 text-lg font-normal uppercase font-body">
-                                            Inventory Integration
+                                            ERP Live Integration
                                         </h3>
                                         <p className="mb-4 text-xs uppercase text-muted-foreground font-body">
-                                            Track stock levels, manage suppliers, and automate reordering with integrated inventory management.
+                                            See your sales and quotes live from your ERP system. Real-time performance tracking, automatic data sync, and no manual reporting needed.
                                         </p>
                                         <div className="space-y-2">
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Real-time stock tracking
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Live sales & quotes visibility
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Automated reordering
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Real-time ERP data sync
                                             </div>
                                             <div className="flex items-center text-[10px] font-normal uppercase font-body">
-                                                <div className="mr-2 w-2 h-2 bg-amber-500 rounded-full"></div>
-                                                Supplier management
+                                                <div className="mr-2 w-2 h-2 bg-cyan-500 rounded-full"></div>
+                                                Automatic performance tracking
                                             </div>
                                         </div>
                                     </motion.div>
                                 </StaggerItem>
+
                             </StaggerContainer>
 
+                        </div>
+                    </MotionSection>
+
+                    {/* ERP Integration Section */}
+                    <MotionSection className="py-16 bg-gradient-to-b md:py-24 from-muted/50 to-background" direction="up">
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        ERP Integration & Live Visibility
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mx-auto mt-4 max-w-3xl text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        See your sales and quotes live from your ERP system. No manual data entry, no delays, no disconnected systems. Everything updates automatically in real-time.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <div className="grid gap-8 items-center md:grid-cols-2">
+                                <StaggerContainer
+                                    className="space-y-6"
+                                    staggerChildren={0.15}
+                                    delay={0.3}
+                                >
+                                    <StaggerItem>
+                                        <h3 className="mb-4 text-2xl font-normal uppercase font-body">
+                                            Real-Time ERP Data Integration
+                                        </h3>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live Sales Performance & Target Tracking
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    See your sales performance in real-time directly from your ERP system. Sales reps can see their targets and track progress automatically. Track revenue, transactions, and customer activity as it happens — no manual updates needed.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live Quotation Tracking
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Monitor all your quotations live from your ERP system. See which quotes convert to orders, track conversion rates, and manage your sales pipeline in real-time.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Location Tracking & Trip Summaries
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Track field team locations in real-time with GPS tracking. Automatic trip summaries show routes taken, time spent at locations, and distance traveled — perfect for route optimization and client visit verification.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Automatic Data Sync
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    All your ERP data syncs automatically. Sales, quotes, customer information, and performance metrics update in real-time — eliminating manual data entry and reducing errors.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                </StaggerContainer>
+                                <motion.div
+                                    className="overflow-hidden rounded-xl"
+                                    initial={{ opacity: 0, x: 50 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <motion.div
+                                        whileHover={{ scale: 1.03 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="p-8 rounded-xl border bg-card">
+                                            <div className="space-y-4">
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Live Sales</span>
+                                                        <span className="text-lg font-semibold text-green-600 font-body">R 125,450</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Updated in real-time from ERP</div>
+                                                </div>
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Active Quotes</span>
+                                                        <span className="text-lg font-semibold text-blue-600 font-body">23</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Live from ERP system</div>
+                                                </div>
+                                                <div className="p-4 rounded-lg bg-muted/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-xs uppercase text-muted-foreground font-body">Conversion Rate</span>
+                                                        <span className="text-lg font-semibold text-purple-600 font-body">68%</span>
+                                                    </div>
+                                                    <div className="text-[10px] uppercase text-muted-foreground font-body">Automatically calculated</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            </div>
                         </div>
                     </MotionSection>
 
@@ -1863,6 +2025,50 @@ export default function Home() {
                                             </div>
                                         </div>
                                     </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Order Directly from CRM
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    Create quotations and convert them to orders seamlessly within your CRM. No switching systems, no data re-entry — everything flows from quote to order in one platform.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
+                                    <StaggerItem direction="left">
+                                        <div className="flex gap-4 items-start">
+                                            <motion.div
+                                                className="flex justify-center items-center w-10 h-10 rounded-full bg-primary/10 shrink-0"
+                                                whileHover={{
+                                                    scale: 1.1,
+                                                    backgroundColor: 'rgba(42, 111, 71, 0.2)',
+                                                }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Check className="w-5 h-5 text-primary" />
+                                            </motion.div>
+                                            <div>
+                                                <h4 className="mb-2 text-lg font-normal uppercase font-body">
+                                                    Live ERP Visibility
+                                                </h4>
+                                                <p className="text-xs uppercase text-muted-foreground font-body">
+                                                    See your sales and quotes live from your ERP system. Real-time performance tracking means you always know exactly where your business stands — no manual updates needed.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </StaggerItem>
                                 </StaggerContainer>
                             </div>
                         </div>
@@ -1998,6 +2204,176 @@ export default function Home() {
                                     </StaggerItem>
                                 </StaggerContainer>
                             </div>
+                        </div>
+                    </MotionSection>
+
+                    {/* What Sets Loro Apart Section */}
+                    <MotionSection
+                        className="py-20 bg-gradient-to-b from-background to-muted/30"
+                        direction="up"
+                    >
+                        <div className="container px-4 mx-auto md:px-6">
+                            <StaggerContainer
+                                className="mb-12 text-center"
+                                staggerChildren={0.2}
+                            >
+                                <StaggerItem>
+                                    <h2 className="text-3xl font-normal tracking-tighter uppercase sm:text-4xl md:text-5xl font-body">
+                                        What Sets Loro Apart
+                                    </h2>
+                                </StaggerItem>
+                                <StaggerItem>
+                                    <p className="mt-4 text-xs uppercase text-muted-foreground font-body md:text-xs">
+                                        One platform. Everything connected. No juggling multiple systems.
+                                    </p>
+                                </StaggerItem>
+                            </StaggerContainer>
+
+                            <StaggerContainer className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" staggerChildren={0.15}>
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🔄</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                ERP Live Integration
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            See your sales and quotes live from your ERP system. Sales reps can see their targets and track progress in real-time. Real-time visibility means no delays, no manual updates, and no disconnected data.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🛒</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Order Via CRM
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Order directly from CRM. Quotations convert to orders seamlessly — no switching between systems, no data re-entry, everything flows together.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🔗</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Everything Connected
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            CRM, Field Service, ERP, Analytics — all in one platform. Every module links together seamlessly, giving you complete business visibility.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">📱</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Mobile-First Design
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Native mobile apps with offline capabilities, biometric authentication, and push notifications. Work from anywhere, track locations with trip summaries, and sync when you're back online.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">⚡</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Real-Time Analytics
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Make data-driven decisions with real-time dashboards. Performance metrics, sales analytics with target tracking, location tracking with trip summaries, and business intelligence — all updated automatically.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+
+                                <StaggerItem direction="up">
+                                    <motion.div
+                                        className="p-6 h-full rounded-xl border shadow-sm bg-card"
+                                        whileHover={{
+                                            y: -10,
+                                            boxShadow:
+                                                '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex gap-3 items-center mb-4">
+                                            <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-primary/10">
+                                                <span className="text-2xl">🎯</span>
+                                            </div>
+                                            <h3 className="text-xl font-normal uppercase font-body">
+                                                Built for South Africa
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs uppercase text-muted-foreground font-body">
+                                            Designed specifically for South African businesses. Local support, ZAR pricing, and understanding of local business needs and regulations.
+                                        </p>
+                                    </motion.div>
+                                </StaggerItem>
+                            </StaggerContainer>
                         </div>
                     </MotionSection>
 

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMapQuery } from '@/hooks/use-map-query';
+import { useMapFiltersStore } from '@/modules/map/store/map-filters-store';
 
 const MapComponent = dynamic(
     () => import('@/modules/map/components/map-container'),
@@ -73,8 +74,7 @@ export default function MapPage() {
     const [highlightedMarkerId, setHighlightedMarkerId] = useState<
         string | null
     >(null);
-    const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const { activeFilter, setActiveFilter, activeDropdown, setActiveDropdown } = useMapFiltersStore();
     const [isClient, setIsClient] = useState(false);
     const mapRef = useRef<any>(null);
 

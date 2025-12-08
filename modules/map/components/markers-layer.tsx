@@ -99,6 +99,10 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
 
     // Determine marker type for conditional rendering
     const markerType = worker.markerType;
+    const isShiftStartType = markerType === 'shift-start';
+    const isShiftEndType = markerType === 'shift-end';
+    const isBreakStartType = markerType === 'break-start';
+    const isBreakEndType = markerType === 'break-end';
     const isWorkerType = markerType !== 'client' && markerType !== 'competitor' && markerType !== 'quotation' &&
                          markerType !== 'task' && markerType !== 'lead' && markerType !== 'journal' &&
                          markerType !== 'check-in-visit' && !markerType?.includes('shift') && !markerType?.includes('break');
@@ -111,10 +115,6 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
     const isLeadType = markerType === 'lead';
     const isJournalType = markerType === 'journal';
     const isCheckInVisitType = markerType === 'check-in-visit';
-    const isShiftStartType = markerType === 'shift-start';
-    const isShiftEndType = markerType === 'shift-end';
-    const isBreakStartType = markerType === 'break-start';
-    const isBreakEndType = markerType === 'break-end';
     const isEventType = 'type' in worker && worker.type === 'event';
 
     // Handle client navigation

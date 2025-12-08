@@ -200,7 +200,7 @@ export default function MapPage() {
         } else {
             // Filter by specific types using allMarkers for comprehensive filtering
             if (allMarkers && allMarkers.length > 0) {
-                const filteredMarkers = allMarkers.filter(
+                const filteredMarkers: GenericMarker[] = allMarkers.filter(
                     (marker: GenericMarker) =>
                         marker.markerType === activeFilter &&
                         hasValidPosition(marker)
@@ -210,7 +210,7 @@ export default function MapPage() {
 
                 // Log detailed breakdown of filtered markers
                 if (filteredMarkers.length > 0) {
-                    console.log(`🔍 Filtered Markers Details:`, filteredMarkers.map(m => ({
+                    console.log(`🔍 Filtered Markers Details:`, filteredMarkers.map((m: GenericMarker) => ({
                         id: m.id,
                         name: m.name,
                         type: m.markerType,
@@ -684,7 +684,7 @@ export default function MapPage() {
                                     </div>
                                     {events?.length > 0 ? (
                                         <div>
-                                            {events.map((event) => {
+                                            {events.map((event: EventType) => {
                                                 // Get appropriate icon based on event type
                                                 let IconComponent = Calendar; // Default icon
 

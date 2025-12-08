@@ -171,40 +171,11 @@ interface TargetData {
     category: 'sales' | 'work_hours' | 'clients' | 'leads' | 'check_ins' | 'calls_made';
 }
 
-interface AttendanceData {
-    hoursWorked: number;
-    expectedHours: number;
-    attendanceRate: number;
-    punctualityScore: number;
-}
-
-interface InsightRequest {
-    targetData: TargetData[];
-    attendanceData?: AttendanceData;
-    profileData?: any;
-    timeFrame: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-    type: 'comprehensive_performance' | 'sales_strategy' | 'work_efficiency' | 'client_management' | 'lead_analysis';
-}
-
-interface EmailTemplateRequest {
-    recipientName: string;
-    recipientEmail: string;
-    templateType: 'introduction' | 'follow_up' | 'proposal' | 'objection_handling' | 'closing' | 're_engagement' | 'referral' | 'upsell' | 'check_in' | 'nurture' | 'educational' | 'urgent_response' | 'value_demonstration' | 'social_proof';
-    tone: {
-        baseTone: string;
-        intensity: string;
-        regionalAdaptation: string;
-        industrySpecific: boolean;
-    };
-    customMessage?: string;
-}
-
 export const TargetsTab: React.FunctionComponent<TabProps> = ({
     profileData,
     targetsData,
     attendanceData,
     isTargetsLoading,
-    isAttendanceLoading,
 }) => {
     // AI Insights State
     const [insights, setInsights] = useState<string[]>([]);
@@ -230,13 +201,6 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
     const getProgressPercentage = (current: number | undefined, target: number | undefined) => {
         if (!current || !target || target === 0) return 0;
         return Math.min((current / target) * 100, 100);
-    };
-
-    const getProgressColor = (percentage: number) => {
-        if (percentage >= 90) return 'bg-green-500';
-        if (percentage >= 70) return 'bg-blue-500';
-        if (percentage >= 50) return 'bg-yellow-500';
-        return 'bg-red-500';
     };
 
     const formatCurrency = (amount: number | undefined, currency: string = 'ZAR') => {

@@ -391,7 +391,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 </p>
                             )}
                             {getUserPhone() && (
-                                <a 
+                                <a
                                     href={`tel:${getUserPhone()}`}
                                     className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1 hover:text-primary transition-colors"
                                 >
@@ -778,7 +778,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 <PhoneCall size={15} strokeWidth={1.5} />
                                 Contact
                             </p>
-                            <a 
+                            <a
                                 href={`tel:${getUserPhone()}`}
                                 className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
                             >
@@ -840,7 +840,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 <PhoneCall size={15} strokeWidth={1.5} />
                                 Contact
                             </p>
-                            <a 
+                            <a
                                 href={`tel:${getUserPhone()}`}
                                 className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
                             >
@@ -1089,7 +1089,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                 <PhoneCall size={15} strokeWidth={1.5} />
                                 Contact
                             </p>
-                            <a 
+                            <a
                                 href={`tel:${getUserPhone()}`}
                                 className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
                             >

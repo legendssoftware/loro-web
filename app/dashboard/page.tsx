@@ -5,6 +5,7 @@ import { PageTransition } from '@/components/animations/page-transition';
 import { useState } from 'react';
 import { HRReportsDashboard } from '@/components/hr/hr-reports-dashboard';
 import { PersonalReportsDashboard } from '@/components/hr/personal-reports-dashboard';
+import { SalesDashboard } from '@/components/hr/sales-dashboard';
 import { useAuthStore } from '@/store/auth-store';
 import { useRBAC } from '@/hooks/use-rbac';
 import { AccessLevel } from '@/types/auth';
@@ -24,6 +25,11 @@ export default function Home() {
             id: 'my-reports',
             label: 'Personal',
             allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.USER, AccessLevel.OWNER, AccessLevel.TECHNICIAN, AccessLevel.SUPPORT, AccessLevel.DEVELOPER, AccessLevel.EXECUTIVE]
+        },
+        {
+            id: 'sales',
+            label: 'Sales',
+            allowedRoles: [AccessLevel.ADMIN, AccessLevel.MANAGER, AccessLevel.SUPERVISOR, AccessLevel.HR, AccessLevel.OWNER, AccessLevel.EXECUTIVE]
         },
     ];
 
@@ -75,6 +81,8 @@ export default function Home() {
                 return <HRReportsDashboard />;
             case 'my-reports':
                 return <PersonalReportsDashboard />;
+            case 'sales':
+                return <SalesDashboard />;
             default:
                 return null;
         }

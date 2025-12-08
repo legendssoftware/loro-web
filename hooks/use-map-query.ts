@@ -55,8 +55,10 @@ export function useMapQuery(params: MapQueryParams = {}) {
         {
             queryKey: [MAP_DATA_QUERY_KEY, { orgId, branchId, userId }],
             queryFn: () => mapApi.getMapData({ orgId, branchId, userId }),
-            staleTime: 1000 * 60 * 5, // 5 minutes
-            refetchOnWindowFocus: false,
+            staleTime: 1000 * 60 * 2, // 2 minutes - reduced for fresher data
+            gcTime: 1000 * 60 * 10, // 10 minutes - keep in cache longer
+            refetchOnWindowFocus: true, // Refresh when window regains focus
+            refetchOnMount: true, // Refresh on component mount
             retry: 2,
             retryDelay: (attemptIndex) =>
                 Math.min(1000 * 2 ** attemptIndex, 30000),

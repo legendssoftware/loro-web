@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMapQuery } from '@/hooks/use-map-query';
+import { useMapFiltersStore } from '@/modules/map/store/map-filters-store';
 
 const MapComponent = dynamic(
     () => import('@/modules/map/components/map-container'),
@@ -68,13 +69,22 @@ type FilterType =
     | 'competitor'
     | 'quotation';
 
+// Generic marker type for allMarkers array
+type GenericMarker = {
+    id?: string | number;
+    name?: string;
+    markerType?: string;
+    status?: string;
+    position?: [number, number];
+    [key: string]: any;
+};
+
 export default function MapPage() {
     const [selectedMarker, setSelectedMarker] = useState<any | null>(null); // Extended to support all marker types
     const [highlightedMarkerId, setHighlightedMarkerId] = useState<
         string | null
     >(null);
-    const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const { activeFilter, setActiveFilter, activeDropdown, setActiveDropdown } = useMapFiltersStore();
     const [isClient, setIsClient] = useState(false);
     const mapRef = useRef<any>(null);
 
@@ -124,7 +134,7 @@ export default function MapPage() {
     };
 
     // Filter workers based on active filter
-    const filteredWorkers = workers?.filter((worker) => {
+    const filteredWorkers = workers?.filter((worker: WorkerType) => {
         if (activeFilter === 'all') return true;
         return worker.markerType === activeFilter;
     });
@@ -191,7 +201,7 @@ export default function MapPage() {
             // Filter by specific types using allMarkers for comprehensive filtering
             if (allMarkers && allMarkers.length > 0) {
                 const filteredMarkers = allMarkers.filter(
-                    (marker) =>
+                    (marker: GenericMarker) =>
                         marker.markerType === activeFilter &&
                         hasValidPosition(marker)
                 );
@@ -213,7 +223,7 @@ export default function MapPage() {
             switch (activeFilter) {
                 case 'check-in':
                         const filteredWorkers = workers?.filter(
-                            (worker) =>
+                            (worker: WorkerType) =>
                                 worker.markerType === activeFilter &&
                                 hasValidPosition(worker),
                         ) || [];

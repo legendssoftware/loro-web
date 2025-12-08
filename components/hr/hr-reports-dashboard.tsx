@@ -444,14 +444,8 @@ const WorkHoursBreakdown: React.FunctionComponent<{
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Total hours overview */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div className="p-4 text-center rounded-lg border">
-                        <div className="text-2xl font-bold text-primary">
-                            {totalHoursWorked.toFixed(1)}h
-                        </div>
-                        <div className="text-sm text-muted-foreground">Total Work Hours</div>
-                    </div>
+                {/* Break time overview */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="p-4 text-center rounded-lg border">
                         <div className="text-2xl font-bold text-blue-600">
                             {totalBreakHours.toFixed(1)}h
@@ -567,18 +561,6 @@ const EmployeeStatusOverview: React.FunctionComponent<{
                         <div className="text-xs text-muted-foreground">On Break</div>
                     </div>
                 </div>
-
-                {/* Punctuality insight */}
-                {orgReport?.report.organizationMetrics.insights.punctualityRate && (
-                    <div className="pt-4 border-t">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium">Punctuality Rate</span>
-                            <Badge variant={orgReport.report.organizationMetrics.insights.punctualityRate >= 90 ? "default" : "secondary"}>
-                                {orgReport.report.organizationMetrics.insights.punctualityRate.toFixed(1)}%
-                            </Badge>
-                        </div>
-                    </div>
-                )}
             </CardContent>
         </Card>
     );
@@ -1132,127 +1114,22 @@ export const HRReportsDashboard: React.FunctionComponent<HRReportsDashboardProps
     }
 
     // Calculate summary metrics
-    const totalEmployees = orgReport?.report.organizationMetrics?.summary?.totalEmployees || 0;
-    const activeToday = todayAttendance?.checkIns?.length || 0;
+    const totalEmployees = orgReport?.report.organizationMetrics?.summary?.totalEmployees || 
+                          todayAttendance?.analytics?.totalEmployees || 0;
+    const activeToday = todayAttendance?.checkIns?.length || 
+                       todayAttendance?.analytics?.presentEmployees || 0;
     const totalWorkHours = todayAttendance?.analytics?.totalWorkHours ||
                           todayAttendance?.checkIns?.reduce((total, record) => {
                               return total + parseDurationToHours(record?.duration);
                           }, 0) || 0;
     const punctualityRate = orgReport?.report.organizationMetrics.insights.punctualityRate || 0;
+    const attendanceRate = totalEmployees > 0 ? (activeToday / totalEmployees) * 100 : 0;
 
     return (
         <div className={cn("space-y-6", className)}>
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Main Dashboard</h2>
-                    <p className="text-muted-foreground">
-                        Today's attendance overview and workforce analytics • Last updated: {lastRefresh.toLocaleTimeString()}
-                    </p>
-                </div>
-                <Button
-                    variant="outline"
-                    onClick={handleRefresh}
-                    className="hidden gap-2 justify-center items-center md:flex"
-                >
-                    <Activity className="w-4 h-4" />
-                    Refresh
-                </Button>
-            </div>
-
-            {/* Key Metrics Cards */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatsCard
-                    title="Total Employees"
-                    value={totalEmployees}
-                    subtitle={`${activeToday} active today`}
-                    icon={<Users className="w-4 h-4" />}
-                />
-                <StatsCard
-                    title="Active Today"
-                    value={activeToday}
-                    subtitle={`${((activeToday / totalEmployees) * 100).toFixed(1)}% attendance rate`}
-                    icon={<UserCheck className="w-4 h-4" />}
-                />
-                <StatsCard
-                    title="Total Work Hours"
-                    value={`${totalWorkHours.toFixed(1)}h`}
-                    subtitle={`${(totalWorkHours / (activeToday || 1)).toFixed(1)}h avg per person`}
-                    icon={<Clock className="w-4 h-4" />}
-                />
-                <StatsCard
-                    title="Punctuality Rate"
-                    value={`${punctualityRate.toFixed(1)}%`}
-                    subtitle="On-time arrivals today"
-                    icon={<Target className="w-4 h-4" />}
-                />
-            </div>
-
-            {/* Shift Management and Detailed Reports */}
-            <div className="space-y-6">
-                {/* Employee Status and Work Hours - Stack on mobile, 2 columns on larger screens */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <EmployeeStatusOverview
-                        data={todayAttendance!}
-                        orgReport={orgReport}
-                    />
-                    <WorkHoursBreakdown
-                        data={todayAttendance!}
-                        orgReport={orgReport}
-                    />
-                </div>
-            </div>
-
-
-
-            {/* Additional Insights */}
-            {orgReport?.report.organizationMetrics.insights && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex gap-2 items-center">
-                            <BarChart3 className="w-5 h-5" />
-                            Daily Insights
-                        </CardTitle>
-                        <CardDescription>
-                            Key performance indicators and trends for today
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold">
-                                    {orgReport.report.organizationMetrics.insights.averageHoursPerDay.toFixed(1)}h
-                                </div>
-                                <div className="text-xs text-muted-foreground">Avg Hours/Day</div>
-                            </div>
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold">
-                                    {orgReport.report.organizationMetrics.insights.peakCheckInTime || 'N/A'}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Peak Check-in</div>
-                            </div>
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold">
-                                    {orgReport.report.organizationMetrics.insights.peakCheckOutTime || 'N/A'}
-                                </div>
-                                <div className="text-xs text-muted-foreground">Peak Check-out</div>
-                            </div>
-                            <div className="p-3 text-center rounded-lg border">
-                                <div className="text-lg font-bold">
-                                    {orgReport.report.organizationMetrics.insights.productivityScore?.toFixed(1) || 'N/A'}%
-                                </div>
-                                <div className="text-xs text-muted-foreground">Productivity Score</div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
 
             {/* Daily Attendance Table */}
             <DailyAttendanceTable />
-
-            {/* Daily Reports Archive */}
-            <DailyReportsSection variant="organization" />
         </div>
     );
 };

@@ -99,9 +99,15 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
 
     // Determine marker type for conditional rendering
     const markerType = worker.markerType;
+    const isShiftStartType = markerType === 'shift-start';
+    const isShiftEndType = markerType === 'shift-end';
+    const isBreakStartType = markerType === 'break-start';
+    const isBreakEndType = markerType === 'break-end';
     const isWorkerType = markerType !== 'client' && markerType !== 'competitor' && markerType !== 'quotation' &&
                          markerType !== 'task' && markerType !== 'lead' && markerType !== 'journal' &&
                          markerType !== 'check-in-visit' && !markerType?.includes('shift') && !markerType?.includes('break');
+    const isShiftOrBreakType = isShiftStartType || isShiftEndType || isBreakStartType || isBreakEndType;
+    const shouldShowUserImage = isWorkerType || isShiftOrBreakType;
     const isClientType = markerType === 'client';
     const isCompetitorType = markerType === 'competitor';
     const isQuotationType = markerType === 'quotation';
@@ -109,10 +115,6 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
     const isLeadType = markerType === 'lead';
     const isJournalType = markerType === 'journal';
     const isCheckInVisitType = markerType === 'check-in-visit';
-    const isShiftStartType = markerType === 'shift-start';
-    const isShiftEndType = markerType === 'shift-end';
-    const isBreakStartType = markerType === 'break-start';
-    const isBreakEndType = markerType === 'break-end';
     const isEventType = 'type' in worker && worker.type === 'event';
 
     // Handle client navigation
@@ -129,8 +131,18 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
             ? `https://maps.googleapis.com/maps/api/streetview?size=400x200&location=${encodeURIComponent(worker.location.address)}&key=YOUR_API_KEY&fallback=true`
             : '/placeholder.svg?height=200&width=400';
 
-    // Profile image for worker
-    const profileImage = 'https://images.pexels.com/photos/1181346/pexels-photo-1181346.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+    // Get user profile image - prioritize image field, then owner photoURL/avatar, then placeholder
+    const getUserImage = () => {
+        if (worker.image) return worker.image;
+        if (worker.owner?.photoURL) return worker.owner.photoURL;
+        if (worker.owner?.avatar) return worker.owner.avatar;
+        return '/placeholder.svg?height=64&width=64';
+    };
+
+    // Get user phone number - prioritize phone field, then owner phone
+    const getUserPhone = () => {
+        return worker.phone || worker.owner?.phone || null;
+    };
 
     // Get the entity name for display
     const entityName =
@@ -185,15 +197,11 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
         <div className="p-3 font-body">
             {/* Header with entity info */}
             <div className="flex flex-col items-center mb-4">
-                {/* Only show image for worker types */}
-                {isWorkerType && !isEventType && (
+                {/* Show user image for worker types, shift start/end, and break start/end */}
+                {shouldShowUserImage && !isEventType && (
                     <div className="w-16 h-16 mb-2 overflow-hidden border-2 rounded-full border-primary/20">
                         <Image
-                            src={
-                                isWorkerType && 'image' in worker && worker.image
-                                    ? profileImage
-                                    : '/placeholder.svg?height=64&width=64'
-                            }
+                            src={getUserImage()}
                             alt={entityName}
                             className="object-cover w-full h-full"
                             width={64}
@@ -382,11 +390,14 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                                     {worker.contactName}
                                 </p>
                             )}
-                            {'phone' in worker && worker.phone && (
-                                <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1">
+                            {getUserPhone() && (
+                                <a 
+                                    href={`tel:${getUserPhone()}`}
+                                    className="text-[9px] text-muted-foreground flex items-center gap-1 mt-1 hover:text-primary transition-colors"
+                                >
                                     <PhoneCall size={12} strokeWidth={1.5} className="text-indigo-500" />
-                                    {worker.phone}
-                                </p>
+                                    {getUserPhone()}
+                                </a>
                             )}
                             {'alternativePhone' in worker && worker.alternativePhone && (
                                 <p className="text-[9px] text-muted-foreground flex items-center gap-1">
@@ -760,6 +771,23 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         )}
                     </div>
 
+                    {/* User contact information */}
+                    {getUserPhone() && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <PhoneCall size={15} strokeWidth={1.5} />
+                                Contact
+                            </p>
+                            <a 
+                                href={`tel:${getUserPhone()}`}
+                                className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
+                            >
+                                <PhoneCall size={12} strokeWidth={1.5} />
+                                {getUserPhone()}
+                            </a>
+                        </div>
+                    )}
+
                     <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                         <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
                             <MapPin size={15} strokeWidth={1.5} />
@@ -804,6 +832,23 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                             </p>
                         )}
                     </div>
+
+                    {/* User contact information */}
+                    {getUserPhone() && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <PhoneCall size={15} strokeWidth={1.5} />
+                                Contact
+                            </p>
+                            <a 
+                                href={`tel:${getUserPhone()}`}
+                                className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
+                            >
+                                <PhoneCall size={12} strokeWidth={1.5} />
+                                {getUserPhone()}
+                            </a>
+                        </div>
+                    )}
 
                     <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                         <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
@@ -1036,6 +1081,24 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
 
             {/* Worker-specific information */}
             {isWorkerType && 'location' in worker && (
+                <>
+                    {/* User contact information for workers */}
+                    {getUserPhone() && (
+                        <div className="p-2 text-[10px] bg-accent/10 rounded-md">
+                            <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
+                                <PhoneCall size={15} strokeWidth={1.5} />
+                                Contact
+                            </p>
+                            <a 
+                                href={`tel:${getUserPhone()}`}
+                                className="flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
+                            >
+                                <PhoneCall size={12} strokeWidth={1.5} />
+                                {getUserPhone()}
+                            </a>
+                        </div>
+                    )}
+
                 <div className="p-2 text-[10px] bg-accent/10 rounded-md">
                     <p className="font-medium uppercase text-[8px] mb-1 text-muted-foreground flex items-center gap-1">
                         <MapPin size={15} strokeWidth={1.5} />
@@ -1045,6 +1108,7 @@ function MarkerPopup({ worker }: MarkerPopupProps) {
                         {worker.location?.address || 'No location data'}
                     </p>
                 </div>
+                </>
             )}
 
             {isWorkerType && 'task' in worker && worker.task && (

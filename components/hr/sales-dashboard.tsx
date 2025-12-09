@@ -41,7 +41,6 @@ import {
     User,
     Building,
     Navigation,
-    Route,
     Calendar as CalendarIcon,
     Clock,
     MapIcon,
@@ -49,10 +48,8 @@ import {
     FileText,
     FileSpreadsheet,
     X,
-    Image as ImageIcon,
     ChevronDown,
     ChevronUp,
-    Download,
 } from 'lucide-react';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
@@ -203,12 +200,18 @@ const getLocationName = (record: CheckInRecord, isCheckOut: boolean = false): st
 
     // Fallback: use coordinates if no address available
     const location = isCheckOut ? record.checkOutLocation : record.checkInLocation;
-    if (location && !location.includes(',')) {
+
+    // Check if location is empty, null, undefined, or contains "web based" text
+    if (!location || location.trim() === '' || location.toLowerCase().includes('web based')) {
+        return isCheckOut ? 'No location recorded' : 'No location recorded';
+    }
+
+    if (!location.includes(',')) {
         // If it's not coordinates format, return as-is
         return location;
     }
 
-    return '-';
+    return isCheckOut ? 'No location recorded' : 'No location recorded';
 };
 
 // Helper function to get visited places count
@@ -223,6 +226,16 @@ const getVisitedPlaces = (record: CheckInRecord): number => {
     return count;
 };
 
+// Helper function to format minutes to hours and minutes display
+const formatMinutesToHours = (minutes: number): string => {
+    if (!minutes || minutes === 0) return '0m';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+};
+
 // Export functions
 const exportToExcel = (data: SalesRepData[]) => {
     const headers = [
@@ -234,14 +247,27 @@ const exportToExcel = (data: SalesRepData[]) => {
         'Total Visits',
     ];
 
-    const rows = data.map((rep) => [
-        `${rep.name} ${rep.surname}`,
-        rep.email || '-',
-        rep.branch?.name || '-',
-        rep.latestCheckInLocation || '-',
-        rep.latestCheckOutLocation || '-',
-        rep.totalVisits.toString(),
-    ]);
+    const rows = data.map((rep) => {
+        const checkInLoc = rep.latestCheckInLocation;
+        const checkOutLoc = rep.latestCheckOutLocation;
+
+        const normalizedCheckIn = !checkInLoc || checkInLoc === '-' || checkInLoc.toLowerCase().includes('web based')
+            ? 'No location recorded'
+            : checkInLoc;
+
+        const normalizedCheckOut = !checkOutLoc || checkOutLoc === '-' || checkOutLoc.toLowerCase().includes('web based')
+            ? 'No location recorded'
+            : checkOutLoc;
+
+        return [
+            `${rep.name} ${rep.surname}`,
+            rep.email || '-',
+            rep.branch?.name || '-',
+            normalizedCheckIn,
+            normalizedCheckOut,
+            rep.totalVisits.toString(),
+        ];
+    });
 
     const csvContent = [
         headers.join(','),
@@ -316,16 +342,29 @@ const exportToPDF = (data: SalesRepData[]) => {
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.map((rep) => `
+                    ${data.map((rep) => {
+                        const checkInLoc = rep.latestCheckInLocation;
+                        const checkOutLoc = rep.latestCheckOutLocation;
+
+                        const normalizedCheckIn = !checkInLoc || checkInLoc === '-' || checkInLoc.toLowerCase().includes('web based')
+                            ? 'No location recorded'
+                            : checkInLoc;
+
+                        const normalizedCheckOut = !checkOutLoc || checkOutLoc === '-' || checkOutLoc.toLowerCase().includes('web based')
+                            ? 'No location recorded'
+                            : checkOutLoc;
+
+                        return `
                         <tr>
                             <td>${rep.name} ${rep.surname}</td>
                             <td>${rep.email || '-'}</td>
                             <td>${rep.branch?.name || '-'}</td>
-                            <td>${rep.latestCheckInLocation || '-'}</td>
-                            <td>${rep.latestCheckOutLocation || '-'}</td>
+                            <td>${normalizedCheckIn}</td>
+                            <td>${normalizedCheckOut}</td>
                             <td>${rep.totalVisits}</td>
                         </tr>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </tbody>
             </table>
             <script>
@@ -352,6 +391,7 @@ const UserVisitsModal: React.FC<{
     const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [expandedVisitId, setExpandedVisitId] = useState<number | null>(null);
+
 
     // Get unique branches from visits
     const branches = useMemo(() => {
@@ -420,12 +460,12 @@ const UserVisitsModal: React.FC<{
             visit.branch?.name || '-',
             getLocationName(visit, false),
             getLocationName(visit, true),
-            visit.client?.name || '-',
+            visit.client?.name || 'Potential client',
             visit.duration || '-',
             format(new Date(visit.checkInTime), 'PPp'),
             visit.checkOutTime ? format(new Date(visit.checkOutTime), 'PPp') : '-',
-            visit.notes || '-',
-            visit.resolution || '-',
+            visit.notes || 'No notes saved',
+            visit.resolution || 'no resolution reached',
             visit.createdAt ? format(new Date(visit.createdAt), 'PPp') : '-',
             visit.updatedAt ? format(new Date(visit.updatedAt), 'PPp') : '-',
         ]);
@@ -510,10 +550,10 @@ const UserVisitsModal: React.FC<{
                                 <td>${visit.branch?.name || '-'}</td>
                                 <td>${getLocationName(visit, false)}</td>
                                 <td>${getLocationName(visit, true)}</td>
-                                <td>${visit.client?.name || '-'}</td>
+                                <td>${visit.client?.name || 'Potential client'}</td>
                                 <td>${visit.duration || '-'}</td>
-                                <td>${visit.notes || '-'}</td>
-                                <td>${visit.resolution || '-'}</td>
+                                <td>${visit.notes || 'No notes saved'}</td>
+                                <td>${visit.resolution || 'no resolution reached'}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -535,7 +575,8 @@ const UserVisitsModal: React.FC<{
         setExpandedVisitId(expandedVisitId === visitId ? null : visitId);
     };
 
-    if (!salesRep) return null;
+    // Early return if no salesRep - prevents hook from running with invalid userId
+    if (!salesRep || !salesRep.uid) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
@@ -546,9 +587,9 @@ const UserVisitsModal: React.FC<{
         }}>
             <DialogContent className="w-[80vw] h-[80vh] max-w-none flex flex-col">
                 <DialogHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex justify-between items-center">
                         <div>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex gap-2 items-center">
                                 <User className="w-5 h-5" />
                                 Visits - {salesRep.name} {salesRep.surname}
                             </DialogTitle>
@@ -561,7 +602,7 @@ const UserVisitsModal: React.FC<{
                                 variant="outline"
                                 size="sm"
                                 onClick={() => exportUserVisitsToExcel(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
-                                className="flex items-center gap-2"
+                                className="flex gap-2 items-center"
                             >
                                 <FileSpreadsheet className="w-4 h-4" />
                                 Export Excel
@@ -570,7 +611,7 @@ const UserVisitsModal: React.FC<{
                                 variant="outline"
                                 size="sm"
                                 onClick={() => exportUserVisitsToPDF(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
-                                className="flex items-center gap-2"
+                                className="flex gap-2 items-center"
                             >
                                 <FileText className="w-4 h-4" />
                                 Export PDF
@@ -579,13 +620,15 @@ const UserVisitsModal: React.FC<{
                     </div>
                 </DialogHeader>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-4 pb-4 border-b">
+                    {/* Visits Content */}
+                    <div className="flex overflow-hidden flex-col flex-1 mt-0">
+                        {/* Filters */}
+                        <div className="flex flex-col flex-shrink-0 gap-4 pb-4 mb-4 border-b">
                     <div className="flex flex-col gap-4 sm:flex-row">
                         {/* Search */}
                         <div className="flex-1">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder="Search by location or client..."
                                     value={searchQuery}
@@ -605,11 +648,11 @@ const UserVisitsModal: React.FC<{
                                         !dateFilter && "text-muted-foreground"
                                     )}
                                 >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    <CalendarIcon className="mr-2 w-4 h-4" />
                                     {dateFilter ? format(dateFilter, "PPP") : "Filter by date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="end">
+                            <PopoverContent className="p-0 w-auto" align="end">
                                 <Calendar
                                     mode="single"
                                     selected={dateFilter}
@@ -648,16 +691,16 @@ const UserVisitsModal: React.FC<{
                                 setDateFilter(undefined);
                                 setBranchFilter('all');
                             }}
-                            className="self-start flex items-center gap-2"
+                            className="flex gap-2 items-center self-start"
                         >
                             <X className="w-4 h-4" />
                             Clear Filters
                         </Button>
                     )}
-                </div>
+                        </div>
 
-                {/* Visits Table */}
-                <div className="flex-1 overflow-y-auto rounded-md border">
+                        {/* Visits Table */}
+                        <div className="overflow-y-auto flex-1 h-full min-h-0 rounded-md border">
                     {filteredVisits.length === 0 ? (
                         <div className="py-8 text-center text-muted-foreground">
                             No visits found
@@ -693,7 +736,7 @@ const UserVisitsModal: React.FC<{
                                                 onClick={() => toggleVisitExpansion(visit.uid)}
                                             >
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex gap-2 items-center">
                                                         {isExpanded ? (
                                                             <ChevronUp className="w-4 h-4 text-muted-foreground" />
                                                         ) : (
@@ -703,49 +746,73 @@ const UserVisitsModal: React.FC<{
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {visit.branch?.name || '-'}
+                                                    <span className={cn(
+                                                        visit.branch?.name ? "" : "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {visit.branch?.name || '-'}
+                                                    </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="w-3 h-3 text-green-600 flex-shrink-0" />
-                                                        <span className="max-w-[200px] truncate">
+                                                    <div className="flex gap-2 items-center">
+                                                        <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
+                                                        <span className={cn(
+                                                            "max-w-[200px] truncate",
+                                                            checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                        )}>
                                                             {checkInLoc}
                                                         </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="w-3 h-3 text-red-600 flex-shrink-0" />
-                                                        <span className="max-w-[200px] truncate">
+                                                    <div className="flex gap-2 items-center">
+                                                        <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
+                                                        <span className={cn(
+                                                            "max-w-[200px] truncate",
+                                                            checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                        )}>
                                                             {checkOutLoc}
                                                         </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {visit.client?.name || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {visit.duration || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="max-w-[200px] truncate block">
-                                                        {visit.notes || '-'}
+                                                    <span className={cn(
+                                                        visit.client?.name ? "" : "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {visit.client?.name || 'Potential client'}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="max-w-[200px] truncate block">
-                                                        {visit.resolution || '-'}
+                                                    <span className={cn(
+                                                        visit.duration ? "" : "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {visit.duration || '-'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={cn(
+                                                        "max-w-[200px] truncate block",
+                                                        !visit.notes && "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {visit.notes || 'No notes saved'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={cn(
+                                                        "max-w-[200px] truncate block",
+                                                        !visit.resolution && "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {visit.resolution || 'no resolution reached'}
                                                     </span>
                                                 </TableCell>
                                             </TableRow>
                                             {isExpanded && (
                                                 <TableRow>
-                                                    <TableCell colSpan={8} className="bg-muted/30 p-6">
+                                                    <TableCell colSpan={8} className="p-6 bg-muted/30">
                                                         <div className="space-y-6">
                                                             {/* Visit ID */}
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="p-4 rounded-lg border bg-background">
-                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                    <div className="flex gap-2 items-center mb-2">
                                                                         <FileText className="w-4 h-4 text-muted-foreground" />
                                                                         <span className="text-sm font-medium">Visit ID</span>
                                                                     </div>
@@ -755,7 +822,7 @@ const UserVisitsModal: React.FC<{
                                                                 {/* Duration */}
                                                                 {visit.duration && (
                                                                     <div className="p-4 rounded-lg border bg-background">
-                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                        <div className="flex gap-2 items-center mb-2">
                                                                             <Clock className="w-4 h-4 text-purple-600" />
                                                                             <span className="text-sm font-medium">Duration</span>
                                                                         </div>
@@ -766,18 +833,21 @@ const UserVisitsModal: React.FC<{
 
                                                             {/* Check In Details */}
                                                             <div className="p-4 rounded-lg border bg-background">
-                                                                <div className="flex items-center gap-2 mb-4">
+                                                                <div className="flex gap-2 items-center mb-4">
                                                                     <MapPin className="w-4 h-4 text-green-600" />
                                                                     <span className="text-sm font-medium">Check In Details</span>
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-4">
                                                                     <div>
-                                                                        <p className="text-xs text-muted-foreground mb-1">Time</p>
+                                                                        <p className="mb-1 text-xs text-muted-foreground">Time</p>
                                                                         <p className="text-sm font-semibold">{format(new Date(visit.checkInTime), 'PPp')}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-xs text-muted-foreground mb-1">Location</p>
-                                                                        <p className="text-sm">{checkInLoc}</p>
+                                                                        <p className="mb-1 text-xs text-muted-foreground">Location</p>
+                                                                        <p className={cn(
+                                                                            "text-sm",
+                                                                            checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                        )}>{checkInLoc}</p>
                                                                     </div>
                                                                 </div>
                                                                 {visit.checkInPhoto && (
@@ -785,7 +855,7 @@ const UserVisitsModal: React.FC<{
                                                                         <img
                                                                             src={visit.checkInPhoto}
                                                                             alt="Check-in photo"
-                                                                            className="w-full rounded-md border max-h-64 object-cover"
+                                                                            className="object-contain w-full max-h-64 rounded-md border"
                                                                             onError={(e) => {
                                                                                 (e.target as HTMLImageElement).style.display = 'none';
                                                                             }}
@@ -793,8 +863,8 @@ const UserVisitsModal: React.FC<{
                                                                     </div>
                                                                 )}
                                                                 {visit.fullAddress && (
-                                                                    <div className="mt-4 p-3 rounded-md bg-muted">
-                                                                        <p className="text-xs text-muted-foreground mb-1">Full Address</p>
+                                                                    <div className="p-3 mt-4 rounded-md bg-muted">
+                                                                        <p className="mb-1 text-xs text-muted-foreground">Full Address</p>
                                                                         <p className="text-sm">
                                                                             {visit.fullAddress.formattedAddress ||
                                                                              [visit.fullAddress.street, visit.fullAddress.suburb, visit.fullAddress.city, visit.fullAddress.state, visit.fullAddress.country]
@@ -807,18 +877,21 @@ const UserVisitsModal: React.FC<{
                                                             {/* Check Out Details */}
                                                             {visit.checkOutTime && (
                                                                 <div className="p-4 rounded-lg border bg-background">
-                                                                    <div className="flex items-center gap-2 mb-4">
+                                                                    <div className="flex gap-2 items-center mb-4">
                                                                         <MapPin className="w-4 h-4 text-red-600" />
                                                                         <span className="text-sm font-medium">Check Out Details</span>
                                                                     </div>
                                                                     <div className="grid grid-cols-2 gap-4">
                                                                         <div>
-                                                                            <p className="text-xs text-muted-foreground mb-1">Time</p>
+                                                                            <p className="mb-1 text-xs text-muted-foreground">Time</p>
                                                                             <p className="text-sm font-semibold">{format(new Date(visit.checkOutTime), 'PPp')}</p>
                                                                         </div>
                                                                         <div>
-                                                                            <p className="text-xs text-muted-foreground mb-1">Location</p>
-                                                                            <p className="text-sm">{checkOutLoc}</p>
+                                                                            <p className="mb-1 text-xs text-muted-foreground">Location</p>
+                                                                            <p className={cn(
+                                                                                "text-sm",
+                                                                                checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                            )}>{checkOutLoc}</p>
                                                                         </div>
                                                                     </div>
                                                                     {visit.checkOutPhoto && (
@@ -826,7 +899,7 @@ const UserVisitsModal: React.FC<{
                                                                             <img
                                                                                 src={visit.checkOutPhoto}
                                                                                 alt="Check-out photo"
-                                                                                className="w-full rounded-md border max-h-64 object-cover"
+                                                                                className="object-contain w-full max-h-64 rounded-md border"
                                                                                 onError={(e) => {
                                                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                                                 }}
@@ -839,7 +912,7 @@ const UserVisitsModal: React.FC<{
                                                             {/* Sales Rep, Branch, Client, Organisation */}
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="p-4 rounded-lg border bg-background">
-                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                    <div className="flex gap-2 items-center mb-2">
                                                                         <User className="w-4 h-4 text-muted-foreground" />
                                                                         <span className="text-sm font-medium">Sales Rep</span>
                                                                     </div>
@@ -852,7 +925,7 @@ const UserVisitsModal: React.FC<{
                                                                 </div>
 
                                                                 <div className="p-4 rounded-lg border bg-background">
-                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                    <div className="flex gap-2 items-center mb-2">
                                                                         <Building className="w-4 h-4 text-muted-foreground" />
                                                                         <span className="text-sm font-medium">Branch</span>
                                                                     </div>
@@ -866,7 +939,7 @@ const UserVisitsModal: React.FC<{
 
                                                                 {visit.client && (
                                                                     <div className="p-4 rounded-lg border bg-background">
-                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                        <div className="flex gap-2 items-center mb-2">
                                                                             <User className="w-4 h-4 text-blue-600" />
                                                                             <span className="text-sm font-medium">Client</span>
                                                                         </div>
@@ -882,7 +955,7 @@ const UserVisitsModal: React.FC<{
 
                                                                 {visit.organisation && (
                                                                     <div className="p-4 rounded-lg border bg-background">
-                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                        <div className="flex gap-2 items-center mb-2">
                                                                             <Building className="w-4 h-4 text-blue-600" />
                                                                             <span className="text-sm font-medium">Organisation</span>
                                                                         </div>
@@ -902,7 +975,7 @@ const UserVisitsModal: React.FC<{
                                                                 <div className="grid grid-cols-2 gap-4">
                                                                     {visit.notes && (
                                                                         <div className="p-4 rounded-lg border bg-background">
-                                                                            <div className="flex items-center gap-2 mb-2">
+                                                                            <div className="flex gap-2 items-center mb-2">
                                                                                 <FileText className="w-4 h-4 text-muted-foreground" />
                                                                                 <span className="text-sm font-medium">Notes</span>
                                                                             </div>
@@ -911,7 +984,7 @@ const UserVisitsModal: React.FC<{
                                                                     )}
                                                                     {visit.resolution && (
                                                                         <div className="p-4 rounded-lg border bg-background">
-                                                                            <div className="flex items-center gap-2 mb-2">
+                                                                            <div className="flex gap-2 items-center mb-2">
                                                                                 <FileText className="w-4 h-4 text-muted-foreground" />
                                                                                 <span className="text-sm font-medium">Resolution</span>
                                                                             </div>
@@ -924,7 +997,7 @@ const UserVisitsModal: React.FC<{
                                                             {/* Visited Places */}
                                                             {visitedPlaces.length > 0 && (
                                                                 <div className="p-4 rounded-lg border bg-background">
-                                                                    <div className="flex items-center gap-2 mb-4">
+                                                                    <div className="flex gap-2 items-center mb-4">
                                                                         <MapIcon className="w-4 h-4 text-orange-600" />
                                                                         <span className="text-sm font-medium">Visited Places</span>
                                                                         <Badge variant="secondary">{visitedPlaces.length}</Badge>
@@ -938,7 +1011,7 @@ const UserVisitsModal: React.FC<{
                                                                                         : place.address?.formattedAddress || place.address?.street || '-'}
                                                                                 </p>
                                                                                 {place.notes && (
-                                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                                    <p className="mt-1 text-xs text-muted-foreground">
                                                                                         {place.notes}
                                                                                     </p>
                                                                                 )}
@@ -952,7 +1025,7 @@ const UserVisitsModal: React.FC<{
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 {visit.createdAt && (
                                                                     <div className="p-4 rounded-lg border bg-background">
-                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                        <div className="flex gap-2 items-center mb-2">
                                                                             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
                                                                             <span className="text-sm font-medium">Created At</span>
                                                                         </div>
@@ -961,7 +1034,7 @@ const UserVisitsModal: React.FC<{
                                                                 )}
                                                                 {visit.updatedAt && (
                                                                     <div className="p-4 rounded-lg border bg-background">
-                                                                        <div className="flex items-center gap-2 mb-2">
+                                                                        <div className="flex gap-2 items-center mb-2">
                                                                             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
                                                                             <span className="text-sm font-medium">Updated At</span>
                                                                         </div>
@@ -979,7 +1052,8 @@ const UserVisitsModal: React.FC<{
                             </TableBody>
                         </Table>
                     )}
-                </div>
+                        </div>
+                    </div>
             </DialogContent>
         </Dialog>
     );
@@ -1101,8 +1175,8 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
             <div className={cn('space-y-6', className)}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Sales Reps Trip Summary</CardTitle>
-                        <CardDescription>Track sales rep trips, locations, and visit details</CardDescription>
+                        <CardTitle>Sales Reps</CardTitle>
+                        <CardDescription>Track sales rep locations and visit details</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -1121,8 +1195,8 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
             <div className={cn('space-y-6', className)}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Sales Reps Trip Summary</CardTitle>
-                        <CardDescription>Track sales rep trips, locations, and visit details</CardDescription>
+                        <CardTitle>Sales Reps</CardTitle>
+                        <CardDescription>Track sales rep locations and visit details</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="py-8 text-center text-muted-foreground">
@@ -1140,9 +1214,9 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                 <CardHeader>
                     <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
                         <div>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex gap-2 items-center">
                                 <Navigation className="w-5 h-5" />
-                                Sales Reps Trip Summary
+                                Sales Reps
                             </CardTitle>
                             <CardDescription>
                                 Track sales rep trips, locations, and visit details
@@ -1153,7 +1227,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                 variant="outline"
                                 size="sm"
                                 onClick={() => exportToExcel(filteredSalesReps)}
-                                className="flex items-center gap-2"
+                                className="flex gap-2 items-center"
                             >
                                 <FileSpreadsheet className="w-4 h-4" />
                                 <span className="hidden sm:inline">Export Excel</span>
@@ -1163,7 +1237,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                 variant="outline"
                                 size="sm"
                                 onClick={() => exportToPDF(filteredSalesReps)}
-                                className="flex items-center gap-2"
+                                className="flex gap-2 items-center"
                             >
                                 <FileText className="w-4 h-4" />
                                 <span className="hidden sm:inline">Export PDF</span>
@@ -1179,7 +1253,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                             {/* Search */}
                             <div className="flex-1">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="Search by name or email..."
                                         value={searchQuery}
@@ -1199,11 +1273,11 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                             !selectedDate && "text-muted-foreground"
                                         )}
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="mr-2 w-4 h-4" />
                                         {selectedDate ? format(selectedDate, "PPP") : "Filter by date"}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="end">
+                                <PopoverContent className="p-0 w-auto" align="end">
                                     <Calendar
                                         mode="single"
                                         selected={selectedDate}
@@ -1242,7 +1316,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                     setSelectedDate(undefined);
                                     setBranchFilter('all');
                                 }}
-                                className="self-start flex items-center gap-2"
+                                className="flex gap-2 items-center self-start"
                             >
                                 <X className="w-4 h-4" />
                                 Clear Filters
@@ -1255,7 +1329,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                             No sales reps found
                         </div>
                     ) : (
-                        <div className="rounded-md border overflow-x-auto">
+                        <div className="overflow-x-auto rounded-md border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -1267,7 +1341,21 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredSalesReps.map((rep, index) => (
+                                    {filteredSalesReps.map((rep, index) => {
+                                        // Get location names using the same helper function as modal
+                                        const checkInLoc = rep.latestCheckInLocation
+                                            ? (!rep.latestCheckInLocation || rep.latestCheckInLocation === '-' || rep.latestCheckInLocation.toLowerCase().includes('web based')
+                                                ? 'No location recorded'
+                                                : rep.latestCheckInLocation)
+                                            : 'No location recorded';
+
+                                        const checkOutLoc = rep.latestCheckOutLocation
+                                            ? (!rep.latestCheckOutLocation || rep.latestCheckOutLocation === '-' || rep.latestCheckOutLocation.toLowerCase().includes('web based')
+                                                ? 'No location recorded'
+                                                : rep.latestCheckOutLocation)
+                                            : 'No location recorded';
+
+                                        return (
                                         <TableRow
                                             key={rep.uid}
                                             className={cn(
@@ -1277,7 +1365,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                             onClick={() => handleRowClick(rep)}
                                         >
                                             <TableCell>
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex gap-3 items-center">
                                                     <Avatar className="w-8 h-8">
                                                         <AvatarImage
                                                             src={rep.photoURL || rep.avatar}
@@ -1300,30 +1388,40 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                {rep.branch?.name || '-'}
+                                                <span className={cn(
+                                                    rep.branch?.name ? "" : "text-[0.8em] text-muted-foreground"
+                                                )}>
+                                                    {rep.branch?.name || '-'}
+                                                </span>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="w-3 h-3 text-green-600 flex-shrink-0" />
-                                                    <span className="max-w-[200px] truncate">
-                                                        {rep.latestCheckInLocation || '-'}
+                                                <div className="flex gap-2 items-center">
+                                                    <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
+                                                    <span className={cn(
+                                                        "max-w-[200px] truncate",
+                                                        checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {checkInLoc}
                                                     </span>
                                                 </div>
                                                 {rep.latestCheckInTime && (
-                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                    <div className="mt-1 text-xs text-muted-foreground">
                                                         {format(new Date(rep.latestCheckInTime), 'PPp')}
                                                     </div>
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="w-3 h-3 text-red-600 flex-shrink-0" />
-                                                    <span className="max-w-[200px] truncate">
-                                                        {rep.latestCheckOutLocation || '-'}
+                                                <div className="flex gap-2 items-center">
+                                                    <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
+                                                    <span className={cn(
+                                                        "max-w-[200px] truncate",
+                                                        checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                    )}>
+                                                        {checkOutLoc}
                                                     </span>
                                                 </div>
                                                 {rep.latestCheckOutTime && (
-                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                    <div className="mt-1 text-xs text-muted-foreground">
                                                         {format(new Date(rep.latestCheckOutTime), 'PPp')}
                                                     </div>
                                                 )}
@@ -1334,7 +1432,8 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                                 </Badge>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </div>

@@ -178,8 +178,9 @@ class AuthService {
         // Set cookies synchronously for middleware authentication
         this.setTokensInCookies(data.accessToken, data.refreshToken);
 
-        // Small delay to ensure cookies are set before any navigation
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Increased delay to ensure cookies are set and propagated before any navigation
+        // This is especially important for server-side middleware to read cookies correctly
+        await new Promise(resolve => setTimeout(resolve, 200));
       } else {
         throw new AuthenticationError('Invalid response from server');
       }
@@ -331,8 +332,9 @@ class AuthService {
         // Set cookies synchronously for middleware authentication
         this.setTokensInCookies(data.accessToken, data.refreshToken);
 
-        // Small delay to ensure cookies are set before any navigation
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Increased delay to ensure cookies are set and propagated before any navigation
+        // This is especially important for server-side middleware to read cookies correctly
+        await new Promise(resolve => setTimeout(resolve, 200));
       } else {
         throw new AuthenticationError('Invalid response from server');
       }

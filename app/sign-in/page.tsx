@@ -122,30 +122,37 @@ const UserSignInForm = ({ callbackUrl, reason }: UserSignInFormProps) => {
 
             // Only show success toast and redirect if we have valid tokens
             if (response.accessToken && response.refreshToken) {
-                const hour = new Date().getHours();
-                const greeting =
-                    hour < 12
-                        ? 'Good morning'
-                        : hour < 18
-                          ? 'Good afternoon'
-                          : 'Good evening';
+                // Check if we're being redirected back due to token expiration
+                // If so, don't show welcome toast to avoid double toast issue
+                const tokenExpired = searchParams.get('token_expired');
+                const isRedirectedBack = tokenExpired === 'true' || reason === 'token_expired';
+                
+                if (!isRedirectedBack) {
+                    const hour = new Date().getHours();
+                    const greeting =
+                        hour < 12
+                            ? 'Good morning'
+                            : hour < 18
+                              ? 'Good afternoon'
+                              : 'Good evening';
 
-                // Use profileData from the store, which should be updated by signIn
-                // or fallback to response.profileData if store isn't updated yet.
-                const nameToGreet = profileData?.name || response?.profileData?.name || 'User';
+                    // Use profileData from the store, which should be updated by signIn
+                    // or fallback to response.profileData if store isn't updated yet.
+                    const nameToGreet = profileData?.name || response?.profileData?.name || 'User';
 
-                showSuccessToast(
-                    `${greeting},  ${nameToGreet}!`,
-                    toast,
-                );
+                    showSuccessToast(
+                        `${greeting},  ${nameToGreet}!`,
+                        toast,
+                    );
+                }
 
                 // Always redirect to dashboard after successful sign in
                 // Use window.location.href for a full page reload to ensure cookies are available to middleware
-                // The auth service already sets cookies and waits 100ms, so cookies should be set by now
-                // Using full page reload ensures middleware can read cookies properly
+                // Increased delay to ensure cookies are fully propagated to server-side middleware
                 setTimeout(() => {
+                    // Clear token_expired from URL if present to prevent redirect loop
                     window.location.href = '/dashboard';
-                }, 50); // Small additional delay to ensure cookies are fully set
+                }, 200); // Increased delay to ensure cookies are fully set and propagated
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);
@@ -298,6 +305,7 @@ interface ClientSignInFormProps {
 const ClientSignInForm = ({ callbackUrl }: ClientSignInFormProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { clientSignIn, isLoading, error, clearAuthError } = useAuthStore();
 
     const [form, setForm] = useState<ClientSignInSchema>({
@@ -351,25 +359,32 @@ const ClientSignInForm = ({ callbackUrl }: ClientSignInFormProps) => {
 
             // Only show success toast and redirect if we have valid tokens
             if (response.accessToken && response.refreshToken) {
-                const hour = new Date().getHours();
-                const greeting =
-                    hour < 12
-                        ? 'Good morning'
-                        : hour < 18
-                        ? 'Good afternoon'
-                        : 'Good evening';
+                // Check if we're being redirected back due to token expiration
+                const tokenExpired = searchParams.get('token_expired');
+                const isRedirectedBack = tokenExpired === 'true';
+                
+                if (!isRedirectedBack) {
+                    const hour = new Date().getHours();
+                    const greeting =
+                        hour < 12
+                            ? 'Good morning'
+                            : hour < 18
+                            ? 'Good afternoon'
+                            : 'Good evening';
 
-                showSuccessToast(
-                    `${greeting}, welcome to the client portal!`,
-                    toast,
-                );
+                    showSuccessToast(
+                        `${greeting}, welcome to the client portal!`,
+                        toast,
+                    );
+                }
 
                 // Always redirect client users directly to quotations page
                 // Use window.location.href for a full page reload to ensure cookies are available to middleware
-                // The auth service already sets cookies and waits 100ms, so cookies should be set by now
+                // Increased delay to ensure cookies are fully propagated to server-side middleware
                 setTimeout(() => {
+                    // Clear token_expired from URL if present to prevent redirect loop
                     window.location.href = '/quotations';
-                }, 50); // Small additional delay to ensure cookies are fully set
+                }, 200); // Increased delay to ensure cookies are fully set and propagated
             } else if (response.message) {
                 // If we have a message but no tokens, it's an error
                 showErrorToast(response.message, toast);

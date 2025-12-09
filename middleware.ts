@@ -95,9 +95,11 @@ function validateToken(token: string): { isValid: boolean; reason?: string } {
             return result;
         }
 
-        // Check expiration
+        // Check expiration with a buffer to account for clock skew between client and server
+        // Add 60 second buffer to handle minor clock differences
+        const EXPIRATION_BUFFER = 60; // 60 seconds buffer for clock skew
         const currentTimestamp = Math.floor(Date.now() / 1000);
-        if (!decodedToken.exp || decodedToken.exp <= currentTimestamp) {
+        if (!decodedToken.exp || decodedToken.exp <= (currentTimestamp - EXPIRATION_BUFFER)) {
             const result = { isValid: false, reason: 'token-expired' };
             tokenCache.set(token, { ...result, timestamp: Date.now() });
 

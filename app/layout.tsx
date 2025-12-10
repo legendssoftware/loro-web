@@ -7,7 +7,6 @@ import { TopNav } from '@/components/navigation/top-nav';
 import { Toaster } from 'react-hot-toast';
 import { SessionTimeoutHandler } from '@/components/SessionTimeoutHandler';
 import { MiddlewareNotifications } from '@/components/middleware-notifications';
-import { SessionStorageClearHandler } from '@/components/session-storage-clear';
 import { Suspense } from 'react';
 
 const urbanist = Urbanist({

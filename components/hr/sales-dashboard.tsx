@@ -50,6 +50,7 @@ import {
     X,
     ChevronDown,
     ChevronUp,
+    Route,
 } from 'lucide-react';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
@@ -391,6 +392,7 @@ const UserVisitsModal: React.FC<{
     const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [expandedVisitId, setExpandedVisitId] = useState<number | null>(null);
+    const [activeTab, setActiveTab] = useState<string>('visits');
 
 
     // Get unique branches from visits
@@ -575,6 +577,53 @@ const UserVisitsModal: React.FC<{
         setExpandedVisitId(expandedVisitId === visitId ? null : visitId);
     };
 
+    // Fetch trip summary data for the selected user
+    const { data: tripSummaryData, isLoading: isLoadingTripSummary } = useQuery({
+        queryKey: ['tripSummary', salesRep?.uid],
+        queryFn: async () => {
+            if (!salesRep?.uid) return null;
+            const response = await axiosInstance.get(`/reports/user/${salesRep.uid}/daily-reports?reportType=USER_DAILY&limit=1000`);
+
+            // Log the raw response data before mapping
+            console.log('[Trip Summary] Raw API response:', response.data);
+            console.log('[Trip Summary] Reports count:', response.data?.reports?.length || 0);
+
+            if (response.data?.reports) {
+                response.data.reports.forEach((report: any, index: number) => {
+                    console.log(`[Trip Summary] Report ${index + 1}:`, {
+                        uid: report.uid,
+                        reportType: report.reportType,
+                        generatedAt: report.generatedAt,
+                        hasGpsData: !!report.gpsData,
+                        gpsDataKeys: report.gpsData ? Object.keys(report.gpsData) : [],
+                        hasReportData: !!report.reportData,
+                        reportDataKeys: report.reportData ? Object.keys(report.reportData) : [],
+                        gpsDataStructure: report.gpsData ? {
+                            hasTripSummary: !!report.gpsData.tripSummary,
+                            tripSummaryKeys: report.gpsData.tripSummary ? Object.keys(report.gpsData.tripSummary) : [],
+                            tripSummary: report.gpsData.tripSummary,
+                        } : null,
+                    });
+                });
+            }
+
+            return response.data;
+        },
+        enabled: activeTab === 'trip' && !!salesRep?.uid,
+        staleTime: 2 * 60 * 1000,
+    });
+
+    // Handle tab change
+    const handleTabChange = (tabId: string) => {
+        setActiveTab(tabId);
+    };
+
+    // Define tabs
+    const tabs = [
+        { id: 'visits', label: 'Visits Summary' },
+        { id: 'trip', label: 'Trip Summary' },
+    ];
+
     // Early return if no salesRep - prevents hook from running with invalid userId
     if (!salesRep || !salesRep.uid) return null;
 
@@ -582,6 +631,7 @@ const UserVisitsModal: React.FC<{
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
                 setExpandedVisitId(null);
+                setActiveTab('visits'); // Reset to visits tab on close
             }
             onClose();
         }}>
@@ -594,34 +644,63 @@ const UserVisitsModal: React.FC<{
                                 Visits - {salesRep.name} {salesRep.surname}
                             </DialogTitle>
                             <DialogDescription>
-                                All visits for this sales rep ({salesRep.totalVisits} total)
+                                {activeTab === 'visits'
+                                    ? `All visits for this sales rep (${salesRep.totalVisits} total)`
+                                    : 'Trip summaries for this user'
+                                }
                             </DialogDescription>
                         </div>
                         <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => exportUserVisitsToExcel(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
-                                className="flex gap-2 items-center"
-                            >
-                                <FileSpreadsheet className="w-4 h-4" />
-                                Export Excel
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => exportUserVisitsToPDF(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
-                                className="flex gap-2 items-center"
-                            >
-                                <FileText className="w-4 h-4" />
-                                Export PDF
-                            </Button>
+                            {activeTab === 'visits' && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => exportUserVisitsToExcel(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
+                                        className="flex gap-2 items-center"
+                                    >
+                                        <FileSpreadsheet className="w-4 h-4" />
+                                        Export Excel
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => exportUserVisitsToPDF(filteredVisits, `${salesRep.name} ${salesRep.surname}`)}
+                                        className="flex gap-2 items-center"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        Export PDF
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </DialogHeader>
 
-                    {/* Visits Content */}
-                    <div className="flex overflow-hidden flex-col flex-1 mt-0">
+                {/* Tabs */}
+                <div className="mt-4 flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="flex overflow-x-auto gap-6 items-center mb-6 border-b border-border/20 flex-shrink-0">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab?.id}
+                                onClick={() => handleTabChange(tab?.id)}
+                                className={`relative pb-3 px-1 text-xs font-thin uppercase font-body transition-colors ${
+                                    activeTab === tab.id
+                                        ? 'text-foreground'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {tab?.label}
+                                {activeTab === tab?.id && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-600 dark:bg-purple-500" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'visits' && (
+                        <div className="flex overflow-hidden flex-col flex-1 min-h-0">
                         {/* Filters */}
                         <div className="flex flex-col flex-shrink-0 gap-4 pb-4 mb-4 border-b">
                     <div className="flex flex-col gap-4 sm:flex-row">
@@ -1054,6 +1133,115 @@ const UserVisitsModal: React.FC<{
                     )}
                         </div>
                     </div>
+                    )}
+
+                    {activeTab === 'trip' && (
+                        <div className="flex overflow-hidden flex-col flex-1 mt-0">
+                            {isLoadingTripSummary ? (
+                                <div className="flex justify-center items-center flex-1">
+                                    <div className="text-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                                        <p className="text-sm text-muted-foreground">Loading trip summaries...</p>
+                                    </div>
+                                </div>
+                            ) : tripSummaryData?.reports && tripSummaryData.reports.length > 0 ? (
+                                <div className="overflow-y-auto flex-1 space-y-4">
+                                    {tripSummaryData.reports.map((report: any, idx: number) => {
+                                        // Log before mapping to debug empty reports
+                                        console.log(`[Trip Summary Mapping] Report ${idx + 1}:`, {
+                                            reportUid: report.uid,
+                                            reportType: report.reportType,
+                                            hasGpsData: !!report.gpsData,
+                                            hasReportData: !!report.reportData,
+                                            gpsDataLocation: report.gpsData ? 'report.gpsData' : 'not found',
+                                            reportDataLocation: report.reportData ? 'report.reportData' : 'not found',
+                                        });
+
+                                        // Try multiple locations for GPS data
+                                        const gpsData = report.gpsData || report.reportData?.gpsData || report.data?.gpsData;
+                                        const tripSummary = gpsData?.tripSummary;
+
+                                        console.log(`[Trip Summary Mapping] Report ${idx + 1} GPS Data:`, {
+                                            foundGpsData: !!gpsData,
+                                            foundTripSummary: !!tripSummary,
+                                            tripSummaryKeys: tripSummary ? Object.keys(tripSummary) : [],
+                                            tripSummary: tripSummary,
+                                        });
+
+                                        return (
+                                            <Card key={report.uid || idx} className="p-4">
+                                                <div className="flex gap-2 items-center mb-3">
+                                                    <Route className="w-5 h-5 text-purple-600" />
+                                                    <span className="text-sm font-semibold">
+                                                        {format(new Date(report.generatedAt), 'PPp')}
+                                                    </span>
+                                                </div>
+                                                {tripSummary ? (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="p-3 rounded-lg border bg-card/50">
+                                                            <div className="flex gap-2 items-center mb-1">
+                                                                <Navigation className="w-4 h-4 text-blue-600" />
+                                                                <span className="text-xs font-medium text-muted-foreground">Distance</span>
+                                                            </div>
+                                                            <p className="text-lg font-semibold">
+                                                                {tripSummary.totalDistanceKm !== undefined
+                                                                    ? tripSummary.totalDistanceKm < 1
+                                                                        ? `${Math.round(tripSummary.totalDistanceKm * 1000)}m`
+                                                                        : `${tripSummary.totalDistanceKm.toFixed(2)}km`
+                                                                    : 'N/A'}
+                                                            </p>
+                                                        </div>
+                                                        <div className="p-3 rounded-lg border bg-card/50">
+                                                            <div className="flex gap-2 items-center mb-1">
+                                                                <Clock className="w-4 h-4 text-green-600" />
+                                                                <span className="text-xs font-medium text-muted-foreground">Duration</span>
+                                                            </div>
+                                                            <p className="text-lg font-semibold">
+                                                                {tripSummary.totalTimeMinutes !== undefined
+                                                                    ? `${Math.floor(tripSummary.totalTimeMinutes / 60)}h ${tripSummary.totalTimeMinutes % 60}m`
+                                                                    : 'N/A'}
+                                                            </p>
+                                                        </div>
+                                                        <div className="p-3 rounded-lg border bg-card/50">
+                                                            <div className="flex gap-2 items-center mb-1">
+                                                                <Route className="w-4 h-4 text-purple-600" />
+                                                                <span className="text-xs font-medium text-muted-foreground">Stops</span>
+                                                            </div>
+                                                            <p className="text-lg font-semibold">{tripSummary.numberOfStops ?? 0}</p>
+                                                        </div>
+                                                        <div className="p-3 rounded-lg border bg-card/50">
+                                                            <div className="flex gap-2 items-center mb-1">
+                                                                <MapPin className="w-4 h-4 text-orange-600" />
+                                                                <span className="text-xs font-medium text-muted-foreground">Avg Speed</span>
+                                                            </div>
+                                                            <p className="text-lg font-semibold">
+                                                                {tripSummary.averageSpeedKmh !== undefined
+                                                                    ? `${tripSummary.averageSpeedKmh.toFixed(1)} km/h`
+                                                                    : 'N/A'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-4 rounded-lg border bg-muted/30">
+                                                        <p className="text-sm text-muted-foreground">No GPS trip data available for this report</p>
+                                                    </div>
+                                                )}
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="flex justify-center items-center flex-1">
+                                    <div className="text-center">
+                                        <Route className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                        <p className="text-sm font-medium text-muted-foreground">No trip summaries available</p>
+                                        <p className="text-xs text-muted-foreground mt-2">This user has no trip reports yet</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </DialogContent>
         </Dialog>
     );

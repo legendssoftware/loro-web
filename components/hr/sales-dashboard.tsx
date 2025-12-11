@@ -51,6 +51,17 @@ import {
     ChevronDown,
     ChevronUp,
     Route,
+    DollarSign,
+    Users,
+    Target,
+    Zap,
+    TrendingUp,
+    Activity,
+    Image as ImageIcon,
+    AlertCircle,
+    CheckCircle2,
+    Timer,
+    Gauge,
 } from 'lucide-react';
 import { axiosInstance } from '@/lib/services/api-client';
 import { useAuthStore } from '@/store/auth-store';
@@ -243,8 +254,7 @@ const exportToExcel = (data: SalesRepData[]) => {
         'Sales Rep',
         'Email',
         'Branch',
-        'Latest Check In Location',
-        'Latest Check Out Location',
+        'Locations',
         'Total Visits',
     ];
 
@@ -264,8 +274,7 @@ const exportToExcel = (data: SalesRepData[]) => {
             `${rep.name} ${rep.surname}`,
             rep.email || '-',
             rep.branch?.name || '-',
-            normalizedCheckIn,
-            normalizedCheckOut,
+            `Check In: ${normalizedCheckIn} | Check Out: ${normalizedCheckOut}`,
             rep.totalVisits.toString(),
         ];
     });
@@ -337,8 +346,7 @@ const exportToPDF = (data: SalesRepData[]) => {
                         <th>Sales Rep</th>
                         <th>Email</th>
                         <th>Branch</th>
-                        <th>Latest Check In Location</th>
-                        <th>Latest Check Out Location</th>
+                        <th>Locations</th>
                         <th>Total Visits</th>
                     </tr>
                 </thead>
@@ -360,8 +368,7 @@ const exportToPDF = (data: SalesRepData[]) => {
                             <td>${rep.name} ${rep.surname}</td>
                             <td>${rep.email || '-'}</td>
                             <td>${rep.branch?.name || '-'}</td>
-                            <td>${normalizedCheckIn}</td>
-                            <td>${normalizedCheckOut}</td>
+                            <td>Check In: ${normalizedCheckIn} | Check Out: ${normalizedCheckOut}</td>
                             <td>${rep.totalVisits}</td>
                         </tr>
                     `;
@@ -393,6 +400,7 @@ const UserVisitsModal: React.FC<{
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [expandedVisitId, setExpandedVisitId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<string>('visits');
+    const [selectedImage, setSelectedImage] = useState<{ url: string; type: 'check-in' | 'check-out' } | null>(null);
 
 
     // Get unique branches from visits
@@ -445,8 +453,7 @@ const UserVisitsModal: React.FC<{
         const headers = [
             'Date',
             'Branch',
-            'Check In Location',
-            'Check Out Location',
+            'Locations',
             'Client',
             'Duration',
             'Check In Time',
@@ -460,8 +467,7 @@ const UserVisitsModal: React.FC<{
         const rows = visits.map((visit) => [
             format(new Date(visit.checkInTime), 'PPp'),
             visit.branch?.name || '-',
-            getLocationName(visit, false),
-            getLocationName(visit, true),
+            `Check In: ${getLocationName(visit, false)} | Check Out: ${getLocationName(visit, true)}`,
             visit.client?.name || 'Potential client',
             visit.duration || '-',
             format(new Date(visit.checkInTime), 'PPp'),
@@ -628,6 +634,7 @@ const UserVisitsModal: React.FC<{
     if (!salesRep || !salesRep.uid) return null;
 
     return (
+        <React.Fragment>
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
                 setExpandedVisitId(null);
@@ -678,8 +685,8 @@ const UserVisitsModal: React.FC<{
                 </DialogHeader>
 
                 {/* Tabs */}
-                <div className="mt-4 flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <div className="flex overflow-x-auto gap-6 items-center mb-6 border-b border-border/20 flex-shrink-0">
+                <div className="flex overflow-hidden flex-col flex-1 mt-4 min-h-0">
+                    <div className="flex overflow-x-auto flex-shrink-0 gap-6 items-center mb-6 border-b border-border/20">
                         {tabs.map((tab) => (
                             <button
                                 key={tab?.id}
@@ -790,10 +797,10 @@ const UserVisitsModal: React.FC<{
                                 <TableRow>
                                     <TableHead className="font-bold">Date</TableHead>
                                     <TableHead className="font-bold">Branch</TableHead>
-                                    <TableHead className="font-bold">Check In Location</TableHead>
-                                    <TableHead className="font-bold">Check Out Location</TableHead>
+                                    <TableHead className="font-bold">Locations</TableHead>
                                     <TableHead className="font-bold">Client</TableHead>
                                     <TableHead className="font-bold">Duration</TableHead>
+                                    <TableHead className="font-bold">Images</TableHead>
                                     <TableHead className="font-bold">Notes</TableHead>
                                     <TableHead className="font-bold">Resolution</TableHead>
                                 </TableRow>
@@ -832,26 +839,35 @@ const UserVisitsModal: React.FC<{
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex gap-2 items-center">
-                                                        <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
-                                                        <span className={cn(
-                                                            "max-w-[200px] truncate",
-                                                            checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
-                                                        )}>
-                                                            {checkInLoc}
-                                                        </span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-2 items-center">
-                                                        <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
-                                                        <span className={cn(
-                                                            "max-w-[200px] truncate",
-                                                            checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
-                                                        )}>
-                                                            {checkOutLoc}
-                                                        </span>
-                                                    </div>
+                                                    {checkInLoc === 'No location recorded' && checkOutLoc === 'No location recorded' ? (
+                                                        <div className="flex gap-2 items-center">
+                                                            <MapPin className="flex-shrink-0 w-3 h-3 text-muted-foreground" />
+                                                            <span className="text-[0.8em] text-muted-foreground">
+                                                                No locations recorded
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex gap-2 items-center">
+                                                                <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
+                                                                <span className={cn(
+                                                                    "max-w-[200px] truncate text-xs",
+                                                                    checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                )}>
+                                                                    {checkInLoc}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex gap-2 items-center">
+                                                                <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
+                                                                <span className={cn(
+                                                                    "max-w-[200px] truncate text-xs",
+                                                                    checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                )}>
+                                                                    {checkOutLoc}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className={cn(
@@ -866,6 +882,49 @@ const UserVisitsModal: React.FC<{
                                                     )}>
                                                         {visit.duration || '-'}
                                                     </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {(() => {
+                                                        const imageCount = (visit.checkInPhoto ? 1 : 0) + (visit.checkOutPhoto ? 1 : 0);
+                                                        if (imageCount === 0) {
+                                                            return (
+                                                                <span className="text-[0.8em] text-muted-foreground">0 images</span>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <div className="flex gap-1 items-center">
+                                                                {visit.checkInPhoto && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setSelectedImage({ url: visit.checkInPhoto!, type: 'check-in' });
+                                                                        }}
+                                                                        className="relative transition-opacity cursor-pointer group hover:opacity-80"
+                                                                        title="Click to view check-in photo"
+                                                                    >
+                                                                        <ImageIcon className="w-4 h-4 text-green-600" />
+                                                                        <span className="sr-only">Check-in photo</span>
+                                                                    </button>
+                                                                )}
+                                                                {visit.checkOutPhoto && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setSelectedImage({ url: visit.checkOutPhoto!, type: 'check-out' });
+                                                                        }}
+                                                                        className="relative transition-opacity cursor-pointer group hover:opacity-80"
+                                                                        title="Click to view check-out photo"
+                                                                    >
+                                                                        <ImageIcon className="w-4 h-4 text-red-600" />
+                                                                        <span className="sr-only">Check-out photo</span>
+                                                                    </button>
+                                                                )}
+                                                                <span className="ml-1 text-xs text-muted-foreground">
+                                                                    {imageCount === 1 ? '1 image' : '2 images'}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className={cn(
@@ -1138,92 +1197,299 @@ const UserVisitsModal: React.FC<{
                     {activeTab === 'trip' && (
                         <div className="flex overflow-hidden flex-col flex-1 mt-0">
                             {isLoadingTripSummary ? (
-                                <div className="flex justify-center items-center flex-1">
+                                <div className="flex flex-1 justify-center items-center">
                                     <div className="text-center">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                                        <div className="mx-auto mb-4 w-8 h-8 rounded-full border-b-2 border-purple-600 animate-spin"></div>
                                         <p className="text-sm text-muted-foreground">Loading trip summaries...</p>
                                     </div>
                                 </div>
                             ) : tripSummaryData?.reports && tripSummaryData.reports.length > 0 ? (
                                 <div className="overflow-y-auto flex-1 space-y-4">
                                     {tripSummaryData.reports.map((report: any, idx: number) => {
-                                        // Log before mapping to debug empty reports
-                                        console.log(`[Trip Summary Mapping] Report ${idx + 1}:`, {
-                                            reportUid: report.uid,
-                                            reportType: report.reportType,
-                                            hasGpsData: !!report.gpsData,
-                                            hasReportData: !!report.reportData,
-                                            gpsDataLocation: report.gpsData ? 'report.gpsData' : 'not found',
-                                            reportDataLocation: report.reportData ? 'report.reportData' : 'not found',
-                                        });
+                                        // Extract data from reportData.details structure
+                                        const reportData = report.reportData;
+                                        const details = reportData?.details;
+                                        const locationData = details?.location;
+                                        const trackingData = locationData?.trackingData;
+                                        const tripSummary = trackingData?.tripSummary;
+                                        const stops = trackingData?.stops || locationData?.stops || [];
+                                        const travelInsights = trackingData?.travelInsights || locationData?.travelInsights;
+                                        const distanceInsights = trackingData?.distanceInsights;
+                                        const locationProductivity = trackingData?.locationProductivity || locationData?.locationProductivity;
 
-                                        // Try multiple locations for GPS data
-                                        const gpsData = report.gpsData || report.reportData?.gpsData || report.data?.gpsData;
-                                        const tripSummary = gpsData?.tripSummary;
+                                        // Get summary data for quick metrics
+                                        const summary = reportData?.summary;
+                                        const quotations = details?.quotations;
+                                        const leads = details?.leads;
+                                        const tasks = details?.tasks;
+                                        const attendance = details?.attendance;
+                                        const rewards = details?.rewards;
 
-                                        console.log(`[Trip Summary Mapping] Report ${idx + 1} GPS Data:`, {
-                                            foundGpsData: !!gpsData,
-                                            foundTripSummary: !!tripSummary,
-                                            tripSummaryKeys: tripSummary ? Object.keys(tripSummary) : [],
-                                            tripSummary: tripSummary,
-                                        });
+                                        // Distance values
+                                        const totalDistanceKm = tripSummary?.totalDistanceKm || locationData?.totalDistanceKm || 0;
+                                        const totalDistance = trackingData?.totalDistance || locationData?.totalDistance || locationData?.distanceTraveled || '0 km';
+
+                                        // Check if we have any trip data
+                                        const hasTripData = totalDistanceKm > 0 || stops.length > 0 || (locationData?.locations && locationData.locations.length > 0);
 
                                         return (
-                                            <Card key={report.uid || idx} className="p-4">
-                                                <div className="flex gap-2 items-center mb-3">
-                                                    <Route className="w-5 h-5 text-purple-600" />
-                                                    <span className="text-sm font-semibold">
-                                                        {format(new Date(report.generatedAt), 'PPp')}
-                                                    </span>
-                                                </div>
-                                                {tripSummary ? (
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="p-3 rounded-lg border bg-card/50">
-                                                            <div className="flex gap-2 items-center mb-1">
-                                                                <Navigation className="w-4 h-4 text-blue-600" />
-                                                                <span className="text-xs font-medium text-muted-foreground">Distance</span>
-                                                            </div>
-                                                            <p className="text-lg font-semibold">
-                                                                {tripSummary.totalDistanceKm !== undefined
-                                                                    ? tripSummary.totalDistanceKm < 1
-                                                                        ? `${Math.round(tripSummary.totalDistanceKm * 1000)}m`
-                                                                        : `${tripSummary.totalDistanceKm.toFixed(2)}km`
-                                                                    : 'N/A'}
-                                                            </p>
+                                            <Card key={report.uid || idx} className="overflow-hidden">
+                                                {/* Collapsed Header - Quick Metrics at a Glance */}
+                                                <div
+                                                    className="p-4 transition-colors cursor-pointer hover:bg-muted/30"
+                                                    onClick={() => setExpandedVisitId(expandedVisitId === report.uid ? null : report.uid)}
+                                                >
+                                                    {/* Date and Status Row */}
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <div className="flex gap-2 items-center">
+                                                            <Route className="w-5 h-5 text-purple-600" />
+                                                            <span className="text-sm font-semibold">
+                                                                {format(new Date(report.generatedAt), 'PPp')}
+                                                            </span>
+                                                            {distanceInsights && (
+                                                                <span className="text-lg">{distanceInsights.icon}</span>
+                                                            )}
                                                         </div>
-                                                        <div className="p-3 rounded-lg border bg-card/50">
-                                                            <div className="flex gap-2 items-center mb-1">
-                                                                <Clock className="w-4 h-4 text-green-600" />
-                                                                <span className="text-xs font-medium text-muted-foreground">Duration</span>
-                                                            </div>
-                                                            <p className="text-lg font-semibold">
-                                                                {tripSummary.totalTimeMinutes !== undefined
-                                                                    ? `${Math.floor(tripSummary.totalTimeMinutes / 60)}h ${tripSummary.totalTimeMinutes % 60}m`
-                                                                    : 'N/A'}
-                                                            </p>
-                                                        </div>
-                                                        <div className="p-3 rounded-lg border bg-card/50">
-                                                            <div className="flex gap-2 items-center mb-1">
-                                                                <Route className="w-4 h-4 text-purple-600" />
-                                                                <span className="text-xs font-medium text-muted-foreground">Stops</span>
-                                                            </div>
-                                                            <p className="text-lg font-semibold">{tripSummary.numberOfStops ?? 0}</p>
-                                                        </div>
-                                                        <div className="p-3 rounded-lg border bg-card/50">
-                                                            <div className="flex gap-2 items-center mb-1">
-                                                                <MapPin className="w-4 h-4 text-orange-600" />
-                                                                <span className="text-xs font-medium text-muted-foreground">Avg Speed</span>
-                                                            </div>
-                                                            <p className="text-lg font-semibold">
-                                                                {tripSummary.averageSpeedKmh !== undefined
-                                                                    ? `${tripSummary.averageSpeedKmh.toFixed(1)} km/h`
-                                                                    : 'N/A'}
-                                                            </p>
+                                                        <div className="flex gap-2 items-center">
+                                                            {hasTripData ? (
+                                                                <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200">
+                                                                    <CheckCircle2 className="mr-1 w-3 h-3" />
+                                                                    GPS Data
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
+                                                                    <AlertCircle className="mr-1 w-3 h-3" />
+                                                                    Limited Data
+                                                                </Badge>
+                                                            )}
+                                                            {expandedVisitId === report.uid ? (
+                                                                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                                            ) : (
+                                                                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                                            )}
                                                         </div>
                                                     </div>
-                                                ) : (
-                                                    <div className="p-4 rounded-lg border bg-muted/30">
-                                                        <p className="text-sm text-muted-foreground">No GPS trip data available for this report</p>
+
+                                                    {/* Quick Metrics Row - Always Visible */}
+                                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+                                                        {/* Distance */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <Navigation className="w-4 h-4 text-blue-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Distance</p>
+                                                                <p className="text-sm font-semibold">
+                                                                    {totalDistanceKm > 0
+                                                                        ? totalDistanceKm < 1
+                                                                            ? `${Math.round(totalDistanceKm * 1000)}m`
+                                                                            : `${totalDistanceKm.toFixed(1)} km`
+                                                                        : totalDistance || '0 km'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Stops */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <MapPin className="w-4 h-4 text-purple-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Stops</p>
+                                                                <p className="text-sm font-semibold">{tripSummary?.numberOfStops ?? stops.length ?? 0}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Revenue */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <DollarSign className="w-4 h-4 text-green-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Revenue</p>
+                                                                <p className="text-sm font-semibold">{quotations?.totalRevenueFormatted || summary?.totalRevenue || 'R 0'}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Leads */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <Target className="w-4 h-4 text-amber-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Leads</p>
+                                                                <p className="text-sm font-semibold">{leads?.newLeadsCount ?? summary?.newLeads ?? 0}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Hours Worked */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <Clock className="w-4 h-4 text-indigo-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">Hours</p>
+                                                                <p className="text-sm font-semibold">{summary?.hoursWorked ?? 0}h</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* XP Earned */}
+                                                        <div className="flex gap-2 items-center p-2 rounded-lg">
+                                                            <Zap className="w-4 h-4 text-orange-600" />
+                                                            <div>
+                                                                <p className="text-xs text-muted-foreground">XP</p>
+                                                                <p className="text-sm font-semibold">+{rewards?.dailyXPEarned ?? summary?.xpEarned ?? 0}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Expanded Content */}
+                                                {expandedVisitId === report.uid && (
+                                                    <div className="p-4 space-y-6 border-t bg-muted/10">
+                                                        {/* Trip Details Section */}
+                                                        {hasTripData && (
+                                                            <div>
+                                                                <h4 className="flex gap-2 items-center mb-3 text-sm font-semibold">
+                                                                    <Route className="w-4 h-4 text-purple-600" />
+                                                                    Trip Details
+                                                                </h4>
+                                                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                                                    <div className="p-3 rounded-lg border bg-card">
+                                                                        <div className="flex gap-2 items-center mb-1">
+                                                                            <Timer className="w-4 h-4 text-green-600" />
+                                                                            <span className="text-xs text-muted-foreground">Moving Time</span>
+                                                                        </div>
+                                                                        <p className="text-base font-semibold">{tripSummary?.movingTimeFormatted || formatMinutesToHours(tripSummary?.movingTimeMinutes || 0)}</p>
+                                                                    </div>
+                                                                    <div className="p-3 rounded-lg border bg-card">
+                                                                        <div className="flex gap-2 items-center mb-1">
+                                                                            <Clock className="w-4 h-4 text-amber-600" />
+                                                                            <span className="text-xs text-muted-foreground">Stopped Time</span>
+                                                                        </div>
+                                                                        <p className="text-base font-semibold">{tripSummary?.stoppedTimeFormatted || formatMinutesToHours(tripSummary?.stoppedTimeMinutes || 0)}</p>
+                                                                    </div>
+                                                                    <div className="p-3 rounded-lg border bg-card">
+                                                                        <div className="flex gap-2 items-center mb-1">
+                                                                            <Gauge className="w-4 h-4 text-blue-600" />
+                                                                            <span className="text-xs text-muted-foreground">Avg Speed</span>
+                                                                        </div>
+                                                                        <p className="text-base font-semibold">{tripSummary?.averageSpeed || `${(tripSummary?.averageSpeedKmh || 0).toFixed(1)} km/h`}</p>
+                                                                    </div>
+                                                                    <div className="p-3 rounded-lg border bg-card">
+                                                                        <div className="flex gap-2 items-center mb-1">
+                                                                            <TrendingUp className="w-4 h-4 text-red-600" />
+                                                                            <span className="text-xs text-muted-foreground">Max Speed</span>
+                                                                        </div>
+                                                                        <p className="text-base font-semibold">{tripSummary?.maxSpeed || `${(tripSummary?.maxSpeedKmh || 0).toFixed(1)} km/h`}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Distance Insights */}
+                                                        {distanceInsights && (
+                                                            <div className="p-3 rounded-lg border" style={{ backgroundColor: `${distanceInsights.color}10` }}>
+                                                                <p className="text-sm">{distanceInsights.message}</p>
+                                                                {distanceInsights.recommendation && (
+                                                                    <p className="mt-1 text-xs text-muted-foreground">{distanceInsights.recommendation}</p>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Stops List */}
+                                                        {stops.length > 0 && (
+                                                            <div>
+                                                                <h4 className="flex gap-2 items-center mb-3 text-sm font-semibold">
+                                                                    <MapPin className="w-4 h-4 text-purple-600" />
+                                                                    Stops ({stops.length})
+                                                                </h4>
+                                                                <div className="space-y-2">
+                                                                    {stops.slice(0, 5).map((stop: any, stopIdx: number) => (
+                                                                        <div key={stopIdx} className="flex gap-3 items-start p-3 rounded-lg border bg-card">
+                                                                            <div className="flex flex-shrink-0 justify-center items-center w-6 h-6 bg-purple-100 rounded-full dark:bg-purple-900">
+                                                                                <span className="text-xs font-semibold text-purple-600">{stopIdx + 1}</span>
+                                                                            </div>
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className="text-sm font-medium truncate">{stop.address || 'Unknown location'}</p>
+                                                                                <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                                                                                    <span>{stop.startTime} - {stop.endTime}</span>
+                                                                                    <span className="font-medium">{stop.duration || stop.durationFormatted}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            {locationProductivity?.keyLocations?.find((loc: any) => loc.address === stop.address)?.productivity && (
+                                                                                <Badge variant="outline" className="text-xs">
+                                                                                    {locationProductivity.keyLocations.find((loc: any) => loc.address === stop.address).productivity}
+                                                                                </Badge>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+                                                                    {stops.length > 5 && (
+                                                                        <p className="text-xs text-center text-muted-foreground">
+                                                                            + {stops.length - 5} more stops
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Activity Summary */}
+                                                        <div>
+                                                            <h4 className="flex gap-2 items-center mb-3 text-sm font-semibold">
+                                                                <Activity className="w-4 h-4 text-blue-600" />
+                                                                Activity Summary
+                                                            </h4>
+                                                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                                                <div className="p-3 rounded-lg border bg-card">
+                                                                    <p className="text-xs text-muted-foreground">Tasks Completed</p>
+                                                                    <p className="text-lg font-semibold">{tasks?.completedCount ?? summary?.tasksCompleted ?? 0}</p>
+                                                                </div>
+                                                                <div className="p-3 rounded-lg border bg-card">
+                                                                    <p className="text-xs text-muted-foreground">Quotations</p>
+                                                                    <p className="text-lg font-semibold">{quotations?.totalQuotations ?? summary?.totalQuotations ?? 0}</p>
+                                                                </div>
+                                                                <div className="p-3 rounded-lg border bg-card">
+                                                                    <p className="text-xs text-muted-foreground">Client Interactions</p>
+                                                                    <p className="text-lg font-semibold">{details?.clients?.totalInteractions ?? summary?.clientInteractions ?? 0}</p>
+                                                                </div>
+                                                                <div className="p-3 rounded-lg border bg-card">
+                                                                    <p className="text-xs text-muted-foreground">Claims</p>
+                                                                    <p className="text-lg font-semibold">{details?.claims?.count ?? summary?.totalClaims ?? 0}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Travel Insights */}
+                                                        {travelInsights && (
+                                                            <div>
+                                                                <h4 className="flex gap-2 items-center mb-3 text-sm font-semibold">
+                                                                    <TrendingUp className="w-4 h-4 text-green-600" />
+                                                                    Travel Insights
+                                                                </h4>
+                                                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                                                    {travelInsights.movementPatterns && (
+                                                                        <div className="p-3 rounded-lg border bg-card">
+                                                                            <p className="mb-1 text-xs text-muted-foreground">Movement Pattern</p>
+                                                                            <p className="text-sm font-medium">{travelInsights.movementPatterns.pattern}</p>
+                                                                            {travelInsights.movementPatterns.analysis && (
+                                                                                <p className="mt-1 text-xs text-muted-foreground">{travelInsights.movementPatterns.analysis}</p>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {travelInsights.travelEfficiency && (
+                                                                        <div className="p-3 rounded-lg border bg-card">
+                                                                            <p className="mb-1 text-xs text-muted-foreground">Travel Efficiency</p>
+                                                                            <p className="text-sm font-medium">{travelInsights.travelEfficiency.score}</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {travelInsights.routeOptimization && (
+                                                                        <div className="p-3 rounded-lg border bg-card">
+                                                                            <p className="mb-1 text-xs text-muted-foreground">Route Optimization</p>
+                                                                            <p className="text-sm">{travelInsights.routeOptimization.recommendation}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* No trip data message */}
+                                                        {!hasTripData && (
+                                                            <div className="p-4 text-center rounded-lg border bg-muted/30">
+                                                                <MapPin className="mx-auto mb-2 w-8 h-8 text-muted-foreground" />
+                                                                <p className="text-sm text-muted-foreground">No GPS tracking data available for this day</p>
+                                                                <p className="mt-1 text-xs text-muted-foreground">Location tracking may have been disabled or no movement was recorded</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </Card>
@@ -1231,19 +1497,48 @@ const UserVisitsModal: React.FC<{
                                     })}
                                 </div>
                             ) : (
-                                <div className="flex justify-center items-center flex-1">
+                                <div className="flex flex-1 justify-center items-center">
                                     <div className="text-center">
-                                        <Route className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                        <Route className="mx-auto mb-4 w-12 h-12 text-muted-foreground" />
                                         <p className="text-sm font-medium text-muted-foreground">No trip summaries available</p>
-                                        <p className="text-xs text-muted-foreground mt-2">This user has no trip reports yet</p>
+                                        <p className="mt-2 text-xs text-muted-foreground">This user has no trip reports yet</p>
                                     </div>
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
+                </DialogContent>
+        </Dialog>
+
+        {/* Image Viewer Dialog */}
+        <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+            <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle className="flex gap-2 items-center">
+                        <ImageIcon className="w-5 h-5" />
+                        {selectedImage?.type === 'check-in' ? 'Check-In Photo' : 'Check-Out Photo'}
+                    </DialogTitle>
+                </DialogHeader>
+                {selectedImage && (
+                    <div className="flex justify-center items-center w-full">
+                        <img
+                            src={selectedImage.url}
+                            alt={selectedImage.type === 'check-in' ? 'Check-in photo' : 'Check-out photo'}
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'p-4 text-center text-muted-foreground';
+                                errorDiv.textContent = 'Failed to load image';
+                                (e.target as HTMLImageElement).parentElement?.appendChild(errorDiv);
+                            }}
+                        />
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
+        </React.Fragment>
     );
 };
 
@@ -1255,6 +1550,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [branchFilter, setBranchFilter] = useState<string>('all');
+    const [selectedImage, setSelectedImage] = useState<{ url: string; type: 'check-in' | 'check-out' } | null>(null);
 
     const handleRowClick = (salesRep: SalesRepData) => {
         setSelectedSalesRep(salesRep);
@@ -1523,8 +1819,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                     <TableRow>
                                         <TableHead className="font-bold">Sales Rep</TableHead>
                                         <TableHead className="font-bold">Branch</TableHead>
-                                        <TableHead className="font-bold">Latest Check In Location</TableHead>
-                                        <TableHead className="font-bold">Latest Check Out Location</TableHead>
+                                        <TableHead className="font-bold">Locations</TableHead>
                                         <TableHead className="font-bold">Total Visits</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -1583,34 +1878,47 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                                                 </span>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex gap-2 items-center">
-                                                    <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
-                                                    <span className={cn(
-                                                        "max-w-[200px] truncate",
-                                                        checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
-                                                    )}>
-                                                        {checkInLoc}
-                                                    </span>
-                                                </div>
-                                                {rep.latestCheckInTime && (
-                                                    <div className="mt-1 text-xs text-muted-foreground">
-                                                        {format(new Date(rep.latestCheckInTime), 'PPp')}
+                                                {checkInLoc === 'No location recorded' && checkOutLoc === 'No location recorded' ? (
+                                                    <div className="flex gap-2 items-center">
+                                                        <MapPin className="flex-shrink-0 w-3 h-3 text-muted-foreground" />
+                                                        <span className="text-[0.8em] text-muted-foreground">
+                                                            No locations recorded
+                                                        </span>
                                                     </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2 items-center">
-                                                    <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
-                                                    <span className={cn(
-                                                        "max-w-[200px] truncate",
-                                                        checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
-                                                    )}>
-                                                        {checkOutLoc}
-                                                    </span>
-                                                </div>
-                                                {rep.latestCheckOutTime && (
-                                                    <div className="mt-1 text-xs text-muted-foreground">
-                                                        {format(new Date(rep.latestCheckOutTime), 'PPp')}
+                                                ) : (
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex gap-2 items-center">
+                                                            <MapPin className="flex-shrink-0 w-3 h-3 text-green-600" />
+                                                            <div>
+                                                                <span className={cn(
+                                                                    "max-w-[200px] truncate block text-xs",
+                                                                    checkInLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                )}>
+                                                                    {checkInLoc}
+                                                                </span>
+                                                                {rep.latestCheckInTime && (
+                                                                    <div className="text-xs text-muted-foreground">
+                                                                        {format(new Date(rep.latestCheckInTime), 'PPp')}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2 items-center">
+                                                            <MapPin className="flex-shrink-0 w-3 h-3 text-red-600" />
+                                                            <div>
+                                                                <span className={cn(
+                                                                    "max-w-[200px] truncate block text-xs",
+                                                                    checkOutLoc === 'No location recorded' && "text-[0.8em] text-muted-foreground"
+                                                                )}>
+                                                                    {checkOutLoc}
+                                                                </span>
+                                                                {rep.latestCheckOutTime && (
+                                                                    <div className="text-xs text-muted-foreground">
+                                                                        {format(new Date(rep.latestCheckOutTime), 'PPp')}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </TableCell>
@@ -1635,6 +1943,34 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ className = '' }
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
             />
+
+            {/* Image Viewer Dialog */}
+            <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex gap-2 items-center">
+                            <ImageIcon className="w-5 h-5" />
+                            {selectedImage?.type === 'check-in' ? 'Check-In Photo' : 'Check-Out Photo'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {selectedImage && (
+                        <div className="flex justify-center items-center w-full">
+                            <img
+                                src={selectedImage.url}
+                                alt={selectedImage.type === 'check-in' ? 'Check-in photo' : 'Check-out photo'}
+                                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                    const errorDiv = document.createElement('div');
+                                    errorDiv.className = 'p-4 text-center text-muted-foreground';
+                                    errorDiv.textContent = 'Failed to load image';
+                                    (e.target as HTMLImageElement).parentElement?.appendChild(errorDiv);
+                                }}
+                            />
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

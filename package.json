@@ -1,7 +1,15 @@
 {
   "name": "dashboard",
   "version": "0.1.0",
+  "description": "LORO Admin Dashboard - Next.js web application for managing location tracking, geofencing, workforce management, and business operations",
+  "author": {
+    "name": "Brandon Nhlanhla Nkawu",
+    "email": "brandon@legendsystems.co.za",
+    "url": "https://github.com/Brandon-Online01"
+  },
+  "company": "Legend Systems",
   "private": true,
+  "license": "PROPRIETARY",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

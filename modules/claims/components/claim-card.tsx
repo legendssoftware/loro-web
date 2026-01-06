@@ -47,6 +47,26 @@ function ClaimCardComponent({
         return format(new Date(date), 'MMM d, yyyy');
     };
 
+    // Format amount with currency
+    const formatAmount = (amount: string, currency?: string) => {
+        if (!amount) return 'N/A';
+        const numAmount = parseFloat(amount) || 0;
+        const currencyCode = currency || 'ZAR';
+        // Map common currency codes to symbols
+        const symbolMap: Record<string, string> = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'ZAR': 'R',
+            'JPY': '¥',
+            'CNY': '¥',
+            'AUD': 'A$',
+            'CAD': 'C$',
+        };
+        const symbol = symbolMap[currencyCode] || currencyCode;
+        return `${symbol} ${numAmount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
     // Generate initials for avatar
     const getOwnerInitials = () => {
         if (!claim?.owner) return 'U';
@@ -81,7 +101,7 @@ function ClaimCardComponent({
                     {/* Amount & Title */}
                     <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium uppercase truncate text-card-foreground font-body" id="claim-title-field">
-                            {claim.amount}
+                            {formatAmount(claim.amount, claim.currency)}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge

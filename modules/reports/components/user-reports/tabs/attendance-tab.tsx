@@ -340,7 +340,7 @@ export const AttendanceTab: React.FunctionComponent<TabProps> = ({
 
             {/* Detailed Analytics */}
             <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="overview" className="text-xs font-body">
                         <BarChart3 className="w-3 h-3 mr-1" />
                         <span className="hidden sm:inline">Overview</span>
@@ -352,6 +352,10 @@ export const AttendanceTab: React.FunctionComponent<TabProps> = ({
                     <TabsTrigger value="breaks" className="text-xs font-body">
                         <Coffee className="w-3 h-3 mr-1" />
                         <span className="hidden sm:inline">Breaks</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="distance" className="text-xs font-body">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        <span className="hidden sm:inline">Distance</span>
                     </TabsTrigger>
                     <TabsTrigger value="insights" className="text-xs font-body">
                         <TrendingUp className="w-3 h-3 mr-1" />
@@ -584,6 +588,71 @@ export const AttendanceTab: React.FunctionComponent<TabProps> = ({
                                         {formatMinutes(metrics.breakAnalytics.shortestBreak || 0)}
                                     </div>
                                     <div className="text-[10px] text-muted-foreground font-body uppercase">Shortest</div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="distance" className="mt-6 space-y-4">
+                    {/* Distance Analytics */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                                <CardTitle className="text-sm font-normal uppercase font-body">
+                                    Distance Analytics
+                                </CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* Total Distance Breakdown */}
+                            <div>
+                                <h4 className="text-[10px] font-medium text-muted-foreground uppercase font-body mb-4">
+                                    Total Distance Travelled
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                    {[
+                                        { label: 'Today', value: metrics.distanceAnalytics?.totalDistance?.today || 0, color: 'emerald' },
+                                        { label: 'This Week', value: metrics.distanceAnalytics?.totalDistance?.thisWeek || 0, color: 'blue' },
+                                        { label: 'This Month', value: metrics.distanceAnalytics?.totalDistance?.thisMonth || 0, color: 'purple' },
+                                        { label: 'All Time', value: metrics.distanceAnalytics?.totalDistance?.allTime || 0, color: 'amber' }
+                                    ].map((item, index) => (
+                                        <div key={index} className={`text-center p-4 rounded-lg bg-${item.color}-50 dark:bg-${item.color}-500/10 border border-${item.color}-200 dark:border-${item.color}-500/20`}>
+                                            <div className={`text-lg font-bold text-${item.color}-600 dark:text-${item.color}-400 font-body`}>
+                                                {item.value.toFixed(2)} km
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground font-body uppercase">{item.label}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Distance Statistics */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 text-center border border-green-200 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 dark:border-green-500/20">
+                                    <Activity className="w-5 h-5 mx-auto mb-2 text-green-500" />
+                                    <div className="text-lg font-bold text-green-600 dark:text-green-400 font-body">
+                                        {metrics.distanceAnalytics?.averageDistancePerShift?.toFixed(2) || '0.00'} km
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Avg per Shift</div>
+                                </div>
+                                <div className="p-4 text-center border border-orange-200 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10 dark:border-orange-500/20">
+                                    <ArrowUp className="w-5 h-5 mx-auto mb-2 text-orange-500" />
+                                    <div className="text-lg font-bold text-orange-600 dark:text-orange-400 font-body">
+                                        {metrics.distanceAnalytics?.longestDistance?.toFixed(2) || '0.00'} km
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-body uppercase">Longest Single Shift</div>
+                                </div>
+                            </div>
+
+                            {/* Info Note */}
+                            <div className="p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg">
+                                <div className="flex items-start gap-2">
+                                    <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                    <div className="text-[10px] text-blue-700 dark:text-blue-400 font-body">
+                                        <strong>Note:</strong> "All Time" shows the total distance travelled across all shifts. "Longest Single Shift" shows the maximum distance covered in a single shift.
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

@@ -701,7 +701,7 @@ export default function MapPage() {
                                                 const colorClass =
                                                     event.type === 'check-in' ? 'text-blue-500' :
                                                     event.type === 'shift-start' ? 'text-green-500' :
-                                                    event.type === 'shift-end' ? 'text-green-500' :
+                                                    event.type === 'shift-end' ? 'text-red-500' :
                                                     event.type === 'task' || event.type === 'task-completed' ? 'text-pink-500' :
                                                     event.type === 'journal' ? 'text-purple-500' :
                                                     event.type === 'new-lead' ? 'text-orange-500' :

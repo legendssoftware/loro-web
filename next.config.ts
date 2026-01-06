@@ -1,3 +1,13 @@
+/**
+ * LORO Admin Dashboard - Next.js Configuration
+ *
+ * Developer: Brandon Nhlanhla Nkawu
+ * Company: Legend Systems
+ * Email: brandon@legendsystems.co.za
+ *
+ * Next.js configuration for the LORO admin dashboard web application.
+ */
+
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -78,6 +88,12 @@ const nextConfig: NextConfig = {
             {
                 protocol: 'https',
                 hostname: 'ui-avatars.com',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn-icons-png.flaticon.com',
                 port: '',
                 pathname: '/**',
             },

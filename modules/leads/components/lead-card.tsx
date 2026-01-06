@@ -223,8 +223,21 @@ function LeadCardComponent({
         }
     };
 
-    const formatNameInitialSurname = (name: string) => {
-        const nameParts = name.trim().split(' ');
+    const formatNameInitialSurname = (name: string | null | undefined) => {
+        // More defensive null/undefined check - check for null/undefined first
+        if (name === null || name === undefined) {
+            return 'Unknown';
+        }
+        // Ensure it's a string type before calling any string methods
+        if (typeof name !== 'string') {
+            return 'Unknown';
+        }
+        // Now safe to call trim() since we've verified it's a string
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            return 'Unknown';
+        }
+        const nameParts = trimmedName.split(' ');
         if (nameParts.length === 1) {
             return nameParts[0]; // Just return the name if no surname
         }
@@ -1135,7 +1148,7 @@ function LeadCardComponent({
                         </div>
                         <div className="flex items-center justify-center text-[10px]">
                             <span className="text-[10px] font-normal font-body text-muted-foreground">
-                                {lead?.owner?.name ? formatNameInitialSurname(`${lead.owner.name} ${lead.owner.surname || ''}`.trim()) : 'Unassigned'}
+                                {lead?.owner?.name ? formatNameInitialSurname(`${lead.owner.name} ${lead.owner.surname || ''}`) : 'Unassigned'}
                             </span>
                         </div>
                     </div>

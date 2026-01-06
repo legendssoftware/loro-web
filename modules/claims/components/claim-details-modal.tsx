@@ -300,41 +300,54 @@ export function ClaimDetailsModal({
                             </div>
                         )}
 
-                        {claim?.branch && (
+                        {claim?.branch && claim?.branch?.name && (
                             <div>
                                 <h3 className="mb-2 text-xs font-normal uppercase font-body">
                                     Branch Details
                                 </h3>
                                 <div className="p-3 rounded-lg bg-card/50">
-                                    <p className="text-xs font-medium font-body">
-                                        {claim.branch.name}
-                                    </p>
-                                    <p className="text-xs font-thin text-muted-foreground font-body">
-                                        {claim.branch.email}
-                                    </p>
-                                    <p className="text-xs font-thin text-muted-foreground font-body">
-                                        {claim.branch.phone}
-                                    </p>
+                                    {claim.branch.name && (
+                                        <p className="text-xs font-medium font-body">
+                                            {claim.branch.name}
+                                        </p>
+                                    )}
+                                    {claim.branch.email && (
+                                        <p className="text-xs font-thin text-muted-foreground font-body">
+                                            {claim.branch.email}
+                                        </p>
+                                    )}
+                                    {claim.branch.phone && (
+                                        <p className="text-xs font-thin text-muted-foreground font-body">
+                                            {claim.branch.phone}
+                                        </p>
+                                    )}
                                     {claim.branch.address && (
-                                        <div className="mt-2">
-                                            <p className="text-[10px] uppercase text-muted-foreground font-body">
-                                                Address
-                                            </p>
-                                            <p className="text-xs font-thin font-body">
-                                                {[
-                                                    claim.branch.address.street,
-                                                    claim.branch.address.suburb,
-                                                    claim.branch.address.city,
-                                                    claim.branch.address.state,
-                                                    claim.branch.address
-                                                        .postalCode,
-                                                    claim.branch.address
-                                                        .country,
-                                                ]
-                                                    .filter(Boolean)
-                                                    .join(', ')}
-                                            </p>
-                                        </div>
+                                        (claim.branch.address.street ||
+                                         claim.branch.address.suburb ||
+                                         claim.branch.address.city ||
+                                         claim.branch.address.state ||
+                                         claim.branch.address.postalCode ||
+                                         claim.branch.address.country) && (
+                                            <div className="mt-2">
+                                                <p className="text-[10px] uppercase text-muted-foreground font-body">
+                                                    Address
+                                                </p>
+                                                <p className="text-xs font-thin font-body">
+                                                    {[
+                                                        claim.branch.address.street,
+                                                        claim.branch.address.suburb,
+                                                        claim.branch.address.city,
+                                                        claim.branch.address.state,
+                                                        claim.branch.address
+                                                            .postalCode,
+                                                        claim.branch.address
+                                                            .country,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')}
+                                                </p>
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             </div>

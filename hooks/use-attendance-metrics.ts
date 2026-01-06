@@ -63,6 +63,16 @@ export interface AttendanceMetrics {
         lateArrivalsCount: number;
         earlyDeparturesCount: number;
     };
+    distanceAnalytics?: {
+        totalDistance: {
+            today: number; // in kilometers
+            thisWeek: number;
+            thisMonth: number;
+            allTime: number;
+        };
+        averageDistancePerShift: number; // in kilometers
+        longestDistance: number; // in kilometers
+    };
 }
 
 interface AttendanceMetricsResponse {

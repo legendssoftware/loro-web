@@ -1,6 +1,7 @@
 export type MarkerType =
     | 'check-in'
     | 'shift-start'
+    | 'shift-end'
     | 'lead'
     | 'journal'
     | 'task'

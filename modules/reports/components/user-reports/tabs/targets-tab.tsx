@@ -644,21 +644,36 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
         );
     }
 
-    if (!targetsData) {
+    // Check if no targets data OR if all targets are 0/not set (no meaningful targets)
+    // Using explicit > 0 checks to catch cases where target is set to 0
+    const hasMeaningfulTargets = targetsData && (
+        (targetsData.targetSalesAmount && targetsData.targetSalesAmount > 0) ||
+        (targetsData.targetHoursWorked && targetsData.targetHoursWorked > 0) ||
+        (targetsData.targetNewClients && targetsData.targetNewClients > 0) ||
+        (targetsData.targetNewLeads && targetsData.targetNewLeads > 0) ||
+        (targetsData.targetCheckIns && targetsData.targetCheckIns > 0) ||
+        (targetsData.targetCalls && targetsData.targetCalls > 0)
+    );
+
+    if (!hasMeaningfulTargets) {
         return (
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
                         <div className="flex gap-2 items-center">
-                            <AlertCircle className="w-5 h-5 text-muted-foreground" />
+                            <Target className="w-5 h-5 text-muted-foreground" />
                             <CardTitle className="text-sm font-normal uppercase font-body">
                                 No Targets Set
                             </CardTitle>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-[10px] text-muted-foreground font-body uppercase">
-                            No performance targets have been set for this user yet.
+                    <CardContent className="flex flex-col items-center py-8">
+                        <div className="text-6xl mb-4">🎯</div>
+                        <p className="text-sm font-medium text-foreground font-body text-center mb-2">
+                            No targets have been set for you yet
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-body uppercase text-center">
+                            Contact your manager to set up your performance targets
                         </p>
                     </CardContent>
                 </Card>
@@ -720,8 +735,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardContent>
             </Card>
 
-            {/* Sales Targets - Pie Chart */}
-            {(targetsData.targetSalesAmount || targetsData.currentSalesAmount) && (
+            {/* Sales Targets - Pie Chart - Only show if target is set */}
+            {targetsData.targetSalesAmount && targetsData.targetSalesAmount > 0 && (
                 <>
                     <PieChart
                         achieved={targetsData.currentSalesAmount || 0}
@@ -767,8 +782,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </>
             )}
 
-            {/* Quotations Targets - Pie Chart */}
-            {(targetsData.targetQuotationsAmount || targetsData.currentQuotationsAmount) && (
+            {/* Quotations Targets - Pie Chart - Only show if target is set */}
+            {targetsData.targetQuotationsAmount && targetsData.targetQuotationsAmount > 0 && (
                 <PieChart
                     achieved={targetsData.currentQuotationsAmount || 0}
                     remaining={(targetsData.targetQuotationsAmount || 0) - (targetsData.currentQuotationsAmount || 0)}
@@ -809,8 +824,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </Card>
             )}
 
-            {/* Work Hours Target */}
-            {(targetsData.targetHoursWorked || targetsData.currentHoursWorked) && (
+            {/* Work Hours Target - Only show if target is set */}
+            {targetsData.targetHoursWorked && targetsData.targetHoursWorked > 0 && (
                 <Card className="relative">
                     <CardHeader>
                         <div className="flex gap-2 items-center">

@@ -23,6 +23,7 @@
  */
 
 import React from 'react';
+import L from 'leaflet';
 import { Marker, Popup, Circle } from 'react-leaflet';
 import { WorkerType, ClientType, CompetitorType, QuotationType } from '@/lib/data';
 import { createCustomIcon } from './marker-icon';
@@ -1256,6 +1257,7 @@ const markerTypeColors = {
     'quotation': 'green-600',
     'check-in': 'blue-500',
     'shift-start': 'green-500',
+    'shift-end': 'red-500',
     'lead': 'orange-500',
     'journal': 'purple-500',
     'task': 'pink-500',
@@ -1269,6 +1271,95 @@ interface MarkersLayerProps {
     highlightedMarkerId: string | null;
     handleMarkerClick: (marker: any) => void; // Extended to support all marker types
 }
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) *
+            Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
+
+// Helper function to cluster nearby markers
+const clusterMarkers = (markers: any[], clusterRadiusKm: number = 0.05): Array<{ markers: any[]; center: [number, number]; isCluster: boolean }> => {
+    if (markers.length === 0) return [];
+    
+    const clusters: Array<{ markers: any[]; center: [number, number]; isCluster: boolean }> = [];
+    const processed = new Set<number>();
+    
+    for (let i = 0; i < markers.length; i++) {
+        if (processed.has(i)) continue;
+        
+        const marker = markers[i];
+        const position = getMarkerPosition(marker);
+        if (!position) continue;
+        
+        const clusterMarkers = [marker];
+        processed.add(i);
+        
+        // Find all markers within cluster radius
+        for (let j = i + 1; j < markers.length; j++) {
+            if (processed.has(j)) continue;
+            
+            const otherMarker = markers[j];
+            const otherPosition = getMarkerPosition(otherMarker);
+            if (!otherPosition) continue;
+            
+            const distance = calculateDistance(
+                position[0],
+                position[1],
+                otherPosition[0],
+                otherPosition[1]
+            );
+            
+            if (distance <= clusterRadiusKm) {
+                clusterMarkers.push(otherMarker);
+                processed.add(j);
+            }
+        }
+        
+        // Calculate cluster center (average of all positions)
+        if (clusterMarkers.length === 1) {
+            // Single marker, no clustering needed
+            clusters.push({
+                markers: clusterMarkers,
+                center: position,
+                isCluster: false,
+            });
+        } else {
+            // Multiple markers, create cluster
+            let totalLat = 0;
+            let totalLng = 0;
+            let validPositions = 0;
+            
+            clusterMarkers.forEach((m) => {
+                const pos = getMarkerPosition(m);
+                if (pos) {
+                    totalLat += pos[0];
+                    totalLng += pos[1];
+                    validPositions++;
+                }
+            });
+            
+            if (validPositions > 0) {
+                clusters.push({
+                    markers: clusterMarkers,
+                    center: [totalLat / validPositions, totalLng / validPositions] as [number, number],
+                    isCluster: true,
+                });
+            }
+        }
+    }
+    
+    return clusters;
+};
 
 // Helper function to get position from marker
 const getMarkerPosition = (marker: any): [number, number] | null => {
@@ -1367,6 +1458,38 @@ const getCircleColor = (markerType: string, marker?: any): string => {
     }
 };
 
+// Create cluster icon
+const createClusterIcon = (count: number) => {
+    const size = count > 10 ? 50 : count > 5 ? 45 : 40;
+    const color = count > 10 ? '#ef4444' : count > 5 ? '#f59e0b' : '#3b82f6';
+    
+    const html = `
+      <div style="
+        background-color: ${color};
+        width: ${size}px;
+        height: ${size}px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        font-weight: bold;
+        color: white;
+        font-size: ${count > 10 ? '14px' : '12px'};
+      ">
+        ${count}
+      </div>
+    `;
+
+    return L.divIcon({
+        html: html,
+        className: 'marker-cluster-icon',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    });
+};
+
 export default function MarkersLayer({
     filteredWorkers,
     selectedMarker,
@@ -1378,74 +1501,126 @@ export default function MarkersLayer({
         return null;
     }
 
+    // Filter out markers with invalid positions
+    const validMarkers = filteredWorkers.filter(worker => getMarkerPosition(worker));
+    
     // Log the number of markers to be rendered
-    console.log(`Rendering ${filteredWorkers.length} markers on the map`);
+    console.log(`Rendering ${validMarkers.length} valid markers on the map (from ${filteredWorkers.length} total)`);
 
-    // Log any markers with invalid positions
-    const invalidMarkers = filteredWorkers.filter(worker => !getMarkerPosition(worker));
-    if (invalidMarkers.length > 0) {
-        console.warn(`Found ${invalidMarkers.length} markers with invalid positions`, invalidMarkers);
-    }
+    // Cluster markers (50m radius = 0.05km)
+    const clusters = React.useMemo(() => {
+        return clusterMarkers(validMarkers, 0.05);
+    }, [validMarkers]);
+
+    console.log(`Clustered ${validMarkers.length} markers into ${clusters.length} clusters/individual markers`);
 
     return (
         <>
-            {filteredWorkers?.map((worker) => {
-                const position = getMarkerPosition(worker);
-                if (!position) return null;
-
-                const isHighlighted =
-                    selectedMarker?.id?.toString() === worker.id?.toString() ||
-                    highlightedMarkerId === worker.id?.toString();
-
-                // Generate a unique key using id and type
-                const uniqueKey = `${worker.id}-${worker.markerType}-${Math.random().toString(36).substr(2, 9)}`;
-
-                // For clients, always show influence radius
-                let influenceData = null;
-                if (worker.markerType === 'client') {
-                    influenceData = getClientInfluenceData(worker);
-                } else if (worker.markerType === 'competitor') {
-                    // For competitors, only show if geofencing is explicitly enabled
-                    influenceData = getGeofencingData(worker);
-                }
-
-                return (
-                    <React.Fragment key={uniqueKey}>
-                        {/* Render influence radius circle for clients (always) and competitors (when enabled) */}
-                        {influenceData && (
-                            <Circle
-                                center={position}
-                                radius={influenceData.radius}
-                                pathOptions={{
-                                    color: getCircleColor(worker.markerType || '', worker),
-                                    weight: worker.markerType === 'client' ? 2 : 1, // Slightly thicker for clients
-                                    opacity: worker.markerType === 'client' ? 0.4 : 0.3, // More visible for clients
-                                    fillColor: getCircleColor(worker.markerType || '', worker),
-                                    fillOpacity: worker.markerType === 'client' ? 0.15 : 0.1, // More visible fill for clients
-                                    dashArray: worker.markerType === 'client' ? '3, 7' : '5, 5', // Different dash pattern for clients
-                                }}
-                            />
-                        )}
-
-                        {/* Render the marker */}
+            {clusters.map((cluster, clusterIndex) => {
+                if (cluster.isCluster) {
+                    // Render cluster marker
+                    return (
                         <Marker
-                            position={position}
-                            icon={createCustomIcon(worker.markerType || 'check-in', isHighlighted, worker)}
+                            key={`cluster-${clusterIndex}`}
+                            position={cluster.center}
+                            icon={createClusterIcon(cluster.markers.length)}
                             eventHandlers={{
-                                click: () => handleMarkerClick(worker),
+                                click: () => {
+                                    // On cluster click, zoom in or show first marker
+                                    if (cluster.markers.length > 0) {
+                                        handleMarkerClick(cluster.markers[0]);
+                                    }
+                                },
                             }}
-                            // Add data attribute to identify markers for programmatic access
-                            // @ts-ignore - Adding custom property to Marker component
-                            data-marker-id={worker.id?.toString()}
                         >
-                            {selectedMarker?.id === worker.id && (
-                                <Popup>
-                                    <MarkerPopup worker={worker} />
-                                </Popup>
-                            )}
+                            <Popup>
+                                <div style={{ padding: '8px', minWidth: '150px' }}>
+                                    <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                                        {cluster.markers.length} markers clustered
+                                    </div>
+                                    <div style={{ fontSize: '12px', maxHeight: '200px', overflowY: 'auto' }}>
+                                        {cluster.markers.slice(0, 10).map((marker, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    padding: '4px',
+                                                    cursor: 'pointer',
+                                                    borderBottom: '1px solid #eee',
+                                                }}
+                                                onClick={() => handleMarkerClick(marker)}
+                                            >
+                                                {marker.name || marker.markerType || 'Marker'}
+                                            </div>
+                                        ))}
+                                        {cluster.markers.length > 10 && (
+                                            <div style={{ padding: '4px', fontStyle: 'italic', color: '#666' }}>
+                                                +{cluster.markers.length - 10} more...
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </Popup>
                         </Marker>
-                    </React.Fragment>
-                );
+                    );
+                } else {
+                    // Render individual marker
+                    const worker = cluster.markers[0];
+                    const position = cluster.center;
+
+                    const isHighlighted =
+                        selectedMarker?.id?.toString() === worker.id?.toString() ||
+                        highlightedMarkerId === worker.id?.toString();
+
+                    // Generate a unique key using id and type
+                    const uniqueKey = `${worker.id}-${worker.markerType}-${clusterIndex}`;
+
+                    // For clients, always show influence radius
+                    let influenceData = null;
+                    if (worker.markerType === 'client') {
+                        influenceData = getClientInfluenceData(worker);
+                    } else if (worker.markerType === 'competitor') {
+                        // For competitors, only show if geofencing is explicitly enabled
+                        influenceData = getGeofencingData(worker);
+                    }
+
+                    return (
+                        <React.Fragment key={uniqueKey}>
+                            {/* Render influence radius circle for clients (always) and competitors (when enabled) */}
+                            {influenceData && (
+                                <Circle
+                                    center={position}
+                                    radius={influenceData.radius}
+                                    pathOptions={{
+                                        color: getCircleColor(worker.markerType || '', worker),
+                                        weight: worker.markerType === 'client' ? 2 : 1, // Slightly thicker for clients
+                                        opacity: worker.markerType === 'client' ? 0.4 : 0.3, // More visible for clients
+                                        fillColor: getCircleColor(worker.markerType || '', worker),
+                                        fillOpacity: worker.markerType === 'client' ? 0.15 : 0.1, // More visible fill for clients
+                                        dashArray: worker.markerType === 'client' ? '3, 7' : '5, 5', // Different dash pattern for clients
+                                    }}
+                                />
+                            )}
+
+                            {/* Render the marker */}
+                            <Marker
+                                position={position}
+                                icon={createCustomIcon(worker.markerType || 'check-in', isHighlighted, worker)}
+                                eventHandlers={{
+                                    click: () => handleMarkerClick(worker),
+                                }}
+                                // Add data attribute to identify markers for programmatic access
+                                // @ts-ignore - Adding custom property to Marker component
+                                data-marker-id={worker.id?.toString()}
+                            >
+                                {selectedMarker?.id === worker.id && (
+                                    <Popup>
+                                        <MarkerPopup worker={worker} />
+                                    </Popup>
+                                )}
+                            </Marker>
+                        </React.Fragment>
+                    );
+                }
             })}
         </>
     );

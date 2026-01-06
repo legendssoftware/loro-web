@@ -71,6 +71,7 @@ export const StatusColors: Record<ClaimStatus, StatusColorConfig> = {
 export interface Claim {
     uid: number;
     amount: string;
+    currency?: string;
     documentUrl?: string;
     comments?: string;
     status: ClaimStatus;

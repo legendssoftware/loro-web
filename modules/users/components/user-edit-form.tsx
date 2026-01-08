@@ -34,6 +34,8 @@ import {
     Target,
     Globe,
     Award,
+    DoorOpen,
+    Settings,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
@@ -44,6 +46,7 @@ import {
     Client,
 } from '@/hooks/use-clients-query';
 import { useUsersQuery } from '@/hooks/use-users-query';
+import { useIoTDevicesQuery } from '@/hooks/use-iot-devices-query';
 
 // Enhanced form schema definition - comprehensive editing with all user entity fields
 const userEditFormSchema = z.object({
@@ -69,7 +72,7 @@ const userEditFormSchema = z.object({
     branchId: z.number().optional(),
     organisationRef: z.string().optional(),
     departmentId: z.number().optional(),
-    assignedClients: z.array(z.number()).optional(),
+    assignedClientIds: z.array(z.number()).optional(),
 
     // HR and Employee Information
     hrID: z.number().optional(),
@@ -127,6 +130,7 @@ const userEditFormSchema = z.object({
     // Management Fields
     managedBranches: z.array(z.number()).optional(),
     managedStaff: z.array(z.number()).optional(),
+    managedDoors: z.array(z.number()).optional(),
 
     // Device Information
     expoPushToken: z.string().optional(),
@@ -141,6 +145,8 @@ export type UserEditFormValues = z.infer<typeof userEditFormSchema>;
 export type UserEditServerData = Partial<UserEditFormValues> & {
     branch?: { uid: number };
     organisation?: { uid: number };
+    profile?: any;
+    employmentProfile?: any;
 };
 
 // Props interface
@@ -162,9 +168,10 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [selectedClients, setSelectedClients] = useState<number[]>([]);
+    const [selectedClientIds, setSelectedClientIds] = useState<number[]>([]);
     const [selectedManagedBranches, setSelectedManagedBranches] = useState<number[]>([]);
     const [selectedManagedStaff, setSelectedManagedStaff] = useState<number[]>([]);
+    const [selectedManagedDoors, setSelectedManagedDoors] = useState<number[]>([]);
 
     // Use the global branch query hook
     const {
@@ -195,6 +202,14 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     } = useUsersQuery({
         limit: 500, // Get all available users for staff management
     });
+
+    // Use IoT devices query hook to get all doors for management
+    const {
+        devices: iotDevices,
+        isLoading: isLoadingDoors,
+        error: doorsError,
+        refetch: refetchDoors,
+    } = useIoTDevicesQuery();
 
     // Position options
     const positionOptions = [
@@ -252,6 +267,12 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
     // Toggle password visibility
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
+    };
+
+    // Generate avatar URL based on Flaticon placeholder image
+    const generateAvatarUrl = (firstName?: string, lastName?: string) => {
+        // Use Flaticon placeholder as base avatar image
+        return `https://cdn-icons-png.flaticon.com/128/1144/1144709.png`;
     };
 
     // Default form values from initialData - now comprehensive
@@ -366,6 +387,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         // Management Fields
         managedBranches: (initialData as any).managedBranches || [],
         managedStaff: (initialData as any).managedStaff || [],
+        managedDoors: (initialData as any).managedDoors || [],
 
         // Device Information
         expoPushToken: (initialData as any).expoPushToken || '',
@@ -373,7 +395,7 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         platform: (initialData as any).platform || undefined,
 
         // Assigned Clients
-        assignedClients: (initialData as any).assignedClients || [],
+        assignedClientIds: (initialData as any).assignedClients || [],
     };
 
     // Initialize form
@@ -409,10 +431,17 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
             label: `${user.name} ${user.surname}${user.email ? ` - ${user.email}` : ''}`,
         })) || [];
 
+    // Prepare door options for MultiSelect
+    const doorOptions: MultiSelectOption[] =
+        iotDevices?.map((device: { id: number; deviceTag: string; devicLocation: string }) => ({
+            value: device.id,
+            label: `${device.deviceTag} - ${device.devicLocation}`,
+        })) || [];
+
     // Initialize selected clients and management fields from initial data
     useEffect(() => {
         if ((initialData as any)?.assignedClients) {
-            setSelectedClients((initialData as any).assignedClients);
+            setSelectedClientIds((initialData as any).assignedClients);
         }
         if ((initialData as any)?.managedBranches) {
             setSelectedManagedBranches((initialData as any).managedBranches);
@@ -420,10 +449,14 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
         if ((initialData as any)?.managedStaff) {
             setSelectedManagedStaff((initialData as any).managedStaff);
         }
+        if ((initialData as any)?.managedDoors) {
+            setSelectedManagedDoors((initialData as any).managedDoors);
+        }
     }, [
         (initialData as any)?.assignedClients,
         (initialData as any)?.managedBranches,
         (initialData as any)?.managedStaff,
+        (initialData as any)?.managedDoors,
     ]);
 
     // Handle image selection
@@ -483,23 +516,47 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
             // Initialize with all form data for editing
             const changedData: UserEditServerData = {};
 
-            // Add only dirty (changed) fields to the update data
-            Object.keys(dirtyFields).forEach((key) => {
-                const fieldKey = key as keyof UserEditFormValues;
-                const value = data[fieldKey];
+            // Build nested profile object for profile-related fields
+            const profileFields: any = {};
+            if (dirtyFields.height && data.height) profileFields.height = data.height;
+            if (dirtyFields.weight && data.weight) profileFields.weight = data.weight;
+            if (dirtyFields.gender && data.gender) profileFields.gender = data.gender;
+            if (dirtyFields.dob && data.dob) profileFields.dateOfBirth = new Date(data.dob);
+            if (dirtyFields.street && data.street) profileFields.address = data.street;
+            if (dirtyFields.city && data.city) profileFields.city = data.city;
+            if (dirtyFields.state && data.state) profileFields.state = data.state;
+            if (dirtyFields.country && data.country) profileFields.country = data.country;
+            if (dirtyFields.postalCode && data.postalCode) profileFields.zipCode = data.postalCode;
 
-                // Only include non-empty values or explicitly set values
-                if (value !== undefined && value !== '' && value !== null) {
-                    (changedData as any)[fieldKey] = value;
+            if (Object.keys(profileFields).length > 0) {
+                changedData.profile = profileFields;
+            }
+
+            // Build nested employmentProfile object for employment-related fields
+            const employmentFields: any = {};
+            if (dirtyFields.position && data.position) employmentFields.position = data.position;
+            if (dirtyFields.department && data.department) employmentFields.department = data.department;
+            if (dirtyFields.startDate && data.startDate) employmentFields.startDate = new Date(data.startDate);
+
+            if (Object.keys(employmentFields).length > 0) {
+                changedData.employmentProfile = employmentFields;
+            }
+
+            // Add only dirty (changed) top-level fields to the update data
+            const topLevelFields = ['username', 'name', 'surname', 'email', 'phone', 'role', 'accessLevel', 'status', 'userref', 'organisationRef', 'departmentId', 'hrID', 'businesscardURL', 'erpSalesRepCode', 'expoPushToken', 'deviceId', 'platform'];
+            topLevelFields.forEach((key) => {
+                const fieldKey = key as keyof UserEditFormValues;
+                if (dirtyFields[fieldKey] && data[fieldKey] !== undefined && data[fieldKey] !== '' && data[fieldKey] !== null) {
+                    (changedData as any)[fieldKey] = data[fieldKey];
                 }
             });
 
             // Always include assigned clients and management fields if they've been changed
             if (
-                JSON.stringify(selectedClients) !==
+                JSON.stringify(selectedClientIds) !==
                 JSON.stringify((initialData as any)?.assignedClients || [])
             ) {
-                changedData.assignedClients = selectedClients;
+                changedData.assignedClientIds = selectedClientIds;
             }
 
             if (
@@ -514,6 +571,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 JSON.stringify((initialData as any)?.managedStaff || [])
             ) {
                 changedData.managedStaff = selectedManagedStaff;
+            }
+
+            if (
+                JSON.stringify(selectedManagedDoors) !==
+                JSON.stringify((initialData as any)?.managedDoors || [])
+            ) {
+                changedData.managedDoors = selectedManagedDoors;
             }
 
             // Special handling for photo upload
@@ -1383,9 +1447,9 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                             </Label>
                             <MultiSelect
                                 options={clientOptions}
-                                selectedValues={selectedClients}
+                                selectedValues={selectedClientIds}
                                 onSelectionChange={(values) =>
-                                    setSelectedClients(values as number[])
+                                    setSelectedClientIds(values as number[])
                                 }
                                 placeholder={
                                     isLoadingClients
@@ -1517,6 +1581,166 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         placeholder="2000"
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Management Assignments Section */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-medium leading-none">
+                    Management Assignments
+                </h3>
+                <Card className="border-border/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
+                            <Settings className="w-4 h-4" strokeWidth={1.5} />
+                            <span className="font-light uppercase font-body">
+                                Branches, Staff & Doors Management
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedBranches"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Branches
+                                </Label>
+                                <MultiSelect
+                                    options={branchOptions}
+                                    selectedValues={selectedManagedBranches}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedBranches(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingBranches
+                                            ? 'Loading branches...'
+                                            : branchOptions.length === 0
+                                              ? 'No branches available'
+                                              : 'Select branches to manage...'
+                                    }
+                                    disabled={isLoadingBranches}
+                                    className="w-full"
+                                />
+                                {isLoadingBranches && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading branches...
+                                    </p>
+                                )}
+                                {branchError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load branches.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchBranches()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedStaff"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Staff
+                                </Label>
+                                <MultiSelect
+                                    options={userOptions}
+                                    selectedValues={selectedManagedStaff}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedStaff(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingUsers
+                                            ? 'Loading users...'
+                                            : userOptions.length === 0
+                                              ? 'No users available'
+                                              : 'Select staff to manage...'
+                                    }
+                                    disabled={isLoadingUsers}
+                                    className="w-full"
+                                />
+                                {isLoadingUsers && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading users...
+                                    </p>
+                                )}
+                                {usersError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load users.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchUsers()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                                {!isLoadingUsers &&
+                                    !usersError &&
+                                    userOptions.length === 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No users available for staff management.
+                                        </p>
+                                    )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedDoors"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Doors
+                                </Label>
+                                <MultiSelect
+                                    options={doorOptions}
+                                    selectedValues={selectedManagedDoors}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedDoors(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingDoors
+                                            ? 'Loading doors...'
+                                            : doorOptions.length === 0
+                                              ? 'No doors available'
+                                              : 'Select doors to manage...'
+                                    }
+                                    disabled={isLoadingDoors}
+                                    className="w-full"
+                                />
+                                {isLoadingDoors && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading doors...
+                                    </p>
+                                )}
+                                {doorsError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load doors.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchDoors()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                                {!isLoadingDoors &&
+                                    !doorsError &&
+                                    doorOptions.length === 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No doors available for management.
+                                        </p>
+                                    )}
                             </div>
                         </div>
                     </CardContent>

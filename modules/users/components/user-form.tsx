@@ -23,8 +23,8 @@ import {
     EyeOff,
     MapPin,
     Briefcase,
-    Target,
     Settings,
+    DoorOpen,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
@@ -36,6 +36,7 @@ import {
     Client,
 } from '@/hooks/use-clients-query';
 import { useUsersQuery } from '@/hooks/use-users-query';
+import { useIoTDevicesQuery } from '@/hooks/use-iot-devices-query';
 import { showErrorToast } from '@/lib/utils/toast-config';
 import toast from 'react-hot-toast';
 
@@ -53,7 +54,7 @@ const userFormSchema = z.object({
     name: z.string().min(1, { message: 'First name is required' }),
     surname: z.string().min(1, { message: 'Last name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
-    phone: z.string().min(1, { message: 'Phone number is required' }),
+    phone: z.string().optional(),
     photoURL: z.string().optional(),
 
     // System Fields
@@ -61,58 +62,28 @@ const userFormSchema = z.object({
     accessLevel: z.nativeEnum(AccessLevel).default(AccessLevel.USER),
     status: z.nativeEnum(AccountStatus).default(AccountStatus.ACTIVE),
     branchId: z.number().optional(),
-    assignedClients: z.array(z.number()).optional(),
+    assignedClientIds: z.array(z.number()).optional(),
 
-    // User Profile Fields (optional)
+    // User Profile Fields (optional) - will be nested in profile object
     gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
     dob: z.string().optional(), // Date of birth as string for form handling
 
-    // Employment Profile
+    // Employment Profile - will be nested in employmentProfile object
     position: z.string().optional(),
     department: z.string().optional(),
     startDate: z.string().optional(), // Employment start date
 
-    // Address Information
+    // Address Information - will be nested in profile object
     street: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
     country: z.string().optional(),
     postalCode: z.string().optional(),
 
-    // Target Information (comprehensive targets)
-    targetSalesAmount: z.string().optional(),
-    currentSalesAmount: z.string().optional(),
-    targetQuotationsAmount: z.string().optional(),
-    currentQuotationsAmount: z.string().optional(),
-    currentOrdersAmount: z.string().optional(),
-    targetCurrency: z.string().optional(),
-    targetHoursWorked: z.number().optional(),
-    currentHoursWorked: z.number().optional(),
-    targetNewClients: z.number().optional(),
-    currentNewClients: z.number().optional(),
-    targetNewLeads: z.number().optional(),
-    currentNewLeads: z.number().optional(),
-    targetCheckIns: z.number().optional(),
-    currentCheckIns: z.number().optional(),
-    targetCalls: z.number().optional(),
-    currentCalls: z.number().optional(),
-    targetPeriod: z.string().optional(),
-    periodStartDate: z.string().optional(),
-    periodEndDate: z.string().optional(),
-
-    // Cost Breakdown Fields (Monthly) - All in ZAR
-    baseSalary: z.string().optional(),
-    carInstalment: z.string().optional(),
-    carInsurance: z.string().optional(),
-    fuel: z.string().optional(),
-    cellPhoneAllowance: z.string().optional(),
-    carMaintenance: z.string().optional(),
-    cgicCosts: z.string().optional(),
-    totalCost: z.string().optional(),
-
     // Management Fields
     managedBranches: z.array(z.number()).optional(),
     managedStaff: z.array(z.number()).optional(),
+    managedDoors: z.array(z.number()).optional(),
 
     // ERP Integration
     erpSalesRepCode: z.string().optional(),
@@ -138,9 +109,10 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     const [userImage, setUserImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [selectedClients, setSelectedClients] = useState<number[]>([]);
+    const [selectedClientIds, setSelectedClientIds] = useState<number[]>([]);
     const [selectedManagedBranches, setSelectedManagedBranches] = useState<number[]>([]);
     const [selectedManagedStaff, setSelectedManagedStaff] = useState<number[]>([]);
+    const [selectedManagedDoors, setSelectedManagedDoors] = useState<number[]>([]);
 
     // Use the global branch query hook
     const {
@@ -170,6 +142,14 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
     } = useUsersQuery({
         limit: 500, // Get all available users for staff management
     });
+
+    // Use IoT devices query hook to get all doors for management
+    const {
+        devices: iotDevices,
+        isLoading: isLoadingDoors,
+        error: doorsError,
+        refetch: refetchDoors,
+    } = useIoTDevicesQuery();
 
     // Position options
     const positionOptions = [
@@ -229,11 +209,10 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         setShowPassword(!showPassword);
     };
 
-    // Generate avatar URL based on user initials
-    const generateAvatarUrl = (firstName: string, lastName: string) => {
-        const fullName = `${firstName} ${lastName}`.trim();
-        const encodedName = encodeURIComponent(fullName);
-        return `https://ui-avatars.com/api/?name=${encodedName}&background=random&size=256&bold=true`;
+    // Generate avatar URL based on Flaticon placeholder image
+    const generateAvatarUrl = (firstName?: string, lastName?: string) => {
+        // Use Flaticon placeholder as base avatar image
+        return `https://cdn-icons-png.flaticon.com/128/1144/1144709.png`;
     };
 
     // Default form values
@@ -259,40 +238,12 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         state: '',
         country: '',
         postalCode: '',
-        targetSalesAmount: '0',
-        currentSalesAmount: '0',
-        targetQuotationsAmount: '0',
-        currentQuotationsAmount: '0',
-        currentOrdersAmount: '0',
-        targetCurrency: 'ZAR',
-        targetHoursWorked: 40,
-        currentHoursWorked: 0,
-        targetNewClients: 0,
-        currentNewClients: 0,
-        targetNewLeads: 0,
-        currentNewLeads: 0,
-        targetCheckIns: 0,
-        currentCheckIns: 0,
-        targetCalls: 0,
-        currentCalls: 0,
-        targetPeriod: 'monthly',
-        periodStartDate: '',
-        periodEndDate: '',
-
-        // Cost Breakdown Fields
-        baseSalary: '0',
-        carInstalment: '0',
-        carInsurance: '0',
-        fuel: '0',
-        cellPhoneAllowance: '0',
-        carMaintenance: '0',
-        cgicCosts: '0',
-        totalCost: '0',
         
         // Management Fields
         managedBranches: [],
         managedStaff: [],
-        assignedClients: [],
+        managedDoors: [],
+        assignedClientIds: [],
         
         // ERP Integration
         erpSalesRepCode: '',
@@ -314,8 +265,8 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
 
     // Initialize selected clients from initial data
     useEffect(() => {
-        if (initialData?.assignedClients) {
-            setSelectedClients(initialData.assignedClients);
+        if (initialData?.assignedClientIds) {
+            setSelectedClientIds(initialData.assignedClientIds);
         }
         if (initialData?.managedBranches) {
             setSelectedManagedBranches(initialData.managedBranches);
@@ -323,7 +274,10 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
         if (initialData?.managedStaff) {
             setSelectedManagedStaff(initialData.managedStaff);
         }
-    }, [initialData?.assignedClients, initialData?.managedBranches, initialData?.managedStaff]);
+        if (initialData?.managedDoors) {
+            setSelectedManagedDoors(initialData.managedDoors);
+        }
+    }, [initialData?.assignedClientIds, initialData?.managedBranches, initialData?.managedStaff, initialData?.managedDoors]);
 
     // Watch for name changes to generate avatar preview
     const watchedName = watch('name');
@@ -376,15 +330,64 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             label: `${user.name} ${user.surname}${user.email ? ` - ${user.email}` : ''}`,
         })) || [];
 
+    // Prepare door options for MultiSelect
+    const doorOptions: MultiSelectOption[] =
+        iotDevices?.map((device) => ({
+            value: device.id,
+            label: `${device.deviceTag} - ${device.devicLocation}`,
+        })) || [];
+
     // Handle form submission
     const handleFormSubmit = async (data: UserFormValues) => {
         try {
             setIsSubmitting(true);
 
-            // Include selected clients and management fields in form data
-            data.assignedClients = selectedClients;
-            data.managedBranches = selectedManagedBranches;
-            data.managedStaff = selectedManagedStaff;
+            // Restructure data to match CreateUserDto with nested objects
+            const submitData: any = {
+                username: data.username,
+                password: data.password,
+                name: data.name,
+                surname: data.surname,
+                email: data.email,
+                phone: data.phone,
+                accessLevel: data.accessLevel,
+                status: data.status,
+                role: data.role,
+                erpSalesRepCode: data.erpSalesRepCode,
+                assignedClientIds: selectedClientIds,
+                managedBranches: selectedManagedBranches,
+                managedStaff: selectedManagedStaff,
+                managedDoors: selectedManagedDoors,
+            };
+
+            // Handle branch - convert branchId to branch object
+            if (data.branchId) {
+                submitData.branch = { uid: data.branchId };
+            }
+
+            // Build nested profile object if any profile fields are present
+            const profileFields: any = {};
+            if (data.gender) profileFields.gender = data.gender;
+            if (data.dob) profileFields.dateOfBirth = new Date(data.dob);
+            if (data.street) profileFields.address = data.street;
+            if (data.city) profileFields.city = data.city;
+            if (data.state) profileFields.state = data.state;
+            if (data.country) profileFields.country = data.country;
+            if (data.postalCode) profileFields.zipCode = data.postalCode;
+            
+            if (Object.keys(profileFields).length > 0) {
+                submitData.profile = profileFields;
+            }
+
+            // Build nested employmentProfile object if any employment fields are present
+            const employmentFields: any = {};
+            if (data.position) employmentFields.position = data.position;
+            if (data.department) employmentFields.department = data.department;
+            if (data.startDate) employmentFields.startDate = new Date(data.startDate);
+            
+            if (Object.keys(employmentFields).length > 0) {
+                submitData.employmentProfile = employmentFields;
+            }
 
             // If there's a selected file, upload it first
             if (selectedFile) {
@@ -402,17 +405,17 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 );
 
                 if (uploadResponse.data?.url) {
-                    data.photoURL = uploadResponse.data.url;
+                    submitData.photoURL = uploadResponse.data.url;
                 }
             } else {
                 // If no file uploaded, generate avatar based on initials
                 if (data.name && data.surname) {
-                    data.photoURL = generateAvatarUrl(data.name, data.surname);
+                    submitData.photoURL = generateAvatarUrl(data.name, data.surname);
                 }
             }
 
-            // Submit the form data
-            await onSubmit(data);
+            // Submit the restructured form data
+            await onSubmit(submitData);
         } catch (error) {
             showErrorToast('Failed to create user', toast);
         } finally {
@@ -620,7 +623,7 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
             {/* Authentication Section */}
             <fieldset className="space-y-4">
                 <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Authenticati
+                    Authentication
                 </legend>
                 <Card className="border-border/50">
                     <CardHeader className="pb-3">
@@ -804,9 +807,9 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                             </Label>
                             <MultiSelect
                                 options={clientOptions}
-                                selectedValues={selectedClients}
+                                selectedValues={selectedClientIds}
                                 onSelectionChange={(values) =>
-                                    setSelectedClients(values as number[])
+                                    setSelectedClientIds(values as number[])
                                 }
                                 placeholder={
                                     isLoadingClients
@@ -944,503 +947,6 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                 </Card>
             </fieldset>
 
-            {/* Targets Section */}
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Performance Targets
-                </legend>
-                <Card className="border-border/50">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex gap-2 items-center text-sm font-medium">
-                            <Target className="w-4 h-4" strokeWidth={1.5} />
-                            <span className="font-light uppercase font-body">
-                                Sales & Performance Goals
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {/* Target Sales Fields */}
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetSalesAmount"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target Sales Amount (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetSalesAmount"
-                                    {...register('targetSalesAmount')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="e.g. 150000 (Monthly revenue goal in ZAR)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentSalesAmount"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current Sales Amount
-                                </Label>
-                                <Input
-                                    id="currentSalesAmount"
-                                    {...register('currentSalesAmount')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="e.g. 75000 (Current achieved sales in ZAR)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetQuotationsAmount"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target Quotations Amount (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetQuotationsAmount"
-                                    {...register('targetQuotationsAmount')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="e.g. 75000 (Monthly quotations goal in ZAR)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetCurrency"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Target Currency
-                                </Label>
-                                <Input
-                                    id="targetCurrency"
-                                    {...register('targetCurrency')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="ZAR"
-                                />
-                            </div>
-
-                                {/* Target Activity Fields */}
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetHoursWorked"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target Hours Worked (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetHoursWorked"
-                                    type="number"
-                                    {...register('targetHoursWorked', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="160 (Standard: 40 hours/week × 4 weeks)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentHoursWorked"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current Hours Worked
-                                </Label>
-                                <Input
-                                    id="currentHoursWorked"
-                                    type="number"
-                                    {...register('currentHoursWorked', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="80 (Hours worked so far)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetNewClients"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target New Clients (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetNewClients"
-                                    type="number"
-                                    {...register('targetNewClients', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="5 (New clients to acquire per month)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentNewClients"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current New Clients
-                                </Label>
-                                <Input
-                                    id="currentNewClients"
-                                    type="number"
-                                    {...register('currentNewClients', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="2 (New clients acquired so far)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetNewLeads"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target New Leads (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetNewLeads"
-                                    type="number"
-                                    {...register('targetNewLeads', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="25 (New leads to generate per month)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentNewLeads"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current New Leads
-                                </Label>
-                                <Input
-                                    id="currentNewLeads"
-                                    type="number"
-                                    {...register('currentNewLeads', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="12 (New leads generated so far)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetCheckIns"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target Check-ins (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetCheckIns"
-                                    type="number"
-                                    {...register('targetCheckIns', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="30 (Client visits/check-ins per month)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentCheckIns"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current Check-ins
-                                </Label>
-                                <Input
-                                    id="currentCheckIns"
-                                    type="number"
-                                    {...register('currentCheckIns', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="15 (Check-ins completed so far)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetCalls"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Target Calls (Monthly)
-                                </Label>
-                                <Input
-                                    id="targetCalls"
-                                    type="number"
-                                    {...register('targetCalls', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="80 (Phone calls/outreach per month)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="currentCalls"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                        Current Calls
-                                </Label>
-                                <Input
-                                    id="currentCalls"
-                                    type="number"
-                                    {...register('currentCalls', {
-                                        valueAsNumber: true,
-                                    })}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="40 (Calls made so far)"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="targetPeriod"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Target Period
-                                </Label>
-                                <Controller
-                                    name="targetPeriod"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                        >
-                                            <SelectTrigger className="font-light bg-card border-border">
-                                                <SelectValue placeholder="Select period" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="daily">
-                                                    Daily
-                                                </SelectItem>
-                                                <SelectItem value="weekly">
-                                                    Weekly
-                                                </SelectItem>
-                                                <SelectItem value="monthly">
-                                                    Monthly
-                                                </SelectItem>
-                                                <SelectItem value="quarterly">
-                                                    Quarterly
-                                                </SelectItem>
-                                                <SelectItem value="yearly">
-                                                    Yearly
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="periodStartDate"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Period Start Date
-                                </Label>
-                                <Input
-                                    id="periodStartDate"
-                                    type="date"
-                                    {...register('periodStartDate')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="periodEndDate"
-                                    className="block text-xs font-light uppercase font-body"
-                                >
-                                    Period End Date
-                                </Label>
-                                <Input
-                                    id="periodEndDate"
-                                    type="date"
-                                    {...register('periodEndDate')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                />
-                            </div>
-
-                                {/* Current Performance Tracking */}
-                                <div className="col-span-2 pt-4 border-t border-border">
-                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
-                                        Current Performance Tracking
-                                    </h4>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="currentQuotationsAmount"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Current Quotations Amount
-                                            </Label>
-                                            <Input
-                                                id="currentQuotationsAmount"
-                                                {...register('currentQuotationsAmount')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="Current quotations amount"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="currentOrdersAmount"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Current Orders Amount
-                                            </Label>
-                                            <Input
-                                                id="currentOrdersAmount"
-                                                {...register('currentOrdersAmount')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="Current orders amount"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Cost Breakdown Section */}
-                                <div className="col-span-2 pt-4 border-t border-border">
-                                    <h4 className="mb-4 text-xs font-light uppercase text-muted-foreground font-body">
-                                        Monthly Cost Breakdown (ZAR)
-                                    </h4>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="baseSalary"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Base Salary
-                                            </Label>
-                                            <Input
-                                                id="baseSalary"
-                                                {...register('baseSalary')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 25000"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="carInstalment"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Car Instalment
-                                            </Label>
-                                            <Input
-                                                id="carInstalment"
-                                                {...register('carInstalment')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 8000"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="carInsurance"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Car Insurance
-                                            </Label>
-                                            <Input
-                                                id="carInsurance"
-                                                {...register('carInsurance')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 1500"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="fuel"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Fuel Allowance
-                                            </Label>
-                                            <Input
-                                                id="fuel"
-                                                {...register('fuel')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 3000"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="cellPhoneAllowance"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Cell Phone Allowance
-                                            </Label>
-                                            <Input
-                                                id="cellPhoneAllowance"
-                                                {...register('cellPhoneAllowance')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 800"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="carMaintenance"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Car Maintenance
-                                            </Label>
-                                            <Input
-                                                id="carMaintenance"
-                                                {...register('carMaintenance')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 2000"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="cgicCosts"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                CGIC Costs
-                                            </Label>
-                                            <Input
-                                                id="cgicCosts"
-                                                {...register('cgicCosts')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 1200"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="totalCost"
-                                                className="block text-xs font-light uppercase font-body"
-                                            >
-                                                Total Cost
-                                            </Label>
-                                            <Input
-                                                id="totalCost"
-                                                {...register('totalCost')}
-                                                className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                                placeholder="e.g. 41500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </fieldset>
 
             {/* Management Section */}
             <fieldset className="space-y-4">
@@ -1545,6 +1051,55 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                                     userOptions.length === 0 && (
                                         <p className="text-xs text-muted-foreground">
                                             No users available for staff management.
+                                        </p>
+                                    )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="managedDoors"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Managed Doors
+                                </Label>
+                                <MultiSelect
+                                    options={doorOptions}
+                                    selectedValues={selectedManagedDoors}
+                                    onSelectionChange={(values) =>
+                                        setSelectedManagedDoors(values as number[])
+                                    }
+                                    placeholder={
+                                        isLoadingDoors
+                                            ? 'Loading doors...'
+                                            : doorOptions.length === 0
+                                              ? 'No doors available'
+                                              : 'Select doors to manage...'
+                                    }
+                                    disabled={isLoadingDoors}
+                                    className="w-full"
+                                />
+                                {isLoadingDoors && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Loading doors...
+                                    </p>
+                                )}
+                                {doorsError && (
+                                    <div className="text-xs text-red-500">
+                                        Failed to load doors.{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchDoors()}
+                                            className="underline hover:no-underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                                {!isLoadingDoors &&
+                                    !doorsError &&
+                                    doorOptions.length === 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No doors available for management.
                                         </p>
                                     )}
                             </div>
@@ -1748,9 +1303,10 @@ export const UserForm: React.FunctionComponent<UserFormProps> = ({
                         reset();
                         setUserImage(null);
                         setSelectedFile(null);
-                        setSelectedClients([]);
+                        setSelectedClientIds([]);
                         setSelectedManagedBranches([]);
                         setSelectedManagedStaff([]);
+                        setSelectedManagedDoors([]);
                     }}
                     disabled={isSubmitting}
                 >

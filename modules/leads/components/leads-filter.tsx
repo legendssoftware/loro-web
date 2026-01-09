@@ -13,6 +13,7 @@ import {
     Clock,
     RefreshCw,
     User,
+    Upload,
 } from 'lucide-react';
 import { LeadFilterParams, LeadStatus } from '@/lib/types/lead';
 import {
@@ -54,6 +55,7 @@ enum DateRangePreset {
 interface LeadsFilterProps {
     onApplyFilters: (filters: LeadFilterParams) => void;
     onClearFilters: () => void;
+    onImportClick?: () => void;
 }
 
 // Define initial filter state as a constant
@@ -68,6 +70,7 @@ const INITIAL_FILTERS = {
 export function LeadsFilter({
     onApplyFilters,
     onClearFilters,
+    onImportClick,
 }: LeadsFilterProps) {
     // Single consolidated filter state
     const [filters, setFilters] = useState(INITIAL_FILTERS);
@@ -270,10 +273,10 @@ export function LeadsFilter({
     };
 
     return (
-        <div className="flex items-center justify-end flex-1 gap-2" id="leads-filter-container">
+        <div className="flex flex-1 gap-2 justify-end items-center" id="leads-filter-container">
             {/* Search Box */}
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
                 <Input
                     placeholder="search..."
                     value={filters.search}
@@ -284,7 +287,7 @@ export function LeadsFilter({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute w-8 h-8 transform -translate-y-1/2 right-1 top-1/2"
+                        className="absolute right-1 top-1/2 w-8 h-8 transform -translate-y-1/2"
                         onClick={() => updateFilter('search', '')}
                     >
                         <X className="w-4 h-4" />
@@ -297,8 +300,8 @@ export function LeadsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <CalendarIcon
                                     className="w-4 h-4 text-muted-foreground"
                                     strokeWidth={1.5}
@@ -308,7 +311,7 @@ export function LeadsFilter({
                                 </span>
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
@@ -328,7 +331,7 @@ export function LeadsFilter({
                                 Today
                                 {dateRangePreset === DateRangePreset.TODAY && (
                                     <Check
-                                        className="w-4 h-4 ml-auto text-primary"
+                                        className="ml-auto w-4 h-4 text-primary"
                                         strokeWidth={1.5}
                                     />
                                 )}
@@ -345,7 +348,7 @@ export function LeadsFilter({
                                 {dateRangePreset ===
                                     DateRangePreset.YESTERDAY && (
                                     <Check
-                                        className="w-4 h-4 ml-auto text-primary"
+                                        className="ml-auto w-4 h-4 text-primary"
                                         strokeWidth={1.5}
                                     />
                                 )}
@@ -362,7 +365,7 @@ export function LeadsFilter({
                                 {dateRangePreset ===
                                     DateRangePreset.LAST_WEEK && (
                                     <Check
-                                        className="w-4 h-4 ml-auto text-primary"
+                                        className="ml-auto w-4 h-4 text-primary"
                                         strokeWidth={1.5}
                                     />
                                 )}
@@ -379,7 +382,7 @@ export function LeadsFilter({
                                 {dateRangePreset ===
                                     DateRangePreset.LAST_MONTH && (
                                     <Check
-                                        className="w-4 h-4 ml-auto text-primary"
+                                        className="ml-auto w-4 h-4 text-primary"
                                         strokeWidth={1.5}
                                     />
                                 )}
@@ -395,7 +398,7 @@ export function LeadsFilter({
                                 Custom Range
                                 {dateRangePreset === DateRangePreset.CUSTOM && (
                                     <Check
-                                        className="w-4 h-4 ml-auto text-primary"
+                                        className="ml-auto w-4 h-4 text-primary"
                                         strokeWidth={1.5}
                                     />
                                 )}
@@ -429,7 +432,7 @@ export function LeadsFilter({
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent
-                                                        className="w-auto p-0"
+                                                        className="p-0 w-auto"
                                                         align="start"
                                                     >
                                                         <CalendarComponent
@@ -466,7 +469,7 @@ export function LeadsFilter({
                                                         </Button>
                                                     </PopoverTrigger>
                                                     <PopoverContent
-                                                        className="w-auto p-0"
+                                                        className="p-0 w-auto"
                                                         align="start"
                                                     >
                                                         <CalendarComponent
@@ -483,7 +486,7 @@ export function LeadsFilter({
                                         </div>
                                         <Button
                                             size="sm"
-                                            className="w-full mt-2 h-7"
+                                            className="mt-2 w-full h-7"
                                             onClick={() => {}}
                                         >
                                             Apply Range
@@ -498,7 +501,7 @@ export function LeadsFilter({
                                     updateFilter('startDate', undefined);
                                     updateFilter('endDate', undefined);
                                 }}
-                                className="flex items-center justify-center w-full"
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Date Range
@@ -513,8 +516,8 @@ export function LeadsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 {filters.status ? (
                                     <>
                                         {React.createElement(
@@ -543,7 +546,7 @@ export function LeadsFilter({
                                 )}
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
@@ -559,12 +562,12 @@ export function LeadsFilter({
                                 return (
                                     <DropdownMenuItem
                                         key={statusOption}
-                                        className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                                        className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                                         onClick={() => toggleFilter('status', statusOption)}
                                     >
                                         {StatusIcon && (
                                             <StatusIcon
-                                                className={`w-4 h-4 mr-2 ${statusColors[statusOption]}`}
+                                                className={`mr-2 w-4 h-4 ${statusColors[statusOption]}`}
                                                 strokeWidth={1.5}
                                             />
                                         )}
@@ -579,7 +582,7 @@ export function LeadsFilter({
                                         </span>
                                         {filters.status === statusOption && (
                                             <Check
-                                                className="w-4 h-4 ml-auto text-primary"
+                                                className="ml-auto w-4 h-4 text-primary"
                                                 strokeWidth={1.5}
                                             />
                                         )}
@@ -589,7 +592,7 @@ export function LeadsFilter({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => updateFilter('status', undefined)}
-                                className="flex items-center justify-center w-full"
+                                className="flex justify-center items-center w-full"
                             >
                                 <span className="text-[10px] font-normal text-red-500 font-body">
                                     Clear Status Filter
@@ -604,8 +607,8 @@ export function LeadsFilter({
             <div className="w-[180px]">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className="flex items-center justify-between w-full h-10 gap-2 px-3 border rounded cursor-pointer bg-card border-border">
-                            <div className="flex items-center gap-2">
+                        <div className="flex gap-2 justify-between items-center px-3 w-full h-10 rounded border cursor-pointer bg-card border-border">
+                            <div className="flex gap-2 items-center">
                                 <User
                                     className="w-4 h-4 text-muted-foreground"
                                     strokeWidth={1.5}
@@ -615,7 +618,7 @@ export function LeadsFilter({
                                 </span>
                             </div>
                             <ChevronDown
-                                className="w-4 h-4 ml-2 opacity-50"
+                                className="ml-2 w-4 h-4 opacity-50"
                                 strokeWidth={1.5}
                             />
                         </div>
@@ -626,10 +629,10 @@ export function LeadsFilter({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                            className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                             onClick={() => toggleFilter('ownerUid', -1)}
                         >
-                            <Avatar className="w-6 h-6 mr-2">
+                            <Avatar className="mr-2 w-6 h-6">
                                 <AvatarFallback>ME</AvatarFallback>
                             </Avatar>
                             <span className="text-[10px] font-normal font-body">
@@ -637,16 +640,16 @@ export function LeadsFilter({
                             </span>
                             {filters.ownerUid === -1 && (
                                 <Check
-                                    className="w-4 h-4 ml-auto text-primary"
+                                    className="ml-auto w-4 h-4 text-primary"
                                     strokeWidth={1.5}
                                 />
                             )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="flex items-center gap-2 px-2 text-xs font-normal font-body"
+                            className="flex gap-2 items-center px-2 text-xs font-normal font-body"
                             onClick={() => toggleFilter('ownerUid', 0)}
                         >
-                            <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-muted">
+                            <div className="flex justify-center items-center mr-2 w-6 h-6 rounded-full bg-muted">
                                 <X className="w-3 h-3" strokeWidth={1.5} />
                             </div>
                             <span className="text-[10px] font-normal font-body">
@@ -654,7 +657,7 @@ export function LeadsFilter({
                             </span>
                             {filters.ownerUid === 0 && (
                                 <Check
-                                    className="w-4 h-4 ml-auto text-primary"
+                                    className="ml-auto w-4 h-4 text-primary"
                                     strokeWidth={1.5}
                                 />
                             )}
@@ -662,7 +665,7 @@ export function LeadsFilter({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={() => updateFilter('ownerUid', undefined)}
-                            className="flex items-center justify-center w-full"
+                            className="flex justify-center items-center w-full"
                         >
                             <span className="text-[10px] font-normal text-red-500 font-body">
                                 Clear Owner Filter
@@ -672,6 +675,17 @@ export function LeadsFilter({
                 </DropdownMenu>
             </div>
 
+            {/* Import Button - Always visible */}
+            <Button
+                variant="outline"
+                size="sm"
+                className="h-10 text-xs font-normal text-white font-body bg-primary"
+                onClick={() => onImportClick?.()}
+            >
+                <Upload className="mr-2 w-4 h-4" strokeWidth={1.5} />
+                Import
+            </Button>
+
             {/* Clear Filters Button - Only show when filters are active */}
             {activeFilterCount > 0 && (
                 <Button
@@ -680,7 +694,7 @@ export function LeadsFilter({
                     className="h-10 text-xs font-normal font-body"
                     onClick={handleClearFilters}
                 >
-                    <X className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    <X className="mr-2 w-4 h-4" strokeWidth={1.5} />
                     Clear All ({activeFilterCount})
                 </Button>
             )}

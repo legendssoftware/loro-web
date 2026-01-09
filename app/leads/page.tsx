@@ -16,6 +16,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import LeadsForm from '@/modules/leads/components/leads-form';
+import { CSVImportDialog } from '@/modules/leads/components/csv-import-dialog';
 
 // Tab configuration
 const tabs = [{ id: 'leads', label: 'Leads' }];
@@ -80,6 +81,7 @@ export default function LeadsPage() {
         limit: 500,
     });
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
     // Memoize filter params to prevent unnecessary re-renders
     const currentFilters = useMemo(() => filterParams, [filterParams]);
@@ -162,21 +164,32 @@ export default function LeadsPage() {
         });
     }, []);
 
+    const handleImportClick = useCallback(() => {
+        setIsImportDialogOpen(true);
+    }, []);
+
+    const handleImportSuccess = useCallback(async (result: any) => {
+        // Refetch leads after successful import
+        // Don't close modal - let user close it manually after viewing summary
+        await refetch();
+    }, [refetch]);
+
     return (
         <PageTransition>
-            <div className="flex flex-col h-screen gap-2 overflow-hidden">
+            <div className="flex overflow-hidden flex-col gap-2 h-screen">
                 <LeadsTabGroup
                     tabs={tabs}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
-                <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex overflow-hidden flex-col flex-1">
                     <LeadsHeader
                         onApplyFilters={handleApplyFilters}
                         onClearFilters={handleClearFilters}
                         onAddLead={handleCreateLead}
+                        onImportClick={handleImportClick}
                     />
-                    <div className="flex items-center justify-center flex-1 px-3 py-3 overflow-hidden xl:px-8 xl:px-4">
+                    <div className="flex overflow-hidden flex-1 justify-center items-center px-3 py-3 xl:px-8 xl:px-4">
                         <LeadsTabContent
                             activeTab={activeTab}
                             isLoading={isLoading}
@@ -195,6 +208,12 @@ export default function LeadsPage() {
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}
                 onCreateLead={handleSubmitCreateLead}
+            />
+
+            <CSVImportDialog
+                open={isImportDialogOpen}
+                onClose={() => setIsImportDialogOpen(false)}
+                onSuccess={handleImportSuccess}
             />
         </PageTransition>
     );

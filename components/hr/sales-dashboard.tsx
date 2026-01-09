@@ -193,6 +193,23 @@ const useCheckInsData = (selectedDate?: Date) => {
     });
 };
 
+// Helper function to validate image URL
+const isValidImageUrl = (url?: string): boolean => {
+    if (!url || url.trim() === '') return false;
+    // Check if it's a valid URL or data URL
+    try {
+        // Allow data URLs (base64 images)
+        if (url.startsWith('data:')) return true;
+        // Allow http/https URLs
+        if (url.startsWith('http://') || url.startsWith('https://')) return true;
+        // Allow relative URLs that start with /
+        if (url.startsWith('/')) return true;
+        return false;
+    } catch {
+        return false;
+    }
+};
+
 // Helper function to get location name from coordinates or fullAddress
 const getLocationName = (record: CheckInRecord, isCheckOut: boolean = false): string => {
     // Try to get from fullAddress first (formatted address)
@@ -885,7 +902,9 @@ const UserVisitsModal: React.FC<{
                                                 </TableCell>
                                                 <TableCell>
                                                     {(() => {
-                                                        const imageCount = (visit.checkInPhoto ? 1 : 0) + (visit.checkOutPhoto ? 1 : 0);
+                                                        const hasCheckInPhoto = isValidImageUrl(visit.checkInPhoto);
+                                                        const hasCheckOutPhoto = isValidImageUrl(visit.checkOutPhoto);
+                                                        const imageCount = (hasCheckInPhoto ? 1 : 0) + (hasCheckOutPhoto ? 1 : 0);
                                                         if (imageCount === 0) {
                                                             return (
                                                                 <span className="text-[0.8em] text-muted-foreground">0 images</span>
@@ -893,7 +912,7 @@ const UserVisitsModal: React.FC<{
                                                         }
                                                         return (
                                                             <div className="flex gap-1 items-center">
-                                                                {visit.checkInPhoto && (
+                                                                {hasCheckInPhoto && (
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -906,7 +925,7 @@ const UserVisitsModal: React.FC<{
                                                                         <span className="sr-only">Check-in photo</span>
                                                                     </button>
                                                                 )}
-                                                                {visit.checkOutPhoto && (
+                                                                {hasCheckOutPhoto && (
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -988,16 +1007,28 @@ const UserVisitsModal: React.FC<{
                                                                         )}>{checkInLoc}</p>
                                                                     </div>
                                                                 </div>
-                                                                {visit.checkInPhoto && (
+                                                                {isValidImageUrl(visit.checkInPhoto) && (
                                                                     <div className="mt-4">
-                                                                        <img
-                                                                            src={visit.checkInPhoto}
-                                                                            alt="Check-in photo"
-                                                                            className="object-contain w-full max-h-64 rounded-md border"
-                                                                            onError={(e) => {
-                                                                                (e.target as HTMLImageElement).style.display = 'none';
-                                                                            }}
-                                                                        />
+                                                                        <p className="mb-2 text-xs text-muted-foreground">Check-In Photo</p>
+                                                                        <div className="overflow-hidden relative rounded-md border">
+                                                                            <img
+                                                                                src={visit.checkInPhoto}
+                                                                                alt="Check-in photo"
+                                                                                className="object-contain w-full max-h-64"
+                                                                                onError={(e) => {
+                                                                                    const img = e.target as HTMLImageElement;
+                                                                                    img.style.display = 'none';
+                                                                                    const errorDiv = document.createElement('div');
+                                                                                    errorDiv.className = 'flex justify-center items-center p-8 text-sm text-muted-foreground';
+                                                                                    errorDiv.textContent = 'Failed to load check-in image';
+                                                                                    img.parentElement?.appendChild(errorDiv);
+                                                                                }}
+                                                                                onLoad={(e) => {
+                                                                                    // Ensure image is visible on successful load
+                                                                                    (e.target as HTMLImageElement).style.display = 'block';
+                                                                                }}
+                                                                            />
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                                 {visit.fullAddress && (
@@ -1032,16 +1063,28 @@ const UserVisitsModal: React.FC<{
                                                                             )}>{checkOutLoc}</p>
                                                                         </div>
                                                                     </div>
-                                                                    {visit.checkOutPhoto && (
+                                                                    {isValidImageUrl(visit.checkOutPhoto) && (
                                                                         <div className="mt-4">
-                                                                            <img
-                                                                                src={visit.checkOutPhoto}
-                                                                                alt="Check-out photo"
-                                                                                className="object-contain w-full max-h-64 rounded-md border"
-                                                                                onError={(e) => {
-                                                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                                                }}
-                                                                            />
+                                                                            <p className="mb-2 text-xs text-muted-foreground">Check-Out Photo</p>
+                                                                            <div className="overflow-hidden relative rounded-md border">
+                                                                                <img
+                                                                                    src={visit.checkOutPhoto}
+                                                                                    alt="Check-out photo"
+                                                                                    className="object-contain w-full max-h-64"
+                                                                                    onError={(e) => {
+                                                                                        const img = e.target as HTMLImageElement;
+                                                                                        img.style.display = 'none';
+                                                                                        const errorDiv = document.createElement('div');
+                                                                                        errorDiv.className = 'flex justify-center items-center p-8 text-sm text-muted-foreground';
+                                                                                        errorDiv.textContent = 'Failed to load check-out image';
+                                                                                        img.parentElement?.appendChild(errorDiv);
+                                                                                    }}
+                                                                                    onLoad={(e) => {
+                                                                                        // Ensure image is visible on successful load
+                                                                                        (e.target as HTMLImageElement).style.display = 'block';
+                                                                                    }}
+                                                                                />
+                                                                            </div>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1512,7 +1555,11 @@ const UserVisitsModal: React.FC<{
         </Dialog>
 
         {/* Image Viewer Dialog */}
-        <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+        <Dialog open={!!selectedImage} onOpenChange={(open) => {
+            if (!open) {
+                setSelectedImage(null);
+            }
+        }}>
             <DialogContent className="max-w-4xl">
                 <DialogHeader>
                     <DialogTitle className="flex gap-2 items-center">
@@ -1520,20 +1567,46 @@ const UserVisitsModal: React.FC<{
                         {selectedImage?.type === 'check-in' ? 'Check-In Photo' : 'Check-Out Photo'}
                     </DialogTitle>
                 </DialogHeader>
-                {selectedImage && (
+                {selectedImage && isValidImageUrl(selectedImage.url) ? (
                     <div className="flex justify-center items-center w-full">
                         <img
                             src={selectedImage.url}
                             alt={selectedImage.type === 'check-in' ? 'Check-in photo' : 'Check-out photo'}
                             className="max-w-full max-h-[70vh] object-contain rounded-lg"
                             onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                const errorDiv = document.createElement('div');
-                                errorDiv.className = 'p-4 text-center text-muted-foreground';
-                                errorDiv.textContent = 'Failed to load image';
-                                (e.target as HTMLImageElement).parentElement?.appendChild(errorDiv);
+                                const img = e.target as HTMLImageElement;
+                                img.style.display = 'none';
+                                // Check if error message already exists
+                                const existingError = img.parentElement?.querySelector('.image-error-message');
+                                if (!existingError) {
+                                    const errorDiv = document.createElement('div');
+                                    errorDiv.className = 'p-8 text-center image-error-message text-muted-foreground';
+                                    errorDiv.innerHTML = `
+                                        <svg class="mx-auto mb-2 w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p class="text-sm font-medium">Failed to load image</p>
+                                        <p class="mt-1 text-xs">The image URL may be invalid or the image may have been deleted.</p>
+                                    `;
+                                    img.parentElement?.appendChild(errorDiv);
+                                }
+                            }}
+                            onLoad={(e) => {
+                                // Remove any existing error messages on successful load
+                                const img = e.target as HTMLImageElement;
+                                const errorMsg = img.parentElement?.querySelector('.image-error-message');
+                                if (errorMsg) {
+                                    errorMsg.remove();
+                                }
+                                img.style.display = 'block';
                             }}
                         />
+                    </div>
+                ) : (
+                    <div className="flex flex-col justify-center items-center p-8 text-center">
+                        <ImageIcon className="mx-auto mb-4 w-12 h-12 text-muted-foreground" />
+                        <p className="text-sm font-medium text-muted-foreground">Invalid Image URL</p>
+                        <p className="mt-1 text-xs text-muted-foreground">The image URL is invalid or empty.</p>
                     </div>
                 )}
             </DialogContent>

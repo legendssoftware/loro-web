@@ -160,14 +160,21 @@ const formatDate = (date: Date): string => {
 
 // Utility function to extract time from ISO timestamp (HH:mm:ss)
 const extractTime = (isoString: string | null | undefined): string => {
-    if (!isoString) return 'N/A';
-    // If it's already formatted (doesn't contain 'T'), return as-is
-    if (!isoString.includes('T')) return isoString;
-    // Extract time portion from ISO string (e.g., "2025-11-11T08:34:33.000Z" -> "08:34:33")
-    const timePart = isoString.split('T')[1];
-    if (!timePart) return isoString;
-    // Remove milliseconds and timezone (everything after '.')
-    return timePart.split('.')[0].split('Z')[0].split('+')[0];
+	if (!isoString) return 'N/A';
+	// If it's already formatted (doesn't contain 'T'), return time portion
+	if (!isoString.includes('T')) {
+		// Handle format like "2025-01-15 06:45:00"
+		const parts = isoString.split(' ');
+		if (parts.length >= 2) {
+			return parts[1].substring(0, 5); // Return HH:mm
+		}
+		return isoString;
+	}
+	// Extract time portion from ISO string (e.g., "2025-11-11T08:34:33.000Z" -> "08:34:33")
+	const timePart = isoString.split('T')[1];
+	if (!timePart) return isoString;
+	// Remove milliseconds and timezone (everything after '.')
+	return timePart.split('.')[0].split('Z')[0].split('+')[0];
 };
 
 // Utility function to convert milliseconds to hours
@@ -1051,7 +1058,7 @@ export const PersonalReportsDashboard: React.FunctionComponent<PersonalReportsDa
 
             {/* Shift Management and Performance */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-    
+
 
                     {/* Break Analytics */}
                     <Card>

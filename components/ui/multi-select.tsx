@@ -120,19 +120,20 @@ export function MultiSelect({
 
             {/* Selected items display */}
             {selectedValues.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedLabels.slice(0, maxDisplay).map((label, index) => {
-                        const value = selectedValues[index];
+                <div className="flex flex-wrap gap-1.5 mt-2 w-full">
+                    {selectedValues.map((value) => {
+                        const option = options.find((opt) => opt.value === value);
+                        const label = option?.label || String(value);
                         return (
                             <Badge
                                 key={value}
                                 variant="secondary"
-                                className="text-[9px] font-body px-2 py-1"
+                                className="text-[9px] font-body px-2 py-1 max-w-[300px] flex-shrink inline-flex items-center gap-1"
                             >
-                                {label}
+                                <span className="truncate block flex-1 min-w-0">{label}</span>
                                 <button
                                     type="button"
-                                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    className="rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 shrink-0 flex items-center justify-center"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             handleRemove(value);
@@ -149,11 +150,6 @@ export function MultiSelect({
                             </Badge>
                         );
                     })}
-                    {selectedLabels.length > maxDisplay && (
-                        <Badge variant="outline" className="text-[9px] font-body px-2 py-1">
-                            +{selectedLabels.length - maxDisplay} more
-                        </Badge>
-                    )}
                 </div>
             )}
         </div>

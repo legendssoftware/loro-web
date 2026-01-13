@@ -19,7 +19,7 @@ export function getAccessTokenFromCookie(): string | null {
 
         return token || null;
     } catch (error) {
-        console.error('Failed to read access token from cookie:', error);
+        console.error('Failed to read access token from cookie');
         return null;
     }
 }
@@ -36,7 +36,7 @@ export function getRoleFromToken(token: string | null): string | null {
         const decodedToken = jwtDecode<CustomJwtPayload>(token);
         return decodedToken.role || null;
     } catch (error) {
-        console.error('Failed to extract role from token:', error);
+        console.error('Failed to extract role from token');
         return null;
     }
 }

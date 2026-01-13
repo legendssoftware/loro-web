@@ -172,10 +172,10 @@ export function CSVImportDialog({ open, onClose, onSuccess }: CSVImportDialogPro
         })) || [];
 
     const downloadExampleCSV = useCallback(() => {
-        const csvContent = `name,email,phone,companyName,notes,estimatedValue,source,industry,budgetRange,jobTitle
-John Doe,john.doe@example.com,+27123456789,Acme Corp,Interested in our product,50000,WEBSITE,TECHNOLOGY,R100K_250K,Marketing Manager
-Jane Smith,jane.smith@example.com,+27987654321,Tech Solutions,Looking for enterprise solution,100000,REFERRAL,TECHNOLOGY,R250K_500K,CTO
-Bob Johnson,bob@example.com,+27555123456,Retail Plus,Need point of sale system,25000,EMAIL_CAMPAIGN,RETAIL,R50K_100K,Store Manager`;
+        const csvContent = `name,email,phone,companyName,notes,image,attachments,latitude,longitude,category,status,intent,userQualityRating,temperature,source,priority,lifecycleStage,jobTitle,decisionMakerRole,industry,businessSize,budgetRange,purchaseTimeline,preferredCommunication,timezone,bestContactTime,painPoints,estimatedValue,competitorInfo,referralSource,campaignName,landingPage,utmSource,utmMedium,utmCampaign,utmTerm,utmContent,customFields
+John Doe,john.doe@example.com,+27123456789,Acme Corp,Interested in our product,,"https://example.com/doc1.pdf,https://example.com/doc2.pdf",-33.9249,18.4241,BUSINESS,PENDING,PURCHASE,4,WARM,WEBSITE,HIGH,LEAD,Marketing Manager,MANAGER,TECHNOLOGY,MEDIUM,R100K_250K,SHORT_TERM,EMAIL,Africa/Johannesburg,9:00-17:00,"High costs,Manual processes",50000,Currently using CompetitorX,Jane Smith,Summer2024-TechSolution,https://example.com/landing,google,cpc,summer-tech-2024,business software,header-cta,"{""customField1"":""value1"",""customField2"":""value2""}"
+Jane Smith,jane.smith@example.com,+27987654321,Tech Solutions,Looking for enterprise solution,,,,-33.9250,18.4242,BUSINESS,PENDING,ENQUIRY,5,HOT,REFERRAL,CRITICAL,SALES_QUALIFIED_LEAD,CTO,CTO,TECHNOLOGY,LARGE,R250K_500K,IMMEDIATE,PHONE,Africa/Johannesburg,8:00-16:00,"Integration issues,Scaling problems",100000,Using Legacy System,John Doe,Winter2024-Enterprise,https://example.com/enterprise,linkedin,sponsored,enterprise-winter-2024,enterprise solution,cta-button,"{""companySize"":""500+"",""currentVendor"":""LegacyCorp""}"
+Bob Johnson,bob@example.com,+27555123456,Retail Plus,Need point of sale system,,,,-33.9251,18.4243,RETAIL,REVIEW,QUOTE_REQUEST,3,COLD,EMAIL_CAMPAIGN,MEDIUM,LEAD,Store Manager,MANAGER,RETAIL,SMALL,R50K_100K,MEDIUM_TERM,SMS,Africa/Johannesburg,10:00-18:00,"Cost efficiency,Inventory management",25000,,,Spring2024-Retail,https://example.com/retail,facebook,display,retail-spring-2024,retail pos,sidebar-ad,"{""storeCount"":""5"",""currentSystem"":""Manual""}"`;
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -280,11 +280,20 @@ Bob Johnson,bob@example.com,+27555123456,Retail Plus,Need point of sale system,2
                             <FileText className="w-4 h-4" />
                             <AlertDescription className="text-xs font-body">
                                 <strong>Required columns:</strong> name (or email/phone), companyName<br />
-                                <strong>Optional columns:</strong> email, phone, notes, estimatedValue, source, industry, budgetRange, jobTitle<br />
+                                <strong>Optional columns:</strong><br />
+                                <span className="ml-2">
+                                    <strong>Basic:</strong> email, phone, notes, image, attachments (comma-separated URLs), latitude, longitude, category, status<br />
+                                    <strong>Qualification:</strong> intent, userQualityRating (1-5), temperature, source, priority, lifecycleStage<br />
+                                    <strong>Company Info:</strong> jobTitle, decisionMakerRole, industry, businessSize, budgetRange, purchaseTimeline<br />
+                                    <strong>Communication:</strong> preferredCommunication, timezone, bestContactTime<br />
+                                    <strong>Business Context:</strong> painPoints (comma-separated), estimatedValue, competitorInfo, referralSource<br />
+                                    <strong>Campaign Tracking:</strong> campaignName, landingPage, utmSource, utmMedium, utmCampaign, utmTerm, utmContent<br />
+                                    <strong>Custom:</strong> customFields (JSON string)<br />
+                                </span>
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="p-0 h-auto text-xs underline"
+                                    className="p-0 h-auto text-xs underline mt-2"
                                     onClick={downloadExampleCSV}
                                 >
                                     <Download className="mr-1 w-3 h-3" />

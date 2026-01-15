@@ -1,8 +1,15 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 // Get base URL from environment variables or default to localhost
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4400/api';
+
+interface CustomJwtPayload {
+    role?: string;
+    exp?: number;
+    iat?: number;
+}
 
 export const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -129,9 +136,40 @@ axiosInstance.interceptors.response.use(
 
                     if (refreshToken) {
                         console.log('Attempting to refresh token...');
+                        
+                        // Determine if user is a client by checking profileData or token
+                        let isClient = false;
+                        
+                        // First, try to get accessLevel from profileData in storage
+                        if (authStorageData?.state?.profileData?.accessLevel === 'client') {
+                            isClient = true;
+                        } else if (sessionStorageData?.state?.profileData?.accessLevel === 'client') {
+                            isClient = true;
+                        } else {
+                            // If profileData not available, decode the refresh token to check role
+                            try {
+                                const decodedToken = jwtDecode<CustomJwtPayload>(refreshToken);
+                                isClient = decodedToken?.role === 'client';
+                            } catch (decodeError) {
+                                // If decode fails, try to decode access token if available
+                                const accessToken = authStorageData?.state?.accessToken || sessionStorageData?.state?.accessToken;
+                                if (accessToken) {
+                                    try {
+                                        const decodedAccessToken = jwtDecode<CustomJwtPayload>(accessToken);
+                                        isClient = decodedAccessToken?.role === 'client';
+                                    } catch (accessDecodeError) {
+                                        console.warn('Could not determine user type from tokens, defaulting to /auth/refresh');
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Use appropriate refresh endpoint based on user type
+                        const refreshEndpoint = isClient ? '/client-auth/refresh' : '/auth/refresh';
+                        
                         // Call token refresh endpoint
                         const response = await axios.post(
-                            `${API_BASE_URL}/auth/refresh`,
+                            `${API_BASE_URL}${refreshEndpoint}`,
                             {
                                 refreshToken,
                             },

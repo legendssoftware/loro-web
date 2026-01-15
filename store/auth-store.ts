@@ -195,6 +195,32 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                 // After rehydration, validate token and setup auth service
                 if (!state) return; // Early return if state is undefined
 
+                // Helper function to handle sign out and redirect
+                const handleSignOut = (currentState: typeof state) => {
+                    // Clear auth state
+                    currentState.setAuthState(initialState);
+                    // Also clear the authService tokens
+                    authService.clearTokens();
+                    // Clear the sessionStorage explicitly
+                    if (typeof window !== 'undefined') {
+                        window.sessionStorage.removeItem('auth-storage');
+                        
+                        // Schedule redirect to sign-in page after rehydration completes
+                        // Use setTimeout to ensure this happens after React hydration
+                        setTimeout(() => {
+                            // Only redirect if we're not already on a public/auth page
+                            const currentPath = window.location.pathname;
+                            const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/verify-email', '/verify-otp', '/'];
+                            
+                            if (!publicPaths.includes(currentPath) && !currentPath.startsWith('/api')) {
+                                // Redirect to sign-in with callback URL
+                                const callbackUrl = encodeURIComponent(window.location.href);
+                                window.location.href = `/sign-in?callbackUrl=${callbackUrl}&token_expired=true`;
+                            }
+                        }, 100);
+                    }
+                };
+
                 if (state.accessToken && state.refreshToken) {
                     // Set tokens in auth service immediately
                     authService.setTokens(
@@ -212,31 +238,33 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                             isLoading: false, // Ensure loading is false
                         });
                     } else {
-                        // Token is invalid/expired on rehydration, sign out immediately
-                        console.warn('AuthStore: Token expired or invalid on rehydration. Signing out and redirecting to sign-in.');
+                        // Token is invalid/expired on rehydration, attempt to refresh before signing out
+                        console.warn('AuthStore: Token expired or invalid on rehydration. Attempting to refresh...');
                         
-                        // Clear auth state
-                        state.setAuthState(initialState);
-                        // Also clear the authService tokens
-                        authService.clearTokens();
-                        // Clear the sessionStorage explicitly
-                        window.sessionStorage.removeItem('auth-storage');
-                        
-                        // Schedule redirect to sign-in page after rehydration completes
-                        // Use setTimeout to ensure this happens after React hydration
-                        setTimeout(() => {
-                            // Only redirect if we're not already on a public/auth page
-                            if (typeof window !== 'undefined') {
-                                const currentPath = window.location.pathname;
-                                const publicPaths = ['/sign-in', '/sign-up', '/forgot-password', '/new-password', '/verify-email', '/verify-otp', '/'];
-                                
-                                if (!publicPaths.includes(currentPath) && !currentPath.startsWith('/api')) {
-                                    // Redirect to sign-in with callback URL
-                                    const callbackUrl = encodeURIComponent(window.location.href);
-                                    window.location.href = `/sign-in?callbackUrl=${callbackUrl}&token_expired=true`;
+                        // Attempt to refresh the token using refreshToken
+                        authService.refreshAccessToken(state.refreshToken)
+                            .then((tokens) => {
+                                if (tokens && authService.validateToken(tokens.accessToken)) {
+                                    // Refresh successful, update state with new tokens
+                                    console.log('AuthStore: Token refreshed successfully on rehydration');
+                                    state.setAuthState({
+                                        accessToken: tokens.accessToken,
+                                        refreshToken: tokens.refreshToken,
+                                        isAuthenticated: true,
+                                        isLoading: false,
+                                    });
+                                    authService.setTokens(tokens.accessToken, tokens.refreshToken);
+                                } else {
+                                    // Refresh failed or returned invalid token, sign out
+                                    console.warn('AuthStore: Token refresh failed on rehydration. Signing out and redirecting to sign-in.');
+                                    handleSignOut(state);
                                 }
-                            }
-                        }, 100);
+                            })
+                            .catch((error) => {
+                                // Refresh failed, sign out
+                                console.error('AuthStore: Token refresh error on rehydration:', error);
+                                handleSignOut(state);
+                            });
                     }
                 } else {
                     // No tokens found, ensure clean initial state

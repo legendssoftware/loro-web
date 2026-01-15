@@ -149,16 +149,50 @@ export function UserDetailsModal({
     // Handle form submission from the UserTargetForm
     const handleUpdateUserTargets = async (userData: UserTargetFormValues, hasExistingTargets: boolean) => {
         try {
-            // Convert form values to API expected format
-            const targetData = {
-                ...userData,
-                // Remove any undefined values
+            // Convert form values to API expected format, including all fields
+            const targetData: any = {
+                // Target Fields
                 ...(userData.targetSalesAmount !== undefined && { targetSalesAmount: userData.targetSalesAmount }),
+                ...(userData.targetQuotationsAmount !== undefined && { targetQuotationsAmount: userData.targetQuotationsAmount }),
+                ...(userData.targetCurrency !== undefined && { targetCurrency: userData.targetCurrency }),
                 ...(userData.targetHoursWorked !== undefined && { targetHoursWorked: userData.targetHoursWorked }),
                 ...(userData.targetNewClients !== undefined && { targetNewClients: userData.targetNewClients }),
                 ...(userData.targetNewLeads !== undefined && { targetNewLeads: userData.targetNewLeads }),
                 ...(userData.targetCheckIns !== undefined && { targetCheckIns: userData.targetCheckIns }),
                 ...(userData.targetCalls !== undefined && { targetCalls: userData.targetCalls }),
+                ...(userData.targetPeriod !== undefined && { targetPeriod: userData.targetPeriod }),
+                
+                // Date Fields - Convert to ISO string format
+                ...(userData.periodStartDate && { periodStartDate: userData.periodStartDate instanceof Date ? userData.periodStartDate.toISOString() : new Date(userData.periodStartDate).toISOString() }),
+                ...(userData.periodEndDate && { periodEndDate: userData.periodEndDate instanceof Date ? userData.periodEndDate.toISOString() : new Date(userData.periodEndDate).toISOString() }),
+                
+                // Recurring Target Configuration
+                ...(userData.isRecurring !== undefined && { isRecurring: userData.isRecurring }),
+                ...(userData.recurringInterval !== undefined && { recurringInterval: userData.recurringInterval }),
+                ...(userData.carryForwardUnfulfilled !== undefined && { carryForwardUnfulfilled: userData.carryForwardUnfulfilled }),
+                
+                // Current Tracking Fields
+                ...(userData.currentSalesAmount !== undefined && { currentSalesAmount: userData.currentSalesAmount }),
+                ...(userData.currentQuotationsAmount !== undefined && { currentQuotationsAmount: userData.currentQuotationsAmount }),
+                ...(userData.currentOrdersAmount !== undefined && { currentOrdersAmount: userData.currentOrdersAmount }),
+                ...(userData.currentHoursWorked !== undefined && { currentHoursWorked: userData.currentHoursWorked }),
+                ...(userData.currentNewClients !== undefined && { currentNewClients: userData.currentNewClients }),
+                ...(userData.currentNewLeads !== undefined && { currentNewLeads: userData.currentNewLeads }),
+                ...(userData.currentCheckIns !== undefined && { currentCheckIns: userData.currentCheckIns }),
+                ...(userData.currentCalls !== undefined && { currentCalls: userData.currentCalls }),
+                
+                // Cost Breakdown Fields
+                ...(userData.baseSalary !== undefined && { baseSalary: userData.baseSalary }),
+                ...(userData.carInstalment !== undefined && { carInstalment: userData.carInstalment }),
+                ...(userData.carInsurance !== undefined && { carInsurance: userData.carInsurance }),
+                ...(userData.fuel !== undefined && { fuel: userData.fuel }),
+                ...(userData.cellPhoneAllowance !== undefined && { cellPhoneAllowance: userData.cellPhoneAllowance }),
+                ...(userData.carMaintenance !== undefined && { carMaintenance: userData.carMaintenance }),
+                ...(userData.cgicCosts !== undefined && { cgicCosts: userData.cgicCosts }),
+                ...(userData.totalCost !== undefined && { totalCost: userData.totalCost }),
+                
+                // ERP Integration
+                ...(userData.erpSalesRepCode !== undefined && { erpSalesRepCode: userData.erpSalesRepCode }),
             };
 
             // Choose the appropriate HTTP method based on whether user has existing targets

@@ -29,16 +29,27 @@ import {
     EyeOff,
     Key,
     MapPin,
-    Calendar,
+    Calendar as CalendarIcon,
     Briefcase,
     Target,
     Globe,
     Award,
     DoorOpen,
     Settings,
+    RefreshCw,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MultiSelect, MultiSelectOption } from '@/components/ui/multi-select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { useBranchQuery, Branch } from '@/hooks/use-branch-query';
 import {
     useAdminClientsQuery,
@@ -117,6 +128,11 @@ const userEditFormSchema = z.object({
     periodStartDate: z.string().optional(),
     periodEndDate: z.string().optional(),
 
+    // Recurring Target Configuration
+    isRecurring: z.boolean().optional(),
+    recurringInterval: z.enum(['daily', 'weekly', 'monthly']).optional(),
+    carryForwardUnfulfilled: z.boolean().optional(),
+
     // Cost Breakdown Fields (Monthly) - All in ZAR
     baseSalary: z.string().optional(),
     carInstalment: z.string().optional(),
@@ -148,6 +164,40 @@ export type UserEditServerData = Partial<UserEditFormValues> & {
     profile?: any;
     employmentProfile?: any;
 };
+
+// Currency options including SADC region currencies
+const currencyOptions = [
+	// Major International Currencies
+	{ value: 'USD', label: 'USD - US Dollar' },
+	{ value: 'EUR', label: 'EUR - Euro' },
+	{ value: 'GBP', label: 'GBP - British Pound' },
+	{ value: 'CAD', label: 'CAD - Canadian Dollar' },
+	{ value: 'AUD', label: 'AUD - Australian Dollar' },
+	{ value: 'JPY', label: 'JPY - Japanese Yen' },
+	{ value: 'CNY', label: 'CNY - Chinese Yuan' },
+	{ value: 'INR', label: 'INR - Indian Rupee' },
+	// SADC Region Currencies
+	{ value: 'ZAR', label: 'ZAR - South African Rand' },
+	{ value: 'BWP', label: 'BWP - Botswana Pula' },
+	{ value: 'MZN', label: 'MZN - Mozambican Metical' },
+	{ value: 'MWK', label: 'MWK - Malawian Kwacha' },
+	{ value: 'ZMW', label: 'ZMW - Zambian Kwacha' },
+	{ value: 'ZWL', label: 'ZWL - Zimbabwean Dollar' },
+	{ value: 'SZL', label: 'SZL - Swazi Lilangeni' },
+	{ value: 'LSL', label: 'LSL - Lesotho Loti' },
+	{ value: 'NAD', label: 'NAD - Namibian Dollar' },
+	{ value: 'AOA', label: 'AOA - Angolan Kwanza' },
+	{ value: 'MGA', label: 'MGA - Malagasy Ariary' },
+	{ value: 'MUR', label: 'MUR - Mauritian Rupee' },
+	{ value: 'SCR', label: 'SCR - Seychellois Rupee' },
+	{ value: 'TZS', label: 'TZS - Tanzanian Shilling' },
+	{ value: 'UGX', label: 'UGX - Ugandan Shilling' },
+	{ value: 'KES', label: 'KES - Kenyan Shilling' },
+	// Other African Currencies
+	{ value: 'NGN', label: 'NGN - Nigerian Naira' },
+	{ value: 'GHS', label: 'GHS - Ghanaian Cedi' },
+	{ value: 'ETB', label: 'ETB - Ethiopian Birr' },
+];
 
 // Props interface
 interface UserEditFormProps {
@@ -305,6 +355,11 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                   .toISOString()
                   .split('T')[0]
             : '',
+
+        // Recurring Target Configuration
+        isRecurring: (initialData as any).userTarget?.isRecurring || false,
+        recurringInterval: (initialData as any).userTarget?.recurringInterval || 'monthly',
+        carryForwardUnfulfilled: (initialData as any).userTarget?.carryForwardUnfulfilled || false,
 
         // Employment Profile (from userEmployeementProfile relationship)
         position: (initialData as any).userEmployeementProfile?.position || '',
@@ -616,14 +671,52 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                 };
             }
 
-            // Submit even if no changes detected (for debugging)
-            // In production, you might want to show a message if no changes
+            // Handle target fields separately - submit to target endpoint
+            const targetFields = [
+                'targetSalesAmount', 'targetQuotationsAmount', 'targetCurrency',
+                'targetHoursWorked', 'targetNewClients', 'targetNewLeads',
+                'targetCheckIns', 'targetCalls', 'targetPeriod',
+                'periodStartDate', 'periodEndDate', 'isRecurring',
+                'recurringInterval', 'carryForwardUnfulfilled',
+                'currentSalesAmount', 'currentQuotationsAmount', 'currentOrdersAmount',
+                'currentHoursWorked', 'currentNewClients', 'currentNewLeads',
+                'currentCheckIns', 'currentCalls',
+                'baseSalary', 'carInstalment', 'carInsurance', 'fuel',
+                'cellPhoneAllowance', 'carMaintenance', 'cgicCosts', 'totalCost'
+            ];
+            
+            const hasTargetChanges = targetFields.some(field => dirtyFields[field as keyof typeof dirtyFields]);
+            const targetData: any = {};
+            
+            if (hasTargetChanges) {
+                targetFields.forEach((field) => {
+                    const fieldKey = field as keyof UserEditFormValues;
+                    if (dirtyFields[fieldKey] && data[fieldKey] !== undefined && data[fieldKey] !== '' && data[fieldKey] !== null) {
+                        // Convert string dates to Date objects for API
+                        if (field === 'periodStartDate' || field === 'periodEndDate') {
+                            targetData[field] = data[fieldKey] ? new Date(data[fieldKey] as string).toISOString() : undefined;
+                        } else if (typeof data[fieldKey] === 'string' && !isNaN(Number(data[fieldKey]))) {
+                            // Convert numeric strings to numbers
+                            targetData[field] = Number(data[fieldKey]);
+                        } else {
+                            targetData[field] = data[fieldKey];
+                        }
+                    }
+                });
+                
+                // Remove target fields from changedData to avoid duplicate submission
+                targetFields.forEach((field) => {
+                    delete (changedData as any)[field];
+                });
+            }
+
+            // Submit user data first
             if (
                 Object.keys(changedData).length > 0 ||
-                Object.keys(dirtyFields).length > 0
+                (Object.keys(dirtyFields).length > 0 && !hasTargetChanges)
             ) {
                 await onSubmit(changedData);
-            } else {
+            } else if (!hasTargetChanges) {
                 // Force submit with essential fields to ensure API is called
                 const essentialData: UserEditServerData = {
                     name: data.name,
@@ -631,6 +724,25 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                     email: data.email,
                 };
                 await onSubmit(essentialData);
+            }
+
+            // Submit target data separately if there are target changes
+            if (hasTargetChanges && Object.keys(targetData).length > 0 && initialData?.uid) {
+                try {
+                    const userId = (initialData as any).uid;
+                    // Check if user already has targets
+                    const targetResponse = await axiosInstance.get(`/user/${userId}/target`).catch(() => null);
+                    const hasExistingTargets = targetResponse?.data?.userTarget !== null && targetResponse?.data?.userTarget !== undefined;
+                    
+                    if (hasExistingTargets) {
+                        await axiosInstance.patch(`/user/${userId}/target`, targetData);
+                    } else {
+                        await axiosInstance.post(`/user/${userId}/target`, targetData);
+                    }
+                } catch (targetError) {
+                    console.error('Error updating user targets:', targetError);
+                    // Don't throw - user update might have succeeded
+                }
             }
         } catch (error) {
         } finally {
@@ -1248,18 +1360,41 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 >
                                     Date of Birth
                                 </Label>
-                                <div className="relative">
-                                    <Calendar
-                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
-                                        strokeWidth={1.5}
-                                    />
-                                    <Input
-                                        id="dob"
-                                        type="date"
-                                        {...register('dob')}
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    />
-                                </div>
+                                <Controller
+                                    name="dob"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        'w-full justify-start text-left font-light bg-card border-border',
+                                                        !field.value && 'text-muted-foreground'
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {field.value ? (
+                                                        format(new Date(field.value), 'PPP')
+                                                    ) : (
+                                                        <span className="text-[10px] font-thin uppercase font-body">
+                                                            Pick a date
+                                                        </span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value ? new Date(field.value) : undefined}
+                                                    onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                                    disabled={(date) => date > new Date()}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
                             </div>
 
                             <div className="space-y-1">
@@ -1389,18 +1524,41 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 >
                                     Start Date
                                 </Label>
-                                <div className="relative">
-                                    <Calendar
-                                        className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
-                                        strokeWidth={1.5}
-                                    />
-                                    <Input
-                                        id="startDate"
-                                        type="date"
-                                        {...register('startDate')}
-                                        className="pl-10 font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    />
-                                </div>
+                                <Controller
+                                    name="startDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        'w-full justify-start text-left font-light bg-card border-border',
+                                                        !field.value && 'text-muted-foreground'
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {field.value ? (
+                                                        format(new Date(field.value), 'PPP')
+                                                    ) : (
+                                                        <span className="text-[10px] font-thin uppercase font-body">
+                                                            Pick a date
+                                                        </span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value ? new Date(field.value) : undefined}
+                                                    onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                                    disabled={(date) => date < new Date('1900-01-01')}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
                             </div>
 
                             <div className="space-y-1">
@@ -1800,11 +1958,30 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                 >
                                     Target Currency
                                 </Label>
-                                <Input
-                                    id="targetCurrency"
-                                    {...register('targetCurrency')}
-                                    className="font-light bg-card border-border placeholder:text-xs placeholder:font-body"
-                                    placeholder="ZAR"
+                                <Controller
+                                    name="targetCurrency"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className="font-light bg-card border-border">
+                                                <SelectValue placeholder="Select currency" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {currencyOptions.map((option) => (
+                                                    <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                        className="font-thin font-body"
+                                                    >
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 />
                             </div>
 
@@ -1946,6 +2123,194 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                         </Select>
                                     )}
                                 />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="periodStartDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Period Start Date
+                                </Label>
+                                <Controller
+                                    name="periodStartDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        'w-full justify-start text-left font-light bg-card border-border',
+                                                        !field.value && 'text-muted-foreground'
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {field.value ? (
+                                                        format(new Date(field.value), 'PPP')
+                                                    ) : (
+                                                        <span className="text-[10px] font-thin uppercase font-body">
+                                                            Pick a date
+                                                        </span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value ? new Date(field.value) : undefined}
+                                                    onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                                    disabled={(date) => date < new Date('1900-01-01')}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="periodEndDate"
+                                    className="block text-xs font-light uppercase font-body"
+                                >
+                                    Period End Date
+                                </Label>
+                                <Controller
+                                    name="periodEndDate"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        'w-full justify-start text-left font-light bg-card border-border',
+                                                        !field.value && 'text-muted-foreground'
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {field.value ? (
+                                                        format(new Date(field.value), 'PPP')
+                                                    ) : (
+                                                        <span className="text-[10px] font-thin uppercase font-body">
+                                                            Pick a date
+                                                        </span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value ? new Date(field.value) : undefined}
+                                                    onSelect={(date) => {
+                                                        const startDate = watch('periodStartDate');
+                                                        field.onChange(date ? date.toISOString().split('T')[0] : '');
+                                                    }}
+                                                    disabled={(date) => {
+                                                        const startDate = watch('periodStartDate');
+                                                        if (date < new Date('1900-01-01')) {
+                                                            return true;
+                                                        }
+                                                        if (startDate && typeof startDate === 'string' && startDate.trim() !== '') {
+                                                            return date < new Date(startDate);
+                                                        }
+                                                        return false;
+                                                    }}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Recurring Targets Configuration */}
+                            <div className="col-span-2 pt-4 border-t border-border">
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <RefreshCw className="w-4 h-4 text-primary" />
+                                    <h4 className="text-xs font-light uppercase text-muted-foreground font-body">
+                                        Recurring Targets
+                                    </h4>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-3 rounded-lg border">
+                                        <div className="space-y-0.5">
+                                            <Label className="text-xs font-light uppercase font-body">
+                                                Enable Recurring Targets
+                                            </Label>
+                                            <div className="text-[10px] text-muted-foreground font-thin">
+                                                Automatically reset targets at specified intervals
+                                            </div>
+                                        </div>
+                                        <Controller
+                                            name="isRecurring"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Switch
+                                                    checked={field.value || false}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+
+                                    {watch('isRecurring') && (
+                                        <div className="space-y-4 animate-in fade-in-50">
+                                            <div className="space-y-1">
+                                                <Label className="block text-xs font-light uppercase font-body">
+                                                    Recurrence Interval
+                                                </Label>
+                                                <Controller
+                                                    name="recurringInterval"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Select
+                                                            value={field.value}
+                                                            onValueChange={field.onChange}
+                                                        >
+                                                            <SelectTrigger className="font-light bg-card border-border">
+                                                                <SelectValue placeholder="Select interval" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="daily" className="font-thin font-body">
+                                                                    Daily
+                                                                </SelectItem>
+                                                                <SelectItem value="weekly" className="font-thin font-body">
+                                                                    Weekly
+                                                                </SelectItem>
+                                                                <SelectItem value="monthly" className="font-thin font-body">
+                                                                    Monthly
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="flex items-start space-x-3 p-4 rounded-md border">
+                                                <Controller
+                                                    name="carryForwardUnfulfilled"
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Checkbox
+                                                            checked={field.value || false}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    )}
+                                                />
+                                                <div className="space-y-1 leading-none">
+                                                    <Label className="text-xs font-light uppercase font-body">
+                                                        Carry Forward Unfulfilled Targets
+                                                    </Label>
+                                                    <div className="text-[10px] text-muted-foreground font-thin">
+                                                        Add unmet targets to the next period automatically
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Current Performance Tracking */}

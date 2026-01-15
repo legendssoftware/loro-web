@@ -204,7 +204,28 @@ class AuthService {
    */
   public async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
-      const { data } = await this.api.post('/auth/refresh', { refreshToken });
+      // Determine if user is a client by decoding the refresh token
+      let isClient = false;
+      try {
+        const decodedToken = jwtDecode<CustomJwtPayload>(refreshToken);
+        // Check if role is 'client' (client users have role === 'client')
+        isClient = decodedToken?.role === 'client';
+      } catch (decodeError) {
+        // If we can't decode the refresh token, try the access token
+        if (this.accessToken) {
+          try {
+            const decodedAccessToken = jwtDecode<CustomJwtPayload>(this.accessToken);
+            isClient = decodedAccessToken?.role === 'client';
+          } catch (accessDecodeError) {
+            // If both fail, default to regular auth endpoint
+            console.warn('Could not determine user type from tokens, defaulting to /auth/refresh');
+          }
+        }
+      }
+
+      // Use appropriate refresh endpoint based on user type
+      const refreshEndpoint = isClient ? '/client-auth/refresh' : '/auth/refresh';
+      const { data } = await this.api.post(refreshEndpoint, { refreshToken });
       return {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken

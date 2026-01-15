@@ -2209,10 +2209,13 @@ export const UserEditForm: React.FunctionComponent<UserEditFormProps> = ({
                                                     }}
                                                     disabled={(date) => {
                                                         const startDate = watch('periodStartDate');
-                                                        return (
-                                                            date < new Date('1900-01-01') ||
-                                                            (startDate && date < new Date(startDate))
-                                                        );
+                                                        if (date < new Date('1900-01-01')) {
+                                                            return true;
+                                                        }
+                                                        if (startDate && typeof startDate === 'string' && startDate.trim() !== '') {
+                                                            return date < new Date(startDate);
+                                                        }
+                                                        return false;
                                                     }}
                                                     initialFocus
                                                 />

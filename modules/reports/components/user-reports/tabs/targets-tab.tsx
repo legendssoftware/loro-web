@@ -970,13 +970,14 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                             // Map individual cost components from entity (do NOT use totalCost column)
                             // Check both personalTargets (new format) and direct access (legacy format) for backward compatibility
                             const personalTargets = (targetsData as any)?.personalTargets;
-                            const baseSalary = personalTargets?.baseSalary || targetsData.baseSalary || 0;
-                            const carInstalment = personalTargets?.carInstalment || targetsData.carInstalment || 0;
-                            const carInsurance = personalTargets?.carInsurance || targetsData.carInsurance || 0;
-                            const fuel = personalTargets?.fuel || targetsData.fuel || 0;
-                            const cellPhoneAllowance = personalTargets?.cellPhoneAllowance || targetsData.cellPhoneAllowance || 0;
-                            const carMaintenance = personalTargets?.carMaintenance || targetsData.carMaintenance || 0;
-                            const cgicCosts = personalTargets?.cgicCosts || targetsData.cgicCosts || 0;
+                            const targetsDataAny = targetsData as any;
+                            const baseSalary = personalTargets?.baseSalary || targetsDataAny?.baseSalary || 0;
+                            const carInstalment = personalTargets?.carInstalment || targetsDataAny?.carInstalment || 0;
+                            const carInsurance = personalTargets?.carInsurance || targetsDataAny?.carInsurance || 0;
+                            const fuel = personalTargets?.fuel || targetsDataAny?.fuel || 0;
+                            const cellPhoneAllowance = personalTargets?.cellPhoneAllowance || targetsDataAny?.cellPhoneAllowance || 0;
+                            const carMaintenance = personalTargets?.carMaintenance || targetsDataAny?.carMaintenance || 0;
+                            const cgicCosts = personalTargets?.cgicCosts || targetsDataAny?.cgicCosts || 0;
 
                             // Calculate total from individual components only (never use totalCost column)
                             const totalCost = baseSalary + carInstalment + carInsurance + fuel + cellPhoneAllowance + carMaintenance + cgicCosts;

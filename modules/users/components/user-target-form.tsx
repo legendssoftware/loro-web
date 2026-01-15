@@ -54,16 +54,36 @@ const periodOptions = [
 ];
 
 const currencyOptions = [
-    { value: 'USD', label: 'USD' },
-    { value: 'EUR', label: 'EUR' },
-    { value: 'GBP', label: 'GBP' },
-    { value: 'CAD', label: 'CAD' },
-    { value: 'AUD', label: 'AUD' },
-    { value: 'JPY', label: 'JPY' },
-    { value: 'CNY', label: 'CNY' },
-    { value: 'INR', label: 'INR' },
-    { value: 'ZAR', label: 'ZAR' },
-    { value: 'NGN', label: 'NGN' },
+	// Major International Currencies
+	{ value: 'USD', label: 'USD - US Dollar' },
+	{ value: 'EUR', label: 'EUR - Euro' },
+	{ value: 'GBP', label: 'GBP - British Pound' },
+	{ value: 'CAD', label: 'CAD - Canadian Dollar' },
+	{ value: 'AUD', label: 'AUD - Australian Dollar' },
+	{ value: 'JPY', label: 'JPY - Japanese Yen' },
+	{ value: 'CNY', label: 'CNY - Chinese Yuan' },
+	{ value: 'INR', label: 'INR - Indian Rupee' },
+	// SADC Region Currencies
+	{ value: 'ZAR', label: 'ZAR - South African Rand' },
+	{ value: 'BWP', label: 'BWP - Botswana Pula' },
+	{ value: 'MZN', label: 'MZN - Mozambican Metical' },
+	{ value: 'MWK', label: 'MWK - Malawian Kwacha' },
+	{ value: 'ZMW', label: 'ZMW - Zambian Kwacha' },
+	{ value: 'ZWL', label: 'ZWL - Zimbabwean Dollar' },
+	{ value: 'SZL', label: 'SZL - Swazi Lilangeni' },
+	{ value: 'LSL', label: 'LSL - Lesotho Loti' },
+	{ value: 'NAD', label: 'NAD - Namibian Dollar' },
+	{ value: 'AOA', label: 'AOA - Angolan Kwanza' },
+	{ value: 'MGA', label: 'MGA - Malagasy Ariary' },
+	{ value: 'MUR', label: 'MUR - Mauritian Rupee' },
+	{ value: 'SCR', label: 'SCR - Seychellois Rupee' },
+	{ value: 'TZS', label: 'TZS - Tanzanian Shilling' },
+	{ value: 'UGX', label: 'UGX - Ugandan Shilling' },
+	{ value: 'KES', label: 'KES - Kenyan Shilling' },
+	// Other African Currencies
+	{ value: 'NGN', label: 'NGN - Nigerian Naira' },
+	{ value: 'GHS', label: 'GHS - Ghanaian Cedi' },
+	{ value: 'ETB', label: 'ETB - Ethiopian Birr' },
 ];
 
 // Helper function for number preprocessing

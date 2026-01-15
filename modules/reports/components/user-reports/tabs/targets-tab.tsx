@@ -20,7 +20,8 @@ import {
     RefreshCw,
     Star,
     Zap,
-    Settings
+    Settings,
+    CreditCard
 } from 'lucide-react';
 import { TabProps } from './rewards-tab';
 import { useQuery } from '@tanstack/react-query';
@@ -668,8 +669,8 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                         </div>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center py-8">
-                        <div className="text-6xl mb-4">🎯</div>
-                        <p className="text-sm font-medium text-foreground font-body text-center mb-2">
+                        <div className="mb-4 text-6xl">🎯</div>
+                        <p className="mb-2 text-sm font-medium text-center text-foreground font-body">
                             No targets have been set for you yet
                         </p>
                         <p className="text-[10px] text-muted-foreground font-body uppercase text-center">
@@ -953,7 +954,139 @@ export const TargetsTab: React.FunctionComponent<TabProps> = ({
                 </CardContent>
             </Card>
 
-            {/* Cost Breakdown - Hidden for now per request */}
+            {/* Monthly Cost Breakdown */}
+            {targetsData && (
+                <Card>
+                    <CardHeader>
+                        <div className="flex gap-2 items-center">
+                            <CreditCard className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                            <CardTitle className="text-sm font-normal uppercase font-body">
+                                Monthly Cost Breakdown ({(targetsData as any)?.personalTargets?.sales?.currency || targetsData.targetCurrency || 'ZAR'})
+                            </CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {(() => {
+                            // Map individual cost components from entity (do NOT use totalCost column)
+                            // Check both personalTargets (new format) and direct access (legacy format) for backward compatibility
+                            const personalTargets = (targetsData as any)?.personalTargets;
+                            const targetsDataAny = targetsData as any;
+                            const baseSalary = personalTargets?.baseSalary || targetsDataAny?.baseSalary || 0;
+                            const carInstalment = personalTargets?.carInstalment || targetsDataAny?.carInstalment || 0;
+                            const carInsurance = personalTargets?.carInsurance || targetsDataAny?.carInsurance || 0;
+                            const fuel = personalTargets?.fuel || targetsDataAny?.fuel || 0;
+                            const cellPhoneAllowance = personalTargets?.cellPhoneAllowance || targetsDataAny?.cellPhoneAllowance || 0;
+                            const carMaintenance = personalTargets?.carMaintenance || targetsDataAny?.carMaintenance || 0;
+                            const cgicCosts = personalTargets?.cgicCosts || targetsDataAny?.cgicCosts || 0;
+
+                            // Calculate total from individual components only (never use totalCost column)
+                            const totalCost = baseSalary + carInstalment + carInsurance + fuel + cellPhoneAllowance + carMaintenance + cgicCosts;
+
+                            // All cost items - display all components
+                            const costItems = [
+                                { label: 'Base Salary', value: baseSalary, color: 'bg-blue-500' },
+                                { label: 'Car Instalment', value: carInstalment, color: 'bg-purple-500' },
+                                { label: 'Car Insurance', value: carInsurance, color: 'bg-pink-500' },
+                                { label: 'Fuel', value: fuel, color: 'bg-amber-500' },
+                                { label: 'Cell Phone Allowance', value: cellPhoneAllowance, color: 'bg-green-500' },
+                                { label: 'Car Maintenance', value: carMaintenance, color: 'bg-red-500' },
+                                { label: 'CGIC Costs', value: cgicCosts, color: 'bg-indigo-500' },
+                            ];
+
+                            // Check if any cost data exists
+                            const hasCostData = costItems.some(item => item.value > 0);
+
+                            if (!hasCostData) {
+                                return (
+                                    <div className="py-8 text-center">
+                                        <p className="text-sm text-muted-foreground font-body">
+                                            No cost breakdown data available
+                                        </p>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="space-y-4">
+                                    {/* Table-like Cost Breakdown */}
+                                    <div className="overflow-hidden rounded-lg border dark:border-gray-700">
+                                        {/* Table Header */}
+                                        <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 border-b dark:bg-gray-800 dark:border-gray-700">
+                                            <span className="text-xs font-semibold text-gray-700 uppercase dark:text-gray-300 font-body">
+                                                Cost Component
+                                            </span>
+                                            <span className="text-xs font-semibold text-right text-gray-700 uppercase dark:text-gray-300 font-body">
+                                                Amount ({(targetsData as any)?.personalTargets?.sales?.currency || targetsData.targetCurrency || 'ZAR'})
+                                            </span>
+                                        </div>
+
+                                        {/* Table Rows */}
+                                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {costItems.map((item, index) => (
+                                                <div key={index} className="grid grid-cols-2 gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                    <div className="flex gap-3 items-center">
+                                                        <div className={`w-3 h-3 rounded-sm ${item.color}`}></div>
+                                                        <span className="text-sm font-medium text-foreground font-body">
+                                                            {item.label}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-right text-foreground font-body">
+                                                        {formatCurrency(item.value, (targetsData as any)?.personalTargets?.sales?.currency || targetsData.targetCurrency)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Total Cost Row */}
+                                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-lg border-2 border-gray-300 dark:bg-gray-800 dark:border-gray-700">
+                                        <span className="text-base font-bold uppercase text-foreground font-body">
+                                            Total Cost
+                                        </span>
+                                        <span className="text-base font-bold text-foreground font-body">
+                                            {formatCurrency(totalCost, (targetsData as any)?.personalTargets?.sales?.currency || targetsData.targetCurrency)}
+                                        </span>
+                                    </div>
+
+                                    {/* Cost vs Sales Analysis */}
+                                    {totalCost > 0 && targetsData.targetSalesAmount && targetsData.targetSalesAmount > 0 && (
+                                        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+                                            <p className="mb-2 text-sm font-medium text-amber-800 dark:text-amber-200 font-body">
+                                                Cost vs Target Analysis
+                                            </p>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-amber-700 dark:text-amber-300 font-body">
+                                                        Cost Coverage Ratio:
+                                                    </span>
+                                                    <span className="text-sm font-medium text-amber-800 dark:text-amber-200 font-body">
+                                                        {(() => {
+                                                            const currentSales = targetsData.currentSalesAmount || 0;
+                                                            const coverageRatio = totalCost > 0 ? (currentSales / totalCost) * 100 : 0;
+                                                            return `${coverageRatio.toFixed(1)}%`;
+                                                        })()}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-amber-700 dark:text-amber-300 font-body">
+                                                        Target Coverage:
+                                                    </span>
+                                                    <span className="text-sm font-medium text-amber-800 dark:text-amber-200 font-body">
+                                                        {(() => {
+                                                            const targetCoverage = totalCost > 0 ? (targetsData.targetSalesAmount / totalCost) * 100 : 0;
+                                                            return `${targetCoverage.toFixed(1)}%`;
+                                                        })()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* AI Insights Section */}
             <Card>
